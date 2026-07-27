@@ -1,0 +1,11 @@
+# Archivos temporales que NO se suben
+__pycache__/
+*.pyc
+diagnostico.txt
+_gen_{{club}}.b64
+*.log
+
+# NUNCA subir la llave de los datos
+LLAVE.txt
+# copias de respaldo que dejan los scripts
+*.antes

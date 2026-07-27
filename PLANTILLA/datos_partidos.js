@@ -1,0 +1,1 @@
+window.PARTIDOS_DATA=[];

@@ -1,0 +1,1 @@
+window.NLA_DATA={};

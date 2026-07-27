@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configurá tu club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#0d1117;        /* fondo */
+  --panel:#151b24;
+  --panel2:#1b232f;
+  --borde:rgba(255,255,255,.09);
+  --borde2:rgba(255,255,255,.18);
+  --texto:#e8ecf2;
+  --suave:#7d8899;
+  --club:#e8192c;         /* se reemplaza con el color del escudo */
+  --club-t:#fff;
+  --ok:#3ddc84;
+  --mal:#ff6b6b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--tinta); color:var(--texto);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  font-size:15px; line-height:1.55;
+  min-height:100vh;
+}
+h1,h2,h3,.disp{font-family:Archivo,Inter,sans-serif;letter-spacing:-.015em}
+
+/* ── estructura ── */
+.marco{display:grid;grid-template-columns:266px 1fr;min-height:100vh}
+.rail{
+  background:linear-gradient(180deg,var(--panel) 0%,var(--tinta) 100%);
+  border-right:1px solid var(--borde); padding:30px 24px; position:relative;
+}
+.marca{display:flex;align-items:center;gap:11px;margin-bottom:38px}
+.marca .esc{
+  width:44px;height:44px;border-radius:11px;background:var(--club);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;
+  font-family:Anton,sans-serif;font-size:19px;color:var(--club-t)
+}
+.marca .esc img{width:100%;height:100%;object-fit:contain}
+.marca b{font-family:Archivo;font-weight:800;font-size:16px;display:block;line-height:1.15}
+.marca span{font-size:11.5px;color:var(--suave)}
+
+/* pasos: es una secuencia real, por eso van numerados */
+.paso{display:flex;gap:13px;padding:13px 0;cursor:pointer;border:0;background:none;
+  color:inherit;font:inherit;text-align:left;width:100%}
+.paso .n{
+  width:27px;height:27px;border-radius:50%;border:1.5px solid var(--borde2);
+  display:flex;align-items:center;justify-content:center;flex:none;
+  font-family:Anton;font-size:13px;color:var(--suave);transition:.25s
+}
+.paso .t{font-weight:600;font-size:14px}
+.paso .d{font-size:12px;color:var(--suave);line-height:1.4}
+.paso.on .n{background:var(--club);border-color:var(--club);color:var(--club-t)}
+.paso.on .t{color:#fff}
+.paso.ok .n{background:transparent;border-color:var(--ok);color:var(--ok)}
+.paso:disabled{opacity:.42;cursor:default}
+.rail .pie{position:absolute;bottom:26px;left:24px;right:24px;font-size:11.5px;color:var(--suave)}
+
+.hoja{padding:44px 46px;max-width:880px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--club)}
+h1{font-size:clamp(28px,4vw,40px);font-weight:800;margin:7px 0 8px;line-height:1.05}
+.bajada{color:var(--suave);font-size:15.5px;max-width:56ch;margin:0 0 30px}
+
+label.lbl{display:block;font-size:12px;font-weight:600;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--suave);margin:0 0 7px}
+input[type=text],textarea,select{
+  width:100%;background:var(--panel2);border:1px solid var(--borde);border-radius:11px;
+  padding:13px 15px;color:var(--texto);font:inherit;font-size:15px;outline:none;transition:border-color .2s
+}
+input[type=text]:focus,textarea:focus,select:focus{border-color:var(--club)}
+textarea{min-height:170px;resize:vertical;line-height:1.7}
+.par{display:grid;grid-template-columns:1fr 190px;gap:16px}
+.campo{margin-bottom:20px}
+.ayuda{font-size:12.5px;color:var(--suave);margin-top:6px}
+
+/* ── zona del escudo ── */
+.suelta{
+  border:1.5px dashed var(--borde2);border-radius:15px;padding:26px;text-align:center;
+  cursor:pointer;transition:.22s;background:var(--panel2)
+}
+.suelta:hover,.suelta.sobre{border-color:var(--club);background:var(--panel)}
+.suelta .prev{width:96px;height:96px;margin:0 auto 12px;border-radius:15px;
+  background:var(--panel);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.suelta .prev img{width:100%;height:100%;object-fit:contain}
+.suelta .prev.vacio{border:1.5px solid var(--borde);color:var(--suave);font-size:11px}
+.suelta b{font-weight:600;font-size:14.5px}
+.suelta span{display:block;font-size:12.5px;color:var(--suave);margin-top:3px}
+
+.colores{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
+.chip-col{width:34px;height:34px;border-radius:9px;border:2px solid transparent;cursor:pointer;transition:.18s}
+.chip-col.on{border-color:#fff;transform:scale(1.08)}
+
+/* ── camisetas del plantel: la firma de la pantalla ── */
+.plantel{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px;min-height:56px}
+.jug{
+  display:flex;align-items:center;gap:9px;background:var(--panel2);
+  border:1px solid var(--borde);border-radius:11px;padding:7px 12px 7px 7px;
+  animation:entra .28s ease both
+}
+@keyframes entra{from{opacity:0;transform:translateY(7px) scale(.96)}to{opacity:1;transform:none}}
+.jug .cam{
+  width:34px;height:34px;border-radius:8px;background:var(--club);color:var(--club-t);
+  font-family:Anton;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none
+}
+.jug .txt b{display:block;font-size:13.5px;font-weight:600;line-height:1.2}
+.jug .txt span{font-size:11.5px;color:var(--suave)}
+.jug .x{margin-left:5px;background:none;border:0;color:var(--suave);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px}
+.jug .x:hover{color:var(--mal)}
+.vacio-msg{color:var(--suave);font-size:13.5px;padding:16px 0}
+
+/* ── rivales ── */
+.rivales{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.riv{background:var(--panel2);border:1px solid var(--borde);border-radius:20px;
+  padding:6px 13px;font-size:13.5px;display:flex;align-items:center;gap:8px}
+.riv button{background:none;border:0;color:var(--suave);cursor:pointer;font-size:15px;line-height:1;padding:0}
+.riv button:hover{color:var(--mal)}
+
+/* ── resumen final ── */
+.ficha{border:1px solid var(--borde);border-radius:16px;overflow:hidden;background:var(--panel)}
+.ficha .cab{background:var(--club);color:var(--club-t);padding:20px 24px;display:flex;align-items:center;gap:15px}
+.ficha .cab .e{width:54px;height:54px;border-radius:12px;background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none}
+.ficha .cab .e img{width:100%;height:100%;object-fit:contain}
+.ficha .cab h3{margin:0;font-size:24px;font-weight:800}
+.ficha .cab p{margin:0;font-size:13px;opacity:.85}
+.ficha .cuerpo{padding:20px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.dato .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--suave)}
+.dato .v{font-family:Archivo;font-weight:700;font-size:26px;line-height:1.15}
+
+/* ── botones ── */
+.barra{display:flex;gap:11px;align-items:center;margin-top:32px;flex-wrap:wrap}
+.btn{
+  background:var(--club);color:var(--club-t);border:0;border-radius:11px;
+  padding:14px 26px;font:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:.18s
+}
+.btn:hover{filter:brightness(1.12)}
+.btn:disabled{opacity:.4;cursor:default;filter:none}
+.btn.sec{background:transparent;color:var(--texto);border:1px solid var(--borde2)}
+.btn.sec:hover{background:var(--panel2);filter:none}
+.btn:focus-visible,.paso:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--club);outline-offset:2px}
+
+.pantalla{display:none}
+.pantalla.on{display:block;animation:sube .3s ease both}
+@keyframes sube{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.aviso{border-left:3px solid var(--club);background:var(--panel2);padding:13px 16px;
+  border-radius:0 10px 10px 0;font-size:13.5px;color:var(--suave);margin-top:20px}
+.aviso b{color:var(--texto)}
+
+@media (max-width:860px){
+  .marco{grid-template-columns:1fr}
+  .rail{border-right:0;border-bottom:1px solid var(--borde);padding:20px}
+  .rail .pie{position:static;margin-top:20px}
+  .hoja{padding:26px 20px}
+  .par{grid-template-columns:1fr}
+  .ficha .cuerpo{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="marco">
+  <!-- ───────── barra lateral ───────── -->
+  <aside class="rail">
+    <div class="marca">
+      <div class="esc" id="m-esc">?</div>
+      <div>
+        <b id="m-nom">Tu club</b>
+        <span id="m-sub">Sin configurar</span>
+      </div>
+    </div>
+
+    <button class="paso on" id="p1" onclick="ir(1)">
+      <div class="n">1</div>
+      <div><div class="t">Identidad</div><div class="d">Nombre, escudo y colores</div></div>
+    </button>
+    <button class="paso" id="p2" onclick="ir(2)">
+      <div class="n">2</div>
+      <div><div class="t">Plantel</div><div class="d">Los jugadores de la temporada</div></div>
+    </button>
+    <button class="paso" id="p3" onclick="ir(3)">
+      <div class="n">3</div>
+      <div><div class="t">Rivales</div><div class="d">Los equipos de tu liga</div></div>
+    </button>
+
+    <div class="pie">Se guarda solo mientras completás.<br>Podés cerrar y seguir después.</div>
+  </aside>
+
+  <!-- ───────── contenido ───────── -->
+  <main class="hoja">
+
+    <!-- PASO 1 -->
+    <section class="pantalla on" id="s1">
+      <div class="eyebrow">Paso 1 de 3</div>
+      <h1>Empecemos por tu club</h1>
+      <p class="bajada">Soltá el escudo y tomamos los colores de ahí. Todo lo que veas de acá en adelante va a tener la identidad de tu club.</p>
+
+      <div class="par">
+        <div class="campo">
+          <label class="lbl" for="f-nombre">Nombre del club</label>
+          <input type="text" id="f-nombre" placeholder="Ej: Club Atlético San Lorenzo" oninput="verIdentidad()">
+        </div>
+        <div class="campo">
+          <label class="lbl" for="f-sigla">Sigla</label>
+          <input type="text" id="f-sigla" maxlength="5" placeholder="CASLA" oninput="verIdentidad()">
+          <div class="ayuda">3 a 5 letras</div>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label class="lbl">Escudo</label>
+        <div class="suelta" id="zona-esc" tabindex="0" role="button" aria-label="Subir escudo">
+          <div class="prev vacio" id="prev-esc">PNG o JPG</div>
+          <b>Arrastrá tu escudo acá</b>
+          <span>o hacé clic para elegirlo</span>
+        </div>
+        <input type="file" id="f-esc" accept="image/*" style="display:none">
+        <div class="colores" id="paleta"></div>
+        <div class="ayuda" id="ayuda-col" style="display:none">Elegí el color principal. Es el que va a usar toda la app.</div>
+      </div>
+
+      <div class="barra">
+        <button class="btn" onclick="ir(2)">Continuar</button>
+      </div>
+    </section>
+
+    <!-- PASO 2 -->
+    <section class="pantalla" id="s2">
+      <div class="eyebrow">Paso 2 de 3</div>
+      <h1>Cargá tu plantel</h1>
+      <p class="bajada">Pegá la lista tal como la tengas. Una línea por jugador: número, apellido, nombre y puesto. El orden no importa demasiado — lo interpretamos igual.</p>
+
+      <div class="campo">
+        <label class="lbl" for="f-plantel">Pegá acá tu lista</label>
+        <textarea id="f-plantel" spellcheck="false" placeholder="4  VAZQUEZ  Ezequiel   Armador
+13 STEIMANN Yannik     Armador
+9  NORRIS   James      Opuesto
+3  SCHWITTER Tom       Central"></textarea>
+        <div class="ayuda">También sirve separado por comas o punto y coma.</div>
+      </div>
+
+      <div class="barra" style="margin-top:14px">
+        <button class="btn sec" onclick="leerPlantel()">Interpretar lista</button>
+        <button class="btn sec" onclick="agregarJugador()">Agregar uno a mano</button>
+      </div>
+
+      <div class="plantel" id="lista-plantel">
+        <div class="vacio-msg">Todavía no cargaste jugadores. Pegá la lista arriba y tocá «Interpretar lista».</div>
+      </div>
+
+      <div class="barra">
+        <button class="btn" onclick="ir(3)">Continuar</button>
+        <button class="btn sec" onclick="ir(1)">Volver</button>
+      </div>
+    </section>
+
+    <!-- PASO 3 -->
+    <section class="pantalla" id="s3">
+      <div class="eyebrow">Paso 3 de 3</div>
+      <h1>¿Contra quiénes jugás?</h1>
+      <p class="bajada">Escribí los equipos de tu liga, uno por línea. Son los rivales que vas a poder scoutear.</p>
+
+      <div class="campo">
+        <label class="lbl" for="f-rivales">Equipos de la liga</label>
+        <textarea id="f-rivales" spellcheck="false" style="min-height:140px" placeholder="Amriswil
+Lausanne
+Schönenwerd
+Chênois"></textarea>
+      </div>
+
+      <div class="barra" style="margin-top:14px">
+        <button class="btn sec" onclick="leerRivales()">Agregar equipos</button>
+      </div>
+      <div class="rivales" id="lista-rivales"></div>
+
+      <div class="barra">
+        <button class="btn" onclick="terminar()">Terminar</button>
+        <button class="btn sec" onclick="ir(2)">Volver</button>
+      </div>
+    </section>
+
+    <!-- FINAL -->
+    <section class="pantalla" id="s4">
+      <div class="eyebrow">Listo</div>
+      <h1>Tu club quedó configurado</h1>
+      <p class="bajada">Esto es lo que va a ver tu cuerpo técnico al entrar. Podés volver a cambiarlo cuando quieras.</p>
+
+      <div class="ficha">
+        <div class="cab">
+          <div class="e" id="r-esc"></div>
+          <div>
+            <h3 id="r-nom">—</h3>
+            <p id="r-sigla">—</p>
+          </div>
+        </div>
+        <div class="cuerpo">
+          <div class="dato"><div class="k">Jugadores</div><div class="v" id="r-jug">0</div></div>
+          <div class="dato"><div class="k">Rivales</div><div class="v" id="r-riv">0</div></div>
+          <div class="dato"><div class="k">Color</div><div class="v" id="r-col">—</div></div>
+        </div>
+      </div>
+
+      <div class="barra">
+        <button class="btn" onclick="guardar()">Guardar y empezar</button>
+        <button class="btn sec" onclick="ir(1)">Corregir algo</button>
+      </div>
+
+      <div class="aviso" id="aviso-final">
+        <b>Lo que sigue:</b> ya podés subir el primer partido. Arrastrás el archivo del scout y en menos de un minuto tenés el plan de partido armado.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* ============================================================================
+   Alta de club — 3 pasos. Todo se guarda en el navegador mientras se completa,
+   así el cliente puede cerrar y seguir después. Al terminar, la configuración
+   se manda a la app (si está disponible) y además queda para descargar.
+   ============================================================================ */
+var CLUB = { nombre:'', sigla:'', escudo:'', color:'#e8192c', jugadores:[], rivales:[] };
+var PASO = 1;
+
+/* ── memoria del navegador ── */
+function guardarBorrador(){
+  try{ localStorage.setItem('alta_club', JSON.stringify(CLUB)); }catch(e){}
+}
+function leerBorrador(){
+  try{
+    var v = localStorage.getItem('alta_club');
+    if(v){ CLUB = Object.assign(CLUB, JSON.parse(v)); return true; }
+  }catch(e){}
+  return false;
+}
+
+/* ── navegación ── */
+function ir(n){
+  if(n===2 && !CLUB.nombre){ alertaCampo('f-nombre'); return; }
+  PASO = n;
+  [1,2,3,4].forEach(function(i){
+    var s=document.getElementById('s'+i); if(s) s.classList.toggle('on', i===n);
+  });
+  [1,2,3].forEach(function(i){
+    var p=document.getElementById('p'+i); if(!p) return;
+    p.classList.toggle('on', i===n);
+    p.classList.toggle('ok', completo(i) && i!==n);
+  });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function completo(i){
+  if(i===1) return !!(CLUB.nombre && CLUB.escudo);
+  if(i===2) return CLUB.jugadores.length>0;
+  if(i===3) return CLUB.rivales.length>0;
+  return false;
+}
+function alertaCampo(id){
+  var e=document.getElementById(id); if(!e) return;
+  e.focus();
+  e.style.borderColor='var(--mal)';
+  setTimeout(function(){ e.style.borderColor=''; }, 1600);
+}
+
+/* ── paso 1: identidad ── */
+function verIdentidad(){
+  CLUB.nombre = document.getElementById('f-nombre').value.trim();
+  CLUB.sigla  = document.getElementById('f-sigla').value.trim().toUpperCase();
+  document.getElementById('m-nom').textContent = CLUB.nombre || 'Tu club';
+  document.getElementById('m-sub').textContent = CLUB.sigla || 'Sin configurar';
+  if(!CLUB.escudo) document.getElementById('m-esc').textContent = (CLUB.sigla||'?').slice(0,3);
+  guardarBorrador();
+}
+function ponerColor(hex){
+  CLUB.color = hex;
+  document.documentElement.style.setProperty('--club', hex);
+  document.documentElement.style.setProperty('--club-t', contraste(hex));
+  document.querySelectorAll('.chip-col').forEach(function(c){
+    c.classList.toggle('on', c.dataset.hex.toLowerCase()===hex.toLowerCase());
+  });
+  guardarBorrador();
+}
+function contraste(hex){
+  var r=parseInt(hex.substr(1,2),16), g=parseInt(hex.substr(3,2),16), b=parseInt(hex.substr(5,2),16);
+  return (r*299+g*587+b*114)/1000 > 140 ? '#111' : '#fff';
+}
+/* saca los colores que más se repiten en el escudo, ignorando grises y transparencias */
+function coloresDe(img){
+  var n=64, c=document.createElement('canvas'); c.width=n; c.height=n;
+  var x=c.getContext('2d'); x.drawImage(img,0,0,n,n);
+  var d;
+  try{ d=x.getImageData(0,0,n,n).data; }catch(e){ return []; }
+  var cuenta={};
+  for(var i=0;i<d.length;i+=4){
+    var r=d[i],g=d[i+1],b=d[i+2],a=d[i+3];
+    if(a<160) continue;
+    var mx=Math.max(r,g,b), mn=Math.min(r,g,b);
+    if(mx-mn < 34) continue;                 /* gris o casi */
+    if(mx < 42 || mn > 226) continue;        /* muy oscuro o muy claro */
+    var k=(Math.round(r/26)*26)+','+(Math.round(g/26)*26)+','+(Math.round(b/26)*26);
+    cuenta[k]=(cuenta[k]||0)+1;
+  }
+  return Object.keys(cuenta).sort(function(a,b){ return cuenta[b]-cuenta[a]; }).slice(0,5)
+    .map(function(k){
+      var p=k.split(',').map(Number);
+      return '#'+p.map(function(v){ return Math.min(255,v).toString(16).padStart(2,'0'); }).join('');
+    });
+}
+function cargarEscudo(file){
+  if(!file || !/^image\//.test(file.type)) return;
+  var fr=new FileReader();
+  fr.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      CLUB.escudo = fr.result;
+      document.getElementById('prev-esc').innerHTML = '<img src="'+fr.result+'" alt="Escudo del club">';
+      document.getElementById('prev-esc').classList.remove('vacio');
+      document.getElementById('m-esc').innerHTML = '<img src="'+fr.result+'" alt="">';
+      var pal=coloresDe(img);
+      var cont=document.getElementById('paleta'); cont.innerHTML='';
+      if(pal.length){
+        pal.forEach(function(hex){
+          var b=document.createElement('button');
+          b.className='chip-col'; b.dataset.hex=hex; b.style.background=hex;
+          b.title='Usar este color'; b.setAttribute('aria-label','Color '+hex);
+          b.onclick=function(){ ponerColor(hex); };
+          cont.appendChild(b);
+        });
+        document.getElementById('ayuda-col').style.display='';
+        ponerColor(pal[0]);
+      }
+      guardarBorrador();
+    };
+    img.src=fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+
+/* ── paso 2: plantel ── */
+var PUESTOS=['armador','opuesto','punta','central','libero','líbero','receptor'];
+function leerPlantel(){
+  var txt=document.getElementById('f-plantel').value;
+  var lineas=txt.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+  if(!lineas.length){ alertaCampo('f-plantel'); return; }
+  var nuevos=[];
+  lineas.forEach(function(l){
+    var partes=l.split(/[,;\t]+|\s{2,}|\s/).map(function(p){ return p.trim(); }).filter(Boolean);
+    if(!partes.length) return;
+    var num=null, i=0;
+    if(/^\d{1,2}$/.test(partes[0])){ num=parseInt(partes[0],10); i=1; }
+    var puesto='';
+    for(var k=partes.length-1;k>=i;k--){
+      if(PUESTOS.indexOf(partes[k].toLowerCase())>=0){ puesto=partes[k]; partes.splice(k,1); break; }
+    }
+    var resto=partes.slice(i);
+    if(!resto.length) return;
+    var ap=resto[0]||'', nom=resto.slice(1).join(' ');
+    if(num===null) return;
+    nuevos.push({num:num, ap:ap.toUpperCase(), nombre:nom, pos:puesto.toUpperCase()});
+  });
+  if(!nuevos.length){
+    avisar('No pude leer ningún jugador. Fijate que cada línea empiece con el número.');
+    return;
+  }
+  CLUB.jugadores = nuevos.sort(function(a,b){ return a.num-b.num; });
+  pintarPlantel(); guardarBorrador();
+}
+function agregarJugador(){
+  var num=prompt('Número de camiseta'); if(!num) return;
+  var ap=prompt('Apellido')||''; var nom=prompt('Nombre')||''; var pos=prompt('Puesto')||'';
+  CLUB.jugadores.push({num:parseInt(num,10)||0, ap:ap.toUpperCase(), nombre:nom, pos:pos.toUpperCase()});
+  CLUB.jugadores.sort(function(a,b){ return a.num-b.num; });
+  pintarPlantel(); guardarBorrador();
+}
+function borrarJugador(i){ CLUB.jugadores.splice(i,1); pintarPlantel(); guardarBorrador(); }
+function pintarPlantel(){
+  var c=document.getElementById('lista-plantel');
+  if(!CLUB.jugadores.length){
+    c.innerHTML='<div class="vacio-msg">Todavía no cargaste jugadores. Pegá la lista arriba y tocá «Interpretar lista».</div>';
+    return;
+  }
+  c.innerHTML = CLUB.jugadores.map(function(j,i){
+    return '<div class="jug"><div class="cam">'+j.num+'</div><div class="txt"><b>'+esc(j.ap)+
+           (j.nombre?' <span style="font-weight:400">'+esc(j.nombre)+'</span>':'')+'</b>'+
+           '<span>'+(esc(j.pos)||'Sin puesto')+'</span></div>'+
+           '<button class="x" onclick="borrarJugador('+i+')" aria-label="Quitar jugador">×</button></div>';
+  }).join('');
+}
+
+/* ── paso 3: rivales ── */
+function leerRivales(){
+  var txt=document.getElementById('f-rivales').value;
+  var nombres=txt.split(/[\n,;]+/).map(function(t){ return t.trim(); }).filter(Boolean);
+  if(!nombres.length){ alertaCampo('f-rivales'); return; }
+  nombres.forEach(function(n){
+    if(CLUB.rivales.indexOf(n)<0) CLUB.rivales.push(n);
+  });
+  pintarRivales(); guardarBorrador();
+}
+function borrarRival(i){ CLUB.rivales.splice(i,1); pintarRivales(); guardarBorrador(); }
+function pintarRivales(){
+  var c=document.getElementById('lista-rivales');
+  c.innerHTML = CLUB.rivales.map(function(r,i){
+    return '<div class="riv">'+esc(r)+'<button onclick="borrarRival('+i+')" aria-label="Quitar equipo">×</button></div>';
+  }).join('');
+}
+
+/* ── final ── */
+function terminar(){
+  if(!CLUB.nombre){ ir(1); alertaCampo('f-nombre'); return; }
+  document.getElementById('r-nom').textContent = CLUB.nombre;
+  document.getElementById('r-sigla').textContent = CLUB.sigla || '—';
+  document.getElementById('r-jug').textContent = CLUB.jugadores.length;
+  document.getElementById('r-riv').textContent = CLUB.rivales.length;
+  document.getElementById('r-col').textContent = CLUB.color.toUpperCase();
+  document.getElementById('r-esc').innerHTML = CLUB.escudo ? '<img src="'+CLUB.escudo+'" alt="">' : '';
+  ir(4);
+}
+function guardar(){
+  var cfg = {
+    nombre: CLUB.nombre, sigla: CLUB.sigla, color: CLUB.color,
+    escudo: CLUB.escudo, jugadores: CLUB.jugadores, rivales: CLUB.rivales,
+    creado: new Date().toISOString()
+  };
+  var enviado=false;
+  if(typeof fbSet==='function'){                 /* si corre dentro de la app, va derecho */
+    try{ fbSet('club', cfg); enviado=true; }catch(e){}
+  }
+  try{ localStorage.setItem('club_config', JSON.stringify(cfg)); }catch(e){}
+  bajar('club.js', 'window.CLUB_CONFIG = '+JSON.stringify(cfg,null,2)+';');
+  avisar(enviado
+    ? 'Guardado. Ya podés empezar a usar la app.'
+    : 'Guardado en este dispositivo. Te bajé el archivo de configuración por las dudas.');
+}
+function bajar(nombre, texto){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([texto],{type:'text/javascript'}));
+  a.download=nombre; a.click(); URL.revokeObjectURL(a.href);
+}
+function avisar(t){
+  var d=document.getElementById('aviso-final');
+  if(d) d.innerHTML='<b>'+esc(t)+'</b>';
+}
+function esc(t){
+  return String(t==null?'':t).replace(/[&<>"]/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+
+/* ── arranque ── */
+(function(){
+  var z=document.getElementById('zona-esc'), f=document.getElementById('f-esc');
+  z.addEventListener('click', function(){ f.click(); });
+  z.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); f.click(); } });
+  f.addEventListener('change', function(){ cargarEscudo(this.files[0]); });
+  ['dragenter','dragover'].forEach(function(ev){
+    z.addEventListener(ev, function(e){ e.preventDefault(); z.classList.add('sobre'); });
+  });
+  ['dragleave','drop'].forEach(function(ev){
+    z.addEventListener(ev, function(e){ e.preventDefault(); z.classList.remove('sobre'); });
+  });
+  z.addEventListener('drop', function(e){ cargarEscudo(e.dataTransfer.files[0]); });
+
+  if(leerBorrador()){
+    document.getElementById('f-nombre').value = CLUB.nombre||'';
+    document.getElementById('f-sigla').value  = CLUB.sigla||'';
+    if(CLUB.escudo){
+      document.getElementById('prev-esc').innerHTML='<img src="'+CLUB.escudo+'" alt="">';
+      document.getElementById('prev-esc').classList.remove('vacio');
+      document.getElementById('m-esc').innerHTML='<img src="'+CLUB.escudo+'" alt="">';
+    }
+    ponerColor(CLUB.color||'#e8192c');
+    verIdentidad(); pintarPlantel(); pintarRivales();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía del Scout en Vivo — Cómo scoutear un partido</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF7F0; --paper-2:#F3ECDF; --ink:#1E2D36; --ink-soft:#4A5B66;
+    --court:#D2853A; --court-deep:#B96C24; --net:#27495B; --line:#E4DBC9; --green:#2E9E6B;
+    --display:'Bricolage Grotesque', system-ui, sans-serif; --body:'Inter', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.65;font-size:17px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:840px;margin:0 auto;padding:0 22px}
+  header.hero{background:linear-gradient(135deg,#E8B675 0%,var(--court) 45%,var(--court-deep) 100%);color:#fff;padding:46px 0 38px;border-bottom:3px solid var(--court-deep)}
+  header.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,44px);line-height:1.05;margin:0 0 10px}
+  header.hero p{font-size:clamp(15px,2.2vw,18px);max-width:50ch;margin:0;opacity:.95}
+  h2{font-family:var(--display);font-weight:800;font-size:23px;margin:34px 0 8px;padding-top:20px;border-top:2px solid var(--line);display:flex;gap:12px;align-items:{{RIVAL19}}ine}
+  h2 .n{color:var(--court);font-size:19px;font-variant-numeric:tabular-nums}
+  h3{font-family:var(--display);font-weight:700;font-size:17px;margin:20px 0 4px}
+  p{margin:10px 0}
+  .intro{background:var(--paper-2);border:1px solid var(--line);border-radius:14px;padding:8px 22px;margin:24px 0}
+  .key{display:inline-block;background:var(--net);color:#fff;font-family:var(--display);font-weight:700;font-size:13px;padding:1px 8px;border-radius:6px;white-space:nowrap}
+  .btn{display:inline-block;background:var(--paper-2);border:1px solid var(--line);border-radius:6px;padding:1px 8px;font-weight:600;font-size:14.5px}
+  .mono{font-family:'Barlow Condensed',ui-monospace,monospace;background:#1e2d36;color:#e9eef1;padding:2px 9px;border-radius:6px;font-weight:600;letter-spacing:.5px}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:15.5px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+  th{background:var(--paper-2);font-family:var(--display);font-weight:700}
+  tr:last-child td{border-bottom:0}
+  td.c{font-family:'Barlow Condensed',monospace;font-weight:700;color:var(--court-deep);white-space:nowrap}
+  .tip{background:#eef4f0;border:1px solid #cfe3d7;border-left:4px solid var(--green);border-radius:0 10px 10px 0;padding:10px 16px;margin:14px 0;font-size:15.5px}
+  .tip::before{content:"💡 "}
+  ol,ul{margin:10px 0;padding-left:22px}
+  li{margin:6px 0}
+  footer{margin:44px 0 30px;color:var(--ink-soft);font-size:13.5px;text-align:center;border-top:2px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <h1>Guía del Scout en Vivo</h1>
+  <p>Cómo scoutear un partido con tu sistema, paso a paso: desde cargar los equipos hasta exportar el partido.</p>
+</div></header>
+
+<div class="wrap">
+
+  <div class="intro">
+    <p>Esta guía explica cómo usar tu <strong>Scout en Vivo</strong> para cargar un partido en tiempo real. Está pensada para usar en una <strong>computadora con teclado completo</strong>, que es donde se tipea el partido. El scout lleva solo el marcador, las rotaciones, los cambios y el cierre de sets: vos te concentrás en cargar cada acción.</p>
+  </div>
+
+  <h2><span class="n">1</span> Antes de empezar: equipos y formación</h2>
+  <ol>
+    <li>Con el botón <span class="btn">Equipos</span> creás o editás los planteles (número, apellido, nombre y rol de cada jugador). También podés importar un equipo desde un archivo <span class="mono">.sq</span>.</li>
+    <li>Con el botón <span class="btn">Partido</span> / <span class="btn">Formación</span> cargás el <strong>seis inicial</strong> de cada equipo, el armador, el líbero y quién saca primero.</li>
+    <li>Confirmás con <span class="btn">Empezar</span> y ya podés tipear.</li>
+  </ol>
+
+  <h2><span class="n">2</span> El código de la jugada</h2>
+  <p>Cada acción se escribe como un <strong>código corto</strong>. Es la notación estándar del scouting de vóley, y se arma con hasta cuatro partes:</p>
+  <p style="text-align:center;font-size:19px;margin:18px 0"><span class="mono">equipo</span> + <span class="mono">número</span> + <span class="mono">gesto</span> + <span class="mono">evaluación</span></p>
+
+  <h3>Equipo</h3>
+  <p>Para el <strong>local</strong> escribís directamente el número (podés anteponer <span class="mono">*</span>). Para el <strong>visitante</strong>, empezás con <span class="mono">a</span>. Por ejemplo, <span class="mono">7#</span> es el local nº 7; <span class="mono">a7#</span> es el visitante nº 7.</p>
+
+  <h3>Gesto (qué hizo)</h3>
+  <table>
+    <tr><th>Letra</th><th>Gesto</th></tr>
+    <tr><td class="c">S</td><td>Saque</td></tr>
+    <tr><td class="c">R</td><td>Recepción</td></tr>
+    <tr><td class="c">A</td><td>Ataque</td></tr>
+    <tr><td class="c">B</td><td>Bloqueo</td></tr>
+    <tr><td class="c">D</td><td>Defensa</td></tr>
+    <tr><td class="c">E</td><td>Armado</td></tr>
+    <tr><td class="c">F</td><td>Freeball</td></tr>
+  </table>
+
+  <h3>Evaluación (cómo salió)</h3>
+  <table>
+    <tr><th>Signo</th><th>Significado</th></tr>
+    <tr><td class="c">#</td><td>Punto / perfecto (el mejor resultado)</td></tr>
+    <tr><td class="c">+</td><td>Positivo</td></tr>
+    <tr><td class="c">!</td><td>Insuficiente / justo</td></tr>
+    <tr><td class="c">/</td><td>Muy positivo o muy pobre, según el gesto</td></tr>
+    <tr><td class="c">-</td><td>Flojo</td></tr>
+    <tr><td class="c">=</td><td>Error</td></tr>
+  </table>
+  <p class="tip">El significado fino de cada signo cambia un poco según el gesto (no es lo mismo un saque <span class="mono">/</span> que un ataque <span class="mono">/</span>). Mientras escribís, el <strong>decodificador en vivo</strong> te muestra el código desarmado en palabras, así verificás que cargaste lo que querías.</p>
+
+  <h3>Ejemplos</h3>
+  <table>
+    <tr><th>Código</th><th>Qué significa</th></tr>
+    <tr><td class="c">6S#</td><td>Local nº 6, ace de saque (punto)</td></tr>
+    <tr><td class="c">a11A#</td><td>Visitante nº 11, remate ganador</td></tr>
+    <tr><td class="c">4A=</td><td>Local nº 4, error de ataque</td></tr>
+    <tr><td class="c">a8R-</td><td>Visitante nº 8, recepción floja</td></tr>
+    <tr><td class="c">5B#</td><td>Local nº 5, bloqueo punto</td></tr>
+  </table>
+  <p>Lo que no escribís, el sistema lo completa con tus valores por defecto. Y podés <strong>encadenar el saque y la recepción</strong> de una misma jugada en una sola línea con un punto, por ejemplo <span class="mono">5S.8#</span>.</p>
+
+  <h2><span class="n">3</span> Cargar en vivo (y el fin de jugada automático)</h2>
+  <ol>
+    <li>Escribís el código en la barra y apretás <span class="key">Enter</span>. La acción entra en la lista.</li>
+    <li>Si el código es <strong>terminal</strong>, el punto se asigna solo y la jugada se cierra — no hace falta marcar nada aparte. Son terminales: <strong>remate, saque o bloqueo con <span class="mono">#</span></strong>; el <strong>ataque bloqueado</strong> (<span class="mono">/</span>); y cualquier <strong>error <span class="mono">=</span></strong> (que da el punto al rival).</li>
+    <li>El marcador, la rotación y el sacador los lleva el sistema automáticamente.</li>
+  </ol>
+  <p class="tip">Los positivos que no son punto (armado <span class="mono">#</span>, defensa <span class="mono">#</span>, saque <span class="mono">+</span>, etc.) no cierran la jugada: la acción sigue. Si preferís cargar el punto a mano, podés usar los botones <span class="btn">Punto Local</span> / <span class="btn">Punto Visitante</span>, o apagar el fin de jugada automático en <span class="btn">Configuración</span>.</p>
+
+  <h2><span class="n">4</span> Cambios, tiempos y doble cambio</h2>
+  <ul>
+    <li>Cada equipo tiene sus botones <span class="btn">Tiempo</span> y <span class="btn">Cambio</span>.</li>
+    <li>En <span class="btn">Cambio</span> elegís quién sale (los 6 en cancha) y quién entra (el banco o el número).</li>
+    <li>Para el <strong>doble cambio</strong>: hacés el primero con <span class="btn">Confirmar y seguir</span> (la ventana queda abierta) y el segundo con <span class="btn">Confirmar</span>. El sistema controla el límite de cambios por set.</li>
+  </ul>
+
+  <h2><span class="n">5</span> Corregir sin romper nada</h2>
+  <p>Todo se puede arreglar. Estas son tus herramientas:</p>
+  <table>
+    <tr><th>Acción</th><th>Cómo</th></tr>
+    <tr><td>Reabrir el último punto para corregirlo</td><td><span class="key">Ctrl+A</span> o <span class="btn">Reabrir punto</span></td></tr>
+    <tr><td>Insertar un código en el medio de la lista</td><td>Seleccioná el código y apretá <span class="key">Insert</span></td></tr>
+    <tr><td>Editar un código</td><td>Doble clic sobre el código (o seleccionar + <span class="key">Enter</span>)</td></tr>
+    <tr><td>Corregir un valor <strong>en el lugar</strong></td><td>Poné el cursor sobre el valor (o seleccionalo) y apretá la tecla del valor nuevo: se reemplaza ahí mismo, sin saltar al final</td></tr>
+    <tr><td>Borrar un código</td><td>Seleccioná y apretá <span class="key">Delete</span>. Con <span class="key">Backspace</span> borrás rápido el último</td></tr>
+    <tr><td>Deshacer el último código</td><td><span class="key">Ctrl+Z</span> o <span class="btn">Deshacer código</span></td></tr>
+    <tr><td>Deshacer el punto entero</td><td><span class="key">Ctrl+Shift+Z</span> o <span class="btn">Deshacer punto</span></td></tr>
+    <tr><td>Buscar un código en la lista</td><td><span class="key">Ctrl+R</span> o <span class="btn">Buscar</span></td></tr>
+    <tr><td>Verificar coherencia</td><td><span class="key">Ctrl+V</span> o <span class="btn">Verificar</span></td></tr>
+  </table>
+  <p class="tip">Cuando reabrís un punto (Ctrl+A), los códigos de la jugada <strong>quedan en la lista</strong> con el último seleccionado, listos para editar. Corregís y volvés a cerrar la jugada normalmente.</p>
+  <p class="tip">Las teclas de <strong>evaluación</strong> (<span class="mono">#</span> <span class="mono">+</span> <span class="mono">!</span> …) y la tecla de <strong>adversario</strong> ahora insertan <strong>donde está el cursor</strong>, no al final. Ejemplo: en <span class="mono">4A+</span> seleccionás el <span class="mono">+</span>, apretás la tecla de <span class="mono">!</span> y queda <span class="mono">4A!</span>. En códigos compuestos podés meter la <span class="mono">a</span> del visitante justo en el medio, donde estás escribiendo.</p>
+
+  <h2><span class="n">6</span> Cierre de set y formación del set siguiente</h2>
+  <ol>
+    <li>Cuando un equipo llega a <strong>25 con 2 de diferencia</strong> (15 en el quinto set), al cerrarse ese punto el <strong>set se cierra solo</strong>.</li>
+    <li>Enseguida se abre <strong>sola</strong> la formación del set siguiente, y es <strong>obligatoria</strong>: el sistema propone el seis del set anterior, lo ajustás si hubo cambios y confirmás con <span class="btn">Empezar set</span>. No te deja seguir hasta cargar la formación.</li>
+    <li><strong>¿Amistoso?</strong> Si el partido ya terminó (un equipo ganó los sets) y querés seguir jugando, al cerrar el set final te pregunta si es un amistoso para arrancar otro set. También tenés el botón <span class="btn">Set amistoso</span>, que aparece cuando el partido está terminado.</li>
+  </ol>
+
+  <h2><span class="n">7</span> Modo entrenamiento (un solo equipo)</h2>
+  <p>Si vas a scoutear una <strong>práctica</strong> y no un partido con rival, activá el <strong>modo entrenamiento</strong> en <span class="btn">Configuración</span>. En ese modo cargás <strong>un solo equipo</strong>: todos los códigos se registran como <strong>locales</strong> (con <span class="mono">*</span>), aunque escribas la <span class="mono">a</span> o uses códigos compuestos. Así te concentrás en las acciones de tu equipo sin pensar en el lado.</p>
+
+  <h2><span class="n">8</span> Video en vivo con delay</h2>
+  <ol>
+    <li>En el celular que apunta a la cancha abrís la cámara (misma red / WiFi) y tocás <strong>Transmitir</strong>: te da un <strong>código de sala de 4 dígitos</strong>.</li>
+    <li>En el scout tocás el botón <span class="btn">Video delay</span> (el de la cámara, en dos líneas), escribís ese código y <span class="btn">Conectar</span>.</li>
+    <li>Podés atrasar el video con la barra de <strong>delay</strong> (0 a 25 s) y volver a ver el <strong>último punto</strong>.</li>
+    <li>Con <span class="btn">⧉ Acoplar</span> el video se achica a un costado y podés <strong>tipear y ver el video a la vez</strong>. Con <span class="btn">⛶ Grande</span> volvés a pantalla completa.</li>
+  </ol>
+  <p class="tip">Ojo: hay <strong>dos</strong> botones de video. <span class="btn">Video</span> es el visor de un video por archivo/URL (sincronización). <span class="btn">Video delay</span> (en dos líneas) es el de la <strong>cámara en vivo con delay</strong>, el que usa el código de sala.</p>
+
+  <h2><span class="n">9</span> Tablas y análisis en vivo</h2>
+  <p>Debajo de la lista de códigos, el título <span class="btn">▸ Tablas y análisis</span> despliega el análisis del partido en tiempo real: eficiencias por fundamento y los jugadores que más puntúan, para los dos equipos. Se va llenando con lo que vas cargando.</p>
+
+  <h2><span class="n">10</span> Guardar y exportar</h2>
+  <ul>
+    <li>El partido se guarda solo mientras cargás. Con <span class="btn">Partidos</span> ves y reabrís los partidos guardados.</li>
+    <li>Con <span class="btn">Exportar .dvw</span> generás el archivo del partido en formato estándar, para abrirlo o compartirlo con otras herramientas de análisis de vóley.</li>
+  </ul>
+
+  <h2><span class="n">11</span> Atajos de teclado (resumen)</h2>
+  <table>
+    <tr><th>Atajo</th><th>Para qué</th></tr>
+    <tr><td><span class="key">Enter</span></td><td>Cargar el código escrito</td></tr>
+    <tr><td><span class="key">Insert</span></td><td>Insertar un código antes del seleccionado</td></tr>
+    <tr><td><span class="key">Delete</span></td><td>Borrar el código seleccionado</td></tr>
+    <tr><td><span class="key">Backspace</span></td><td>Borrar rápido el último código</td></tr>
+    <tr><td><span class="key">Ctrl+Z</span></td><td>Deshacer el último código</td></tr>
+    <tr><td><span class="key">Ctrl+Shift+Z</span></td><td>Deshacer el punto entero</td></tr>
+    <tr><td><span class="key">Ctrl+A</span></td><td>Reabrir el último punto para corregir</td></tr>
+    <tr><td><span class="key">Ctrl+R</span></td><td>Buscar un código</td></tr>
+    <tr><td><span class="key">Ctrl+V</span></td><td>Verificar</td></tr>
+  </table>
+
+  <footer>
+    Guía del Scout en Vivo · para el cuerpo técnico · scouting en tiempo real
+  </footer>
+
+</div>
+<script src="lang.js"></script>
+</body>
+</html>

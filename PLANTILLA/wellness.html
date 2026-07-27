@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WELLNESS — {{CLUB_COMPLETO}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="datos_seguros.js"></script>
+<script src="firebase.js" onerror="void 0"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0a0f1a;--surface:#111827;--card:#0f1020;--card2:#151b2e;--border:rgba(255,255,255,.08);--b2:rgba(255,255,255,.13);
+    --text:#e2e8f0;--muted:#64748b;--mut2:#94a3b8;--green:#22c55e;--amber:#f59e0b;--orange:#f97316;--red:#ef4444;--acc:#2dd4bf;--accd:#14b8a6}
+  body{background:radial-gradient(1200px 600px at 50% -200px,rgba(45,212,191,.07),transparent),var(--bg);color:var(--text);
+    font-family:'Barlow Condensed',sans-serif;min-height:100vh;padding-bottom:60px}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+  .header{display:flex;align-items:center;gap:14px;padding:18px 0 6px}
+  .back-btn{color:var(--muted);text-decoration:none;font-size:13px;font-weight:700;letter-spacing:1px;white-space:nowrap}
+  .back-btn:hover{color:var(--text)}
+  .subtitle{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+  .header h1{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px}
+  .badge{background:rgba(45,212,191,.14);border:1px solid rgba(45,212,191,.32);color:var(--acc);padding:4px 12px;border-radius:20px;
+    font-size:11px;font-weight:700;letter-spacing:1px;margin-left:auto;white-space:nowrap}
+  .topline{height:3px;background:linear-gradient(90deg,var(--acc),transparent);border-radius:3px;margin:2px 0 16px}
+  .tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .tab{font-family:'Barlow Condensed';font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+    padding:9px 18px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--mut2);cursor:pointer}
+  .tab.on{background:rgba(45,212,191,.16);border-color:rgba(45,212,191,.45);color:var(--acc)}
+  .card{background:linear-gradient(180deg,var(--surface),var(--card));border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+  .card-ti{font-family:'Bebas Neue';font-size:19px;letter-spacing:1.5px;color:var(--text);display:flex;align-items:center;gap:9px;margin-bottom:4px}
+  .card-sub{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
+  label.fld{display:block;font-size:11px;color:var(--mut2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+  select,input[type=date]{width:100%;background:var(--card2);border:1px solid var(--b2);color:var(--text);border-radius:10px;
+    padding:11px 12px;font-family:'Barlow Condensed';font-size:15px;font-weight:600}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{flex:1;min-width:90px;text-align:center;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card2);
+    color:var(--mut2);font-weight:700;letter-spacing:.5px;cursor:pointer;font-size:14px;text-transform:uppercase}
+  .chip.on{background:rgba(45,212,191,.16);border-color:rgba(45,212,191,.45);color:var(--acc)}
+  .q{padding:14px 0;border-bottom:1px solid var(--border)}
+  .q:last-child{border-bottom:none}
+  .q-hd{display:flex;justify-content:space-between;align-items:{{RIVAL19}}ine;margin-bottom:9px;gap:10px}
+  .q-lb{font-size:16px;font-weight:600}.q-lb .ic{margin-right:7px}
+  .q-hint{font-size:11px;color:var(--muted)}
+  .q-val{font-family:'Bebas Neue';font-size:26px;line-height:1;min-width:34px;text-align:right}
+  input[type=range]{-webkit-appearance:none;width:100%;height:7px;border-radius:6px;background:var(--card2);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--acc);
+    border:3px solid #0a0f1a;cursor:pointer;box-shadow:0 0 0 1px var(--acc)}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--acc);border:3px solid #0a0f1a;cursor:pointer}
+  .scalemark{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px}
+  .btn{width:100%;padding:15px;border:none;border-radius:12px;background:linear-gradient(180deg,var(--acc),var(--accd));color:#07120f;
+    font-family:'Bebas Neue';font-size:20px;letter-spacing:2px;cursor:pointer;margin-top:6px}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .result{text-align:center;padding:8px 0}
+  .result .big{font-family:'Bebas Neue';font-size:64px;line-height:1}
+  .result .fb{font-size:15px;font-weight:600;margin-top:4px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;text-align:right;padding:8px 6px;border-bottom:1px solid var(--b2);font-weight:700}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:right}
+  .pctcell{font-family:'Bebas Neue';font-size:20px}
+  .bar{height:6px;border-radius:4px;background:var(--card2);overflow:hidden;min-width:54px}
+  .bar i{display:block;height:100%}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .trend{font-size:12px;font-weight:700}
+  .muted{color:var(--muted)}.empty{color:var(--muted);text-align:center;padding:26px;font-size:14px}
+  .teamavg{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .teamavg .n{font-family:'Bebas Neue';font-size:40px;line-height:1}
+  .note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px}
+  @media(max-width:560px){.row2{grid-template-columns:1fr}.result .big{font-size:52px}}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <a href="index.html" class="back-btn">← Hub</a>
+    <div><div class="subtitle">{{CLUB_COMPLETO}}</div><h1>WELLNESS</h1></div>
+    <div class="badge">Estado físico diario</div>
+  </div>
+  <div class="topline"></div>
+
+  <div class="tabs">
+    <button class="tab on" id="tab-mi" onclick="showTab('mi')">Mi día</button>
+    <button class="tab" id="tab-eq" onclick="showTab('eq')">Equipo</button>
+  </div>
+
+  <!-- ====== MI DÍA ====== -->
+  <div id="view-mi">
+    <div class="card">
+      <div class="card-ti">📝 Encuesta del día</div>
+      <div class="card-sub">Respondé del 1 al 10 cómo te sentís hoy</div>
+      <div class="row2" style="margin-bottom:16px">
+        <div><label class="fld">Jugador</label><select id="selJug"></select></div>
+        <div><label class="fld">Fecha</label><input type="date" id="selFecha"></div>
+      </div>
+      <label class="fld">¿Después de qué?</label>
+      <div class="chips" id="chipsSes" style="margin-bottom:6px">
+        <div class="chip on" data-s="Pelota">🏐 Pelota</div>
+        <div class="chip" data-s="Pesas">🏋️ Pesas</div>
+        <div class="chip" data-s="Partido">🆚 Partido</div>
+      </div>
+      <div id="questions"></div>
+      <button class="btn" id="btnSave" onclick="saveSurvey()">GUARDAR</button>
+    </div>
+
+    <div class="card" id="cardResult" style="display:none">
+      <div class="result">
+        <div class="muted" style="font-size:11px;letter-spacing:2px;text-transform:uppercase">Tu wellness de hoy</div>
+        <div class="big" id="resPct">—</div>
+        <div class="fb" id="resFb"></div>
+        <div style="margin-top:12px"><a href="prep_fisica.html" style="color:var(--acc);font-size:13px;font-weight:700;text-decoration:none">Ver tu preparación física →</a></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-ti">📈 Tu historial</div>
+      <div class="card-sub">Cómo viene tu estado físico</div>
+      <div id="histOut"><div class="empty">Elegí tu nombre y cargá tu primera encuesta.</div></div>
+    </div>
+  </div>
+
+  <!-- ====== EQUIPO ====== -->
+  <div id="view-eq" style="display:none">
+    <div class="card">
+      <div class="card-ti">👥 Estado del equipo</div>
+      <div class="card-sub">Quién llega bien y quién necesita atención</div>
+      <div class="row2" style="margin-bottom:16px;max-width:420px">
+        <div><label class="fld">Día</label><input type="date" id="eqFecha"></div>
+        <div><label class="fld">Sesión</label><select id="eqSes">
+          <option value="">Todas</option><option>Pelota</option><option>Pesas</option><option>Partido</option></select></div>
+      </div>
+      <div class="teamavg" id="teamAvg"></div>
+      <div id="teamOut"><div class="empty">Sin respuestas cargadas todavía.</div></div>
+      <div class="note" id="teamNote"></div>
+    </div>
+  </div>
+</div>
+
+<script src="plantel_{{club}}.js" onerror="void 0"></script>
+<script>
+/* ============================================================================
+   CAPA DE DATOS  —  local + nube (Firebase) usando el mismo fbSet/fbGet que ya
+   usa el resto de la app (prep_fisica, baggerone, pizarrón).
+   - Guarda SIEMPRE en este dispositivo (offline) Y en la nube si firebase.js está.
+   - Al abrir: muestra lo local al instante y, cuando llega la nube, fusiona y
+     re-dibuja → así ves a TODO el equipo, no solo lo de este celular.
+   - Si firebase.js no estuviera disponible, sigue andando solo con lo local.
+   ========================================================================== */
+var WStore = {
+  KEY: 'wellness_naf_v1',
+  _cache: [],
+  _eid: function(e){ return e.num + '_' + e.date + '_' + e.sesion; },
+  _local: function(){ try { return JSON.parse(localStorage.getItem(this.KEY) || '[]'); } catch(e){ return []; } },
+  _writeLocal: function(a){ try { localStorage.setItem(this.KEY, JSON.stringify(a)); } catch(e){} },
+  _merge: function(a, b){                    // fusiona por id; gana el más nuevo (ts)
+    var m = {}, self = this;
+    a.concat(b).forEach(function(e){ var id = self._eid(e); if(!m[id] || (e.ts||0) >= (m[id].ts||0)) m[id] = e; });
+    return Object.keys(m).map(function(k){ return m[k]; });
+  },
+  init: function(cb){
+    this._cache = this._local();
+    if(cb) cb();
+    if(typeof fbGet !== 'undefined'){
+      var self = this;
+      fbGet('wellness', function(data){
+        if(!data) return;
+        var arr = [];
+        Object.keys(data).forEach(function(num){
+          var byKey = data[num]; if(!byKey || typeof byKey !== 'object') return;
+          Object.keys(byKey).forEach(function(k){ if(byKey[k]) arr.push(byKey[k]); });
+        });
+        self._cache = self._merge(self._cache, arr);
+        self._writeLocal(self._cache);
+        if(cb) cb();
+      });
+    }
+  },
+  save: function(entry){                     // upsert local + push a la nube
+    var a = this._cache.slice(), id = this._eid(entry), self = this;
+    var i = a.findIndex(function(e){ return self._eid(e) === id; });
+    if(i>=0) a[i]=entry; else a.push(entry);
+    this._cache = a; this._writeLocal(a);
+    if(typeof fbSet !== 'undefined') fbSet('wellness/' + entry.num + '/' + entry.date + '_' + entry.sesion, entry);
+    return entry;
+  },
+  listAll: function(){ return this._cache; },
+  listByPlayer: function(num){ return this._cache.filter(function(e){ return e.num===num; })
+                                   .sort(function(x,y){ return x.date<y.date?1:-1; }); }
+};
+
+/* ---- preguntas: 6 de readiness (10 = mejor) + 1 de carga (RPE) ---- */
+var QS = [
+  {k:'sueno', ic:'😴', lb:'Sueño / descanso',          hint:'10 = dormí excelente'},
+  {k:'energia',ic:'⚡', lb:'Energía / vitalidad',        hint:'10 = a full'},
+  {k:'piernas',ic:'🦵', lb:'Frescura muscular (piernas)',hint:'10 = sin dolor, frescas'},
+  {k:'cuerpo', ic:'💪', lb:'Estado general del cuerpo',  hint:'10 = impecable, sin molestias'},
+  {k:'animo',  ic:'🙂', lb:'Ánimo / motivación',         hint:'10 = muy motivado'},
+  {k:'estres', ic:'🧘', lb:'Calma / manejo del estrés',  hint:'10 = relajado, sin estrés'}
+];
+var RPE = {k:'rpe', ic:'🔥', lb:'Esfuerzo de la sesión (RPE)', hint:'10 = durísima · solo carga, no entra al %'};
+var READY_KEYS = QS.map(function(q){return q.k;});
+
+function colFor(p){ return p>=85?'var(--green)':p>=70?'#4ade80':p>=55?'var(--amber)':p<55?'var(--red)':'var(--mut2)'; }
+function feedback(p){
+  if(p>=85) return {t:'🟢 Óptimo — listo para carga alta.', c:'var(--green)'};
+  if(p>=70) return {t:'🟢 Bien — estado normal para entrenar.', c:'#4ade80'};
+  if(p>=55) return {t:'🟡 Precaución — monitorear, ajustar volumen si hace falta.', c:'var(--amber)'};
+  return       {t:'🔴 Alerta — posible fatiga, priorizar recuperación.', c:'var(--red)'};
+}
+function todayISO(){ var d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
+function roster(){ return (window.PLANTEL_{{CLUB}} && window.PLANTEL_{{CLUB}}.jugadores) || []; }
+function pname(j){ return (j.ap||'') + (j.nombre?' '+j.nombre.charAt(0)+'.':''); }
+
+/* ---- construir sliders ---- */
+function buildQuestions(){
+  var h='';
+  QS.concat([RPE]).forEach(function(q){
+    h+='<div class="q"><div class="q-hd"><div class="q-lb"><span class="ic">'+q.ic+'</span>'+q.lb
+      +'<div class="q-hint">'+q.hint+'</div></div><div class="q-val" id="v-'+q.k+'">5</div></div>'
+      +'<input type="range" min="1" max="10" value="5" id="r-'+q.k+'" oninput="onSlide(\''+q.k+'\')">'
+      +'<div class="scalemark"><span>1</span><span>5</span><span>10</span></div></div>';
+  });
+  document.getElementById('questions').innerHTML=h;
+}
+function onSlide(k){
+  var v=+document.getElementById('r-'+k).value;
+  var el=document.getElementById('v-'+k); el.textContent=v;
+  el.style.color = k==='rpe' ? 'var(--orange)' : colFor(v*10);
+}
+
+var curSes='Pelota';
+function bindChips(){
+  document.querySelectorAll('#chipsSes .chip').forEach(function(c){
+    c.onclick=function(){ document.querySelectorAll('#chipsSes .chip').forEach(function(x){x.classList.remove('on');});
+      c.classList.add('on'); curSes=c.getAttribute('data-s'); maybeLoadExisting(); };
+  });
+}
+
+/* si ya respondió hoy esa sesión, precargar para editar */
+function maybeLoadExisting(){
+  var num=+document.getElementById('selJug').value, date=document.getElementById('selFecha').value;
+  var ex=WStore.listAll().find(function(e){return e.num===num&&e.date===date&&e.sesion===curSes;});
+  QS.concat([RPE]).forEach(function(q){
+    var val = ex ? (q.k==='rpe'?ex.rpe:(ex.q&&ex.q[q.k])) : 5;
+    if(val==null) val=5;
+    document.getElementById('r-'+q.k).value=val; onSlide(q.k);
+  });
+}
+
+function saveSurvey(){
+  var sel=document.getElementById('selJug'); var num=+sel.value;
+  var j=roster().find(function(x){return x.num===num;}); if(!j){ alert('Elegí un jugador.'); return; }
+  var date=document.getElementById('selFecha').value||todayISO();
+  var q={}, sum=0;
+  READY_KEYS.forEach(function(k){ var v=+document.getElementById('r-'+k).value; q[k]=v; sum+=v; });
+  var rpe=+document.getElementById('r-rpe').value;
+  var pct=Math.round(sum/READY_KEYS.length*10);
+  WStore.save({num:num, ap:j.ap, nombre:j.nombre, pos:j.pos, date:date, sesion:curSes, q:q, rpe:rpe, pct:pct, ts:Date.now()});
+  var fb=feedback(pct);
+  document.getElementById('resPct').textContent=pct+'%'; document.getElementById('resPct').style.color=colFor(pct);
+  document.getElementById('resFb').textContent=fb.t; document.getElementById('resFb').style.color=fb.c;
+  document.getElementById('cardResult').style.display='block';
+  document.getElementById('cardResult').scrollIntoView({behavior:'smooth',block:'center'});
+  renderHist();
+}
+
+/* ---- historial del jugador ---- */
+function avg(arr){ return arr.length? arr.reduce(function(a,b){return a+b;},0)/arr.length : 0; }
+function renderHist(){
+  var num=+document.getElementById('selJug').value;
+  var rows=WStore.listByPlayer(num);
+  var out=document.getElementById('histOut');
+  if(!rows.length){ out.innerHTML='<div class="empty">Todavía no cargaste encuestas.</div>'; return; }
+  var prom=Math.round(avg(rows.map(function(r){return r.pct;})));
+  var h='<div class="teamavg"><div><div class="muted" style="font-size:10px;letter-spacing:1px;text-transform:uppercase">Tu promedio</div>'
+    +'<div class="n" style="color:'+colFor(prom)+'">'+prom+'%</div></div>'
+    +'<div class="muted" style="font-size:12px">Sobre '+rows.length+' registros</div></div>';
+  // Tira de tendencia: últimos 7 (viejo→nuevo) con flecha
+  var l7=rows.slice(0,7).reverse();
+  if(l7.length){
+    var trendTxt='';
+    if(l7.length>=2){ var dd=l7[l7.length-1].pct-l7[0].pct;
+      trendTxt = dd>=5?' · <span style="color:var(--green)">▲ +'+dd+'</span>' : dd<=-5?' · <span style="color:var(--red)">▼ '+dd+'</span>' : ' · <span style="color:var(--mut2)">→ estable</span>'; }
+    h+='<div style="margin-bottom:16px"><div class="muted" style="font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Tu tendencia (últimos '+l7.length+')'+trendTxt+'</div>'
+      +'<div style="display:flex;align-items:flex-end;gap:6px;height:70px">'
+      +l7.map(function(r){ var c=colFor(r.pct); return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end">'
+        +'<div style="font-size:9px;color:'+c+';font-weight:700">'+r.pct+'</div>'
+        +'<div style="width:100%;max-width:34px;height:'+Math.max(8,Math.round(r.pct*0.45))+'px;background:'+c+';border-radius:4px"></div>'
+        +'<div style="font-size:9px;color:#64748b">'+r.date.slice(5)+'</div></div>'; }).join('')
+      +'</div></div>';
+  }
+  h+='<table><thead><tr><th>Fecha</th><th>Sesión</th><th>RPE</th><th>Wellness</th><th style="min-width:64px">Nivel</th></tr></thead><tbody>';
+  rows.slice(0,16).forEach(function(r){
+    var c=colFor(r.pct);
+    h+='<tr><td>'+r.date.slice(5)+'</td><td class="muted">'+r.sesion+'</td>'
+      +'<td style="color:var(--orange);font-weight:700">'+r.rpe+'</td>'
+      +'<td class="pctcell" style="color:'+c+'">'+r.pct+'%</td>'
+      +'<td><div class="bar"><i style="width:'+r.pct+'%;background:'+c+'"></i></div></td></tr>';
+  });
+  h+='</tbody></table>';
+  out.innerHTML=h;
+}
+
+/* ---- tabla de equipo ---- */
+function renderTeam(){
+  var date=document.getElementById('eqFecha').value||todayISO();
+  var ses=document.getElementById('eqSes').value;
+  var all=WStore.listAll();
+  // promedio personal (todos los días) para calcular tendencia
+  var byNum={}; all.forEach(function(e){ (byNum[e.num]=byNum[e.num]||[]).push(e); });
+  // registros del día (uno por jugador: si hay varias sesiones, promedio o la filtrada)
+  var dayRows=[];
+  roster().forEach(function(j){
+    var es=all.filter(function(e){ return e.num===j.num && e.date===date && (!ses||e.sesion===ses); });
+    if(!es.length) return;
+    var pct=Math.round(avg(es.map(function(e){return e.pct;})));
+    var rpe=Math.round(avg(es.map(function(e){return e.rpe;})));
+    var prom=Math.round(avg((byNum[j.num]||[]).map(function(e){return e.pct;})));
+    dayRows.push({j:j, pct:pct, rpe:rpe, prom:prom, ses:es.map(function(e){return e.sesion;}).join(' · ')});
+  });
+  var out=document.getElementById('teamOut'), avgEl=document.getElementById('teamAvg'), note=document.getElementById('teamNote');
+  if(!dayRows.length){
+    out.innerHTML='<div class="empty">Nadie cargó la encuesta para este día todavía.</div>';
+    avgEl.innerHTML=''; note.textContent=''; return;
+  }
+  dayRows.sort(function(a,b){ return a.pct-b.pct; });            // peores primero (a quién mirar)
+  var tavg=Math.round(avg(dayRows.map(function(r){return r.pct;})));
+  var alerta=dayRows.filter(function(r){return r.pct<55;}).length;
+  avgEl.innerHTML='<div><div class="muted" style="font-size:10px;letter-spacing:1px;text-transform:uppercase">Promedio del equipo</div>'
+    +'<div class="n" style="color:'+colFor(tavg)+'">'+tavg+'%</div></div>'
+    +'<div class="muted" style="font-size:13px">'+dayRows.length+' respondieron'+(alerta?' · <span style="color:var(--red);font-weight:700">'+alerta+' en alerta</span>':'')+'</div>';
+  var h='<table><thead><tr><th>Jugador</th><th>Pos</th><th>RPE</th><th>vs prom</th><th>Wellness</th><th></th></tr></thead><tbody>';
+  dayRows.forEach(function(r){
+    var c=colFor(r.pct), diff=r.pct-r.prom;
+    var tr = diff<=-8?'<span class="trend" style="color:var(--red)">▼ '+diff+'</span>'
+           : diff>=8?'<span class="trend" style="color:var(--green)">▲ +'+diff+'</span>'
+           : '<span class="trend muted">≈</span>';
+    h+='<tr><td><span class="dot" style="background:'+c+'"></span><b>'+r.j.ap+'</b></td>'
+      +'<td class="muted">'+(POSAB[r.j.pos]||r.j.pos)+'</td>'
+      +'<td style="color:var(--orange);font-weight:700">'+r.rpe+'</td>'
+      +'<td>'+tr+'</td>'
+      +'<td class="pctcell" style="color:'+c+'">'+r.pct+'%</td>'
+      +'<td><div class="bar" style="min-width:70px"><i style="width:'+r.pct+'%;background:'+c+'"></i></div></td></tr>';
+  });
+  h+='</tbody></table>';
+  out.innerHTML=h;
+  note.innerHTML='Ordenado de menor a mayor wellness (a quién mirar primero). <b>vs prom</b> = hoy comparado con su propio promedio. '
+    +'RPE = qué tan exigente sintió la sesión (no entra al %).';
+}
+var POSAB={ARMADOR:'ARM',OPUESTO:'OP',CENTRAL:'CEN',PUNTA:'PUN',LIBERO:'LIB'};
+
+/* ---- tabs ---- */
+function showTab(t){
+  document.getElementById('view-mi').style.display = t==='mi'?'block':'none';
+  document.getElementById('view-eq').style.display = t==='eq'?'block':'none';
+  document.getElementById('tab-mi').classList.toggle('on',t==='mi');
+  document.getElementById('tab-eq').classList.toggle('on',t==='eq');
+  if(t==='eq') renderTeam();
+}
+
+/* ---- init ---- */
+(function init(){
+  var sel=document.getElementById('selJug');
+  var rs=roster();
+  if(rs.length){
+    sel.innerHTML=rs.map(function(j){return '<option value="'+j.num+'">#'+j.num+'  '+pname(j)+'</option>';}).join('');
+  } else {
+    sel.innerHTML='<option value="">(no se cargó el plantel)</option>';
+  }
+  document.getElementById('selFecha').value=todayISO();
+  document.getElementById('eqFecha').value=todayISO();
+  buildQuestions(); bindChips();
+  sel.onchange=function(){ renderHist(); maybeLoadExisting(); };
+  document.getElementById('selFecha').onchange=maybeLoadExisting;
+  document.getElementById('eqFecha').onchange=renderTeam;
+  document.getElementById('eqSes').onchange=renderTeam;
+  WStore.init(function(){                     // local primero; cuando llega la nube, vuelve a entrar y re-dibuja
+    renderHist(); maybeLoadExisting();
+    if(document.getElementById('view-eq').style.display!=='none') renderTeam();
+  });
+})();
+</script>
+<script src="lang.js" onerror="void 0"></script>
+<script src="onesignal_push.js" defer></script>
+</body></html>
+
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->

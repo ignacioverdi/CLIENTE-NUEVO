@@ -1,0 +1,48 @@
+name: Actualizar estadísticas de liga
+
+# Se dispara solo cuando:
+#  - se sube un partido nuevo (.dvw)           → push con cambios en *.dvw
+#  - todas las noches (red de seguridad)       → schedule
+#  - botón manual desde la pestaña Actions      → workflow_dispatch
+on:
+  push:
+    paths:
+      - '**/*.dvw'
+  schedule:
+    - cron: '0 5 * * *'      # 05:00 UTC ≈ 02:00 Argentina
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: liga-stats
+  cancel-in-progress: false
+
+jobs:
+  generar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bajar el repo
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Regenerar nla_stats.json
+        run: python gen_liga_stats.py
+
+      - name: Publicar si cambió
+        run: |
+          git config user.name  "VoleyIQ Bot"
+          git config user.email "actions@users.noreply.github.com"
+          if [ -n "$(git status --porcelain nla_stats.json)" ]; then
+            git add nla_stats.json
+            git commit -m "Auto: actualizar estadísticas de liga"
+            git push
+            echo "nla_stats.json actualizado y publicado."
+          else
+            echo "Sin cambios — no hay nada nuevo que publicar."
+          fi

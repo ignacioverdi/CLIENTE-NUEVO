@@ -1,0 +1,151 @@
+window.EJERCICIOS_DATA = {
+  "grupos": [
+    {"nombre":"Pecho","ejercicios":[
+      {"id":"EJ002","es":"Banco Plano","en":"Bench press","video":"https://www.youtube.com/watch?v=SCVCLChPQFY"},
+      {"id":"EJ003","es":"Banco Plano + Rechazo Escapular","en":"Bench press + Scapular rejection (floor)","video":"https://www.youtube.com/watch?v=bnBxIgwzGlQ"},
+      {"id":"EJ004","es":"Banco Plano + Flexiones alternadas con Medicine Ball","en":"Bench press + Push up alternated with Medicine Ball","video":"https://www.youtube.com/shorts/qLXTGH-oX9Q"},
+      {"id":"EJ005","es":"Banco Plano + Flexiones de Brazo con Peso","en":"Bench press + Push Up with Weight","video":"https://www.youtube.com/shorts/32AU7C6tJBA"},
+      {"id":"EJ006","es":"Banco Plano + Apertura con mancuerna","en":"Bench press + Chest Dumbbell Fly","video":"https://www.youtube.com/shorts/rk8YayRoTRQ"},
+      {"id":"EJ007","es":"Apertura con Mancuerna","en":"Chest Dumbbell Fly","video":"https://www.youtube.com/shorts/rk8YayRoTRQ"},
+      {"id":"EJ008","es":"Banco Inclinado","en":"Inclined Chest Press","video":"https://www.youtube.com/shorts/98HWfiRonkE"},
+      {"id":"EJ009","es":"Banco Inclinado + Apertura Inclinado","en":"Inclined Chest Press + Incline Chest Dumbbell Flies","video":"https://www.youtube.com/watch?v=JSDpq14vCZ8"},
+      {"id":"EJ010","es":"Apertura Inclinado con Mancuerna","en":"Incline Chest Dumbbell Flies","video":"https://www.youtube.com/watch?v=JSDpq14vCZ8"},
+      {"id":"EJ011","es":"Cruce con Cables","en":"Chest cable row","video":"https://www.youtube.com/shorts/tGXIQR89-JE"},
+      {"id":"EJ012","es":"Elevación con Mancuerna","en":"Chest Elevations","video":"https://www.youtube.com/shorts/H-S7vBdvaHY"}
+    ]},
+    {"nombre":"Espalda","ejercicios":[
+      {"id":"EJ013","es":"Dominadas Agarre Abierto","en":"Pull Ups - Open Grip","video":"https://www.youtube.com/shorts/eDP_OOhMTZ4"},
+      {"id":"EJ014","es":"Dominadas Agarre Supino (Cerrado)","en":"Pull Ups - Close Grip","video":"https://www.youtube.com/shorts/RxM160TCgtI"},
+      {"id":"EJ015","es":"Dominadas Agarre Neutral","en":"Pull Ups - Neutral Grip","video":"https://www.youtube.com/shorts/OXteyscbYkA"},
+      {"id":"EJ016","es":"Tirones de Espalda Agarre Abierto - Polea","en":"Lat Pull Down - Open Grip","video":"https://www.youtube.com/watch?v=JGeRYIZdojU"},
+      {"id":"EJ017","es":"Tirones de Espalda Supino (Cerrado) - Polea","en":"Lat Pull Down - Inverse Grip - Supino","video":"https://www.youtube.com/watch?v=Y2uznEZAmN0"},
+      {"id":"EJ018","es":"Tiron de Espalda Abierto + Cerrado - Polea","en":"Lat Pull Down - Open Grip + Close Grip","video":"https://www.youtube.com/watch?v=JGeRYIZdojU"},
+      {"id":"EJ019","es":"Remo Espalda  - Polea","en":"Back Cable Row","video":"https://www.youtube.com/shorts/qD1WZ5pSuvk"},
+      {"id":"EJ020","es":"Remo Espalda  Abierto - Maquina","en":"Back Seated High Row","video":"https://www.youtube.com/shorts/osAEJ8-vgeg"},
+      {"id":"EJ021","es":"Remo Abierto de Espalda Sentado Abierto + Cerrado","en":"Back Seated Row Open + Close","video":"https://www.youtube.com/shorts/osAEJ8-vgeg"},
+      {"id":"EJ022","es":"Serrucho con Mancuerna","en":"Dumbell Row","video":"https://www.youtube.com/shorts/yHqqGd0tXcw"},
+      {"id":"EJ023","es":"Barra T Inclinada","en":"Inclined T Bar Row for back","video":"https://www.youtube.com/shorts/cQkzbubSTSI"}
+    ]},
+    {"nombre":"Hombros","ejercicios":[
+      {"id":"EJ024","es":"Vuelta al Mundo","en":"Around the World - Shoulder","video":"https://www.youtube.com/shorts/kaZR4a52bog"},
+      {"id":"EJ025","es":"Vuelos Frontales con Disco","en":"Front Plate Raises","video":"https://www.youtube.com/watch?v=HN8HYJTOl8c"},
+      {"id":"EJ026","es":"Vuelos Frontales con Mancuerna","en":"Frontal Flies  (shoulder)","video":"https://www.youtube.com/shorts/HciAFZSN2Qo"},
+      {"id":"EJ027","es":"Vuelos posteriores","en":"Posterior Flies (shoulder)","video":"https://www.youtube.com/shorts/LsT-bR_zxLo"},
+      {"id":"EJ028","es":"Press Arnold","en":"Press Arnold","video":"https://www.youtube.com/shorts/g4GUrEFoBxY"},
+      {"id":"EJ029","es":"Press Arnold + Vuelos laterales","en":"Press Arnold + Lateral Flies","video":"https://www.youtube.com/shorts/g4GUrEFoBxY"},
+      {"id":"EJ030","es":"Press Arnold + Movimiento en 8","en":"Press Arnold + 8 movement w/lightweight","video":"https://www.youtube.com/shorts/lovlngy1RLQ"},
+      {"id":"EJ031","es":"Press Arnold + Golpe de Manos Altas con Medicine Ball","en":"press arnold + high pass with med. Ball","video":"https://www.youtube.com/shorts/OgzDXI1aH2Y"},
+      {"id":"EJ032","es":"Press de Hombros con Mancuerna","en":"Shoulder Press","video":"https://www.youtube.com/shorts/k6tzKisR3NY"},
+      {"id":"EJ033","es":"Press de Hombros + Tirar Medicine Ball vs Pared","en":"Shoulder press + medicine ball throw to floor","video":"https://www.youtube.com/shorts/99DLQtHP7jE"},
+      {"id":"EJ034","es":"Press de Hombros + Vuelta al Mundo","en":"Shoulder press + Around the World - Shoulder","video":"https://www.youtube.com/shorts/kaZR4a52bog"}
+    ]},
+    {"nombre":"Sentadilla","ejercicios":[
+      {"id":"EJ035","es":"Sentadilla Profunda","en":"Back Squat","video":"https://www.youtube.com/shorts/KkplGRvnRvU"},
+      {"id":"EJ036","es":"Sentadilla Explosiva","en":"Explosive Back Squats (using calves at the end)","video":"https://www.youtube.com/watch?v=1ZNZafq39IE"},
+      {"id":"EJ037","es":"Sentadilla con transferencia - Saltos desde sentado","en":"Back Squat + jump from seated","video":"https://www.youtube.com/shorts/ckOWNYFPHHk"},
+      {"id":"EJ038","es":"Sentadilla con transferencia + Estocadas Posteriores cruzadas","en":"Back Squat + Cross-Recerse Lunges","video":"https://www.youtube.com/shorts/RO4o7-TUBFg"},
+      {"id":"EJ039","es":"Sentadilla Frontal","en":"Front Squat","video":"https://www.youtube.com/shorts/QRaZFun3wW0"},
+      {"id":"EJ040","es":"Sentadilla Sumo con Mancuerna","en":"Sumo Squat with dumbell","video":"https://www.youtube.com/shorts/mlAi4_EvNnY"},
+      {"id":"EJ041","es":"Sentadilla Sumo + Subidas al Banco Lateral","en":"Sumo Squat + Box Lateral Step up","video":"https://www.youtube.com/shorts/mlAi4_EvNnY"},
+      {"id":"EJ042","es":"Sentadilla Bulgara con Mancuerna","en":"Bulgarian Squat","video":"https://www.youtube.com/watch?v=Fmjj7wFJWRE"},
+      {"id":"EJ043","es":"Sentadilla Bulgara con Salto","en":"Bulgarian Squat with jump","video":"https://www.youtube.com/shorts/W9Lh0CI9_oM"},
+      {"id":"EJ044","es":"Sentadilla Bulgara + Subidas al banco","en":"Bulgarian Squat + Box step up","video":"https://www.youtube.com/watch?v=Fmjj7wFJWRE"},
+      {"id":"EJ045","es":"Snatch con Mancuerna + Sentadilla Profunda","en":"Dumbbell Snatch + Squat","video":"https://www.youtube.com/watch?v=etK3OPjM3S4"}
+    ]},
+    {"nombre":"Potencia","ejercicios":[
+      {"id":"EJ046","es":"Cargada de parado","en":"Hang power clean","video":"https://www.youtube.com/watch?v=0aP3tgKZcHQ"},
+      {"id":"EJ047","es":"Cargada de parado con transferencia - Saltos al cajón","en":"Hang power Clean + box jump","video":"https://www.youtube.com/shorts/7EfeTsHZ5vk"},
+      {"id":"EJ048","es":"Cargada de parado con transferencia - Drop Jump","en":"Hang power clean + drop jump (low altitud)","video":"https://www.youtube.com/shorts/34mM55xrR3w"},
+      {"id":"EJ049","es":"Cargada de parado con transferencia - Desplazamiento de bloqueo + Salto al cajón","en":"Hang power clean + lateral shuffle and box jump","video":"https://www.youtube.com/shorts/r3h23H5yAtY"},
+      {"id":"EJ050","es":"Cargada a una mano con mancuerna","en":"Dumbbell One Arm Hang Power Clean","video":"https://www.youtube.com/shorts/IVIrE_x5FtE"},
+      {"id":"EJ051","es":"Split Jerk con Landmine - Barra","en":"Landmine Split Jerk","video":"https://www.youtube.com/shorts/qGlV2Duczv8"},
+      {"id":"EJ052","es":"Split Jerk con Mancuerna","en":"Dumbbell Split Jerk","video":"https://www.youtube.com/watch?v=KpE5v62Qnbk"},
+      {"id":"EJ053","es":"Hip Trust con barra","en":"Hip Trust with bar","video":"https://www.youtube.com/shorts/_i6qpcI1Nw4"},
+      {"id":"EJ054","es":"Saltos Skater","en":"Skater","video":"https://www.youtube.com/shorts/qM5jviFhw9U"}
+    ]},
+    {"nombre":"Pierna","ejercicios":[
+      {"id":"EJ055","es":"Estocada posterior cruzada","en":"Cross-Reverse Lunges","video":"https://www.youtube.com/shorts/RO4o7-TUBFg"},
+      {"id":"EJ056","es":"Estocada posterior cruzada con mancuerna","en":"Dumbbell Cross-Reverse Lunges","video":"https://www.youtube.com/watch?v=RvDcKx9KsD8"},
+      {"id":"EJ057","es":"Estocadas frontal con mancuerna","en":"Dumbell Lunge","video":"https://www.youtube.com/watch?v=lf4gJgKyLpI"},
+      {"id":"EJ058","es":"Subidas al banco - lateral","en":"Lateral Box Step-Ups","video":"https://www.youtube.com/watch?v=CjjkLo9rVik"},
+      {"id":"EJ059","es":"Prensa","en":"Leg Press","video":"https://www.youtube.com/shorts/EotSw18oR9w"},
+      {"id":"EJ060","es":"Camilla de Cuadriceps","en":"Leg Extensions","video":"https://www.youtube.com/shorts/uM86QE59Tgc"},
+      {"id":"EJ061","es":"Camilla de Isquitibiales","en":"Hamstring Curls","video":"https://www.youtube.com/shorts/_lgE0gPvbik"},
+      {"id":"EJ062","es":"Gemelos en Maquina","en":"Calf Raises Machine","video":"https://www.youtube.com/shorts/95itLfMBG40"}
+    ]},
+    {"nombre":"Brazos","ejercicios":[
+      {"id":"EJ063","es":"Biceps Martillo","en":"Biceps - Hammer Curl","video":"https://www.youtube.com/shorts/htsLuvNLJOk"},
+      {"id":"EJ064","es":"Biceps Invertido","en":"Biceps - Inverted Curl","video":"https://www.youtube.com/shorts/9S4ogTy247U"},
+      {"id":"EJ065","es":"Biceps Estricto","en":"Biceps Curl","video":"https://www.youtube.com/shorts/MKWBV29S6c0"},
+      {"id":"EJ066","es":"Biceps con Rotación","en":"Rotating Biceps Curl","video":"https://www.youtube.com/watch?v=axl-9Ur2Yz4"},
+      {"id":"EJ067","es":"Biceps con Rotación + Martillo","en":"Rotating Biceps Cur + Hammer","video":"https://www.youtube.com/shorts/htsLuvNLJOk"},
+      {"id":"EJ068","es":"Biceps Barra W","en":"Biceps W Bar (EZ)","video":"https://www.youtube.com/shorts/zta8JuQZC_A"},
+      {"id":"EJ069","es":"Triceps Trasnuca con Mancuerna","en":"Dumbbell Overhead Triceps Extension","video":"https://www.youtube.com/shorts/K3OIoke3W9g"},
+      {"id":"EJ070","es":"Triceps Polea Invertido","en":"Reverse Grip Triceps Pulldown","video":"https://www.youtube.com/shorts/B7QKOAilQkg"},
+      {"id":"EJ071","es":"Triceps Polea con Soga","en":"Rope Cable Triceps Pulldown","video":"https://www.youtube.com/watch?v=y6EdXBdL75A"},
+      {"id":"EJ072","es":"Triceps Polea","en":"Triceps pulldown","video":"https://www.youtube.com/shorts/A8WKFvXx24k"},
+      {"id":"EJ073","es":"Triceps Polea (Barra) + Invertido","en":"Triceps pulldown + Inverted","video":"https://www.youtube.com/shorts/A8WKFvXx24k"},
+      {"id":"EJ074","es":"Fondos","en":"Triceps Dips","video":"https://www.youtube.com/shorts/eicOUO9WaJc"}
+    ]},
+    {"nombre":"Abdominales","ejercicios":[
+      {"id":"EJ075","es":"Abdominales cortos con piernas en el aire","en":"Crunches crossed with legs in the air","video":"https://www.youtube.com/shorts/HA_g8SsFyT8"},
+      {"id":"EJ076","es":"Abdominales cortos","en":"Regular Crunches","video":"https://www.youtube.com/shorts/qXpYgvQ6_m4"},
+      {"id":"EJ077","es":"Abdominales sentado con Peso","en":"Sit Ups Crunches with Weight","video":"https://www.youtube.com/shorts/EkbhBticgY0"},
+      {"id":"EJ078","es":"Abdominales cortos laterales","en":"Lateral Crunches","video":"https://www.youtube.com/shorts/OiV1qiplFA8"},
+      {"id":"EJ079","es":"Abdominales bicicleta","en":"Bicicle Crunch","video":"https://www.youtube.com/watch?v=cbKIDZ_XyjY"},
+      {"id":"EJ080","es":"Abdominales Sentado con Giro y peso","en":"Sit Up Twist With Weight","video":"https://www.youtube.com/shorts/vtWm6WT-cQE"},
+      {"id":"EJ081","es":"Abdominales Estiro y Recojo","en":"Tuck Crunches / In-and-Outs","video":"https://www.youtube.com/shorts/YCsecXIjUoI"},
+      {"id":"EJ082","es":"Abdominales Twist Sovietico con peso","en":"Russian Twist With Weight","video":"https://www.youtube.com/watch?v=99T1EfpMwPA"},
+      {"id":"EJ083","es":"Abdominales Tijera","en":"Scissor Abs","video":"https://www.youtube.com/watch?v=Qwzy6CNU2C0"},
+      {"id":"EJ084","es":"Abdominales V alternados","en":"Alternate V-ups (abs)","video":"https://www.youtube.com/watch?v=dFVjNxRREKk"},
+      {"id":"EJ085","es":"Bicho Muerto con Peso","en":"Weighted Dead Bug","video":"https://www.youtube.com/watch?v=JJFSnqwlVv0"},
+      {"id":"EJ086","es":"Landmine Twist","en":"Landmine Twist","video":"https://www.youtube.com/watch?v=M93HfnAVIl8"},
+      {"id":"EJ087","es":"Press Paloff Isometrico","en":"Paloff Press Hold","video":"https://www.youtube.com/shorts/bnpqMNtaBIA"},
+      {"id":"EJ088","es":"Press Paloff con Rotación","en":"Paloff Press with Rotation","video":"https://www.youtube.com/shorts/fAlbGbaSn74"},
+      {"id":"EJ089","es":"Plancha Fontal","en":"Frontal Plank","video":"https://www.youtube.com/shorts/xe2MXatLTUw"},
+      {"id":"EJ090","es":"Plancha Frontal Superman","en":"Front Plank - Superman","video":"https://www.youtube.com/watch?v=uy9WZN-ktNc"},
+      {"id":"EJ091","es":"Plancha Frontal con 1 Pierna en el Aire","en":"Front Plank With 1 Leg Lifted","video":"https://www.youtube.com/watch?v=bOKeC3UwLpQ"},
+      {"id":"EJ092","es":"Plancha Frontal Dinámica - Twist","en":"DynamicTwist  Front Plank","video":"https://www.youtube.com/shorts/27c2F6-Flx0"},
+      {"id":"EJ093","es":"Planfha Frontal Dinámica - De Baja a Alta","en":"Dynamic Up and Down Front Plank","video":"https://www.youtube.com/shorts/XodY72f8oW0"},
+      {"id":"EJ094","es":"Plancha Lateral","en":"Side Plank Isometric","video":"https://www.youtube.com/shorts/BtM0a9x1F5o"},
+      {"id":"EJ095","es":"Plancha lateral con movimiento Arriba y Abajo","en":"Side Plank - Up and Down","video":"https://www.youtube.com/watch?v=_R389Jk0tIo"},
+      {"id":"EJ096","es":"Plancha Lateral con Rotación","en":"Side Plank with Rotation","video":"https://www.youtube.com/shorts/q8Qq2X8OIIc"},
+      {"id":"EJ097","es":"Plancha Copenhagen","en":"Copenhagen Plank","video":"https://www.youtube.com/watch?v=aDsaGBnvDQo"},
+      {"id":"EJ098","es":"Abdominales Rueda","en":"Abs Roll Out","video":"https://www.youtube.com/shorts/MinlHnG7j4k"}
+    ]},
+    {"nombre":"Espinales","ejercicios":[
+      {"id":"EJ099","es":"Espinales estrictos","en":"Floor Back Extensions - all in one","video":"https://www.youtube.com/watch?v=TlKJFHE_iXE"},
+      {"id":"EJ100","es":"Espinales isométricos","en":"Floor Back extensions isometric","video":"https://www.youtube.com/watch?v=OE3S4l4dd8s"},
+      {"id":"EJ101","es":"Espinales con bastón - Estiro y Recojo","en":"Floor Back Extensions - With Stick","video":"https://www.youtube.com/watch?v=GrJSOjHajMc"},
+      {"id":"EJ102","es":"Espinales alternados","en":"Floor Back Extensions - Alternating","video":"https://www.youtube.com/watch?v=eArIxPxxfKg"},
+      {"id":"EJ103","es":"Espinales W","en":"Floor Back Extensions - W Shape","video":"https://www.youtube.com/shorts/4K72dv6liRU"},
+      {"id":"EJ104","es":"Espinales Nado Corto","en":"Floor Back Extensions - Short Swimmers","video":"https://www.youtube.com/watch?v=RfgqyKdYPiQ"},
+      {"id":"EJ105","es":"Espinales con Rotación - Limpiaparabrizas","en":"Floor Back Rotations (Windshield)","video":"https://www.youtube.com/watch?v=Dx6HmbU9BU8"},
+      {"id":"EJ106","es":"Espinales Superman en Cuadrupedia","en":"Alternated Superman In 4 Legs","video":"https://www.youtube.com/watch?v=4hJegPW-E08"},
+      {"id":"EJ107","es":"Espinales en banco inclinado - Isometrico","en":"Incline Back Extension Isometric Hold","video":"https://www.youtube.com/shorts/q51uqcrMZm0"},
+      {"id":"EJ108","es":"Espinales en banco inclinado con peso","en":"Incline Back Extension","video":"https://www.youtube.com/shorts/Wpreb69h2fE"}
+    ]},
+    {"nombre":"Preventivos","ejercicios":[
+      {"id":"EJ109","es":"Hombro - Movimiento en 8","en":"Shoulder - 8 movement with light Weight","video":null},
+      {"id":"EJ110","es":"Hombro - Rotación Interna y Externa con banda","en":"Shoulder - Internal / External Rotation with band","video":"https://www.youtube.com/watch?v=sL7fvQ2DuGE"},
+      {"id":"EJ111","es":"Cadera - Puente de Cadera Isometric","en":"Glute Bridge Isometric","video":"https://www.youtube.com/watch?v=vtnpY_fYJ4M"},
+      {"id":"EJ112","es":"Espalda - Gato Contento / Gato Enojado","en":"Cat / Cow","video":"https://www.youtube.com/shorts/2of247Kt0tU"},
+      {"id":"EJ113","es":"Rodilla - Sentadilla Isometrica en Pared","en":"Isometric Wall Squat","video":"https://www.youtube.com/shorts/X5BqpoNzee0"},
+      {"id":"EJ114","es":"Rodilla - Sentadilla Española","en":"Spanish Squat","video":"https://www.youtube.com/shorts/wT4DjGCFmXU"},
+      {"id":"EJ115","es":"Tobillo - Mobilidad con Banda en Posición Repartida","en":"Ankle Mobility with band","video":"https://www.youtube.com/shorts/5jgUBrI-CpM"},
+      {"id":"EJ116","es":"Cadera - Mobilidad 90-90 con elevación","en":"Hip - Hip Mobility 90-90 with elevation","video":"https://www.youtube.com/watch?v=q6bwyJgxy0I"},
+      {"id":"EJ117","es":"Completo - Gran Estiramiento con Rotación","en":"Greatest Streach with Thoracic Rotation","video":"https://www.youtube.com/shorts/XRQ-PFEhJns"},
+      {"id":"EJ118","es":"Camilla de Cuadriceps Exentrica","en":"Leg Extension Machine – Eccentric Quadriceps","video":"https://www.youtube.com/shorts/hxh_PU1gPX0"},
+      {"id":"EJ119","es":"Camilla de Izquitibial - Exentrica","en":"Hamstring Curl Machine – Eccentric Hamstrings","video":"https://www.youtube.com/shorts/E-qWSh89Gvg"},
+      {"id":"EJ120","es":"Puente de cadera a 1 pierna","en":"Unilateral Hip Bridge (Glute Bridge)","video":"https://www.youtube.com/shorts/TjkSMXNzcJs"},
+      {"id":"EJ121","es":"Sentadilla dinamica en pared con Pelota","en":"Wall Squat with Exercise Ball (Dynamic)","video":"https://www.youtube.com/shorts/10FeS9MXCjw"},
+      {"id":"EJ122","es":"Equilibrio en bosu","en":"Single‑Leg Balance on Unstable Surface (BOSU)","video":"https://www.youtube.com/shorts/WRfWHHT7IWk"},
+      {"id":"EJ123","es":"Core - Bicho Muerto Isometrico","en":"Isometric Dead Bug","video":null},
+      {"id":"EJ124","es":"Espalda Baja - Espinales 45° Isometrico","en":"Isometric Back Extensions 45°","video":"https://www.youtube.com/shorts/Le1Mm006LM8"}
+    ]}
+  ]
+};
+
+/* © 2025-2026 Ignacio Verdi · Software propietario — Todos los derechos reservados
+   Catálogo de ejercicios de preparación física: 123 ejercicios en 10 grupos
+   musculares, con nombre en español e inglés y video de referencia. */

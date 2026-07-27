@@ -1,0 +1,30 @@
+{
+  "rules": {
+    "clubes": {
+      "$club": {
+        ".read":  "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()",
+        ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && root.child('clubes').child($club).child('roles').child(auth.uid).val() != 'player'",
+
+        "usuarios": {
+          ".write": "auth != null && (root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() || !root.child('clubes').child($club).child('usuarios').exists())"
+        },
+        "roles": {
+          ".write": "auth != null && (root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() || !root.child('clubes').child($club).child('usuarios').exists())"
+        },
+        "jugador_num": {
+          ".write": "auth != null && (root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() || !root.child('clubes').child($club).child('usuarios').exists())"
+        },
+
+        "pesos":     { "$k":   { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $k.beginsWith('prep_' + root.child('clubes').child($club).child('jugador_num').child(auth.uid).val() + '_')" } },
+        "obs":       { "$k":   { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $k.beginsWith('prep_obs_' + root.child('clubes').child($club).child('jugador_num').child(auth.uid).val() + '_')" } },
+        "rm":        { "$k":   { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $k.beginsWith('prep_rm_' + root.child('clubes').child($club).child('jugador_num').child(auth.uid).val() + '_')" } },
+        "wellness":  { "$num": { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $num === root.child('clubes').child($club).child('jugador_num').child(auth.uid).val()" } },
+        "prep_hist": { "$num": { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $num === root.child('clubes').child($club).child('jugador_num').child(auth.uid).val()" } },
+        "notas":     { "$num": { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $num === root.child('clubes').child($club).child('jugador_num').child(auth.uid).val()" } },
+
+        "video_salas":  { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()" },
+        "video_signal": { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()" }
+      }
+    }
+  }
+}

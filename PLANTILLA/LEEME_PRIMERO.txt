@@ -1,0 +1,6 @@
+SISTEMA {{CLUB_COMPLETO}} - CARPETA DE TRABAJO
+1. Pone los .dvw en "DVW {{CLUB}} 2026"
+2. (Opcional) videos + fixture en videos_{{club}}.xlsx
+3. DOBLE-CLIC en correr_{{club}}.bat (mira el CHEQUEO DE POSICIONES)
+4. Subi a GitHub ({{CLUB_REPO}}): liga_data.js, {{club}}_stats_table.html, datos_partidos.js, videos.js, proximo_rival.js
+5. Entra a Vercel. El sistema acumula y detecta armadores/liberos solo.

@@ -1,0 +1,1 @@
+window.RECEPCION_RIVAL_DATA={};

@@ -1,0 +1,44 @@
+# ============================================================================
+#  .gitignore — KIT DE CLIENTES
+#  ----------------------------------------------------------------------------
+#  Este repo guarda la FÁBRICA: el generador, la plantilla y las herramientas.
+#  No guarda ni las claves ni los datos de los clientes.
+# ============================================================================
+
+# ── NUNCA: claves y llaves ──────────────────────────────────────────────────
+CLAVES.txt
+claves.txt
+LLAVE.txt
+*.key
+
+# ── Datos de los clientes ───────────────────────────────────────────────────
+# Cada cliente tiene su propio repo. Acá pesarían 86 MB y traen datos
+# de gente real: planteles, partidos, fotos.
+CLUBES/
+
+# ── Propio de esta computadora ──────────────────────────────────────────────
+# ORIGEN.txt guarda la ruta de TU máquina: en otra PC no sirve y molesta.
+ORIGEN.txt
+__pycache__/
+*.pyc
+
+# ── Temporales y respaldos de los scripts ───────────────────────────────────
+*.antes
+*.enc
+diagnostico.txt
+*.log
+Thumbs.db
+desktop.ini
+
+# ── Videos y archivos pesados sueltos ───────────────────────────────────────
+*.mp4
+*.mov
+*.zip
+
+# ============================================================================
+#  SÍ se sube:
+#    · generar_plantilla.py, crear_cliente.py, colores_escudo.py y los .bat
+#    · MARCA.txt          (la configuración, sin contraseñas)
+#    · PLANTILLA/         (el molde que se lleva cada cliente)
+#    · EXTRAS/            (las pantallas propias del producto)
+# ============================================================================

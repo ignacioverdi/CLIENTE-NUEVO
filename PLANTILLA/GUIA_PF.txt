@@ -1,0 +1,53 @@
+🏋️ GUÍA DEL PREPARADOR FÍSICO
+Cómo cargar las rutinas en el sistema — paso a paso
+> Tu trabajo en el sistema es **uno solo**: armar la rutina de cada jugador.
+> Cuando la guardás, el jugador la ve solo en su teléfono. Listo.
+---
+1) ENTRAR AL SISTEMA
+Abrí la página del equipo. https://{{DOMINIO}}/
+Tocá "Ingresar".
+En la lista, elegí 🏋️ Preparador Físico (PF).
+Marcá el PIN: 0 0 0 0 → tocá ENTRAR.
+✅ Entrás directo a la pantalla "Armar Rutinas". Ahí hacés todo.
+---
+2) ELEGIR A QUIÉN Y CUÁNDO
+Arriba, en Jugador, elegí el jugador.
+En Mes de uso, elegí el mes (ej: Junio 2026).
+Tocá Cargar.
+> Si ese jugador ya tenía una rutina ese mes, aparece para seguir editándola.
+> Si no tenía, arranca vacía.
+---
+3) ARMAR LA RUTINA (3 pasos que se repiten)
+Pensalo como una caja con cajones:
+🗓️ DÍA → 📦 BLOQUE → 🏋️ EJERCICIO
+Paso A — Agregá un DÍA
+Tocá "+ Agregar día / sesión".
+Ponele nombre (ej: Día 1, Lunes, Tren inferior).
+Paso B — Agregá un BLOQUE dentro del día
+Tocá "+ Bloque".
+Elegí el tipo (Entrada en calor, Fuerza Inferior, Potencia, Core, etc.).
+Paso C — Agregá EJERCICIOS dentro del bloque
+Tocá "+ Ejercicio".
+Elegí el ejercicio de la lista (ya están todos cargados con su video).
+Completá: Series · Reps · Descanso · Nota (la nota es opcional).
+🔁 Repetí A–B–C las veces que necesites: más bloques en el día, más días en el mes.
+---
+4) GUARDAR
+Cuando terminaste, tocá 💾 GUARDAR RUTINA.
+✅ Eso la sube a la nube. El jugador la ve al instante en su teléfono.
+> ⚠️ Si cerrás sin guardar, te avisa. **Siempre guardá antes de salir.**
+---
+5) EDITAR UNA RUTINA MÁS ADELANTE
+Elegí el mismo Jugador + mismo Mes → Cargar.
+Cambiá lo que quieras (agregá, sacá, modificá pesos/series).
+GUARDAR RUTINA de nuevo.
+---
+¿DÓNDE VE EL JUGADOR LO QUE CARGASTE?
+Lugar	Qué ve
+Preparación Física	Su rutina del mes, individual. Ahí anota el peso que levanta en cada serie.
+Pizarrón	La rutina del día de todo el equipo (vista de pizarra). También puede anotar pesos ahí.
+Los pesos que carga el jugador se guardan solos y quedan sincronizados en los dos lados.
+---
+✅ RESUMEN EN 6 PALABRAS
+Entrar (0000) → Elegir → Armar → Guardar.
+Cualquier duda, preguntale al asistente 🏐 (el botón de chat abajo a la derecha): "¿Cómo armo una rutina?"

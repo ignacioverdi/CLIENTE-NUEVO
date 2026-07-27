@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Escudos — {{CLUB_COMPLETO}}</title>
+<style>
+:root{--bg:#0d1017;--sur:#141922;--card:#1a2029;--card2:#212936;--b:#2a3441;--b2:#38445a;
+      --txt:#e8edf5;--mut:#8b97ab;--dim:#5f6b7f;--ok:#3ddc84;--bad:#ff5f6d;--warn:#e6a743}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+.top{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--sur);border-bottom:1px solid var(--b)}
+.top h1{margin:0;font-size:15px;letter-spacing:1.5px;text-transform:uppercase}
+.crece{flex:1}
+#estado{font-size:12px;color:var(--dim)}
+.wrap{max-width:860px;margin:0 auto;padding:24px 20px 70px}
+.aviso{background:var(--card);border:1px solid var(--b);border-left:3px solid var(--warn);
+       border-radius:10px;padding:15px 17px;margin-bottom:24px;font-size:13.5px;color:var(--mut);line-height:1.6}
+.aviso b{color:var(--txt)}
+.grilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.eq{background:var(--card);border:1px solid var(--b);border-radius:12px;padding:16px 12px;text-align:center;
+    transition:.15s;position:relative}
+.eq:hover{border-color:var(--b2)}
+.eq.propio{border-color:var(--ok)}
+.marco{width:88px;height:88px;margin:0 auto 10px;border-radius:12px;background:var(--card2);
+       border:1px dashed var(--b2);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.marco img{max-width:100%;max-height:100%;object-fit:contain}
+.mono{font-size:24px;font-weight:800;letter-spacing:1px;color:var(--dim)}
+.nom{font-size:13px;font-weight:700;margin-bottom:3px}
+.tag{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ok)}
+.acc{margin-top:10px;display:flex;gap:6px;justify-content:center}
+button{background:var(--card2);border:1px solid var(--b2);color:var(--txt);border-radius:7px;
+       padding:6px 11px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+button:hover{border-color:var(--ok)}
+button.quitar{color:var(--dim)}
+button.quitar:hover{border-color:var(--bad);color:var(--bad)}
+input[type=file]{display:none}
+.pie{margin-top:28px;padding-top:18px;border-top:1px solid var(--b);color:var(--dim);font-size:12.5px;line-height:1.7}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>Escudos</h1>
+  <span style="color:var(--mut);font-size:12px">{{CLUB_COMPLETO}}</span>
+  <div class="crece"></div>
+  <span id="estado"></span>
+</div>
+
+<div class="wrap">
+  <div class="aviso">
+    <b>Subí el escudo de tu club y el de cada rival.</b> Aparecen en el calendario, en el
+    plan de partido y en las tablas.<br><br>
+    Sirve cualquier imagen: PNG, JPG o WEBP. Se achica sola, así que no importa que sea
+    grande — con que se vea bien alcanza. Lo ideal es un fondo transparente, pero no es
+    obligatorio.<br><br>
+    <b>No hace falta subir todos.</b> Al que le falte, se le muestran sus iniciales en un
+    recuadro. Nunca queda roto.
+  </div>
+
+  <div class="grilla" id="grilla"></div>
+
+  <div class="pie">
+    Los escudos quedan guardados en tu base, no en archivos: cualquiera del equipo los ve
+    sin que tengas que subir nada a ningún lado.<br>
+    Si cambiás uno, se actualiza en todas las pantallas al recargar.
+  </div>
+</div>
+
+<input type="file" id="selector" accept="image/*">
+
+<script src="datos_seguros.js" onerror="void 0"></script>
+<script src="firebase.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   Los escudos se guardan en Firebase, en el nodo 'escudos', como imagen
+   reducida. No van a la carpeta escudos/ del repo: la idea es que el cliente
+   no tenga que tocar archivos ni subir nada a GitHub.
+
+   Antes de guardar se achican a 128 px y se pasan a PNG. Un escudo queda en
+   unos 10-20 KB, así que entran de sobra y cargan al instante.
+   ══════════════════════════════════════════════════════════════════════════ */
+var LADO = 128;
+var EQUIPOS = [
+  { id:'{{club}}',   nombre:'{{CLUB_COMPLETO}}', propio:true },
+  { id:'{{RIVAL1}}', nombre:'{{RIVAL1}}' },
+  { id:'{{RIVAL2}}', nombre:'{{RIVAL2}}' },
+  { id:'{{RIVAL3}}', nombre:'{{RIVAL3}}' },
+  { id:'{{RIVAL4}}', nombre:'{{RIVAL4}}' },
+  { id:'{{RIVAL5}}', nombre:'{{RIVAL5}}' },
+  { id:'{{RIVAL6}}', nombre:'{{RIVAL6}}' },
+  { id:'{{RIVAL7}}', nombre:'{{RIVAL7}}' }
+];
+var NUBE = {}, DESTINO = null;
+
+function estado(t,c){ var e=document.getElementById('estado'); e.textContent=t||''; e.style.color=c||'var(--dim)'; }
+function iniciales(n){
+  var p = String(n||'').replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ ]/g,' ').trim().split(/\s+/);
+  if(p.length >= 2) return (p[0][0] + p[1][0]).toUpperCase();
+  return String(n||'??').slice(0,3).toUpperCase();
+}
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function pintar(){
+  var h = '';
+  EQUIPOS.forEach(function(e, i){
+    if(!e.id || e.id.indexOf('{{') === 0) return;      /* rival sin cargar */
+    var img = NUBE[e.id];
+    h += '<div class="eq' + (e.propio ? ' propio' : '') + '">'
+       + '<div class="marco">'
+       + (img ? '<img src="' + img + '" alt="">' : '<span class="mono">' + iniciales(e.nombre) + '</span>')
+       + '</div>'
+       + '<div class="nom">' + esc(e.nombre) + '</div>'
+       + (e.propio ? '<div class="tag">tu club</div>' : '')
+       + '<div class="acc">'
+       + '<button onclick="elegir(' + i + ')">' + (img ? 'Cambiar' : 'Subir') + '</button>'
+       + (img ? '<button class="quitar" onclick="quitar(\'' + e.id + '\')">Quitar</button>' : '')
+       + '</div></div>';
+  });
+  document.getElementById('grilla').innerHTML = h;
+}
+
+function elegir(i){
+  DESTINO = EQUIPOS[i];
+  var s = document.getElementById('selector');
+  s.value = '';
+  s.click();
+}
+
+document.getElementById('selector').addEventListener('change', function(ev){
+  var f = ev.target.files && ev.target.files[0];
+  if(!f || !DESTINO) return;
+  estado('procesando…');
+  var lector = new FileReader();
+  lector.onload = function(){
+    var im = new Image();
+    im.onload = function(){
+      /* Se dibuja centrado en un cuadrado, sin deformar. */
+      var c = document.createElement('canvas');
+      c.width = c.height = LADO;
+      var x = c.getContext('2d');
+      var k = Math.min(LADO / im.width, LADO / im.height);
+      var w = im.width * k, alto = im.height * k;
+      x.drawImage(im, (LADO - w) / 2, (LADO - alto) / 2, w, alto);
+      var dato = c.toDataURL('image/png');
+      guardar(DESTINO.id, dato);
+    };
+    im.onerror = function(){ estado('no pude leer esa imagen', 'var(--bad)'); };
+    im.src = lector.result;
+  };
+  lector.onerror = function(){ estado('no pude abrir el archivo', 'var(--bad)'); };
+  lector.readAsDataURL(f);
+});
+
+function guardar(id, dato){
+  try{
+    fbSet('escudos/' + id, dato);
+    NUBE[id] = dato;
+    pintar();
+    estado('guardado ✓', 'var(--ok)');
+    setTimeout(function(){ estado(''); }, 2200);
+  }catch(e){
+    estado('no pude guardar', 'var(--bad)');
+  }
+}
+function quitar(id){
+  if(!confirm('¿Sacar este escudo?\n\nVan a volver a mostrarse las iniciales.')) return;
+  try{
+    fbSet('escudos/' + id, null);
+    delete NUBE[id];
+    pintar();
+    estado('quitado', 'var(--dim)');
+  }catch(e){ estado('no pude quitarlo', 'var(--bad)'); }
+}
+
+function arrancar(){
+  pintar();
+  if(typeof fbGet !== 'function'){ estado('sin conexión'); return; }
+  fbGet('escudos', function(d){ NUBE = d || {}; pintar(); });
+}
+if(typeof _fbListo !== 'undefined' && _fbListo && _fbListo.then) _fbListo.then(arrancar).catch(arrancar);
+else window.addEventListener('load', arrancar);
+</script>
+</body>
+</html>

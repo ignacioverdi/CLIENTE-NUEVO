@@ -1,0 +1,1 @@
+window.PP_BLOCK={};
