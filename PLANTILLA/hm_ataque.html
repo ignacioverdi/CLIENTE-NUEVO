@@ -46,7 +46,12 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 .ccard{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 12px;min-width:85px;cursor:pointer;transition:all .14s;text-align:center}
 .ccard:hover{border-color:rgba(255,255,255,.14)}
 .ccard.sel{border-color:rgba(232,25,44,.4);background:rgba(232,25,44,.06)}
-.court-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-bottom:18px}
+/* Cinco canchas repartidas en todo el ancho, todas del mismo tamaño.
+   Antes iban en una fila flexible con separación fija: sobraba espacio
+   a la derecha y quedaban desparejas. */
+.court-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-items:start;margin-bottom:18px}
+@media(max-width:1100px){.court-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.court-row{grid-template-columns:repeat(2,1fr)}}
 .court-block{text-align:center}
 .court-title{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;font-weight:800}
 .nodata{color:var(--muted);font-size:11px;padding:30px;text-align:center}
@@ -139,7 +144,19 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
   window.__TEAM_SLUG=equipo;
   return {
     rivals: td.rivals,
-    games: (td.games||td.rivals.map(function(r,i){return {idx:i,rival:r,date:''};})),
+    /* ══ Los partidos, en orden de preferencia ══════════════════════════
+       1) td.games, si el motor lo generó
+       2) td.matches, que es donde viven los partidos con su fecha
+       3) y como último recurso, la lista de rivales — que NO son partidos:
+          con eso el selector «Partido específico» mostraba nombres sueltos
+          sin fecha, y elegir uno no filtraba nada. */
+    games: (td.games
+            || (td.matches && td.matches.length
+                ? td.matches.map(function(m,i){
+                    return {idx:(m.i!=null?m.i:i), rival:m.rival||'', date:m.date||'', r:m.r||''};
+                  })
+                : null)
+            || td.rivals.map(function(r,i){return {idx:i,rival:r,date:''};})),
     combos: L.combos,
     players: td.atk
   };

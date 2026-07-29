@@ -1,0 +1,14 @@
+# ============================================================================
+#  requirements.txt — lo que hay que instalar para que corran los motores
+# ----------------------------------------------------------------------------
+#  En tu computadora estas librerías ya están instaladas hace tiempo, así que
+#  no se notan. Pero la máquina de la nube arranca limpia en cada corrida y
+#  necesita que se le diga qué hace falta.
+#
+#  El robot lee este archivo solo, antes de procesar. Si algún día un motor
+#  nuevo necesita otra cosa, se agrega acá y listo.
+# ============================================================================
+
+# Lee y escribe planillas de Excel.
+# Lo usan: generar_datos_entrenamientos.py, actualizar_gameplan.py, build_videos.py
+openpyxl

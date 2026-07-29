@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: liga-stats
+  group: motores-del-club   # el mismo que el robot de partidos: así nunca se pisan al publicar
   cancel-in-progress: false
 
 jobs:

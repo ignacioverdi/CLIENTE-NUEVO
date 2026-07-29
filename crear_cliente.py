@@ -12,6 +12,7 @@
 #  Uso:  python crear_cliente.py
 # ============================================================================
 import os, re, sys, json, shutil, subprocess, urllib.request, urllib.error, time, unicodedata, stat
+import base64
 
 def borrar_carpeta(ruta):
     """En Windows, .git tiene archivos de solo lectura que rmtree no puede borrar."""
@@ -57,6 +58,46 @@ def salir(msg):
     print('\n  [ERROR] ' + msg + '\n')
     input('  Enter para cerrar...')
     sys.exit(1)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  GUARDAR LOS SECRETOS DEL ROBOT EN GITHUB
+# ------------------------------------------------------------------------------
+#  GitHub no acepta secretos en claro: hay que cifrarlos con la llave pública del
+#  repositorio antes de mandarlos. Eso se hace con libsodium, que viene en la
+#  librería PyNaCl.
+#
+#  Si no está instalada, no pasa nada grave: el alta sigue y al final se muestran
+#  los valores para cargarlos a mano. Para que sea automático:
+#
+#      pip install pynacl
+# ══════════════════════════════════════════════════════════════════════════════
+def guardar_secretos(usuario, repo, gh_token, secretos):
+    try:
+        from nacl import encoding, public
+    except ImportError:
+        print('     falta la libreria PyNaCl (pip install pynacl)')
+        return False
+
+    base = 'https://api.github.com/repos/%s/%s/actions/secrets' % (usuario, repo)
+    llave = api(base + '/public-key', gh_token)
+    if not isinstance(llave, dict) or 'key' not in llave:
+        print('     no pude pedirle la llave publica al repositorio')
+        return False
+
+    caja = public.SealedBox(public.PublicKey(llave['key'].encode(), encoding.Base64Encoder()))
+    todo = True
+    for nombre, valor in secretos.items():
+        if not valor:
+            continue
+        cifrado = base64.b64encode(caja.encrypt(str(valor).encode())).decode()
+        r = api(base + '/' + nombre, gh_token,
+                {'encrypted_value': cifrado, 'key_id': llave['key_id']}, metodo='PUT')
+        if isinstance(r, dict) and '_error' in r:
+            print('     [aviso] no pude guardar', nombre)
+            todo = False
+    return todo
+
 
 def paso(n, texto):
     print('\n  [%d] %s' % (n, texto))
@@ -360,6 +401,58 @@ if ENT_MAIL and ENT_CLAVE and FB_URL and FB_KEY:
                     print('     [aviso] no pude escribir', ruta, ':', str(rr.get('_detalle',''))[:120])
             if ok:
                 print('     listo: ' + ENT_MAIL + ' entra como entrenador')
+
+            # ══════════════════════════════════════════════════════════════
+            #  EL ROBOT QUE PROCESA LOS PARTIDOS
+            # --------------------------------------------------------------
+            #  Es un usuario más del club, sin privilegios especiales. Lo
+            #  necesita el flujo de la nube: cuando el entrenador arrastra un
+            #  .dvw en la app, el robot lo levanta de la base, lo procesa y
+            #  publica. Si algún día hubiera que darlo de baja, se le corta el
+            #  acceso como a cualquier otro.
+            # ══════════════════════════════════════════════════════════════
+            paso(7, 'Creando el robot que procesa los partidos...')
+            import secrets as _sec
+            ROBOT_MAIL  = 'robot@' + REPO + '.app'
+            ROBOT_CLAVE = _sec.token_urlsafe(24)
+
+            r2 = idt('signUp', {'email': ROBOT_MAIL, 'password': ROBOT_CLAVE,
+                                'returnSecureToken': True})
+            if '_error' in r2 and 'EMAIL_EXISTS' in str(r2.get('_detalle', '')):
+                print('     el robot ya existia — no puedo saber su clave, lo salteo')
+                print('     (para rehacerlo: borralo en Firebase y volve a correr esto)')
+                r2 = {}
+            elif '_error' in r2:
+                print('     [aviso] no pude crear el robot:', str(r2.get('_detalle',''))[:140])
+                r2 = {}
+
+            ruid = r2.get('localId')
+            if ruid:
+                for ruta, valor in [('roles/' + ruid, 'coach'), ('usuarios/' + ruid, True)]:
+                    api('%s/clubes/%s/%s.json?auth=%s' % (base, CLUB_ID, ruta, token),
+                        '', valor, metodo='PUT', tipo='vercel')
+                print('     robot creado y habilitado')
+
+                # ── los secretos, para que el robot pueda entrar ──────────
+                #    GitHub los guarda cifrados: hay que sellarlos con la
+                #    llave pública del repositorio antes de mandarlos.
+                paso(8, 'Guardando los datos del robot en GitHub...')
+                secretos = {
+                    'FB_URL':      FB_URL,
+                    'FB_KEY':      FB_KEY,
+                    'ROBOT_MAIL':  ROBOT_MAIL,
+                    'ROBOT_CLAVE': ROBOT_CLAVE,
+                    'FB_REFERER':  sitio.rstrip('/'),
+                }
+                if guardar_secretos(GH_USER, REPO, GH_TOKEN, secretos):
+                    print('     listo: el robot ya puede procesar solo')
+                else:
+                    print()
+                    print('     [ATENCION] No pude cargar los secretos.')
+                    print('     Cargalos a mano en el repositorio del cliente:')
+                    print('       Settings > Secrets and variables > Actions')
+                    for k, v in secretos.items():
+                        print('       %-12s %s' % (k, v))
         else:
             print('     [aviso] no consegui la cuenta; habra que crearla a mano')
 else:
@@ -379,7 +472,12 @@ if ENT_MAIL:
     print('  Entra con: ' + ENT_MAIL)
 print('\n  Lo que sigue:')
 print('    1. Mandarle el link y los datos de acceso')
-print('    2. Que suba su primer partido')
+print('    2. Que arrastre su primer partido en "Subir partido"')
+print('       (el sistema lo procesa solo: no tiene que abrir ningun .bat)')
+print()
+print('  Para chequear que el robot quedo bien:')
+print('    Actions > Procesar partidos > Run workflow')
+print('    Tiene que decir "No hay partidos esperando."')
 if not FB_URL:
     print('\n  [pendiente] Cargá FIREBASE_URL y FIREBASE_KEY en CLAVES.txt')
     print('              y volvé a correr esto para que el login funcione.')

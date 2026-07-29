@@ -3,7 +3,7 @@
     "clubes": {
       "$club": {
         ".read":  "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()",
-        ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && root.child('clubes').child($club).child('roles').child(auth.uid).val() != 'player'",
+        ".write": false,
 
         "usuarios": {
           ".write": "auth != null && (root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() || !root.child('clubes').child($club).child('usuarios').exists())"
@@ -15,15 +15,70 @@
           ".write": "auth != null && (root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() || !root.child('clubes').child($club).child('usuarios').exists())"
         },
 
-        "pesos":     { "$k":   { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $k.beginsWith('prep_' + root.child('clubes').child($club).child('jugador_num').child(auth.uid).val() + '_')" } },
-        "obs":       { "$k":   { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $k.beginsWith('prep_obs_' + root.child('clubes').child($club).child('jugador_num').child(auth.uid).val() + '_')" } },
-        "rm":        { "$k":   { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $k.beginsWith('prep_rm_' + root.child('clubes').child($club).child('jugador_num').child(auth.uid).val() + '_')" } },
-        "wellness":  { "$num": { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $num === root.child('clubes').child($club).child('jugador_num').child(auth.uid).val()" } },
-        "prep_hist": { "$num": { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $num === root.child('clubes').child($club).child('jugador_num').child(auth.uid).val()" } },
-        "notas":     { "$num": { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $num === root.child('clubes').child($club).child('jugador_num').child(auth.uid).val()" } },
+        "admins": { ".write": false },
 
-        "video_salas":  { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()" },
-        "video_signal": { ".write": "root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()" }
+        "sesiones": {
+          "corte": {
+            ".write": "auth != null && root.child('clubes').child($club).child('admins').child(auth.uid).exists()"
+          },
+          "corte_uid": {
+            ".write": "auth != null && root.child('clubes').child($club).child('admins').child(auth.uid).exists()"
+          },
+          "corte_disp": {
+            ".write": "auth != null && root.child('clubes').child($club).child('admins').child(auth.uid).exists()"
+          },
+          "dispositivos": {
+            ".write": "auth != null && root.child('clubes').child($club).child('admins').child(auth.uid).exists()",
+            "$uid": {
+              "$disp": {
+                ".write": "auth != null && auth.uid === $uid"
+              }
+            }
+          },
+          "accesos": {
+            "$id": {
+              ".write": "auth != null && !data.exists()"
+            }
+          }
+        },
+
+        "pesos": {
+          "$k": {
+            ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $k.beginsWith('prep_' + root.child('clubes').child($club).child('jugador_num').child(auth.uid).val() + '_')"
+          }
+        },
+        "obs": {
+          "$k": {
+            ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $k.beginsWith('prep_obs_' + root.child('clubes').child($club).child('jugador_num').child(auth.uid).val() + '_')"
+          }
+        },
+        "rm": {
+          "$k": {
+            ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $k.beginsWith('prep_rm_' + root.child('clubes').child($club).child('jugador_num').child(auth.uid).val() + '_')"
+          }
+        },
+        "wellness": {
+          "$num": {
+            ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $num === root.child('clubes').child($club).child('jugador_num').child(auth.uid).val()"
+          }
+        },
+        "prep_hist": {
+          "$num": {
+            ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $num === root.child('clubes').child($club).child('jugador_num').child(auth.uid).val()"
+          }
+        },
+        "notas": {
+          "$num": {
+            ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $num === root.child('clubes').child($club).child('jugador_num').child(auth.uid).val()"
+          }
+        },
+
+        "video_salas":  { ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()" },
+        "video_signal": { ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()" },
+
+        "$resto": {
+          ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && root.child('clubes').child($club).child('roles').child(auth.uid).val() != 'player'"
+        }
       }
     }
   }

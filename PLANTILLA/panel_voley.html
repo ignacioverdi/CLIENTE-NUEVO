@@ -57,7 +57,7 @@ body::before{content:'';position:fixed;inset:0;
 .tv-btn{background:rgba(99,102,241,.15);color:var(--indigo);border-color:rgba(99,102,241,.3)}
 .tv-btn:hover{background:rgba(99,102,241,.3)}
 .tv-btn.on{background:rgba(99,102,241,.4);border-color:var(--indigo)}
-.podio-btn{background:rgba(251,191,36,.1);color:var(--amber);border-color:rgba(251,191,36,.3)}
+.podio-btn{background:rgba(251,191,36,.1);color:var(--amber);border-color:rgba(251,191,36,.3)} .inf-btn{background:rgba(61,220,132,.12);color:#3ddc84;border-color:rgba(61,220,132,.32)} .inf-btn:hover{background:rgba(61,220,132,.25)}
 .podio-btn:hover{background:rgba(251,191,36,.2)}
 
 /* FILTER BAR */
@@ -509,6 +509,7 @@ function renderObjetivosJugador(cid,nombre,extra){
     <button class="hbtn" id="obj-btn" onclick="toggleObj()" style="background:rgba(34,197,94,.1);color:#22c55e;border-color:rgba(34,197,94,.3)">&#9679; Objetivos</button>
     <button class="hbtn" onclick="abrirBaterias()" title="Baterías del partido en vivo" style="background:rgba(129,140,248,.12);color:#818cf8;border-color:rgba(129,140,248,.3)">&#128267; Baterías</button>
     <button class="hbtn" id="tabla-btn" onclick="toggleTabla()" style="background:rgba(56,189,248,.1);color:#38bdf8;border-color:rgba(56,189,248,.3)">&#9776; Tabla</button>
+    <button class="hbtn inf-btn" onclick="window.open('informe.html','_blank')" title="Informe del partido, listo para PDF">&#128203; Informe</button>
     <button class="hbtn tv-btn" id="tv-btn" onclick="toggleTV()">&#9654; TV</button>
     <button class="hbtn" id="video-btn" onclick="abrirVideo()" title="Video en vivo con delay" style="background:rgba(34,211,238,.12);color:#22d3ee;border-color:rgba(34,211,238,.3)">&#128249; Video</button>
     <span style="width:1px;height:24px;background:rgba(255,255,255,.12);margin:0 4px"></span>

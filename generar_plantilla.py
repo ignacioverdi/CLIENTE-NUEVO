@@ -297,22 +297,39 @@ def main():
 
     # ── pantallas propias del producto: se enlazan solas en el Hub ──
     PANTALLAS_PROPIAS = [
-        ('playbook.html', '<a href="plan_desarrollo.html" class="card"', '#a78bfa', '167,139,250',
+        ('playbook.html', ['<a href="plan_desarrollo.html" class="card"',
+                           '<a href="equipo.html" class="card"',
+                           '<a href="dashboard.html" class="card"'], '#a78bfa', '167,139,250',
          '\U0001F4D8', 'Equipo', 'Team Playbook',
          'Cómo juega el equipo, en un solo lugar: identidad, sistemas, saque, '
          'recepción y lenguaje común. Lo escribe el cuerpo técnico y lo lee todo el plantel.'),
-        ('escudos.html', '<a href="calendario.html" class="card"', '#38bdf8', '56,189,248',
+        ('escudos.html', ['<a href="calendario.html" class="card"',
+                          '<a href="horarios.html" class="card"',
+                          '<a href="equipo.html" class="card"'], '#38bdf8', '56,189,248',
          '\U0001F6E1\uFE0F', 'Config', 'Escudos',
          'Subí el escudo de tu club y el de cada rival. Aparecen en el calendario y '
          'en el plan de partido. Al que le falte, se le muestran sus iniciales.'),
+        # La más importante para el día a día: es lo que hace el entrenador
+        # después de cada partido. Va primera, arriba de todo.
+        ('subir_partido.html', ['<a href="panel_vivo.html" class="card"',
+                                '<a href="plan_partido.html" class="card"',
+                                '<a href="dashboard.html" class="card"'], '#3ddc84', '61,220,132',
+         '\U0001F4E4', 'Cada partido', 'Subir partido',
+         'Arrastrá el archivo del partido y listo. El sistema lo procesa solo y '
+         'actualiza las estadísticas, los mapas de calor y el plan de partido.'),
     ]
     if os.path.exists(idx):
         try:
             h = open(idx, encoding='utf-8').read()
             cambio = False
-            for arch, ancla_c, color, rgb, icono, etiqueta, titulo, desc in PANTALLAS_PROPIAS:
+            for arch, anclas, color, rgb, icono, etiqueta, titulo, desc in PANTALLAS_PROPIAS:
                 if not os.path.exists(os.path.join(destino, arch)): continue
-                if arch in h or ancla_c not in h: continue
+                if arch in h: continue
+                # Se prueban varias anclas: el Hub cambia de un club a otro y no
+                # todas las tarjetas existen siempre. Se usa la primera que esté.
+                if isinstance(anclas, str): anclas = [anclas]
+                ancla_c = next((a for a in anclas if a in h), None)
+                if not ancla_c: continue
                 tarjeta = (
  '<a href="%s" class="card" style="--card-color:%s">\n' % (arch, color) +
  '        <div class="card-glow"></div>\n'

@@ -1,0 +1,101 @@
+# =============================================================================
+#  PROCESAR PARTIDOS — el robot que reemplaza al .bat del cliente
+# -----------------------------------------------------------------------------
+#  El entrenador arrastra su .dvw en la app. Este flujo lo levanta, lo procesa
+#  y publica el resultado. El cliente no instala nada ni corre nada.
+#
+#  Se dispara de tres formas:
+#    · cada 10 minutos            (para los que suben desde la app)
+#    · cuando se sube un .dvw     (por si alguien lo pone directo)
+#    · a mano desde la pestaña Actions
+#
+#  Sirve igual para un club con los datos cifrados y para uno sin cifrar:
+#  si no hay llave configurada, esos pasos no hacen nada.
+# =============================================================================
+name: Procesar partidos
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  push:
+    paths:
+      - '**/*.dvw'
+  workflow_dispatch:
+    inputs:
+      forzar:
+        description: 'Volver a procesar todo aunque no haya nada nuevo'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: motores-del-club   # el mismo que el robot de la liga: así nunca se pisan al publicar
+  cancel-in-progress: false
+
+jobs:
+  procesar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Traer el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Dependencias (si hicieran falta)
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install --quiet -r requirements.txt
+          else
+            echo "Sin dependencias externas."
+          fi
+
+      # La llave del cifrado nunca vive en el repositorio: se escribe acá desde
+      # un secreto, se usa, y se borra antes de publicar.
+      # El club que no cifra simplemente no tiene ese secreto, y este paso lo
+      # dice y sigue de largo.
+      - name: Preparar la llave de los datos
+        env:
+          LLAVE_DATOS: ${{ secrets.LLAVE_DATOS }}
+        run: |
+          if [ -n "$LLAVE_DATOS" ]; then
+            printf '%s' "$LLAVE_DATOS" > LLAVE.txt
+            echo "Llave puesta."
+          else
+            echo "Este club no usa cifrado."
+          fi
+
+      - name: Recoger los partidos subidos desde la app y procesarlos
+        env:
+          FB_URL:      ${{ secrets.FB_URL }}
+          FB_KEY:      ${{ secrets.FB_KEY }}
+          ROBOT_MAIL:  ${{ secrets.ROBOT_MAIL }}
+          ROBOT_CLAVE: ${{ secrets.ROBOT_CLAVE }}
+          CLUB_ID:     ${{ secrets.CLUB_ID }}
+          FB_REFERER:  ${{ secrets.FB_REFERER }}
+          FORZAR:      ${{ inputs.forzar }}
+        run: python procesar_pendientes.py
+
+      - name: Sacar la llave de en medio
+        if: always()
+        run: rm -f LLAVE.txt
+
+      - name: Publicar si cambió algo
+        run: |
+          git config user.name  "Asistente del club"
+          git config user.email "actions@users.noreply.github.com"
+          rm -f LLAVE.txt
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No hubo cambios para publicar."
+            exit 0
+          fi
+          git add -A
+          git commit -m "Partido procesado automáticamente"
+          git push
+          echo "Publicado."
