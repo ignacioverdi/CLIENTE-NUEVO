@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acceso de los jugadores — {{CLUB_COMPLETO}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080f; --panel:#11131d; --panel2:#171a26;
+  --b:rgba(255,255,255,.09); --b2:rgba(255,255,255,.18);
+  --tx:#e9edf4; --mut:#7b8598;
+  --club:#e8192c; --club-t:#fff;
+  --ok:#3ddc84; --mal:#ff6b6b; --alerta:#fbbf24;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.55}
+h1,h2,h3{font-family:Archivo,Inter,sans-serif;letter-spacing:-.015em;margin:0}
+.hoja{max-width:960px;margin:0 auto;padding:34px 22px 60px}
+
+.top{display:flex;align-items:center;gap:13px;margin-bottom:30px}
+.top .esc{width:44px;height:44px;border-radius:11px;background:var(--club);display:flex;
+  align-items:center;justify-content:center;overflow:hidden;flex:none}
+.top .esc img{width:100%;height:100%;object-fit:contain}
+.top h1{font-size:23px;font-weight:800}
+.top p{margin:0;font-size:13px;color:var(--mut)}
+.volver{margin-left:auto;color:var(--mut);text-decoration:none;font-size:13.5px;
+  border:1px solid var(--b);border-radius:9px;padding:8px 14px}
+.volver:hover{color:#fff;border-color:var(--b2)}
+
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--club)}
+h2.tit{font-size:29px;font-weight:800;margin:7px 0 9px}
+.bajada{color:var(--mut);max-width:62ch;margin:0 0 26px}
+
+.caja{background:var(--panel);border:1px solid var(--b);border-radius:14px;padding:20px;margin-bottom:18px}
+label.lbl{display:block;font-size:12px;font-weight:600;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+textarea{width:100%;min-height:190px;background:var(--panel2);border:1px solid var(--b);
+  border-radius:11px;padding:14px;color:var(--tx);font:inherit;font-size:14px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.75;resize:vertical;outline:none}
+textarea:focus{border-color:var(--club)}
+.ayuda{font-size:12.5px;color:var(--mut);margin-top:8px}
+
+.ejemplo{background:var(--panel2);border-left:3px solid var(--club);border-radius:0 10px 10px 0;
+  padding:13px 16px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;
+  color:var(--mut);line-height:1.9;margin:14px 0 0;white-space:pre}
+
+.btn{background:var(--club);color:var(--club-t);border:0;border-radius:11px;padding:14px 26px;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:.18s}
+.btn:hover{filter:brightness(1.12)}
+.btn:disabled{opacity:.45;cursor:default;filter:none}
+.btn.sec{background:transparent;color:var(--tx);border:1px solid var(--b2)}
+.btn.sec:hover{background:var(--panel2);filter:none}
+.barra{display:flex;gap:11px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.btn:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--club);outline-offset:2px}
+
+/* la lista que se va a crear */
+.lista{display:flex;flex-direction:column;gap:7px;margin-top:16px}
+.fila{display:grid;grid-template-columns:44px 1fr 130px 130px;gap:12px;align-items:center;
+  background:var(--panel2);border:1px solid var(--b);border-radius:10px;padding:9px 13px;font-size:13.5px}
+.fila .cam{width:32px;height:32px;border-radius:8px;background:var(--club);color:var(--club-t);
+  font-family:Anton;font-size:15px;display:flex;align-items:center;justify-content:center}
+.fila .mail{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;overflow:hidden;text-overflow:ellipsis}
+.fila .clave{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--mut);font-size:12.5px}
+.fila .est{font-size:12px;font-weight:600;text-align:right}
+.fila.ok .est{color:var(--ok)} .fila.mal .est{color:var(--mal)} .fila.ya .est{color:var(--alerta)}
+.fila.malo{border-color:rgba(255,107,107,.45)}
+.vacio{color:var(--mut);padding:18px 0;font-size:14px}
+
+.resumen{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.dato{background:var(--panel2);border:1px solid var(--b);border-radius:11px;padding:14px 16px}
+.dato .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.dato .v{font-family:Archivo;font-weight:700;font-size:25px;line-height:1.2}
+
+.aviso{border-left:3px solid var(--alerta);background:var(--panel2);border-radius:0 10px 10px 0;
+  padding:13px 16px;font-size:13.5px;color:var(--mut);margin-top:18px}
+.aviso b{color:var(--tx)}
+@media (max-width:700px){
+  .fila{grid-template-columns:40px 1fr;gap:8px}
+  .fila .clave,.fila .est{grid-column:2;text-align:left}
+  .resumen{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="hoja">
+
+  <div class="top">
+    <div class="esc" id="esc"></div>
+    <div>
+      <h1>{{CLUB_COMPLETO}}</h1>
+      <p>Acceso de los jugadores</p>
+    </div>
+    <a class="volver" href="index.html">Volver</a>
+  </div>
+
+  <div class="eyebrow">Una sola vez</div>
+  <h2 class="tit">Dale acceso a tu plantel</h2>
+  <p class="bajada">Cada jugador entra con su mail y su fecha de nacimiento sin barras. Vos cargás la lista una vez
+     y listo: después entran solos desde el celular y reciben los avisos del equipo.</p>
+
+  <div class="caja">
+    <label class="lbl" for="lista">Pegá acá tu lista</label>
+    <textarea id="lista" spellcheck="false" placeholder="mail@ejemplo.com    4     07/03/2004"></textarea>
+    <div class="ayuda">Tres datos por jugador: <b>mail</b>, <b>número de camiseta</b> y <b>fecha de nacimiento</b>.
+       Si los tenés en Excel, seleccioná las tres columnas, copiá y pegá acá directamente.</div>
+    <div class="ejemplo">jugador1@gmail.com    4     07/03/2004
+jugador2@gmail.com    13    16/12/2004
+jugador3@gmail.com    9     23/08/2001</div>
+
+    <div class="barra">
+      <button class="btn sec" onclick="leer()">Revisar la lista</button>
+    </div>
+  </div>
+
+  <div id="zona-lista"></div>
+
+  <div id="zona-final"></div>
+
+</div>
+
+<script src="firebase.js"></script>
+<script>
+/* ============================================================================
+   Alta de jugadores — el DT pega su lista y se crean todas las cuentas.
+   La clave de cada uno es su fecha de nacimiento en 6 numeros (ddmmaa), que
+   es lo que ya le decimos en el instructivo que reciben.
+   ============================================================================ */
+var FILAS = [];
+
+function esc(t){
+  return String(t==null?'':t).replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+
+/* La clave es la fecha de nacimiento entera, sin barras: 07/03/2004 -> 07032004
+   Se eligio la version larga porque se explica sin reglas: "tu fecha, sin barras".
+   Con la corta (070304) la gente duda si el ano va con dos o cuatro numeros.
+   En seguridad son equivalentes: las fechas posibles son las mismas.
+   Acepta 07/03/2004, 7-3-2004, 07.03.04 */
+function claveDeFecha(txt){
+  var p = String(txt||'').match(/(\d{1,2})\D+(\d{1,2})\D+(\d{2,4})/);
+  if(!p) return null;
+  var d = p[1].padStart(2,'0'), m = p[2].padStart(2,'0'), a = p[3];
+  if(a.length === 2){                       /* si vino con dos numeros, completo el siglo */
+    var n = parseInt(a, 10);
+    a = (n <= 30 ? '20' : '19') + a;
+  }
+  if(a.length !== 4) return null;
+  return d + m + a;
+}
+
+function leer(){
+  var txt = document.getElementById('lista').value;
+  var lineas = txt.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+  FILAS = [];
+  lineas.forEach(function(l){
+    var partes = l.split(/[\t;,]+|\s{2,}|\s/).map(function(p){ return p.trim(); }).filter(Boolean);
+    var mail = null, num = null, fecha = null;
+    partes.forEach(function(p){
+      if(!mail && p.indexOf('@') > 0) mail = p.toLowerCase();
+      else if(!fecha && /\d{1,2}\D+\d{1,2}\D+\d{2,4}/.test(p)) fecha = p;
+      else if(num === null && /^\d{1,2}$/.test(p)) num = parseInt(p,10);
+    });
+    /* la fecha puede venir partida en 3 pedazos */
+    if(!fecha){
+      var m = l.match(/(\d{1,2})\s*[\/\.\-]\s*(\d{1,2})\s*[\/\.\-]\s*(\d{2,4})/);
+      if(m) fecha = m[0];
+    }
+    if(!mail) return;
+    FILAS.push({mail:mail, num:num, fecha:fecha, clave:claveDeFecha(fecha), estado:''});
+  });
+  pintar();
+}
+
+function pintar(){
+  var c = document.getElementById('zona-lista');
+  if(!FILAS.length){
+    c.innerHTML = '<div class="caja"><div class="vacio">No pude leer ningún jugador. ' +
+                  'Fijate que cada línea tenga el mail, el número y la fecha de nacimiento.</div></div>';
+    return;
+  }
+  var listos = FILAS.filter(function(f){ return f.clave && f.num !== null; }).length;
+  var html = '<div class="caja"><label class="lbl">' + FILAS.length + ' jugadores en la lista</label><div class="lista">';
+  FILAS.forEach(function(f, i){
+    var malo = (!f.clave || f.num === null);
+    var falta = !f.clave ? 'falta la fecha' : (f.num === null ? 'falta el número' : '');
+    html += '<div class="fila' + (malo ? ' malo' : '') + (f.estado ? ' ' + f.estado : '') + '" id="f' + i + '">'
+          + '<div class="cam">' + (f.num !== null ? f.num : '?') + '</div>'
+          + '<div class="mail">' + esc(f.mail) + '</div>'
+          + '<div class="clave">' + (f.clave || '—') + '</div>'
+          + '<div class="est">' + (f.textoEstado || falta) + '</div></div>';
+  });
+  html += '</div>';
+  html += '<div class="barra"><button class="btn" id="btn-crear" onclick="crear()"'
+        + (listos ? '' : ' disabled') + '>Crear las ' + listos + ' cuentas</button>'
+        + '<button class="btn sec" onclick="leer()">Volver a revisar</button></div>';
+  if(listos < FILAS.length){
+    html += '<div class="aviso"><b>' + (FILAS.length - listos) + ' jugadores quedan afuera</b> porque les falta '
+          + 'el número o la fecha. Completalos en tu lista y volvé a revisar.</div>';
+  }
+  html += '</div>';
+  c.innerHTML = html;
+  document.getElementById('zona-final').innerHTML = '';
+}
+
+/* crea la cuenta de un jugador y lo suma al club */
+function crearUno(f){
+  var clave = f.clave;
+  return fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + FB_KEY, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email:f.mail, password:clave, returnSecureToken:true})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d && d.idToken) return {uid:d.localId, nueva:true};
+      var m = (d && d.error && d.error.message) || '';
+      if(m.indexOf('EMAIL_EXISTS') >= 0){
+        /* ya tenía cuenta: entro para conseguir su identificador */
+        return fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + FB_KEY, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({email:f.mail, password:clave, returnSecureToken:true})
+          })
+          .then(function(r){ return r.json(); })
+          .then(function(d2){
+            if(d2 && d2.idToken) return {uid:d2.localId, nueva:false};
+            throw new Error('ya existe con otra clave');
+          });
+      }
+      if(m.indexOf('WEAK_PASSWORD') >= 0) throw new Error('la fecha quedó incompleta');
+      if(m.indexOf('INVALID_EMAIL') >= 0) throw new Error('el mail está mal escrito');
+      throw new Error(m || 'no pude crearla');
+    })
+    .then(function(res){
+      /* lo sumo al club: puede entrar, es jugador, y con su número */
+      fbSet('usuarios/' + res.uid, true);
+      fbSet('roles/' + res.uid, 'player');
+      fbSet('jugador_num/' + res.uid, String(f.num));
+      return res;
+    });
+}
+
+function crear(){
+  var b = document.getElementById('btn-crear');
+  b.disabled = true; b.textContent = 'Creando...';
+  var utiles = FILAS.filter(function(f){ return f.clave && f.num !== null; });
+  var hechas = 0, existian = 0, fallaron = 0;
+  var cadena = Promise.resolve();
+  utiles.forEach(function(f){
+    cadena = cadena.then(function(){
+      return crearUno(f)
+        .then(function(res){
+          if(res.nueva){ hechas++; f.estado='ok'; f.textoEstado='lista'; }
+          else { existian++; f.estado='ya'; f.textoEstado='ya tenía'; }
+        })
+        .catch(function(e){
+          fallaron++; f.estado='mal'; f.textoEstado = e.message || 'error';
+        })
+        .then(function(){ pintarEstado(f); });
+    });
+  });
+  cadena.then(function(){
+    b.disabled = false; b.textContent = 'Crear de nuevo';
+    document.getElementById('zona-final').innerHTML =
+        '<div class="caja"><label class="lbl">Resultado</label><div class="resumen">'
+      + '<div class="dato"><div class="k">Cuentas nuevas</div><div class="v" style="color:var(--ok)">' + hechas + '</div></div>'
+      + '<div class="dato"><div class="k">Ya existían</div><div class="v" style="color:var(--alerta)">' + existian + '</div></div>'
+      + '<div class="dato"><div class="k">Con problema</div><div class="v" style="color:' + (fallaron?'var(--mal)':'var(--mut)') + '">' + fallaron + '</div></div>'
+      + '</div>'
+      + '<div class="aviso"><b>Avisales cómo entrar:</b> con su mail y su fecha de nacimiento '
+      + 'sin barras. Por ejemplo, si nació el 01/01/1990 su clave es <b>01011990</b>. '
+      + 'El instructivo para instalar la app está en la sección de ayuda.</div></div>';
+  });
+}
+
+function pintarEstado(f){
+  var i = FILAS.indexOf(f);
+  var el = document.getElementById('f' + i);
+  if(!el) return;
+  el.classList.remove('ok','mal','ya');
+  if(f.estado) el.classList.add(f.estado);
+  var e = el.querySelector('.est');
+  if(e) e.textContent = f.textoEstado || '';
+}
+
+/* escudo del club en la cabecera */
+(function(){
+  var img = new Image();
+  img.onload = function(){ document.getElementById('esc').innerHTML = '<img src="escudo.png" alt="">'; };
+  img.src = 'escudo.png';
+})();
+</script>
+</body>
+</html>

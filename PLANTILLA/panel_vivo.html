@@ -158,13 +158,13 @@ button{font-family:inherit;cursor:pointer}
 
 /* barra de scouting — el elemento firma */
 .scoutbar{background:var(--card2);border:1px solid var(--b2);border-radius:10px;padding:10px}
-#code{width:100%;background:transparent;border:none;outline:none;color:transparent;caret-color:var(--txt);font-family:'JetBrains Mono',monospace;font-weight:700;font-size:21px;letter-spacing:2px;text-align:center;position:relative;z-index:2}
+#code{width:100%;background:transparent;border:none;outline:none;color:transparent;caret-color:var(--txt);font-family:'JetBrains Mono',monospace;font-weight:700;font-size:var(--codefs,21px);letter-spacing:2px;text-align:center;position:relative;z-index:2}
 /* Espejo del texto tipeado: pinta la parte extendida en otro color, como hace
    Data Volley (manual: los caracteres extendidos se ven en azul). El input real
    queda encima con el texto transparente, asi no cambia nada de su manejo. */
-.codewrap{position:relative}
+.codewrap{position:relative;overflow:hidden}
 #code-espejo{position:absolute;inset:0;pointer-events:none;z-index:1;
-  font-family:'JetBrains Mono',monospace;font-weight:700;font-size:21px;letter-spacing:2px;
+  font-family:'JetBrains Mono',monospace;font-weight:700;font-size:var(--codefs,21px);letter-spacing:2px;
   text-align:center;white-space:pre;display:flex;align-items:center;justify-content:center;
   color:var(--txt)}
 #code-espejo .ext{color:#60a5fa}
@@ -472,7 +472,7 @@ input.f:focus,select.f:focus{border-color:var(--b2)}
 .eseg{background:var(--card2);border:1px solid var(--b);border-radius:8px;padding:6px 10px;min-width:84px}
 .eseg b{display:block;font-size:8.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--mut);font-weight:600}
 .eseg span{font-size:13px;color:var(--txt)}
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--b2);border-radius:10px;padding:10px 18px;font-size:13px;z-index:80;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--b2);border-radius:10px;padding:10px 18px;font-size:13px;z-index:9000;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
 .toast.err{border-color:rgba(248,113,113,.5);color:var(--bad)}
 @media(max-width:1100px){.wrap{grid-template-columns:1fr}.twin{grid-template-columns:1fr}}
@@ -1276,6 +1276,10 @@ if(!M.home.six) M.home.six = M.home.lineup.slice();   /* formación con la que a
 if(!M.away.six) M.away.six = M.away.lineup.slice();
 function persist(){
   save('pv_match', M);
+  /* el try es por el orden de declaración: persist() está escrita antes que
+     RALLY_UNDO, así que si llegara a llamarse durante la carga inicial todavía
+     no existe. Después de cargar la página siempre está. */
+  try{ save('pv_undo', RALLY_UNDO); }catch(e){}
   /* si este partido ya está en la lista, mantener su copia al día */
   if(M._id && (M.codes||[]).length){ try{ guardarPartidoEnLista(M); }catch(e){} }
   if(typeof publicarVivo==='function') publicarVivo();
@@ -1740,10 +1744,17 @@ function parseChunk(s){
          La defensa y el bloqueo se hacen CONTRA un ataque, así que hay dos
          datos que no hace falta tipear: se deducen del ataque anterior.
 
-         DEFENSA · el origen es el del ataque.
-           Verificado sobre 9.880 pares de partidos oficiales: coincide el
-           93% de las veces. El destino no se hereda: es dónde se levantó la
-           pelota y eso lo escribe el scout.
+         DEFENSA · hereda el ORIGEN, el DESTINO y la SUBZONA del ataque.
+           Medido sobre los 97 partidos, separando la defensa del ataque rival
+           (7.874 pares) de la cobertura del propio equipo (1.888):
+             · origen   92,3%   · destino 70,1%   · subzona 75,3%
+           y en el destino los nueve pares más frecuentes son todos idénticos
+           (9→9, 7→7, 6→6, 8→8, 1→1, 5→5, 2→2, 3→3, 4→4).
+           Antes acá decía que el destino no se heredaba. Es cierto SÓLO para la
+           cobertura: cuando el mismo equipo levanta su propio ataque bloqueado
+           la pelota cae en cualquier lado y el destino coincide apenas el 2,8%.
+           Por eso el destino y la subzona se copian únicamente cuando la defensa
+           es del equipo contrario al que atacó.
 
          BLOQUEO · la zona es dónde saltó el bloqueador, que es el espejo de
            la del atacante: el 4 de uno es el 2 del otro.
@@ -1756,6 +1767,14 @@ function parseChunk(s){
         b.d.ez = b.d.sz; b.d.sz = '';
       }
       if(b.skill==='D' && a.d.sz && !b.d.sz) b.d.sz = a.d.sz;
+      /* el destino y la subzona, sólo contra el ataque rival (no en cobertura).
+         Lo que el scout escribió siempre manda: por eso el !b.d.ez. Y la
+         subzona va atada al destino: si el scout escribió otra zona, la
+         subzona del ataque ya no aplica (una C de la 1 no es una C de la 5). */
+      if(b.skill==='D' && b.team !== a.team && a.d.ez && !b.d.ez){
+        b.d.ez = a.d.ez;
+        if(a.d.subz && !b.d.subz) b.d.subz = a.d.subz;
+      }
       if(b.skill==='B' && a.d.sz && !b.d.ez) b.d.ez = ESPEJO_BLOQUEO[a.d.sz] || '';
       return [a,b];
     }
@@ -2088,11 +2107,31 @@ function ultimaJugada(){
 /* ============================================================
    DECODIFICADOR EN VIVO — el código, desarmado por posición
    ============================================================ */
+/* En un rally largo el código no entra en la caja. El espejo está centrado y
+   con white-space:pre, así que se derramaba por los DOS lados y tapaba las
+   columnas de al lado. En vez de recortarlo —que dejaría de verse lo que estás
+   tipeando— se achica la letra hasta que entre, y recién ahí la caja corta.
+   El campo y el espejo comparten --codefs para que sigan superpuestos exactos. */
+var CODE_FS = 21, CODE_FS_MIN = 11;
+function ajustarTamCodigo(raw){
+  var w = document.querySelector('.codewrap'); if(!w) return;
+  var n = (raw || '').length;
+  var ancho = w.clientWidth || 0;
+  var fs = CODE_FS;
+  if(n && ancho){
+    /* monoespaciada: cada caracter ocupa ~0.6em más el letter-spacing de 2px */
+    if(n * (fs * 0.6 + 2) > ancho)
+      fs = Math.max(CODE_FS_MIN, Math.floor((ancho / n - 2) / 0.6));
+  }
+  w.style.setProperty('--codefs', fs + 'px');
+}
+
 /* Pinta el espejo: los primeros 6 caracteres son el codigo base
    (equipo + numero + accion + tipo + evaluacion) y el resto es el extendido. */
 function pintarEspejo(){
   var e=document.getElementById('code-espejo'); if(!e) return;
   var inp=document.getElementById('code'), raw=inp.value;
+  ajustarTamCodigo(raw);
   if(!raw){ e.innerHTML=''; return; }
   function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   /* El estado (error / aviso) se pinta ACÁ, en el espejo. El campo de texto
@@ -2151,6 +2190,53 @@ function canchaCambios(side){
 const PL_POS = ['', 'ARMADOR', 'OPUESTO', 'PUNTA', 'CENTRAL', 'LIBERO'];
 let PL = {home: [], away: []};
 
+/* ── EL ROL VIAJA EN DOS VOCABULARIOS QUE NO SE HABLABAN ────────────────────
+   · El .sq de Data Volley lo trae NUMÉRICO en el campo 9 (manual 2.3.3.1: el
+     rol se asigna en su casilla, y el líbero además lleva 'L' en el Id box).
+     Eso ya lo lee parseSQ y lo nombra SQ_ROLES.
+   · La base propia y el plantel del club lo traen en TEXTO.
+   Además cambia el nombre de cada campo según de dónde venga el jugador:
+     .sq            -> {c, apellido, nombre, rol}
+     base vieja     -> {num, nombre, pos}
+     plantel club   -> {num, ap, nombre, pos}
+   Sin este puente el número queda vacío, se muestra el nombre de pila en la
+   columna del apellido y el rol cae siempre en '—'. */
+const ROL_A_POS = {'1':'LIBERO','2':'PUNTA','3':'OPUESTO','4':'CENTRAL','5':'ARMADOR'};
+const POS_A_ROL = {'LIBERO':'1','PUNTA':'2','OPUESTO':'3','CENTRAL':'4','ARMADOR':'5'};
+
+/* MAYÚSCULAS y sin acentos, para que 'Líbero', 'libero' y 'LIBERO' sean lo mismo.
+   El desplegable compara exacto: sin esto, un rol bien cargado se ve como '—'. */
+function plNorm(t){
+  return String(t == null ? '' : t).trim().toUpperCase()
+           .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+function plNum(j){
+  const n = (j.num !== undefined && j.num !== null && j.num !== '') ? j.num : j.c;
+  return String(n == null ? '' : n).trim();
+}
+/* El .sq trae apellido y nombre separados; la base vieja los trae juntos y en
+   ese caso el texto ya arranca con el apellido, así que se muestra tal cual. */
+function plApe(j){
+  return String(j.apellido || j.ap || '').trim()
+      || String(j.nombre   || j.n  || '').trim();
+}
+function plRol(j){
+  const r = String(j.rol == null ? '' : j.rol).trim();
+  if(ROL_A_POS[r]) return ROL_A_POS[r];              /* numérico del .sq */
+  const p = plNorm(j.pos || j.posicion || j.rol);    /* texto */
+  return PL_POS.indexOf(p) >= 0 ? p : '';
+}
+
+/* El plantel del club sí tiene los roles cargados: se usa para completar los
+   huecos del equipo propio. Nunca pisa un dato que ya vino de la base. */
+function plDelClub(){
+  try{
+    const P = window.PLANTEL_{{CLUB}};
+    if(!P || Array.isArray(P)) return [];
+    return P.jugadores || [];
+  }catch(e){ return []; }
+}
+
 function plCargar(side){
   const nombre = (M[side].name || '').toUpperCase();
   let lista = [];
@@ -2158,15 +2244,36 @@ function plCargar(side){
     const eq = (typeof equipos === 'function' ? equipos() : [])
                  .find(e => (e.nombre || '').toUpperCase() === nombre);
     if(eq && eq.jugadores) lista = eq.jugadores.map(j => ({
-      num: String(j.num || ''), nombre: j.nombre || j.apellido || '', pos: j.pos || j.posicion || ''
+      num: plNum(j), nombre: plApe(j), pos: plRol(j),
+      pila: String(j.apellido || j.ap ? (j.nombre || '') : '').trim(),
+      id:   String(j.id || '').trim()
     }));
   }catch(e){}
+  /* completar con el plantel del club (equipo propio = 'home', como en el resto
+     del panel). Si el jugador ya está, sólo se rellena lo que falte. */
+  if(side === 'home'){
+    plDelClub().forEach(p => {
+      const n = plNum(p);
+      if(!n) return;
+      const y = lista.find(j => String(j.num) === n);
+      if(y){ if(!y.pos) y.pos = plRol(p); if(!y.nombre) y.nombre = plApe(p);
+             if(!y.pila) y.pila = String(p.nombre || '').trim(); }
+      else lista.push({num:n, nombre:plApe(p), pos:plRol(p),
+                       pila:String(p.nombre||'').trim(), id:''});
+    });
+  }
   /* los que estén en el seis inicial y no figuren en la base, se suman */
   const seis = (M[side].lineup || []).filter(Boolean).concat(M[side].libero ? [M[side].libero] : []);
   seis.forEach(n => {
     if(!lista.some(j => String(j.num) === String(n)))
-      lista.push({num: String(n), nombre: '', pos: (String(n) === String(M[side].libero)) ? 'LIBERO' : ''});
+      lista.push({num: String(n), nombre: '', pila: '', id: '',
+                  pos: (String(n) === String(M[side].libero)) ? 'LIBERO' : ''});
   });
+  /* el líbero del partido manda: si la base no lo marcó, se marca acá */
+  if(M[side].libero){
+    const l = lista.find(j => String(j.num) === String(M[side].libero));
+    if(l && !l.pos) l.pos = 'LIBERO';
+  }
   lista.sort((a,b) => (parseInt(a.num,10)||0) - (parseInt(b.num,10)||0));
   PL[side] = lista;
 }
@@ -2226,7 +2333,16 @@ function plGuardar(side){
     if(typeof equipos !== 'function' || typeof guardarEquipos !== 'function') return;
     const lista = equipos();
     const nombre = (M[side].name || '').toUpperCase();
-    const jug = PL[side].filter(j => j.num).map(j => ({num: j.num, nombre: j.nombre, pos: j.pos}));
+    /* Se escribe en los DOS vocabularios: si guardáramos sólo {num,nombre,pos},
+       el próximo .sq exportado perdería el apellido y el rol numérico. */
+    const jug = PL[side].filter(j => j.num).map(j => ({
+      num: j.num, c: parseInt(j.num,10) || j.num,
+      nombre:   j.pila || j.nombre,      /* nombre de pila, como en el .sq */
+      apellido: j.nombre,                /* la columna que se edita es el apellido */
+      pos: j.pos, rol: POS_A_ROL[j.pos] || '',
+      lib: j.pos === 'LIBERO',
+      id: j.id || ''
+    }));
     const i = lista.findIndex(e => (e.nombre || '').toUpperCase() === nombre);
     if(i >= 0) lista[i].jugadores = jug;
     else lista.push({nombre: M[side].name, sigla: (M[side].code || ''), jugadores: jug});
@@ -2819,8 +2935,12 @@ function commit(){
 }
 
 /* Fin de jugada: asigna el punto, rota si hubo side out, deja al próximo sacador */
-/* pila para deshacer el fin de jugada (manual 4.8.1) */
-let RALLY_UNDO = [];
+/* pila para deshacer el fin de jugada (manual 4.8.1).
+   Se guarda junto con el partido: antes vivía sólo en memoria, así que
+   cualquier recarga de la página dejaba los códigos y el marcador intactos
+   pero borraba la posibilidad de reabrir el punto, y Ctrl+A contestaba «no hay
+   ningún punto cerrado para reabrir» con el punto ahí a la vista. */
+let RALLY_UNDO = load('pv_undo', []);
 function snapshotRally(){
   RALLY_UNDO.push(JSON.stringify({h:M.home,a:M.away,s:M.serving,set:M.set,n:M.codes.length}));
   if(RALLY_UNDO.length>40) RALLY_UNDO.shift();
@@ -2863,13 +2983,38 @@ function reabrirPunto(){
     if(u.k==='auto' && /^[*a][pPz]/.test(u.c)) M.codes.pop();
     else break;
   }
-  /* dejar seleccionado el último código de juego del set, listo para editar */
+  /* Manual 4.8.1 (Undo end rally): al deshacer el fin de jugada «la acción previa
+     se restaura y aparece en la misma barra de scouting donde se habían tipeado
+     los dígitos», y el manual aclara que es justamente para poder modificarla.
+     Antes acá sólo se dejaba seleccionado el código: lo tipeado no volvía al
+     campo y no había forma de corregirlo sin abrir la ventana de corrección. */
   SEL_I = -1;
+  let iUlt = -1;
   for(let i=M.codes.length-1;i>=0;i--){
-    if(M.codes[i].set===M.set && M.codes[i].k==='play'){ SEL_I=i; break; }
+    if(M.codes[i].set===M.set && M.codes[i].k==='play'){ iUlt=i; break; }
+  }
+  let devuelto = '';
+  if(iUlt >= 0 && iUlt === M.codes.length-1){
+    devuelto = M.codes[iUlt].c || '';
+    M.codes.pop();
+    /* si ese ataque arrastraba un armado automático se va con él: si no, al
+       volver a cerrar la jugada el armado quedaría escrito dos veces */
+    const prev = M.codes[M.codes.length-1];
+    if(prev && prev.auto) M.codes.pop();
+  } else {
+    SEL_I = iUlt;   /* no quedó al final: lo dejamos seleccionado, como antes */
   }
   renderAll(); persist();
-  if(SEL_I>=0){ irAlVideo(SEL_I); toast('Punto reabierto: corregí el código y volvé a cerrar la jugada'); }
+  if(devuelto){
+    const campo = document.getElementById('code');
+    if(campo){
+      campo.value = devuelto;
+      try{ drawDecoder(); drawPickers(); pintarEspejo(); }catch(e){}
+      try{ volverAlTipeo(); }catch(e){}
+    }
+    toast('Punto reabierto: «' + devuelto + '» volvió al campo para corregirlo');
+  }
+  else if(SEL_I>=0){ irAlVideo(SEL_I); toast('Punto reabierto: corregí el código y volvé a cerrar la jugada'); }
   else toast('Punto reabierto');
 }
 /* Los DVW oficiales escriben, después de cada punto, el armador y su zona
@@ -3054,6 +3199,10 @@ let SUBS_SIDE='home', SUBS_SALE=null, SUBS_ENTRA=null;
 function subst(side){
   SUBS_SIDE=side; SUBS_SALE=null; SUBS_ENTRA=null;
   renderSubs();
+  /* La formación del momento, como la muestra Data Volley al abrir los cambios.
+     Iba sólo en substLado(), que son los botones Local/Visitante de adentro:
+     abriendo por el botón Cambio la cancha no se dibujaba nunca. */
+  try{ canchaCambios(side); }catch(e){}
   document.getElementById('m-subs').classList.add('open');
 }
 function substLado(side){ SUBS_SIDE=side; SUBS_SALE=null; SUBS_ENTRA=null; renderSubs(); 
@@ -3374,7 +3523,12 @@ document.addEventListener('keydown', e=>{
     if(e.shiftKey) undoRally(); else undoLast();
     return;
   }
-  if(document.querySelector('.modal.open')) return;
+  /* Un panel SOLTADO (clase 'suelto') sigue teniendo 'open', pero está pensado
+     justamente para seguir scouteando con él a la vista: su propio botón dice
+     «Dejalo flotando y seguí scouteando», y flotModal() devuelve el foco al
+     campo de tipeo. Sin el :not(.suelto) la guarda cortaba acá y las teclas de
+     los valores quedaban muertas: se podía escribir, pero ningún atajo respondía. */
+  if(document.querySelector('.modal.open:not(.suelto)')) return;
   const k = keyName(e), K = CFG.keys;
 
   /* manual 2.5.6: la tecla de alineación pega el código elegido al frame del video */
@@ -3736,6 +3890,9 @@ function nuevoPartido(){
   M.home.pts=0; M.home.sets=0; M.away.pts=0; M.away.sets=0;
   M.set=1; SEL_I=-1; CALL_PEND=null;
   if(M.setsHist) M.setsHist=[];
+  /* la pila de reabrir punto es del partido que se cierra: si quedara, Ctrl+A
+     restauraría el marcador de un partido que ya no existe */
+  RALLY_UNDO.length = 0;
   delete M._id;                         /* el nuevo tendrá su propio id al guardarse */
   document.getElementById('code').value='';
   renderAll(); persist(); avisarMarcador();
@@ -5786,9 +5943,10 @@ function vdMaximizar(){ var w=document.getElementById('vd-videowrap'); if(!w) re
   <div class="ay-sec">
     <h3><span class="n">1</span> Antes de empezar: equipos y formación</h3>
     <ol>
-      <li>Con <span class="b">👥 Equipos</span> creás o editás los planteles (número, apellido, nombre y rol). También podés importar un equipo desde un archivo <span class="m">.sq</span>.</li>
+      <li>Con <span class="b">👥 Equipos</span> creás o editás los planteles (número, apellido, nombre y rol). También podés importar equipos desde archivos <span class="m">.sq</span> de DataVolley: podés soltar varios de una vez y traen el rol de cada jugador.</li>
       <li>Con <span class="b">Partido</span> cargás el <b>seis inicial</b> de cada equipo, el armador, el líbero y quién saca primero.</li>
-      <li>Confirmás con <span class="b">Empezar</span> y ya podés tipear.</li>
+      <li>Al tocar <span class="b">Empezar</span> se abre la <b>pantalla de planteles</b>: número, apellido y rol de cada jugador, como la tabla de DataVolley. Lo que corrijas ahí queda guardado para la próxima vez.</li>
+      <li>Confirmás y ya podés tipear.</li>
     </ol>
   </div>
 
@@ -5826,7 +5984,29 @@ function vdMaximizar(){ var w=document.getElementById('vd-videowrap'); if(!w) re
   </div>
 
   <div class="ay-sec">
-    <h3><span class="n">3</span> Cargar en vivo y el fin de jugada automático</h3>
+    <h3><span class="n">3</span> Zonas y direcciones</h3>
+    <p>Después de la evaluación podés indicar <b>desde dónde</b> y <b>hacia dónde</b> fue la pelota. Van pegados: primero el origen, después el destino, y si querés la subzona.</p>
+    <div class="fml"><span class="m">a17A-</span> · <span class="m">2</span> desde · <span class="m">1</span> hacia · <span class="m">C</span> subzona</div>
+    <p>El <b>saque</b> usa cinco zonas de origen, dos de ellas intermedias (manual 13.2):</p>
+    <table>
+      <tr><td class="c">1</td><td>desde la zona 1</td><td class="c">9</td><td>entre la 1 y la 6</td></tr>
+      <tr><td class="c">6</td><td>desde el centro</td><td class="c">7</td><td>entre la 6 y la 5</td></tr>
+      <tr><td class="c">5</td><td>desde la zona 5</td><td></td><td></td></tr>
+    </table>
+    <h4>Lo que el sistema completa solo</h4>
+    <p>Cuando encadenás dos acciones con un punto, la segunda hereda las direcciones de la primera, igual que DataVolley:</p>
+    <table>
+      <tr><th>Si encadenás</th><th>La segunda hereda</th></tr>
+      <tr><td>Ataque + <b>defensa del rival</b></td><td>el origen, el destino y la subzona</td></tr>
+      <tr><td>Ataque + <b>cobertura</b> del mismo equipo</td><td>sólo el origen: la pelota levantada cae en cualquier lado</td></tr>
+      <tr><td>Ataque + <b>bloqueo</b></td><td>la zona espejada — el 4 de uno es el 2 del otro</td></tr>
+      <tr><td>Saque + <b>recepción</b></td><td>el destino siempre; el origen pasa 9→1 y 7→5</td></tr>
+    </table>
+    <div class="note"><b>Lo que escribís siempre manda.</b> Si ponés una zona a mano, el sistema no la pisa. Ej.: <span class="m">a17G2-1C.2D</span> registra <span class="m">a17AH-G2~21C</span> y <span class="m">*02DH+~~~21C</span>; en cambio <span class="m">a17G2-1C.2D5</span> deja la defensa en la zona 5, la que vos escribiste.</div>
+  </div>
+
+  <div class="ay-sec">
+    <h3><span class="n">4</span> Cargar en vivo y el fin de jugada automático</h3>
     <ol>
       <li>Escribís el código y apretás <span class="k">Enter</span>. La acción entra en la lista.</li>
       <li>Si el código es <b>terminal</b>, el punto se asigna solo y la jugada cierra. Son terminales: remate, saque o bloqueo con <span class="m">#</span>; el ataque bloqueado <span class="m">/</span>; y cualquier error <span class="m">=</span> (punto al rival).</li>
@@ -5836,16 +6016,16 @@ function vdMaximizar(){ var w=document.getElementById('vd-videowrap'); if(!w) re
   </div>
 
   <div class="ay-sec">
-    <h3><span class="n">4</span> Cambios, tiempos y doble cambio</h3>
+    <h3><span class="n">5</span> Cambios, tiempos y doble cambio</h3>
     <ul>
       <li>Cada equipo tiene sus botones <span class="b">Tiempo</span> y <span class="b">Cambio</span>.</li>
-      <li>En <span class="b">Cambio</span> elegís quién sale y quién entra.</li>
+      <li>En <span class="b">Cambio</span> vas a ver la <b>formación del momento</b> y elegís quién sale y quién entra.</li>
       <li><b>Doble cambio:</b> el primero con <span class="b">Confirmar y seguir</span> (la ventana queda abierta), el segundo con <span class="b">Confirmar</span>. El sistema controla el límite por set.</li>
     </ul>
   </div>
 
   <div class="ay-sec">
-    <h3><span class="n">5</span> Corregir sin romper nada</h3>
+    <h3><span class="n">6</span> Corregir sin romper nada</h3>
     <table>
       <tr><th>Para</th><th>Cómo</th></tr>
       <tr><td>Reabrir el último punto para corregir</td><td><span class="k">Ctrl+A</span> · <span class="b">Reabrir punto</span></td></tr>
@@ -5857,12 +6037,13 @@ function vdMaximizar(){ var w=document.getElementById('vd-videowrap'); if(!w) re
       <tr><td>Deshacer el punto entero</td><td><span class="k">Ctrl+Shift+Z</span></td></tr>
       <tr><td>Buscar / Verificar</td><td><span class="k">Ctrl+R</span> · <span class="k">Ctrl+V</span></td></tr>
     </table>
-    <div class="note">Al reabrir un punto (Ctrl+A), los códigos quedan en la lista con el último seleccionado, listos para editar. Corregís y volvés a cerrar la jugada.</div>
+    <div class="note">Al reabrir un punto (<span class="k">Ctrl+A</span>) el <b>último código vuelve al campo de tipeo</b> para que lo corrijas ahí mismo: sale de la lista, lo editás y lo cargás de nuevo con <span class="k">Enter</span>. Es lo que hace DataVolley al deshacer el fin de jugada (manual 4.8.1). Si ese ataque arrastraba un armado automático, se va con él.</div>
+    <div class="note">Casi todas las ventanas tienen <span class="b">⧉ Soltar</span>: la dejás flotando a un costado, se sigue actualizando sola y <b>podés seguir tipeando con los atajos funcionando</b>.</div>
     <div class="note">Las teclas de evaluación (# + ! …) y la de adversario insertan donde está el cursor, no al final. Ej.: en <b>4A+</b> seleccionás el <b>+</b>, apretás <b>!</b> y queda <b>4A!</b>. En compuestos podés meter la <b>a</b> del visitante en el medio.</div>
   </div>
 
   <div class="ay-sec">
-    <h3><span class="n">6</span> Cierre de set y formación del siguiente</h3>
+    <h3><span class="n">7</span> Cierre de set y formación del siguiente</h3>
     <ol>
       <li>Al llegar a <b>25 con 2 de diferencia</b> (15 en el quinto), el set se cierra solo.</li>
       <li>Se abre sola la formación del set siguiente, y es <b>obligatoria</b>: propone el seis anterior, lo ajustás y confirmás con <span class="b">Empezar set</span>. No te deja seguir sin cargarla.</li>
@@ -5871,12 +6052,12 @@ function vdMaximizar(){ var w=document.getElementById('vd-videowrap'); if(!w) re
   </div>
 
   <div class="ay-sec">
-    <h3><span class="n">7</span> Modo entrenamiento (un solo equipo)</h3>
+    <h3><span class="n">8</span> Modo entrenamiento (un solo equipo)</h3>
     <p>Para prácticas: activá el modo entrenamiento en <span class="b">Configuración</span>. Cargás un solo equipo y todos los códigos quedan como locales (con <b>*</b>), aunque escribas la <b>a</b> o uses compuestos.</p>
   </div>
 
   <div class="ay-sec">
-    <h3><span class="n">8</span> Video en vivo con delay</h3>
+    <h3><span class="n">9</span> Video en vivo con delay</h3>
     <ol>
       <li>En el celular que filma la cancha (misma red/WiFi) abrís la cámara y tocás <b>Transmitir</b>: te da un <b>código de sala de 4 dígitos</b>.</li>
       <li>En el scout tocás <span class="b">Video delay</span> (la cámara, en dos líneas), escribís el código y <span class="b">Conectar</span>.</li>
@@ -5887,20 +6068,23 @@ function vdMaximizar(){ var w=document.getElementById('vd-videowrap'); if(!w) re
   </div>
 
   <div class="ay-sec">
-    <h3><span class="n">9</span> Tablas y análisis en vivo</h3>
+    <h3><span class="n">10</span> Tablas y análisis en vivo</h3>
     <p>Debajo de la lista de códigos, <span class="b">▸ Tablas y análisis</span> despliega el análisis del partido en tiempo real (eficiencias por fundamento y quiénes más puntúan), para los dos equipos.</p>
   </div>
 
   <div class="ay-sec">
-    <h3><span class="n">10</span> Guardar y exportar</h3>
+    <h3><span class="n">11</span> Guardar y exportar</h3>
     <ul>
       <li>El partido se guarda solo. Con <span class="b">📂 Partidos</span> ves y reabrís los guardados.</li>
       <li>Con <span class="b">Exportar .dvw</span> generás el archivo del partido en formato estándar, para compartirlo con otras herramientas de análisis.</li>
+      <li>Con <span class="b">Abrir .dvw</span> cargás un scout ya hecho, con todos sus códigos, para corregirlo, seguir cargándolo o volver a exportarlo (manual 9.1.1).</li>
+      <li><span class="b">Sumar al historial</span> es otra cosa: suma las estadísticas de un <span class="m">.dvw</span> al historial del club, sin abrirlo para editar.</li>
+      <li>Con <span class="b">Informe</span> sacás el informe del partido —estadísticas por jugador y nota— por set o completo, listo para PDF.</li>
     </ul>
   </div>
 
   <div class="ay-sec">
-    <h3><span class="n">11</span> Atajos de teclado</h3>
+    <h3><span class="n">12</span> Atajos de teclado</h3>
     <table>
       <tr><td class="c">Enter</td><td>Cargar el código</td><td class="c">Ctrl+Z</td><td>Deshacer código</td></tr>
       <tr><td class="c">Insert</td><td>Insertar antes del seleccionado</td><td class="c">Ctrl+Shift+Z</td><td>Deshacer punto</td></tr>

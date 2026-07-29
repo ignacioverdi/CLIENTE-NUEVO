@@ -37,7 +37,7 @@ def hay(nombre):
 
 def buscar_script(patron):
     """El nombre de algunos scripts lleva el club adentro
-       (update_db_nafels_FULL.py). Lo buscamos en vez de asumirlo."""
+       (update_db_{{club}}_FULL.py). Lo buscamos en vez de asumirlo."""
     for f in sorted(glob.glob(os.path.join(AQUI, patron))):
         return os.path.basename(f)
     return None
@@ -48,7 +48,7 @@ def carpeta_dvw(pedida=None):
     if pedida:
         return pedida if os.path.isabs(pedida) else os.path.join(AQUI, pedida)
     # Ojo: puede haber dos carpetas del mismo año, una de partidos y otra de
-    # entrenamientos ("DVW CASLA 2026" y "DVW ENTRENAMIENTOS 2026"). La de
+    # entrenamientos ("DVW {{CLUB}} 2026" y "DVW ENTRENAMIENTOS 2026"). La de
     # entrenamientos NO es la de partidos: se procesa aparte, con --entrenamientos.
     def es_entrenamiento(d):
         return 'ENTREN' in os.path.basename(d).upper()
@@ -121,13 +121,10 @@ def main():
 
     dvw = carpeta_dvw(args.dvw)
     if not dvw or not os.path.isdir(dvw):
-        # Un club recién dado de alta todavía no tiene partidos. Eso no es un
-        # error: no hay nada que hacer y se termina bien, sin dejar la corrida
-        # en rojo y sin asustar a nadie.
-        print('  Todavía no hay partidos cargados. Nada que procesar.')
+        print('  No encuentro la carpeta de partidos.')
         if args.json:
-            print(json.dumps({'ok': True, 'partidos': 0, 'nota': 'sin partidos todavía'}))
-        return 0
+            print(json.dumps({'ok': False, 'error': 'sin carpeta de partidos'}))
+        return 1
 
     archivos = glob.glob(os.path.join(dvw, '*.dvw')) + glob.glob(os.path.join(dvw, '*.DVW'))
     temporada = temporada_de(dvw)
@@ -149,7 +146,7 @@ def main():
     #    Es la parte más fácil de arruinar y la más difícil de notar.
     #
     #    ETIQUETA · con qué nombre se guardan los datos de la carpeta que se
-    #      está procesando. La carpeta "DVW NAFELS 2026" son los partidos de
+    #      está procesando. La carpeta "DVW {{CLUB}} 2026" son los partidos de
     #      la temporada 2025/26, así que se etiquetan "2025/26".
     #
     #    VISTA · qué temporada muestra la web. Puede ser otra: en pleno receso
@@ -205,8 +202,8 @@ def main():
                                       '--dvw_dir', dvw, '--output_dir', AQUI], False)
 
         # 4) los archivos que leen las pantallas
-        for scr, titulo in [('generar_datos_casla.py',           'Datos por jugador'),
-                            ('generar_datos_nafels.py',          'Datos por jugador'),
+        for scr, titulo in [('generar_datos_{{club}}.py',           'Datos por jugador'),
+                            ('generar_datos_{{club}}.py',          'Datos por jugador'),
                             ('generar_datos_partidos.py',        'Datos de partidos'),
                             ('generar_datos_entrenamientos.py',  'Datos de entrenamientos'),
                             ]:
@@ -239,13 +236,10 @@ def main():
                                       '--temporada', ent_anio], False)
             c.paso('Video de entrenamientos', [sys.executable, 'build_video.py', ent[-1],
                                                'datos_video_ent.js', 'VIDEO_DATA_ENT', 'ent'], False)
-            # ══ NO correr acá gen_plan_partido.py ═══════════════════════════
-            #    Escribe SIEMPRE en plan_partido_data.js, el mismo archivo del
-            #    plan de partido de verdad. Al pasarle la carpeta de
-            #    entrenamientos lo dejaba en 619 bytes y la solapa Plan de
-            #    Partido aparecía toda en cero.
-            #    Para tener el plan del entrenamiento hay que enseñarle a
-            #    escribir en otro archivo primero. Queda pendiente.
+            # El plan de partido también sirve para el entrenamiento: si el scout
+            # está bien detallado, salen las mismas canchitas y distribuciones.
+            c.paso('Plan del entrenamiento', [sys.executable, 'gen_plan_partido.py',
+                                              '--dvw_dir', ent[-1], '--output_dir', AQUI], False)
         # Y al final, los archivos que leen las pantallas: van SIEMPRE, porque
         # arman el historial completo con los partidos y los entrenamientos juntos.
         for scr, titulo in [('generar_datos_entrenamientos.py', 'Datos de entrenamientos'),

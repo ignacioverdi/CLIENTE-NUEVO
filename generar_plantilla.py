@@ -311,6 +311,14 @@ def main():
          'en el plan de partido. Al que le falte, se le muestran sus iniciales.'),
         # La más importante para el día a día: es lo que hace el entrenador
         # después de cada partido. Va primera, arriba de todo.
+        # Sin esta pantalla el cliente no puede dar de alta a sus jugadores:
+        # firebase.js no permite que se registren solos.
+        ('alta_jugadores.html', ['<a href="equipo.html" class="card"',
+                                 '<a href="plantel.html" class="card"',
+                                 '<a href="dashboard.html" class="card"'], '#a78bfa', '167,139,250',
+         '\U0001F464', 'Una vez', 'Acceso de los jugadores',
+         'Cargá el mail de cada jugador y listo: entran con ese mail y ven lo suyo — '
+         'sus números, sus videos, su rutina y el playbook del equipo.'),
         ('subir_partido.html', ['<a href="panel_vivo.html" class="card"',
                                 '<a href="plan_partido.html" class="card"',
                                 '<a href="dashboard.html" class="card"'], '#3ddc84', '61,220,132',
