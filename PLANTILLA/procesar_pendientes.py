@@ -91,21 +91,54 @@ def borrar(ruta, tok):
     return llamar('%s/%s%s.json?auth=%s' % (FB_URL, RAIZ, ruta, tok), None, 'DELETE')
 
 
-def carpeta_para(tipo):
+def carpeta_para(tipo, club=''):
     """Un partido y un entrenamiento van a carpetas distintas y se procesan
        distinto. Si se mezclan, los números salen mal: por eso el entrenador
-       elige qué está subiendo y acá lo respetamos."""
+       elige qué está subiendo y acá lo respetamos.
+
+       Y si el club es nuevo y todavía no tiene carpeta, se la creamos. Antes
+       el primer partido que subía un cliente fallaba con "no encuentro la
+       carpeta": el peor momento posible para que algo no funcione."""
     import glob, re
     todas = [d for d in glob.glob(os.path.join(AQUI, 'DVW*')) if os.path.isdir(d)]
-    if not todas:
-        return None
     es_ent = lambda d: 'ENTREN' in os.path.basename(d).upper()
     grupo = [d for d in todas if es_ent(d)] if tipo == 'entrenamiento' \
             else [d for d in todas if not es_ent(d)]
-    if not grupo:
-        grupo = todas          # el club no separa: va todo a la misma
-    # dentro del grupo, la del año más alto
-    return sorted(grupo, key=lambda d: (re.findall(r'(\d{4})', d) or ['0'])[-1])[-1]
+
+    if grupo:
+        # dentro del grupo, la del año más alto
+        return sorted(grupo, key=lambda d: (re.findall(r'(\d{4})', d) or ['0'])[-1])[-1]
+
+    # ── No hay carpeta: la creamos ──────────────────────────────────────────
+    #    La temporada va de octubre a abril, así que el año de la carpeta es
+    #    aquel en que TERMINA: de octubre en adelante ya es la que viene.
+    t = time.localtime()
+    anio = t.tm_year + 1 if t.tm_mon >= 10 else t.tm_year
+    marca = (club or _club_de_la_app() or '').upper().strip()
+    nombre = ('DVW ENTRENAMIENTOS %s %d' if tipo == 'entrenamiento' else 'DVW %s %d')
+    nombre = (nombre % (marca, anio)).replace('  ', ' ').strip()
+    ruta = os.path.join(AQUI, nombre)
+    try:
+        os.makedirs(ruta, exist_ok=True)
+        print('     (primera vez: creé la carpeta "%s")' % nombre)
+        return ruta
+    except Exception as e:
+        print('     [error] no pude crear la carpeta: %s' % e)
+        return None
+
+
+def _club_de_la_app():
+    """El nombre del club, para armar el nombre de la carpeta. Sale de las
+       carpetas que ya existan, o del nombre del repositorio."""
+    import glob, re
+    for d in glob.glob(os.path.join(AQUI, 'DVW*')):
+        m = re.match(r'DVW\s+(?:ENTRENAMIENTOS\s+)?(.+?)\s*\d{4}\s*$', os.path.basename(d))
+        if m: return m.group(1)
+    try:
+        base = os.path.basename(AQUI.rstrip(os.sep))
+        return re.sub(r'[-_]?voley[-_]?', '', base, flags=re.I) or base
+    except Exception:
+        return ''
 
 
 def reprocesar_todo():
@@ -163,7 +196,7 @@ def main():
         if not nombre.lower().endswith('.dvw'):
             nombre += '.dvw'
         tipo = (p.get('tipo') or 'partido').lower()
-        destino = carpeta_para(tipo)
+        destino = carpeta_para(tipo, CLUB_ID)
         if not destino:
             escribir('pendientes/%s/estado' % k, 'error', tok)
             escribir('pendientes/%s/detalle' % k, 'no encuentro la carpeta', tok)

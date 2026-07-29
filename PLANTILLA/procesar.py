@@ -121,10 +121,13 @@ def main():
 
     dvw = carpeta_dvw(args.dvw)
     if not dvw or not os.path.isdir(dvw):
-        print('  No encuentro la carpeta de partidos.')
+        # Un club recién dado de alta todavía no tiene partidos. Eso no es un
+        # error: no hay nada que hacer y se termina bien, sin dejar la corrida
+        # en rojo y sin asustar a nadie.
+        print('  Todavía no hay partidos cargados. Nada que procesar.')
         if args.json:
-            print(json.dumps({'ok': False, 'error': 'sin carpeta de partidos'}))
-        return 1
+            print(json.dumps({'ok': True, 'partidos': 0, 'nota': 'sin partidos todavía'}))
+        return 0
 
     archivos = glob.glob(os.path.join(dvw, '*.dvw')) + glob.glob(os.path.join(dvw, '*.DVW'))
     temporada = temporada_de(dvw)
@@ -236,10 +239,13 @@ def main():
                                       '--temporada', ent_anio], False)
             c.paso('Video de entrenamientos', [sys.executable, 'build_video.py', ent[-1],
                                                'datos_video_ent.js', 'VIDEO_DATA_ENT', 'ent'], False)
-            # El plan de partido también sirve para el entrenamiento: si el scout
-            # está bien detallado, salen las mismas canchitas y distribuciones.
-            c.paso('Plan del entrenamiento', [sys.executable, 'gen_plan_partido.py',
-                                              '--dvw_dir', ent[-1], '--output_dir', AQUI], False)
+            # ══ NO correr acá gen_plan_partido.py ═══════════════════════════
+            #    Escribe SIEMPRE en plan_partido_data.js, el mismo archivo del
+            #    plan de partido de verdad. Al pasarle la carpeta de
+            #    entrenamientos lo dejaba en 619 bytes y la solapa Plan de
+            #    Partido aparecía toda en cero.
+            #    Para tener el plan del entrenamiento hay que enseñarle a
+            #    escribir en otro archivo primero. Queda pendiente.
         # Y al final, los archivos que leen las pantallas: van SIEMPRE, porque
         # arman el historial completo con los partidos y los entrenamientos juntos.
         for scr, titulo in [('generar_datos_entrenamientos.py', 'Datos de entrenamientos'),
