@@ -1,23 +1,17 @@
 # Datos del club que estas dando de alta.
 # Los comentarios van en su propio renglon, empezando con #
-
-NOMBRE = Boca
-NOMBRE_COMPLETO = BOCA VOLEY
-PIN = 2468
-
+NOMBRE = Casla
+NOMBRE_COMPLETO = CLUB ATLETICO SAN LORENZO DE ALMAGRO
+PIN = 1908
 # Color: escribi AUTO para sacarlo del escudo, o pone uno propio como #0d3b8f
 COLOR = AUTO
-
 # Cuenta del entrenador (se crea sola)
-ENTRENADOR_MAIL = entrenador@boca.com
-ENTRENADOR_CLAVE = boca2026
-
+ENTRENADOR_MAIL = demo@casla.com
+ENTRENADOR_CLAVE = casla2026
 # Su liga y su pais
-LIGA = LVA
+LIGA = DHM
 PAIS = Argentina
-
 # Los rivales, separados por coma
-RIVALES = River, Velez, Ferro, UPCN, Ciudad, Once Unidos, Waiwen, Monteros
-
+RIVALES = Untref, Ciudad, Ferro, Hacoaj, Velez, Defensores, Lomas, UBA, Campana, Boca, River
 # Opcional: si lo dejas vacio se arma solo con el nombre
 REPO =

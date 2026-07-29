@@ -120,13 +120,22 @@ RIVALES_VIEJOS = ['Amriswil','Schonenwerd','Sch\u00f6nenwerd','Schoenenwerd','La
                   'Colombier','St Gallen','St_Gallen','St. Gallen','Jona','Sursee',
                   'Burgas','Orion','Brasov','Uster','Luzern','Basel']
 # sin limites de palabra: tambien tienen que caer dentro de armador_amriswil.html
-RIVALES_RE = [(re.compile(r.replace(' ', r'[ _]'), re.I), '{{RIVAL%d}}' % i)
+# ── LOS NOMBRES DE LOS RIVALES ──────────────────────────────────────────────
+#    Van entre límites de palabra (\b). Sin eso, un rival llamado "Base"
+#    reemplazaba el "base" de "baseline" y rompía el CSS de 14 páginas:
+#
+#        align-items:baseline   ->   align-items:{{RIVAL19}}ine
+#
+#    Lo mismo con cualquier nombre corto que aparezca adentro de otra palabra.
+RIVALES_RE = [(re.compile(r'\b' + r.replace(' ', r'[ _]') + r'\b', re.I),
+               '{{RIVAL%d}}' % i)
               for i, r in enumerate(RIVALES_VIEJOS, 1)]
 
 # ── plantel escrito duro en el codigo: se vacia ────────────────────────────
 JUGADORES_VIEJOS = ['VAZQUEZ','STEIMANN','NORRIS','SCHWITTER','JOHANSSON','SCHMID',
                     'CLEMENT','DURDOS','BARTHOLET','ROFFLER','BOGDANOVSKI','BRUDERER']
-JUGADORES_RE = [(re.compile(j, re.I), 'JUGADOR') for j in JUGADORES_VIEJOS]
+# Los apellidos, con el mismo cuidado: 'SCHMID' no debe tocar 'SCHMIDT'.
+JUGADORES_RE = [(re.compile(r'\b' + j, re.I), 'JUGADOR') for j in JUGADORES_VIEJOS]
 TEXTO = ('.html', '.js', '.py', '.bat', '.json', '.md', '.txt', '.yml', '.yaml', '.css',
          '.ps1', '.cmd', '.sh', '.xml', '.svg', '.webmanifest')
 SIN_EXTENSION = {'license', 'gitignore', '.gitignore', 'readme', 'procfile', '.gitattributes'}
@@ -255,6 +264,28 @@ def main():
                 shutil.copy2(src, dst)
             copiados += 1
 
+    # ── LOS ARCHIVOS CIFRADOS ────────────────────────────────────────────
+    #    La app de origen cifra sus datos, así que sus pantallas piden
+    #    "datos_equipo.js.enc". El cliente NO cifra: tiene "datos_equipo.js" a
+    #    secas. Si se dejan los nombres como vienen, el navegador busca 24
+    #    archivos que no existen y todas las pantallas aparecen vacías.
+    #
+    #    Acá se les saca el .enc a las etiquetas <script src="...">. El día que
+    #    un cliente quiera cifrar, sus propios scripts vuelven a ponérselo.
+    n_enc = 0
+    for raiz, _, archivos in os.walk(destino):
+        for a in archivos:
+            if not a.lower().endswith(('.html', '.js')): continue
+            ruta = os.path.join(raiz, a)
+            try:
+                txt = open(ruta, encoding='utf-8', errors='replace').read()
+            except Exception:
+                continue
+            nuevo = re.sub(r'(src=")([^"]+?)\.js\.enc(")', r'\1\2.js\3', txt)
+            if nuevo != txt:
+                open(ruta, 'w', encoding='utf-8').write(nuevo)
+                n_enc += 1
+
     # ── EXTRAS: lo que es del producto y no existe en la app de origen ──
     #    (pantallas nuevas, documentos, lo que agreguemos mas adelante)
     extras = os.path.join(AQUI, 'EXTRAS')
@@ -313,9 +344,11 @@ def main():
         # después de cada partido. Va primera, arriba de todo.
         # Sin esta pantalla el cliente no puede dar de alta a sus jugadores:
         # firebase.js no permite que se registren solos.
-        ('alta_jugadores.html', ['<a href="equipo.html" class="card"',
-                                 '<a href="plantel.html" class="card"',
-                                 '<a href="dashboard.html" class="card"'], '#a78bfa', '167,139,250',
+        # Va en las herramientas del entrenador, no en la parte del jugador:
+        # dar de alta cuentas es tarea del cuerpo técnico.
+        ('alta_jugadores.html', ['<a href="comparador.html" class="card"',
+                                 '<a href="scouting_rival.html" class="card"',
+                                 '<a href="panel_vivo.html" class="card"'], '#a78bfa', '167,139,250',
          '\U0001F464', 'Una vez', 'Acceso de los jugadores',
          'Cargá el mail de cada jugador y listo: entran con ese mail y ven lo suyo — '
          'sus números, sus videos, su rutina y el playbook del equipo.'),
@@ -400,6 +433,8 @@ def main():
     print('  copiados:', copiados, '| datos excluidos:', saltados, '| archivos con marca:', marcados)
     if n_extras:
         print('  agregados desde EXTRAS:', n_extras)
+    if n_enc:
+        print('  paginas ajustadas (sin cifrado):', n_enc)
     elif os.path.isdir(extras):
         print('  (la carpeta EXTRAS esta vacia)')
     print('  archivos de datos dejados vacíos:', len(VACIOS))
