@@ -47,7 +47,7 @@ PATRONES_FUERA = (
     re.compile(r'^REVISION_.*\.md$', re.I),
     re.compile(r'^SUBIR_.*\.md$', re.I),
     re.compile(r'^LLAVE\.txt$', re.I),            # la llave del cifrado, jamás
-    re.compile(r'.*\.antes$', re.I),              # respaldos de los scripts
+    re.compile(r'.*\.antes.*$', re.I),              # respaldos de los scripts
     re.compile(r'.*\.enc$', re.I),                # datos cifrados tuyos
 
     re.compile(r'^datos_.*\.js$', re.I),          # datos_equipo, datos_video, etc.
