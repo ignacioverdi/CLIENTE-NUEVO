@@ -24,6 +24,27 @@ ESTRUCTURA DE ARCHIVOS:
 import os, re, json, argparse, shutil
 from collections import defaultdict, Counter
 
+# ── LA CONFIGURACION DEL CLUB ───────────────────────────────────────────────
+#    Las tablas ya no van escritas aca adentro: viven en config_club.json, que
+#    se arma al dar de alta leyendo los propios partidos del club.
+#
+#    Antes iban aca, con marcadores, y al reemplazar el nombre del club se
+#    rompian: el motor terminaba sin reconocer un solo equipo y la app aparecia
+#    vacia. Leyendolas de afuera, no hay nada que romper.
+try:
+    import config_club as _cfg
+    MAIN_TEAM = _cfg.equipo_propio()
+    TEAM_NORM = _cfg.tabla_de_equipos()
+    NLA_TEAMS = _cfg.equipos()
+except Exception as _e:
+    print('  [aviso] no pude leer config_club.json (%s)' % _e)
+    print('          corre crear_config.py una vez en la carpeta del club.')
+    MAIN_TEAM = ''
+    TEAM_NORM = {}
+    NLA_TEAMS = []
+# ────────────────────────────────────────────────────────────────────────────
+
+
 # ── NORMALIZACIÓN DE COMBOS AL CANÓNICO MUNDIAL ──────────────────────
 # Equivalencias argentino → canónico (mismo ataque, distinto idioma de scout)
 COMBO_EQUIV = {
@@ -39,29 +60,9 @@ def normalize_combo(combo):
 # ═══════════════════════════════════════════════════════════════════
 # CONFIGURACIÓN {{CLUB}} (Liga Argentina División de Honor)
 # ═══════════════════════════════════════════════════════════════════
-NLA_TEAMS = ['{{RIVAL1}}','{{RIVAL6}}','{{RIVAL8}}','{{RIVAL12}}','{{RIVAL5}}',
-             '{{Club}}','{{RIVAL2}}','{{RIVAL9}}']
-
-TEAM_NORM = {
-    'Biogas Volley {{Club}} ({{LIGA}} Men)': '{{Club}}',
-    'Volley NFELS': '{{Club}}', 'Volley Nfels': '{{Club}}',
-    'Volley {{RIVAL1}} ({{LIGA}} Men)': '{{RIVAL1}}',
-    'Volley {{RIVAL3}} ({{LIGA}} Men)': '{{RIVAL2}}',
-    '{{RIVAL7}} Genève Volleyball ({{LIGA}} Men)': '{{RIVAL6}}',
-    'Chnois Genve Volleyball': '{{RIVAL6}}',
-    '{{RIVAL8}} Volley ({{LIGA}} Men)': '{{RIVAL8}}',
-    'STV {{RIVAL9}} ({{LIGA}} Men)': '{{RIVAL9}}',
-    'TSV {{RIVAL12}} Volleyball ({{LIGA}} Men)': '{{RIVAL12}}',
-    'TSV {{RIVAL12}} Volleyball': '{{RIVAL12}}',
-    '{{RIVAL5}} UC ({{LIGA}} Men)': '{{RIVAL5}}',
-    'VBC {{RIVAL13}} (NLB Men)': '{{RIVAL13}}',
-    '{{RIVAL15}} Stars': '{{RIVAL15}}', 'CSU Corona {{RIVAL16}}': '{{RIVAL16}}',
-    'Neftohimic 2010 {{RIVAL14}}': '{{RIVAL14}}',
-    'SCM ZALAU': 'Zalau', 'SCM Zalau': 'Zalau',
-}
-MAIN_TEAM = '{{Club}}'
-
-
+# (NLA_TEAMS sale de config_club.json)
+# (TEAM_NORM sale de config_club.json)
+# (MAIN_TEAM sale de config_club.json)
 TEAM_COLORS = {
     '{{Club}}':'#22c55e','{{RIVAL1}}':'#3b82f6','{{RIVAL2}}':'#f97316',
     '{{RIVAL6}}':'#818cf8','{{RIVAL8}}':'#f59e0b','{{RIVAL12}}':'#06b6d4',

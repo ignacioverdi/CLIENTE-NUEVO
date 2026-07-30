@@ -204,6 +204,15 @@ select, select option {
   color: #111111 !important;
   background-color: #ffffff !important;
 }
+/* ── Selector de rival en el header ── */
+.rival-select{
+  margin-top:6px; padding:5px 12px; cursor:pointer;
+  background:#0f1a2e !important; color:#fbbf24 !important;
+  border:1px solid rgba(251,191,36,.45); border-radius:8px;
+  font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:2px;
+}
+.rival-select:hover{ border-color:rgba(251,191,36,.8); }
+.rival-select option{ color:#111 !important; background:#fff !important; letter-spacing:1px; }
 
 .pdf-btn {
   padding: 7px 16px;
@@ -264,11 +273,9 @@ select, select option {
 
 </style>
 <script src="lang.js" onerror="void 0"></script>
-<script src="datos_seguros.js"></script>
-  <script src="liga_data.js.enc"></script>
+<script src="liga_data.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
-<script src="mapa_videos.js.enc" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
-  <script>abrirDatos();</script>
+<script src="mapa_videos.js" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
 <script src="videos.js" onerror="window.VIDEOS_DATA=window.VIDEOS_DATA||{}"></script>
 </head>
 <body>
@@ -283,6 +290,7 @@ select, select option {
   <div>
     <div class="rival-name" id="rival-nombre">{{RIVAL1}}</div>
     <div class="match-info" id="match-info">{{LIGA}} {{PAIS}} 2026/27 · temporada en curso</div>
+    <select id="rival-select" class="rival-select" title="Elegir equipo rival"></select>
   </div>
   <div id="lang-wrap" style="display:flex;align-items:center;gap:4px;margin-right:8px"></div>
   <div class="nav-dots" id="nav-dots"></div>
@@ -505,7 +513,7 @@ var GP_L = window.LIGA_DATA;
 
 // Si no hay rival especificado, tomar el primero que no sea el equipo propio
 if (!GP_RIVAL_SLUG || !GP_L.teams[GP_RIVAL_SLUG]) {
-  var _keys = Object.keys(GP_L.teams);
+  var _keys = Object.keys(GP_L.teams).filter(function(k){ return k !== '{{club}}'; });
   GP_RIVAL_SLUG = _keys[0];
 }
 var GP_TD = GP_L.teams[GP_RIVAL_SLUG];
@@ -1115,9 +1123,9 @@ function dibujarCanchaDefensa(canvasId, def, item){
     var esBloqueo=(p==='BLOQ');
     ctx.fillStyle=esBloqueo?'#f59e0b':'#06b6d4';
     ctx.beginPath();ctx.arc(pos[0],pos[1],esBloqueo?15:14,0,7);ctx.fill();
-    ctx.fillStyle='#0a0f1a';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+    ctx.fillStyle='#0a0f1a';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText(esBloqueo?'BL':p,pos[0],pos[1]);
-    ctx.text{{RIVAL19}}ine='alphabetic';
+    ctx.textBaseline='alphabetic';
   });
 }
 
@@ -1182,7 +1190,7 @@ function drawCone(ctx,ox,oy,dx,dy,col,bw,pct,showPct,label,W){
     ctx.shadowColor=col;ctx.shadowBlur=8;ctx.stroke();
     if(showPct && W>140){
       ctx.font='bold '+Math.round(W*0.065)+'px Barlow Condensed';
-      ctx.fillStyle='#fff';ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+      ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=4;
       ctx.fillText(label,dx,dy);
     }
@@ -1246,14 +1254,14 @@ function drawAtaqueCourt(ctx,W,H,ataque,color,pct){
     ctx.globalAlpha=1;ctx.strokeStyle=color;ctx.lineWidth=1.5;
     ctx.shadowColor=color;ctx.shadowBlur=8;ctx.stroke();
     ctx.font='bold '+Math.round(W*0.068)+'px Bebas Neue';
-    ctx.fillStyle=color;ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+    ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=3;
     ctx.fillText(ataque.cod,ox,oy);
     ctx.restore();
   } else {
     ctx.save();
     ctx.font='bold '+Math.round(W*0.075)+'px Barlow Condensed';
-    ctx.fillStyle='rgba(255,255,255,.13)';ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+    ctx.fillStyle='rgba(255,255,255,.13)';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('—',CL+CW/2,NET+4+OWN_H/2);
     ctx.restore();
   }
@@ -1316,14 +1324,14 @@ function drawSaqueCourt(ctx,W,H,saque,color,pct){
     ctx.globalAlpha=1;ctx.strokeStyle=color;ctx.lineWidth=1.5;
     ctx.shadowColor=color;ctx.shadowBlur=8;ctx.stroke();
     ctx.font='bold '+Math.round(W*0.068)+'px Bebas Neue';
-    ctx.fillStyle=color;ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+    ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=3;
     ctx.fillText(saque.cod,ox,oy);
     ctx.restore();
   } else {
     ctx.save();
     ctx.font='bold '+Math.round(W*0.075)+'px Barlow Condensed';
-    ctx.fillStyle='rgba(255,255,255,.13)';ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+    ctx.fillStyle='rgba(255,255,255,.13)';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('SIN DATOS',CL+CW/2,NET+OWN_H/2);
     ctx.restore();
   }
@@ -1782,6 +1790,24 @@ document.getElementById('modal').addEventListener('click',function(e){if(e.targe
 // INIT
 // ═══════════════════════════════════════════════════════
 document.getElementById('rival-nombre').textContent=RIVAL.nombre;
+
+// ── Selector de rival: lista todos los equipos (menos el propio) y cambia al elegir ──
+(function(){
+  var sel=document.getElementById('rival-select');
+  if(!sel || !GP_L || !GP_L.teams) return;
+  var opts=Object.keys(GP_L.teams)
+    .filter(function(s){ return s!=='{{club}}'; })
+    .map(function(s){ return {slug:s, name:(GP_L.teams[s].name||s).toUpperCase()}; })
+    .sort(function(a,b){ return a.name.localeCompare(b.name); });
+  sel.innerHTML=opts.map(function(o){
+    return '<option value="'+o.slug+'"'+(o.slug===GP_RIVAL_SLUG?' selected':'')+'>'+o.name+'</option>';
+  }).join('');
+  sel.onchange=function(){
+    var p=new URLSearchParams(window.location.search);
+    p.set('rival', this.value);
+    window.location.search=p.toString();
+  };
+})();
 document.getElementById('match-info').textContent=RIVAL.info;
 var main=document.getElementById('main-content');
 var dots=document.getElementById('nav-dots');
@@ -1934,6 +1960,15 @@ function gpMmss(s){ s=Math.max(0,Math.round(s||0)); var m=Math.floor(s/60),x=s%6
 
 // recolecta los clips de un cuadrante con EL MISMO filtro que la canchita
 function gpPlayerName(num){ if(!num) return ''; var a=(GP_TD&&GP_TD.atk)||{}; var p=a[String(num)]; if(p&&p.name){ var pp=String(p.name).trim().split(' '); return pp[pp.length-1]; } return ''; }
+function gpApellido(num){
+  if(!num) return '';
+  var td=GP_TD||{}, p=null, secs=['atk','rec','srv'];
+  for(var i=0;i<secs.length;i++){ var sec=td[secs[i]]||{}; if(sec[String(num)] && sec[String(num)].name){ p=sec[String(num)]; break; } }
+  if(!p) return '';
+  var w=String(p.name).trim().split(/\s+/), pre=['DE','DEL','DI','LA','LE','VAN','VON','DER','DEN','MC','DA','SAN','SANTA'];
+  var ap=w[0]||''; if(w.length>=2 && pre.indexOf(w[0].toUpperCase())>=0) ap=w[0]+' '+w[1];
+  return ap.split(' ').map(function(x){ return x.charAt(0).toUpperCase()+x.slice(1).toLowerCase(); }).join(' ');
+}
 function gpZoneClips(setterObj,pos,phase,rec,zone){
   var RES=['#','/','+','!','=','-'];
   if(!setterObj||!setterObj.s) return [];
@@ -2048,7 +2083,7 @@ function gpVidRender(){
     var _tm=c.t_atk>0?(gpMmss(c.t_start)+'→'+gpMmss(c.t_atk)):'—';
     row.style.opacity=_play?'1':'.5';
     row.innerHTML=chk+'<span style="font-weight:900;width:16px;text-align:center;color:'+gpEvColor(c.ev)+'">'+c.ev+'</span><span style="flex:1">'+(_who?'<b style="color:#f1f5f9">'+_who+'</b> · ':'')+c.combo+' · '+c.orig+'→'+c.dest+'<span style="color:#52617a;font-size:11px"> · '+(c.date||'')+'</span></span><span style="color:#7689a1;font-size:12px;font-variant-numeric:tabular-nums">'+_tm+'</span>'+_tag;
-    if(!gpV.readonly){ var cb=row.querySelector('input'); if(cb){ cb.onclick=function(e){ e.stopPropagation(); c._sel=this.checked; }; } }
+    if(!gpV.readonly){ var cb=row.querySelector('input'); cb.onclick=function(e){ e.stopPropagation(); c._sel=this.checked; }; }
     row.onclick=function(){ gpVidPlayAt(i); }; L.appendChild(row); });
   document.getElementById('gpVidNow').textContent=vis.length+' clips';
   document.getElementById('gpVidSave').style.display=gpV.coach?'block':'none';
@@ -2250,10 +2285,7 @@ function renderArmador(){
       var recv={}; ((setterRaw&&setterRaw.s)||[]).forEach(function(r){ if(r[16]>0) recv[r[16]]=(recv[r[16]]||0)+1; });
       var nums=Object.keys(recv).map(Number).sort(function(a,b){return recv[b]-recv[a];});
       var o0=document.createElement('option'); o0.value=''; o0.textContent='Todos'; rnSel.appendChild(o0);
-      nums.forEach(function(n){ var o=document.createElement('option'); o.value=n;
-        var _r=(GP_TD.rec&&GP_TD.rec[n])||null; var _ape=(_r&&_r.apellido)||'';
-        if(!_ape&&_r&&_r.name){ var _pp=_r.name.trim().split(/\s+/); _ape=_pp.length>1?_pp.slice(0,-1).join(' '):(_pp[0]||''); }
-        o.textContent='#'+n+(_ape?' '+_ape:'')+' ('+recv[n]+')'; rnSel.appendChild(o); });
+      nums.forEach(function(n){ var o=document.createElement('option'); o.value=n; var ap=gpApellido(n); o.textContent='#'+n+(ap?' '+ap:'')+' ('+recv[n]+')'; rnSel.appendChild(o); });
       rnSel.addEventListener('change',function(){ GP_ARM_RECNUM=this.value?parseInt(this.value,10):null; gpArmSyncAll(); });
     })();
     function gpPaintFilters(){
@@ -2494,7 +2526,7 @@ function redrawArmadorCourt(canvas,rot,color,blqData){
   function gpNum(txt,x,y,col,fs,weight,align){
     ctx.save();
     ctx.font=weight+' '+fs+'px Inter,system-ui,sans-serif';
-    ctx.textAlign=align||'center'; ctx.text{{RIVAL19}}ine='middle';
+    ctx.textAlign=align||'center'; ctx.textBaseline='middle';
     ctx.lineWidth=2.6; ctx.strokeStyle='rgba(0,0,0,.9)';
     ctx.shadowColor='rgba(0,0,0,1)'; ctx.shadowBlur=4;
     ctx.strokeText(txt,x,y);
@@ -3043,7 +3075,7 @@ function abrirModalArmador(rot, color, pills){
     if(!dist||!dist.length) return '';
     // etiquetas por número de zona (sin nombre de puesto)
     var h='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:15px;margin-bottom:14px">';
-    h+='<div style="display:flex;justify-content:space-between;align-items:{{RIVAL19}}ine;margin-bottom:12px">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">';
     h+='<div style="font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:'+col+'">'+titulo+'</div>';
     h+='<div style="font-size:11px;color:#64748b">'+total+' pelotas · '+subt+'</div></div>';
     // Barras horizontales por posición, ordenadas
@@ -3111,7 +3143,7 @@ function redrawArmadorCourtLarge(ctx, W, H, rot, color){
     ctx.save();
     ctx.font='bold 11px Barlow Condensed';
     ctx.fillStyle='rgba(255,255,255,.15)';
-    ctx.textAlign='center';ctx.text{{RIVAL19}}ine='bottom';
+    ctx.textAlign='center';ctx.textBaseline='bottom';
     ctx.fillText(zoneNames[z],zc.x,zc.y-18);
     ctx.restore();
   });
@@ -3127,7 +3159,7 @@ function redrawArmadorCourtLarge(ctx, W, H, rot, color){
     ctx.globalAlpha=1;ctx.strokeStyle=color;ctx.lineWidth=2;ctx.shadowColor=color;ctx.shadowBlur=10;ctx.stroke();
     // Dato 1: % distribución (grande, blanco)
     ctx.font='bold '+Math.round(W*0.052)+'px Bebas Neue';
-    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=6;
     ctx.fillText(d.pct+'%',zc.x,zc.y-18);
     // Dato 2: cantidad atacada
@@ -3173,7 +3205,7 @@ function dibujarIconoBloqueo(ctx, x, y, r, tipo, color){
   if(!icon) return;
   ctx.save();
   ctx.textAlign = 'center';
-  ctx.text{{RIVAL19}}ine = 'middle';
+  ctx.textBaseline = 'middle';
   ctx.shadowColor = 'rgba(0,0,0,.8)';
   ctx.shadowBlur = 4;
   if(tipo === '6-5' || tipo === '6-1'){
@@ -3289,7 +3321,7 @@ function redrawSOTRCourt(ctx, W, H, data, color){
     ctx.save();
     ctx.font='bold 12px Barlow Condensed';
     ctx.fillStyle='rgba(255,255,255,.12)';
-    ctx.textAlign='center';ctx.text{{RIVAL19}}ine='bottom';
+    ctx.textAlign='center';ctx.textBaseline='bottom';
     ctx.fillText(zoneNames[z],zc.x,zc.y-22);
     ctx.restore();
   });
@@ -3306,7 +3338,7 @@ function redrawSOTRCourt(ctx, W, H, data, color){
     ctx.shadowColor=color;ctx.shadowBlur=10;ctx.stroke();
     // % distribución
     ctx.font='bold '+Math.round(W*0.052)+'px Bebas Neue';
-    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=6;
     ctx.fillText(d.pct+'%',zc.x,zc.y-18);
     // cantidad

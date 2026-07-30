@@ -6,7 +6,7 @@
 <title>Saques — {{CLUB_COMPLETO}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="datos_seguros.js"></script>
-  <script src="datos_equipo.js.enc" onerror="void 0"></script>
+  <script src="datos_equipo.js" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <!-- VB: selector PARTIDO/ENTRENAMIENTO - carga los datos segun el modo elegido -->
 <script>(function(){var ent=false;try{ent=(localStorage.getItem('vb_modo')||'partido')==='entrenamiento';}catch(e){}
@@ -119,7 +119,7 @@ function drawCone(ctx,ox,oy,dx,dy,col,bw,pct,showPct,label,W){
     ctx.shadowColor=col;ctx.shadowBlur=8;ctx.stroke();
     if(showPct && W>140){
       ctx.font='bold '+Math.round(W*0.065)+'px Barlow Condensed';
-      ctx.fillStyle='#fff';ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+      ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=4;
       ctx.fillText(label,dx,dy);
     }
@@ -169,14 +169,14 @@ function drawSaqueCourt(ctx,W,H,saque,color,pct){
     ctx.globalAlpha=1;ctx.strokeStyle=color;ctx.lineWidth=1.5;
     ctx.shadowColor=color;ctx.shadowBlur=8;ctx.stroke();
     ctx.font='bold '+Math.round(W*0.068)+'px Bebas Neue';
-    ctx.fillStyle=color;ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+    ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=3;
     ctx.fillText(saque.cod,ox,oy);
     ctx.restore();
   } else {
     ctx.save();
     ctx.font='bold '+Math.round(W*0.075)+'px Barlow Condensed';
-    ctx.fillStyle='rgba(255,255,255,.13)';ctx.textAlign='center';ctx.text{{RIVAL19}}ine='middle';
+    ctx.fillStyle='rgba(255,255,255,.13)';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('SIN DATOS',CL+CW/2,NET+OWN_H/2);
     ctx.restore();
   }

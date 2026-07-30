@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ranking — Nafels Voley</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0f1a;--surface:#111827;--border:rgba(255,255,255,.08);--text:#e2e8f0;--muted:#64748b;--green:#22c55e;--orange:#f97316;--red:#ef4444}
+body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;min-height:100vh;padding-bottom:40px}
+.header{background:linear-gradient(135deg,#0f172a,#1e293b);border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:center;gap:16px}
+.back-btn{color:var(--muted);text-decoration:none;font-size:13px;font-weight:700;letter-spacing:1px}
+.back-btn:hover{color:var(--text)}
+.header h1{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px}
+.subtitle{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.season-badge{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#4ade80;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;margin-left:auto}
+.wrap{padding:24px;max-width:920px;margin:0 auto}
+.controls{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;align-items:flex-end}
+.ctrl-group{display:flex;flex-direction:column;gap:5px}
+.ctrl-label{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}
+.metric-selector{display:flex;gap:6px;flex-wrap:wrap}
+.msel{padding:8px 14px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:12px;font-weight:700;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif}
+.msel.active{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.4);color:#4ade80}
+select{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;min-width:140px}
+select option{color:#111 !important;background:#fff !important;font-weight:700 !important}
+.rank-list{display:flex;flex-direction:column;gap:8px}
+.rank-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;transition:transform .1s}
+.rank-row:hover{transform:translateX(4px)}
+.rank-pos{font-family:'Bebas Neue',sans-serif;font-size:28px;width:40px;text-align:center;color:var(--muted)}
+.rank-pos.top1{color:#fbbf24}.rank-pos.top2{color:#cbd5e1}.rank-pos.top3{color:#d97706}
+.rank-info{flex:1.2}
+.rank-name{font-size:16px;font-weight:700}
+.rank-pos-label{font-size:10px;letter-spacing:1px;text-transform:uppercase}
+.rank-bar-wrap{flex:2;height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden}
+.rank-bar{height:100%;border-radius:4px;transition:width .5s}
+.rank-val{font-family:'Bebas Neue',sans-serif;font-size:24px;width:80px;text-align:right}
+.pos-PUNTA{color:#22c55e}.pos-OPUESTO{color:#818cf8}.pos-CENTRAL{color:#f97316}.pos-ARMADOR{color:#fbbf24}.pos-LIBERO{color:#06b6d4}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+</style></head><body>
+<div class="header">
+  <a href="index.html" class="back-btn">← Hub</a>
+  <div><div class="subtitle">Nafels Voley</div><h1>RANKING EQUIPO</h1></div>
+  <div class="season-badge">NLA 2026/27</div>
+</div>
+<div class="wrap">
+  <div class="controls">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Métrica</span>
+      <div class="metric-selector" id="msel">
+        <div class="msel active" data-m="atk_eff">⚡ ATAQUE</div>
+        <div class="msel" data-m="srv_eff">🎯 SAQUE</div>
+        <div class="msel" data-m="rec_eff">🛡️ RECEPCIÓN</div>
+        <div class="msel" data-m="blk_eff">🧱 BLOQUEO</div>
+        <div class="msel" data-m="def_eff">🤲 DEFENSA</div>
+      </div>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Posición</span>
+      <select id="f-pos">
+        <option value="">Todas</option>
+        <option>PUNTA</option><option>OPUESTO</option><option>CENTRAL</option>
+        <option>ARMADOR</option><option>LIBERO</option>
+      </select>
+    </div>
+  </div>
+  <div class="rank-list" id="rank-list"></div>
+</div>
+<script>
+var PLAYERS = [];
+var currentMetric = 'atk_eff';
+var MC = {atk_eff:'#f97316',srv_eff:'#22c55e',rec_eff:'#818cf8',blk_eff:'#fbbf24',def_eff:'#ec4899'};
+var MR = {atk_eff:false,srv_eff:false,rec_eff:true,blk_eff:true,def_eff:true};
+function effColor(v,r){if(v==null)return '#475569';if(r)return v>=40?'#22c55e':v>=25?'#fbbf24':v>=10?'#f97316':'#ef4444';return v>=40?'#22c55e':v>=20?'#fbbf24':v>=0?'#f97316':'#ef4444';}
+function render(){
+  var color=MC[currentMetric], isRec=MR[currentMetric];
+  var posF=document.getElementById('f-pos').value;
+  var data=PLAYERS.filter(function(p){return p[currentMetric]!=null && (!posF || p.pos_label===posF);})
+                  .sort(function(a,b){return b[currentMetric]-a[currentMetric];});
+  var maxAbs=Math.max.apply(null,data.map(function(p){return Math.abs(p[currentMetric]);}).concat([1]));
+  var list=document.getElementById('rank-list');
+  if(!data.length){list.innerHTML='<div class="empty">Sin datos</div>';return;}
+  list.innerHTML=data.map(function(p,i){
+    var v=p[currentMetric], vc=effColor(v,isRec), barW=Math.abs(v)/maxAbs*100;
+    var pc=i===0?'top1':i===1?'top2':i===2?'top3':'';
+    return '<div class="rank-row"><div class="rank-pos '+pc+'">'+(i+1)+'</div>'
+      +'<div class="rank-info"><div class="rank-name">#'+p.num+' '+p.name+'</div>'
+      +'<div class="rank-pos-label pos-'+p.pos_label+'">'+p.pos_label+'</div></div>'
+      +'<div class="rank-bar-wrap"><div class="rank-bar" style="width:'+barW+'%;background:'+vc+'"></div></div>'
+      +'<div class="rank-val" style="color:'+vc+'">'+(v>=0?'+':'')+v.toFixed(1)+'%</div></div>';
+  }).join('');
+}
+document.querySelectorAll('.msel').forEach(function(b){b.addEventListener('click',function(){
+  document.querySelectorAll('.msel').forEach(function(x){x.classList.remove('active');});
+  b.classList.add('active');currentMetric=b.dataset.m;render();});});
+document.getElementById('f-pos').addEventListener('change',render);
+render();
+</script><script src="lang.js" onerror="void 0"></script>
+</body></html>
+<!-- © 2025-2026 Ignacio Verdi · NAFELS VOLEY · Software propietario - Todos los derechos reservados -->

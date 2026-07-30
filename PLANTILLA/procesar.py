@@ -37,7 +37,7 @@ def hay(nombre):
 
 def buscar_script(patron):
     """El nombre de algunos scripts lleva el club adentro
-       (update_db_{{club}}_FULL.py). Lo buscamos en vez de asumirlo."""
+       (update_db_nafels_FULL.py). Lo buscamos en vez de asumirlo."""
     for f in sorted(glob.glob(os.path.join(AQUI, patron))):
         return os.path.basename(f)
     return None
@@ -48,7 +48,7 @@ def carpeta_dvw(pedida=None):
     if pedida:
         return pedida if os.path.isabs(pedida) else os.path.join(AQUI, pedida)
     # Ojo: puede haber dos carpetas del mismo año, una de partidos y otra de
-    # entrenamientos ("DVW {{CLUB}} 2026" y "DVW ENTRENAMIENTOS 2026"). La de
+    # entrenamientos ("DVW CASLA 2026" y "DVW ENTRENAMIENTOS 2026"). La de
     # entrenamientos NO es la de partidos: se procesa aparte, con --entrenamientos.
     def es_entrenamiento(d):
         return 'ENTREN' in os.path.basename(d).upper()
@@ -149,7 +149,7 @@ def main():
     #    Es la parte más fácil de arruinar y la más difícil de notar.
     #
     #    ETIQUETA · con qué nombre se guardan los datos de la carpeta que se
-    #      está procesando. La carpeta "DVW {{CLUB}} 2026" son los partidos de
+    #      está procesando. La carpeta "DVW NAFELS 2026" son los partidos de
     #      la temporada 2025/26, así que se etiquetan "2025/26".
     #
     #    VISTA · qué temporada muestra la web. Puede ser otra: en pleno receso
@@ -158,20 +158,55 @@ def main():
     #      los partidos del año pasado como si fueran los de ahora.
     anio = re.findall(r'(\d{4})', dvw)
     anio = int(anio[-1]) if anio else time.localtime().tm_year
-    etiqueta = '%d/%s' % (anio - 1, str(anio)[2:])
 
-    # La temporada en vista sale del .bat del club, que es donde se decide.
-    # Si no está, se asume la de la carpeta.
+    # El año de la carpeta significa cosas distintas según el calendario:
+    #   Europa (arranca en agosto)  "DVW X 2026" = la temporada 2025/26,
+    #       la que TERMINA en 2026.
+    #   Sudamérica (arranca antes)  "DVW X 2026" = la temporada 2026,
+    #       la que TRANSCURRE en 2026.
+    # Si se confunden, los datos quedan etiquetados en una temporada y la app
+    # los busca en otra: la pantalla aparece vacía.
+    inicio = 8
+    try:
+        cfg = os.path.join(AQUI, 'config_temporada.js')
+        if os.path.exists(cfg):
+            m = re.search(r'inicio\s*:\s*(\d{1,2})',
+                          open(cfg, encoding='utf-8', errors='replace').read())
+            if m and 1 <= int(m.group(1)) <= 12: inicio = int(m.group(1))
+    except Exception:
+        pass
+    arranque = (anio - 1) if inicio >= 8 else anio
+    etiqueta = '%d/%s' % (arranque, str(arranque + 1)[2:])
+
+    # La temporada en vista sale del .bat del club. Pero ojo: un cliente hereda
+    # el .bat del club de origen, con SU temporada escrita a mano. Si se usara
+    # esa, el cliente vería una temporada que no tiene datos y la app aparecería
+    # toda en cero.
+    #
+    # Por eso sólo se respeta el valor del .bat si coincide con alguna temporada
+    # que exista en las carpetas del club. Si no, manda la de los datos.
     vista = etiqueta
     try:
+        anios = set()
+        for d in glob.glob(os.path.join(AQUI, 'DVW*')):
+            if os.path.isdir(d):
+                for y in re.findall(r'(\d{4})', d):
+                    a = (int(y) - 1) if inicio >= 8 else int(y)
+                    anios.add('%d/%s' % (a, str(a + 1)[2:]))
         for b in ('HACER_TODO.bat', 'correr_todo.bat'):
             if not hay(b): continue
             t = open(os.path.join(AQUI, b), encoding='utf-8', errors='replace').read()
             m = re.search(r'TEMPORADA_ACTUAL\s*=\s*"?(\d{4}/\d{2})', t)
-            if m: vista = m.group(1); break
+            if m and (m.group(1) in anios or not anios):
+                vista = m.group(1)
+            elif m:
+                print('    (el .bat pide %s, pero acá no hay datos de esa temporada:'
+                      ' uso %s)' % (m.group(1), etiqueta))
+            break
     except Exception:
         pass
 
+    print('    calendario: arranca en el mes %d' % inicio)
     print('    etiqueta:   %s     (con qué nombre se guardan)' % etiqueta)
     print('    en la web:  %s     (qué temporada se muestra)' % vista)
     print()
@@ -205,11 +240,22 @@ def main():
                                       '--dvw_dir', dvw, '--output_dir', AQUI], False)
 
         # 4) los archivos que leen las pantallas
-        for scr, titulo in [('generar_datos_{{club}}.py',           'Datos por jugador'),
-                            ('generar_datos_{{club}}.py',          'Datos por jugador'),
-                            ('generar_datos_partidos.py',        'Datos de partidos'),
-                            ('generar_datos_entrenamientos.py',  'Datos de entrenamientos'),
-                            ]:
+        # El plantel: lo arma desde la base de jugadores que acaba de generarse.
+        # Sin este paso el cliente queda con datos_equipo.js vacío y todas las
+        # pantallas dicen "Sin datos de equipo" por más partidos que suba.
+        c.paso('El plantel', [sys.executable, 'generar_datos_equipo.py'], False)
+
+        # Los generadores propios de cada club, si los tiene. El nombre lleva el
+        # club adentro, así que se buscan por patrón en vez de por nombre fijo.
+        for scr in sorted(glob.glob(os.path.join(AQUI, 'generar_datos_*.py'))):
+            n = os.path.basename(scr)
+            if n in ('generar_datos_equipo.py', 'generar_datos_entrenamientos.py',
+                     'generar_datos_historial.py'):
+                continue
+            c.paso('Datos: ' + n.replace('generar_datos_', '').replace('.py', ''),
+                   [sys.executable, n], False)
+        for scr, titulo in [('generar_datos_entrenamientos.py', 'Datos de entrenamientos'),
+                            ('generar_datos_historial.py',      'Historial del equipo')]:
             if hay(scr):
                 c.paso(titulo, [sys.executable, scr], False)
 

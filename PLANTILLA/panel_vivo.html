@@ -53,6 +53,20 @@
 
 
 
+
+/* La lista de codigos, en columnas de ancho fijo. Es lo que hace que se lea
+   de arriba abajo: el jugador siempre en el mismo lugar, la evaluacion
+   tambien. Con anchos automaticos cada fila arranca en otro lado y hay que
+   volver a buscar el dato en cada linea. */
+.crow .lc{ display:inline-block; font-family:'JetBrains Mono',ui-monospace,monospace;
+           font-size:12px; font-weight:700; text-align:center; }
+.crow .lc-eq { width:12px; color:var(--mut); }
+.crow .lc-num{ width:24px; }
+.crow .lc-sk { width:16px; }
+.crow .lc-tp { width:14px; color:var(--mut); font-weight:600; }
+.crow .lc-ev { width:16px; font-size:14px; }
+.crow .lc-cb { width:30px; color:#a78bfa; font-weight:600; text-align:left; padding-left:4px; }
+.crow .lc-zn { width:46px; color:#60a5fa; font-weight:600; text-align:left; }
 </style>
 <style>
 :root{
@@ -145,7 +159,7 @@ button{font-family:inherit;cursor:pointer}
 .sqbtn{cursor:pointer;background:var(--card2);border:1px solid var(--b);color:var(--fg);
   border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600}
 .sqbtn:hover{border-color:var(--k-zone)}
-.vrow{display:flex;gap:10px;align-items:{{RIVAL19}}ine;padding:7px 8px;border-bottom:1px solid var(--b);cursor:pointer}
+.vrow{display:flex;gap:10px;align-items:baseline;padding:7px 8px;border-bottom:1px solid var(--b);cursor:pointer}
 .vrow:hover{background:var(--card2)}
 .vmsg{color:var(--warn,#fbbf24);font-size:12px}
 .atrow{display:grid;grid-template-columns:60px 90px 1fr 34px;gap:6px;margin-bottom:6px;align-items:center}
@@ -405,7 +419,7 @@ body.arrastrando iframe{pointer-events:none}
       border-bottom:1px solid var(--b)}
 .wlist{max-height:260px;overflow:auto}
   .wlist > *{white-space:normal;line-height:1.35;padding:7px 9px}
-.wopt{display:flex;align-items:{{RIVAL19}}ine;gap:7px;width:100%;text-align:left;background:transparent;
+.wopt{display:flex;align-items:baseline;gap:7px;width:100%;text-align:left;background:transparent;
       border:0;border-bottom:1px solid rgba(255,255,255,.05);color:var(--txt);
       padding:6px 9px;font:inherit;font-size:12px;cursor:pointer}
 .wopt:last-child{border-bottom:0}
@@ -482,6 +496,7 @@ input.f:focus,select.f:focus{border-color:var(--b2)}
 .subitem{background:var(--card,#151521);color:var(--tx,#e8e8f0);border:1px solid var(--b,#2a2a3a);border-radius:9px;padding:11px 14px;font:inherit;font-weight:800;font-size:17px;cursor:pointer;text-align:left}
 .subitem.sel{background:#2563eb;color:#fff;border-color:#2563eb}
 </style>
+<link rel="manifest" href="./manifest.json">
 </head>
 <body>
 
@@ -569,6 +584,8 @@ input.f:focus,select.f:focus{border-color:var(--b2)}
       <div class="extmenu" id="extmenu"></div>
       <div class="exthint"><kbd>Ctrl</kbd> + <kbd>Espacio</kbd> para las extensiones</div>
       <div class="hint" id="hint"></div>
+      <button class="detbtn" id="descbtn" onclick="toggleDescripcion()"
+              style="margin-top:4px;opacity:.7;font-size:11px">Ocultar la descripción</button>
       <button class="detbtn" id="detbtn" onclick="toggleDetalle()">Detalle de la jugada ▾</button>
       <div class="detail" id="detail" hidden>
         <div class="dcol"><label>Desde — zona de inicio</label><div class="mini" id="mini-sz"></div></div>
@@ -1068,9 +1085,20 @@ input.f:focus,select.f:focus{border-color:var(--b2)}
 <div class="modal" id="m-edit"><div class="sheet" style="max-width:1180px">
   <h2 id="e-titulo">Corregir código</h2>
   <div class="sub">En vivo siempre se escapa algo. Completá lo que falte: la pareja del código se ajusta sola.</div>
-  <div class="ref" style="margin-bottom:14px">Original: <span class="mono" id="e-orig"></span></div>
-  <input id="e-code" class="mono" oninput="drawEditDec();syncExtendido();dibujarWizard()" spellcheck="false"
-    style="width:100%;background:var(--card2);border:1px solid var(--b2);color:var(--txt);border-radius:10px;padding:12px;font-size:20px;font-weight:700;text-align:center;outline:none">
+  <!-- El codigo crudo arranca escondido: se corrige mirando las opciones, no
+       leyendo tildes. Sigue estando para quien lo quiera tocar a mano. -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <div class="mitades" id="e-mitades" style="display:none;gap:6px"></div>
+    <button type="button" id="e-vercod" onclick="verCodigoCrudo()"
+      style="margin-left:auto;background:transparent;border:1px solid var(--b2);color:var(--mut);
+             border-radius:8px;padding:5px 11px;font-family:inherit;font-size:11px;cursor:pointer">
+      Ver el c&oacute;digo</button>
+  </div>
+  <div id="e-crudo" style="display:none;margin-bottom:12px">
+    <div class="ref" style="margin-bottom:8px">Original: <span class="mono" id="e-orig"></span></div>
+    <input id="e-code" class="mono" oninput="drawEditDec();syncExtendido();dibujarWizard()" spellcheck="false"
+      style="width:100%;background:var(--card2);border:1px solid var(--b2);color:var(--txt);border-radius:10px;padding:12px;font-size:20px;font-weight:700;text-align:center;outline:none">
+  </div>
   <div id="e-dec" class="edec"></div>
   <div id="e-wizard">
     <div class="wiz">
@@ -1080,7 +1108,9 @@ input.f:focus,select.f:focus{border-color:var(--b2)}
       <div class="wcol"><h4>Tipo</h4><div class="wlist" id="w-type"></div></div>
       <div class="wcol"><h4>Evaluaci&oacute;n</h4><div class="wlist" id="w-ev"></div></div>
       <div class="wcol"><h4>Combinaci&oacute;n</h4><div class="wlist" id="w-combo"></div></div>
+      <div class="wcol"><h4>Zona origen</h4><div class="wlist" id="w-sz"></div></div>
       <div class="wcol"><h4>Zona destino</h4><div class="wlist" id="w-ez"></div></div>
+      <div class="wcol"><h4>Subzona</h4><div class="wlist" id="w-subz"></div></div>
     </div>
   </div>
 
@@ -1500,10 +1530,12 @@ function pintarTrash(){
    Lo que falta se completa con los valores por defecto (manual, 2.5.1).
    ============================================================ */
 function parseOne(raw){
-  let s = (raw||'').trim();
+  /* Todo en mayúsculas. Scouteando se tipea rápido y sale mezclado: "11w4" y
+     "11W4" son lo mismo, y antes uno de los dos no se reconocía. */
+  let s = (raw||'').trim().toUpperCase();
   if(!s) return null;
   let team = 'home';
-  if(s[0]==='a' || s[0]==='A'){ if(!unSoloEquipo()) team='away'; s=s.slice(1); }
+  if(s[0]==='A' && /^A\d/.test(s)){ if(!unSoloEquipo()) team='away'; s=s.slice(1); }
   else if(s[0]==='*'){ team='home'; s=s.slice(1); }
 
   /* '-1' = jugador desconocido. Aparece en los DVW oficiales (153 casos en 97 archivos) */
@@ -1771,7 +1803,12 @@ function parseChunk(s){
          Lo que el scout escribió siempre manda: por eso el !b.d.ez. Y la
          subzona va atada al destino: si el scout escribió otra zona, la
          subzona del ataque ya no aplica (una C de la 1 no es una C de la 5). */
-      if(b.skill==='D' && b.team !== a.team && a.d.ez && !b.d.ez){
+      /* En un entrenamiento hay un solo equipo, así que las dos mitades quedan
+         en local y esto parecía cobertura. Pero un ataque seguido de una
+         defensa en la práctica es lo mismo que en un partido: el que defiende
+         está del otro lado de la red. Por eso, con un solo equipo, se hereda
+         igual. */
+      if(b.skill==='D' && (b.team !== a.team || unSoloEquipo()) && a.d.ez && !b.d.ez){
         b.d.ez = a.d.ez;
         if(a.d.subz && !b.d.subz) b.d.subz = a.d.subz;
       }
@@ -2230,11 +2267,41 @@ function plRol(j){
 /* El plantel del club sí tiene los roles cargados: se usa para completar los
    huecos del equipo propio. Nunca pisa un dato que ya vino de la base. */
 function plDelClub(){
+  /* El plantel del club, venga de donde venga.
+
+     Antes buscaba una sola variable con el nombre del club escrito adentro. Si
+     el club no tenía ese archivo, la pantalla de planteles salía vacía y había
+     que cargar los jugadores a mano en cada partido. */
+  const sacar = P => {
+    if(!P) return [];
+    if(Array.isArray(P)) return P;
+    return P.jugadores || P.roster || [];
+  };
   try{
-    const P = window.PLANTEL_{{CLUB}};
-    if(!P || Array.isArray(P)) return [];
-    return P.jugadores || [];
-  }catch(e){ return []; }
+    for(const k in window){
+      if(k.indexOf('PLANTEL_') === 0){
+        const l = sacar(window[k]);
+        if(l.length) return l;
+      }
+    }
+    const e = sacar(window.EQUIPO_DATA);
+    if(e.length) return e;
+    const L = window.LIGA_DATA && window.LIGA_DATA.teams;
+    if(L){
+      for(const k in L){
+        const r = L[k] && L[k].roster;
+        if(r && Object.keys(r).length){
+          return Object.keys(r).map(n => ({
+            num: n,
+            apellido: ((L[k].atk||{})[n]||{}).name ||
+                      ((L[k].srv||{})[n]||{}).name || ('#' + n),
+            pos: r[n]
+          }));
+        }
+      }
+    }
+  }catch(e){}
+  return [];
 }
 
 function plCargar(side){
@@ -2408,7 +2475,10 @@ function drawDecoder(){
   dec.innerHTML = parts.filter(p=>p && !p.err).map(fichasDe)
                        .join('<div class="seg punto"><div class="sv">·</div><div class="sl">y</div></div>');
   inp.classList.remove('bad');
-  let h = 'Se registra <b>'+parts.map(fmt).join(' </b>·<b> ')+'</b>';
+  /* Los ~ son separadores internos del formato DataVolley: adentro del código
+     hacen falta, pero en el cartel de abajo sólo estorban. */
+  const limpio = c => String(c).replace(/~+$/,'').replace(/~+/g,'');
+  let h = 'Se registra <b>'+parts.map(p=>limpio(fmt(p))).join(' </b>·<b> ')+'</b>';
   if(parts.length===2) h += ' — saque y recepción';
   const avisos=[]; parts.forEach(p=>verificar(p).forEach(x=>avisos.push(x)));
   if(avisos.length){ inp.classList.add('warn'); h += '<br><span style="color:var(--warn)">⚠ '+avisos.join(' · ')+'</span>'; }
@@ -2696,10 +2766,21 @@ function drawPickers(){
    Muestra los códigos posibles que pueden seguir al recién escrito.
    ============================================================ */
 function extensionesPosibles(){
-  const raw=document.getElementById('code').value;
+  /* En un código encadenado hay dos acciones, y las extensiones tienen que
+     aplicarse a la que está tocando el cursor, no siempre a la última. El
+     punto separa las mitades: antes manda la primera, después la segunda. */
+  const inp=document.getElementById('code');
+  const raw=inp.value;
   const p=parseInput(raw);
   if(!p.length || p[0].err) return null;
-  const a=p[p.length-1], d=merged(a);
+  let idx = p.length - 1;
+  if(p.length > 1){
+    const punto = raw.indexOf('.');
+    const cur = (inp.selectionStart == null) ? raw.length : inp.selectionStart;
+    if(punto > 0 && cur <= punto) idx = 0;
+  }
+  EXT_IDX = idx;
+  const a=p[idx], d=merged(a);
   const grupos=[];
   if(!d.hit && SUBTYPE[a.skill]) grupos.push({t:'Tipo de golpe', o:SUBTYPE[a.skill]});
   if(!d.blk && PLAYERS[a.skill]) grupos.push({t:a.skill==='R'?'Quién recibe':'Jugadores en bloqueo', o:PLAYERS[a.skill]});
@@ -2714,6 +2795,7 @@ function extensionesPosibles(){
    el campo se pone de otro color y lo decís de un vistazo.
    ══════════════════════════════════════════════════════════════════════════ */
 let EXT_MODO = false;
+let EXT_IDX = -1;   /* a qué mitad del código encadenado se aplica la extensión */
 
 function abrirExtensiones(){
   const g=extensionesPosibles();
@@ -2743,10 +2825,33 @@ document.addEventListener('click', e=>{
   if(m && m.classList.contains('open') && !m.contains(e.target) && e.target.id!=='code') cerrarExtensiones();
 });
 function ponerExt(ch){
+  /* Antes esto pegaba la letra donde estuviera el cursor. Con las letras no
+     había problema, pero los BLOQUEADORES son dígitos (0 a 4) y las zonas
+     también: al tipear un 2 con una sola zona cargada, el parser lo tomaba
+     como la segunda zona y se perdía la dirección.
+
+     Ahora se identifica a qué campo pertenece la opción y el código se
+     reescribe entero en la forma canónica. */
   const inp=document.getElementById('code');
-  const pv=inp.selectionStart ?? inp.value.length, pve=inp.selectionEnd ?? pv;
-  inp.value = inp.value.slice(0,pv) + ch + inp.value.slice(pve);
-  const np=pv+ch.length; try{ inp.setSelectionRange(np,np); }catch(_){}
+  const p=parseInput(inp.value);
+  const idx = (typeof EXT_IDX !== 'undefined' && EXT_IDX >= 0 && EXT_IDX < p.length)
+              ? EXT_IDX : p.length - 1;
+
+  if(!p.length || p[idx].err){
+    const pv=inp.selectionStart ?? inp.value.length;
+    inp.value = inp.value.slice(0,pv) + ch + inp.value.slice(pv);
+    cerrarExtensiones(); drawDecoder(); inp.focus();
+    return;
+  }
+
+  const a = p[idx], d = a.d;
+  if(SUBTYPE[a.skill] && SUBTYPE[a.skill][ch] && !d.hit)            d.hit  = ch;
+  else if(PLAYERS[a.skill] && PLAYERS[a.skill][ch] && !d.blk)       d.blk  = ch;
+  else if(specialsFor(a.skill, a.ev)[ch] && !d.spec)                d.spec = ch;
+  else d.custom = (d.custom||'') + ch;
+
+  inp.value = p.map(fmt).join('.');
+  try{ inp.setSelectionRange(inp.value.length, inp.value.length); }catch(_){}
   cerrarExtensiones(); drawDecoder(); inp.focus();
 }
 
@@ -3340,6 +3445,73 @@ function renderRot(side){
                  (t.libero ? ' Líbero ' + t.libero : '');
 }
 
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LA LISTA DE CODIGOS, EN COLUMNAS
+   --------------------------------------------------------------------------
+   Un codigo tiene siempre la misma forma:
+
+       * 11 A  T  -  W4 ~ 4 7 ~ ...
+       │  │ │  │  │  │    │ │
+       │  │ │  │  │  │    │ └─ hacia que zona
+       │  │ │  │  │  │    └─── desde que zona
+       │  │ │  │  │  └──────── la combinacion
+       │  │ │  │  └─────────── como salio
+       │  │ │  └────────────── el tipo de golpe
+       │  │ └───────────────── que hizo
+       │  └─────────────────── el jugador
+       └────────────────────── el equipo
+
+   Mostrandolo todo junto hay que descifrarlo cada vez. Separado en columnas de
+   ancho fijo, la lista se lee de arriba abajo: la columna del jugador siempre
+   esta en el mismo lugar, la de la evaluacion tambien.
+
+   Los ~ no se muestran. Son separadores del archivo, no informacion.
+   ══════════════════════════════════════════════════════════════════════════ */
+function partirCodigo(cod){
+  var c = String(cod || '');
+  var m = c.match(/^([*a])(\d\d|-1)([SRABDEF])(.)(.)(.*)$/);
+  if(!m) return null;
+  var cola = m[6] || '';
+  var combo = cola.slice(0,2).replace(/~/g,'');
+  var sz    = (cola.charAt(3) || '').replace('~','');
+  var ez    = (cola.charAt(4) || '').replace('~','');
+  return {
+    eq: m[1], num: m[2], skill: m[3],
+    tipo: (m[4]||'').replace('~',''),
+    ev: (m[5]||'').replace('~',''),
+    combo: combo, sz: sz, ez: ez
+  };
+}
+
+/* El color de cada evaluacion, el mismo que usa el resto del panel. */
+function colorEval(ev){
+  if(ev === '#') return '#22c55e';   /* punto      */
+  if(ev === '=') return '#ef4444';   /* error      */
+  if(ev === '/') return '#f59e0b';   /* bloqueado  */
+  if(ev === '+') return '#60a5fa';   /* positiva   */
+  if(ev === '!') return '#a78bfa';   /* dudosa     */
+  return 'var(--mut)';               /* el resto   */
+}
+
+function codigoEnColumnas(cod){
+  var p = partirCodigo(cod);
+  if(!p) return '<span class="cc">' + String(cod).replace(/~+/g,'') + '</span>';
+  var col = colorEval(p.ev);
+  var zonas = '';
+  if(p.sz && p.ez)      zonas = p.sz + '\u2192' + p.ez;
+  else if(p.ez)         zonas = '\u2192' + p.ez;
+  else if(p.sz)         zonas = p.sz;
+  return '' +
+    '<span class="lc lc-eq">'    + p.eq    + '</span>' +
+    '<span class="lc lc-num">'   + p.num   + '</span>' +
+    '<span class="lc lc-sk">'    + p.skill + '</span>' +
+    '<span class="lc lc-tp">'    + p.tipo  + '</span>' +
+    '<span class="lc lc-ev" style="color:' + col + '">' + p.ev + '</span>' +
+    '<span class="lc lc-cb">'    + p.combo + '</span>' +
+    '<span class="lc lc-zn">'    + zonas   + '</span>';
+}
+
 function renderCodes(){
   const el = document.getElementById('codes');
   const rows = M.codes.filter(c=>c.set===M.set);
@@ -3351,7 +3523,7 @@ function renderCodes(){
     const cls = c.k==='auto' ? 'auto' : (c.c[0]==='*'?'hteam':'ateam');
     const i = M.codes.indexOf(c);
     const sel = (i===SEL_I) ? ' sel' : '';
-    return '<div class="crow '+cls+sel+'" onclick="seleccionar('+i+')" ondblclick="editCode('+i+')" title="Clic para seleccionar · Enter o doble clic para corregir · Ins para insertar · Supr para borrar"><span class="cc">'+c.c+'</span></div>';
+    return '<div class="crow '+cls+sel+'" onclick="seleccionar('+i+')" ondblclick="editCode('+i+')" title="Clic para seleccionar · Enter o doble clic para corregir · Ins para insertar · Supr para borrar">'+codigoEnColumnas(c.c)+'</div>';
   }).join('');
   /* La vista sigue al último código, como en una conversación. */
   try{ el.scrollTop = el.scrollHeight; }catch(e){}
@@ -3509,10 +3681,11 @@ document.addEventListener('keydown', e=>{
        · si hay un código seleccionado del medio -> borra ése
        · si no hay nada seleccionado -> borra el ÚLTIMO (deshacer rápido)
      Si estás escribiendo un código, Backspace sigue borrando letras normal. */
+    /* Backspace con el campo vacío borraba el último código sin preguntar, y
+     scouteando se aprieta sin querer todo el tiempo. Ahora sólo borra el que
+     esté seleccionado. Para el último sigue estando Ctrl+Z. */
   if(e.key==='Backspace' && !document.getElementById('code').value.trim() && M.codes.length){
-    e.preventDefault();
-    if(SEL_I>=0) borrarEn(SEL_I, true);  /* el que elegiste del medio, sin preguntar */
-    else undoLast();                   /* el último, sin seleccionar nada */
+    if(SEL_I>=0){ e.preventDefault(); borrarEn(SEL_I, true); }
     return;
   }
   if(e.key==='Enter' && SEL_I>=0 && !document.getElementById('code').value.trim()){ e.preventDefault(); editCode(SEL_I); return; }
@@ -3628,7 +3801,13 @@ document.addEventListener('keydown', e=>{
       const np=pv+ev.length; try{ inp.setSelectionRange(np,np); }catch(_){}
       drawDecoder(); return; } }
 });
-document.getElementById('code').addEventListener('input', function(){ drawDecoder(); drawPickers(); pintarEspejo(); });
+document.getElementById('code').addEventListener('input', function(){
+  /* Elegir la extensión tipeando la letra tiene que cerrar el menú, igual que
+     hacer clic en el botón. */
+  if(typeof EXT_MODO !== 'undefined' && EXT_MODO) cerrarExtensiones();
+  drawDecoder(); drawPickers(); pintarEspejo();
+  if(typeof aplicarDescripcion === 'function') aplicarDescripcion();
+});
 document.getElementById('e-code').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); saveEdit(); } });
 
 /* ============================================================
@@ -3983,12 +4162,65 @@ function borrarEn(i, rapido){
 }
 /* Manual 4.1.3 · llena los 3 selectores del código extendido según la skill y
    evaluación del código que estás editando, y marca lo que ya tiene. */
+/* ══════════════════════════════════════════════════════════════════════════
+   SOBRE QUE MITAD DEL CODIGO SE ESTA TRABAJANDO
+   --------------------------------------------------------------------------
+   Un codigo encadenado —1SM15.8R#— son dos acciones. Antes los selectores del
+   extendido trabajaban SIEMPRE sobre la primera: no habia forma de corregirle
+   el tipo de golpe a la recepcion.
+
+   Ahora hay un selector arriba, como el de DataVolley, y todo lo que se toca
+   se le aplica a la mitad elegida.
+   ══════════════════════════════════════════════════════════════════════════ */
+var MITAD_EDIT = 0;
+
+function verCodigoCrudo(){
+  var d = document.getElementById('e-crudo');
+  var b = document.getElementById('e-vercod');
+  if(!d) return;
+  var abierto = d.style.display !== 'none';
+  d.style.display = abierto ? 'none' : 'block';
+  if(b) b.textContent = abierto ? 'Ver el c\u00f3digo' : 'Ocultar el c\u00f3digo';
+}
+
+function elegirMitad(i){
+  MITAD_EDIT = i;
+  dibujarMitades();
+  syncExtendido();
+  if(typeof dibujarWizard === 'function') dibujarWizard();
+}
+
+function dibujarMitades(){
+  var cont = document.getElementById('e-mitades');
+  var inp = document.getElementById('e-code');
+  if(!cont || !inp) return;
+  var parts = parseInput(inp.value.trim());
+  if(parts.length < 2){ cont.style.display = 'none'; MITAD_EDIT = 0; return; }
+  if(MITAD_EDIT >= parts.length) MITAD_EDIT = 0;
+  var nombres = {S:'Saque', R:'Recepci\u00f3n', A:'Ataque', B:'Bloqueo',
+                 D:'Defensa', E:'Armado', F:'Falta'};
+  cont.style.display = 'flex';
+  cont.innerHTML = parts.map(function(p, i){
+    var n = (p && p.skill) ? (nombres[p.skill] || p.skill) : ('parte ' + (i+1));
+    var on = (i === MITAD_EDIT);
+    return '<button type="button" onclick="elegirMitad(' + i + ')" style="' +
+      'background:' + (on ? 'rgba(37,99,235,.18)' : 'transparent') + ';' +
+      'border:1px solid ' + (on ? 'rgba(37,99,235,.5)' : 'var(--b2)') + ';' +
+      'color:' + (on ? '#60a5fa' : 'var(--mut)') + ';border-radius:8px;padding:5px 12px;' +
+      'font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">' +
+      '#' + (p.num === -1 ? '?' : p.num) + ' ' + n + '</button>';
+  }).join('');
+}
+
 function syncExtendido(){
   var box=document.getElementById('e-extendido'); if(!box) return;
   var cod=document.getElementById('e-code').value.trim();
   var parts=parseInput(cod);
-  if(!parts.length || parts[0].err || !parts[0].skill){ box.style.display='none'; return; }
-  var a=parts[0], skill=a.skill, ev=a.ev, d=merged(a);
+  dibujarMitades();
+  if(!parts.length || parts[0].err){ box.style.display='none'; return; }
+  var idx = Math.min(MITAD_EDIT, parts.length - 1);
+  if(!parts[idx] || !parts[idx].skill){ box.style.display='none'; return; }
+  var a=parts[idx], skill=a.skill, ev=a.ev, d=merged(a);
   box.style.display='block';
 
   /* Tipo de golpe (SUBTYPE) */
@@ -4021,8 +4253,8 @@ function syncExtendido(){
 function aplicarExtendido(){
   var cod=document.getElementById('e-code').value.trim();
   var parts=parseInput(cod);
-  if(!parts.length || parts[0].err) return;
-  var a=parts[0], d=merged(a);
+  if(!parts.length || parts[Math.min(MITAD_EDIT, parts.length-1)].err) return;
+  var a=parts[Math.min(MITAD_EDIT, parts.length-1)], d=merged(a);
   d.hit = document.getElementById('ext-hit').value || '';
   d.blk = document.getElementById('ext-plr').value || '';
   d.spec = document.getElementById('ext-spec').value || '';
@@ -4047,6 +4279,11 @@ function editCode(i){
   const inp = document.getElementById('e-code');
   inp.value = row.c;
   document.getElementById('m-edit').classList.add('open');
+  MITAD_EDIT = 0;
+  var crudo = document.getElementById('e-crudo');
+  if(crudo) crudo.style.display = 'none';       /* siempre arranca escondido */
+  var vb = document.getElementById('e-vercod');
+  if(vb) vb.textContent = 'Ver el c\u00f3digo';
   drawEditDec();
   syncExtendido();
   dibujarWizard();
@@ -4774,7 +5011,7 @@ function _wizTipos(skill){
 function dibujarWizard(){
   var w=document.getElementById('e-wizard'); if(!w) return;
   var a=_wizActual();
-  var ids=['w-team','w-num','w-skill','w-type','w-ev','w-combo','w-ez'];
+  var ids=['w-team','w-num','w-skill','w-type','w-ev','w-combo','w-sz','w-ez','w-subz'];
   ids.forEach(function(id){ var c=document.getElementById(id); if(c) c.innerHTML=''; });
   if(!a){
     ids.forEach(function(id){
@@ -4827,6 +5064,15 @@ function dibujarWizard(){
     cC.innerHTML='<div class="wiz-vacio">Solo para ataque o armado</div>';
   }
 
+  /* zona de origen: de donde sale la pelota. Es la que mas se corrige en vivo,
+     porque el panel la deduce y no siempre acierta. */
+  var cO=document.getElementById('w-sz');
+  if(cO){
+    _wizOpt(cO, '--', 'sin definir', !a.d || !a.d.sz, function(){ _wizCola('sz',''); });
+    ['4','3','2','7','8','9','5','6','1'].forEach(function(z){
+      _wizOpt(cO, z, 'zona '+z, !!(a.d && a.d.sz===z), function(){ _wizCola('sz', z); });
+    });
+  }
   /* zona de destino: donde cae la pelota */
   var cZ=document.getElementById('w-ez');
   _wizOpt(cZ, '--', 'sin definir', !a.d || !a.d.ez, function(){ _wizCola('ez',''); });
@@ -4834,6 +5080,16 @@ function dibujarWizard(){
   ['4','3','2','7','8','9','5','6','1'].forEach(function(z){
     _wizOpt(cZ, z, 'zona '+z, !!(a.d && a.d.ez===z), function(){ _wizCola('ez', z); });
   });
+  /* subzona: en que parte de la zona cayo (manual 4.1.2) */
+  var cS=document.getElementById('w-subz');
+  if(cS){
+    _wizOpt(cS, '--', 'sin definir', !a.d || !a.d.subz, function(){ _wizCola('subz',''); });
+    [['A','fondo izq'],['B','fondo centro'],['C','fondo der'],
+     ['D','medio izq'],[''+'', ''],['E','medio der']].filter(function(x){return x[0];})
+     .forEach(function(x){
+      _wizOpt(cS, x[0], x[1], !!(a.d && a.d.subz===x[0]), function(){ _wizCola('subz', x[0]); });
+    });
+  }
 }
 
 /* cambia una parte de la cola (combinacion, zonas, etc.) y reescribe el codigo */
@@ -5285,6 +5541,30 @@ function exportDVW(modo){
   toast('Archivo descargado');
 
   terminarEnCurso();   /* ya exportado: sale de la nube */
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOSTRAR O NO LA DESCRIPCIÓN DE LA JUGADA
+   Las fichas de colores ayudan al que recién empieza y le tapan pantalla al
+   que ya scoutea. Se puede apagar, y queda apagado para la próxima vez.
+   ══════════════════════════════════════════════════════════════════════════ */
+let DESC_VISIBLE = true;
+try{ DESC_VISIBLE = localStorage.getItem('pv_desc') !== '0'; }catch(_){}
+
+function aplicarDescripcion(){
+  const d = document.getElementById('dec');
+  const h = document.getElementById('hint');
+  const b = document.getElementById('descbtn');
+  if(d) d.style.display = DESC_VISIBLE ? '' : 'none';
+  if(h) h.style.display = DESC_VISIBLE ? '' : 'none';
+  if(b) b.textContent = DESC_VISIBLE ? 'Ocultar la descripción' : 'Mostrar la descripción';
+}
+
+function toggleDescripcion(){
+  DESC_VISIBLE = !DESC_VISIBLE;
+  try{ localStorage.setItem('pv_desc', DESC_VISIBLE ? '1' : '0'); }catch(_){}
+  aplicarDescripcion();
+  if(typeof volverAlTipeo === 'function') volverAlTipeo();
 }
 
 function toggleDetalle(){
@@ -5917,7 +6197,7 @@ function vdMaximizar(){ var w=document.getElementById('vd-videowrap'); if(!w) re
   #m-ayuda h2.tit{font-size:22px;margin:0}
   #m-ayuda .ay-sec{border-top:1px solid var(--b2);padding-top:14px;margin-top:18px}
   #m-ayuda .ay-sec:first-of-type{border-top:0;margin-top:8px}
-  #m-ayuda h3{font-size:16px;margin:0 0 6px;color:var(--txt);display:flex;gap:9px;align-items:{{RIVAL19}}ine}
+  #m-ayuda h3{font-size:16px;margin:0 0 6px;color:var(--txt);display:flex;gap:9px;align-items:baseline}
   #m-ayuda h3 .n{color:var(--vis);font-weight:800}
   #m-ayuda h4{font-size:13px;margin:14px 0 4px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
   #m-ayuda p{margin:7px 0;color:#cfd2e0;font-size:14.5px;line-height:1.55}
@@ -6106,9 +6386,143 @@ function vdMaximizar(){ var w=document.getElementById('vd-videowrap'); if(!w) re
     <button class="tbtn" style="text-align:left;padding:10px 12px" onclick="closeModal('m-exportmode');exportDVW('convert')"><b>Convertir</b> — los pasa a su combo estándar de DataVolley (según equivalencias).</button>
     <button class="tbtn" style="text-align:left;padding:10px 12px" onclick="closeModal('m-exportmode');exportDVW('ignore')"><b>Ignorar</b> — quita el combo del código (queda el ataque sin combinación).</button>
   </div>
+
+<!-- ═══ Scoutear sin internet ═══════════════════════════════════════════ -->
+<div id="guia-sin-senal" style="margin-top:22px;padding-top:18px;border-top:1px solid var(--b2)">
+  <h3 style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+    <span>&#128246;</span> Scoutear sin internet
+  </h3>
+  <div class="sub" style="margin-bottom:14px">
+    Un partido se juega donde se juega, y en muchos clubes ah&iacute; no hay se&ntilde;al.
+    El panel funciona igual &mdash; s&oacute;lo hay que prepararlo antes de salir.
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">
+
+    <div style="background:var(--card2);border:1px solid var(--b2);border-radius:10px;padding:13px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#22c55e;margin-bottom:8px">
+        1 &middot; Antes de ir</div>
+      <div style="font-size:12px;line-height:1.65;color:var(--txt)">
+        <b>Con se&ntilde;al</b>, abr&iacute; el panel en la computadora que vas a llevar y
+        esper&aacute; unos diez segundos.<br><br>
+        Ah&iacute; se guarda solo. No vas a ver ning&uacute;n aviso: pasa de fondo.<br><br>
+        <span style="color:var(--mut)">Una vez por computadora. Si el scout usa la
+        suya, tiene que hacerlo en la suya.</span>
+      </div>
+    </div>
+
+    <div style="background:var(--card2);border:1px solid var(--b2);border-radius:10px;padding:13px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:8px">
+        2 &middot; En el partido</div>
+      <div style="font-size:12px;line-height:1.65;color:var(--txt)">
+        Abr&iacute; la misma direcci&oacute;n de siempre. El panel abre normal.<br><br>
+        Arriba aparece un cartel amarillo que dice
+        <b style="color:#f59e0b">Sin se&ntilde;al &middot; se guarda igual</b>.<br><br>
+        Scoute&aacute; como siempre: no cambia nada.
+      </div>
+    </div>
+
+    <div style="background:var(--card2);border:1px solid var(--b2);border-radius:10px;padding:13px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#60a5fa;margin-bottom:8px">
+        3 &middot; Al volver</div>
+      <div style="font-size:12px;line-height:1.65;color:var(--txt)">
+        Con se&ntilde;al, el cartel desaparece solo.<br><br>
+        Export&aacute; con <b>Exportar .dvw</b> y sub&iacute; el archivo desde
+        <b>Subir partido</b>, como siempre.<br><br>
+        <span style="color:var(--mut)">De ah&iacute; en adelante el sistema hace
+        el resto.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:14px;background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:13px">
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#60a5fa;margin-bottom:8px">
+      Para que quede como una aplicaci&oacute;n</div>
+    <div style="font-size:12px;line-height:1.7;color:var(--txt)">
+      No es obligatorio, pero es m&aacute;s c&oacute;modo: abre en su propia ventana,
+      sin la barra del navegador, y queda como un &iacute;cono m&aacute;s.<br><br>
+      <b>En la computadora</b> &mdash; con el panel abierto, mir&aacute; el final de la
+      barra de direcciones: aparece un &iacute;cono de pantallita con una flecha.
+      Clic ah&iacute; y <b>Instalar</b>.<br>
+      <span style="color:var(--mut)">Si no lo ves: men&uacute; de tres puntos &rarr;
+      Enviar, guardar y compartir &rarr; Instalar p&aacute;gina como aplicaci&oacute;n.</span><br><br>
+      <b>En el celular</b> &mdash; Android: tres puntos &rarr; Agregar a pantalla
+      principal. iPhone: compartir &rarr; Agregar a inicio.
+    </div>
+  </div>
+
+  <div style="margin-top:14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:13px">
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:8px">
+      Lo que conviene saber</div>
+    <div style="font-size:12px;line-height:1.75;color:var(--txt)">
+      <b>La primera vez s&iacute; hace falta se&ntilde;al.</b> Es cuando se guarda.
+      Despu&eacute;s no.<br>
+      <b>Si publicamos una correcci&oacute;n, se actualiza sola</b> la pr&oacute;xima vez
+      que abras con se&ntilde;al. No hay que borrar nada.<br>
+      <b>No borres los datos del navegador.</b> Ah&iacute; queda lo que scouteaste:
+      limpiar el historial con la opci&oacute;n de datos de sitios se lleva lo que no
+      hayas exportado.<br>
+      <b>Export&aacute; apenas puedas.</b> El .dvw en tu carpeta es el respaldo de
+      verdad.<br>
+      <b>Una computadora, un partido.</b> Lo guardado vive en esa m&aacute;quina. Si
+      empez&aacute;s en una y quer&eacute;s seguir en otra, export&aacute; y abr&iacute; el .dvw.
+    </div>
+  </div>
+</div>
 </div></div>
 <script>function abrirAyuda(){ document.getElementById('m-ayuda').classList.add('open'); }</script>
 
 <script src="lang.js"></script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   SCOUTEAR SIN SEÑAL
+   --------------------------------------------------------------------------
+   El panel es una pagina web, asi que hasta ahora hacia falta conexion para
+   abrirlo. Un partido se scoutea donde se juega, y en muchos clubes ahi no
+   hay señal.
+
+   Esto le pide al navegador que guarde la pagina en el dispositivo. La primera
+   vez que se abre con señal se guarda; de ahi en adelante abre siempre.
+
+   Lo que se scoutea sin conexion queda guardado igual que antes: se sube
+   cuando vuelve la señal.
+   ══════════════════════════════════════════════════════════════════════════ */
+var MODO_SIN_SENAL = false;
+
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(){ /* sin drama */ });
+  });
+})();
+
+/* El cartel de "sin señal". No molesta ni tapa nada: es para que el scout
+   sepa que esta trabajando sin conexion y que sus datos estan a salvo. */
+(function(){
+  function cartel(){
+    var d = document.getElementById('sin-senal');
+    if(!d){
+      d = document.createElement('div');
+      d.id = 'sin-senal';
+      d.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);'+
+        'z-index:9999;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.45);'+
+        'color:#f59e0b;border-radius:20px;padding:5px 16px;font-family:inherit;'+
+        'font-size:11px;font-weight:700;letter-spacing:.5px;pointer-events:none;'+
+        'backdrop-filter:blur(6px)';
+      d.textContent = 'Sin se\u00f1al \u00b7 se guarda igual';
+      document.body.appendChild(d);
+    }
+    d.style.display = navigator.onLine ? 'none' : 'block';
+    MODO_SIN_SENAL = !navigator.onLine;
+  }
+  window.addEventListener('online',  cartel);
+  window.addEventListener('offline', cartel);
+  if(document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', cartel);
+  else cartel();
+})();
+</script>
 </body>
 </html>

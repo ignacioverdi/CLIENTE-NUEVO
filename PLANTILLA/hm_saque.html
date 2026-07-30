@@ -55,17 +55,22 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 .fsel{width:100%;background:var(--card2);border:1px solid var(--border2);color:var(--txt);padding:7px 10px;border-radius:8px;font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:6px}
 .fsel:last-child{margin-bottom:0}
 .fsel option{background:#0D0E1A}
+.cc-wrap{max-width:380px;margin:0 auto}
+.cc-lbl{font-size:9px;font-weight:800;letter-spacing:2px;text-align:center;margin:5px 0 2px;font-family:'Barlow Condensed',sans-serif}
+.cc-origin{font-size:12px;font-weight:700;color:#94a3b8;text-align:center;margin:2px 0 7px;font-family:'Barlow Condensed',sans-serif}
+.cc-origin b{color:#e2e8f0;font-weight:800}
+.cc-grid{display:grid;grid-template-columns:repeat(3,minmax(56px,1fr));gap:3px}
+.cc-cell{position:relative;height:64px;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.06)}
+.cc-cell .zn{position:absolute;top:3px;left:5px;font-size:9px;opacity:.5;font-family:'Bebas Neue',sans-serif}
+.cc-cell .cn{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1;color:#fff}
+.cc-cell .pc{position:absolute;bottom:3px;right:5px;font-size:9px;opacity:.8;color:#fff}
 </style>
-<script src="datos_seguros.js"></script>
-  <script src="liga_data.js.enc"></script>
-  <script>abrirDatos();</script>
-<script src="liga_data_entrenamientos.js" onerror="void 0"></script>
+<script src="liga_data.js"></script>
+<script src="liga_data_entrenamientos.js"></script>
 </head>
 <body>
-<div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
-
-<div class="hdr"><div><div class="hdr-t">{{CLUB_COMPLETO}} — ANALISIS DE SAQUE 2026</div><div class="hdr-s">26 partidos {{LIGA}} · EFF = (1x# + 0.5x/ + 0.25x+ - 1x=) / total</div></div>
-</div>
+<div class="hdr"><div><div class="hdr-t">{{CLUB_COMPLETO}} — ANALISIS DE SAQUE 2026</div><div class="hdr-s">7 partidos DHM Argentina · EFF = (1x# + 0.5x/ + 0.25x+ - 1x=) / total</div></div>
+<div style="display:flex;align-items:center;gap:4px"><button id="lang-es" onclick="setLang('es')" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;padding:3px 9px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:1px;opacity:1">ES</button><button id="lang-en" onclick="setLang('en')" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;padding:3px 9px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:1px;opacity:0.4">EN</button><button id="lang-de" onclick="setLang('de')" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;padding:3px 9px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:1px;opacity:0.4">DE</button></div></div>
 <div class="layout">
 <div class="sidebar">
   <div class="flabel" style="margin-top:0">Origen de datos</div>
@@ -73,13 +78,12 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
     <button id="modo-partido" onclick="setModo('partido')" style="flex:1;background:var(--accent,#e8192c);border:none;color:#fff;padding:8px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;cursor:pointer;letter-spacing:1px">PARTIDO</button>
     <button id="modo-entrenamiento" onclick="setModo('entrenamiento')" style="flex:1;background:transparent;border:1px solid var(--border2,rgba(255,255,255,.15));color:#94a3b8;padding:8px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;cursor:pointer;letter-spacing:1px">ENTRENAMIENTO</button>
   </div>
-  <div class="flabel" data-i18n="Jugador"><span data-t="g_jugador">Jugador</span></div>
+  <div class="flabel" data-i18n="Jugador">Jugador</div>
   <select class="psel" id="psel" onchange="onPlayerChange(this.value)"><option value="">Seleccionar...</option></select>
-  <button id="ver-video-btn" onclick="abrirVideo()" style="width:100%;margin-top:8px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.45);color:#F97316;padding:9px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1px;cursor:pointer">🎬 VER VIDEO DE ESTAS ACCIONES</button>
   <div class="active-filters" id="active-tags"></div>
-  <div class="acc-group"><div class="acc-header" id="acc-hdr-partido" onclick="accToggle('partido')"><span><span data-t="g_partido">Partido</span></span><div style="display:flex;align-items:center;gap:6px"><div class="acc-dot"></div><span class="acc-arrow">▶</span></div></div>
+  <div class="acc-group"><div class="acc-header" id="acc-hdr-partido" onclick="accToggle('partido')"><span>Partido</span><div style="display:flex;align-items:center;gap:6px"><div class="acc-dot"></div><span class="acc-arrow">▶</span></div></div>
   <div class="acc-body" id="acc-body-partido">
-    <div class="flabel" style="margin-top:0" data-i18n="Rival"><span data-t="g_rival">Rival</span></div>
+    <div class="flabel" style="margin-top:0" data-i18n="Rival">Rival</div>
     <select class="fsel" id="fsel-rival"><option value="all">Todos</option></select>
     <div class="flabel" data-i18n="Partido especifico">Partido específico</div>
     <select class="fsel" id="fsel-gi"><option value="all">Todos</option></select>
@@ -115,26 +119,26 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
   var td=L.teams[equipo];
   try{ document.title='Saque — '+td.name; }catch(e){}
   window.__TEAM_NAME=td.name; window.__TEAM_SLUG=equipo;
-  return { rivals:td.rivals, games:(td.matches||td.games||td.rivals.map(function(r,i){return {idx:i,rival:r,date:''};})), players:td.srv };
+  return { rivals:td.rivals, games:td.rivals.map(function(r,i){return {idx:i,rival:r,date:''};}), players:td.srv };
 })();
 
 // ── I18N ENGINE ──────────────────────────────────────────────────
 var LANG=(function(){var l=null;try{l=localStorage.getItem('vb_lang');}catch(e){}if(l)return l;var n=(navigator.language||'es').substring(0,2).toLowerCase();return['es','en','de'].indexOf(n)>=0?n:'es';})();
-var T={"Jugador": {"en": "Player", "de": "Spieler"}, "Tipo de ataque": {"en": "Attack type", "de": "Angriffstyp"}, "Tipo de saque": {"en": "Serve type", "de": "Aufschlagtyp"}, "Tipo de recepcion": {"en": "Reception type", "de": "Annahmetyp"}, "Tipo de armado": {"en": "Set type", "de": "Stelltyp"}, "Rival": {"en": "Opponent", "de": "Gegner"}, "Set": {"en": "Set", "de": "Satz"}, "Momento del set": {"en": "Set moment", "de": "Satzzeitpunkt"}, "Valoracion": {"en": "Evaluation", "de": "Bewertung"}, "Combinacion": {"en": "Combination", "de": "Kombination"}, "Combinacion de ataque": {"en": "Attack combination", "de": "Angriffskombination"}, "Llamada del colocador": {"en": "Setter call", "de": "Stellerruf"}, "Posicion del armador": {"en": "Setter position", "de": "Stellerposition"}, "Resultado del ataque": {"en": "Attack result", "de": "Angriffsergebnis"}, "Calidad de la recepcion previa": {"en": "Prior reception quality", "de": "Annahmequalitaet vorher"}, "Calidad de recepcion previa": {"en": "Prior reception quality", "de": "Annahmequalitaet vorher"}, "Quien recibio": {"en": "Who received", "de": "Wer angenommen"}, "Zona origen (saque rival)": {"en": "Origin zone (opp. serve)", "de": "Ursprungszone (Gegneraufschlag)"}, "Zona origen": {"en": "Origin zone", "de": "Ursprungszone"}, "Limpiar filtros": {"en": "Clear filters", "de": "Filter loeschen"}, "acciones filtradas": {"en": "filtered actions", "de": "gefilterte Aktionen"}, "armadas filtradas": {"en": "filtered sets", "de": "gefilterte Stellaktionen"}, "Todos": {"en": "All", "de": "Alle"}, "Todas": {"en": "All", "de": "Alle"}, "Side Out": {"en": "Side Out", "de": "Side Out"}, "Transicion": {"en": "Transition", "de": "Uebergang"}, "Flotado": {"en": "Float", "de": "Flatter"}, "Potencia": {"en": "Spin", "de": "Sprung"}, "Perfecta": {"en": "Perfect", "de": "Perfekt"}, "Positiva": {"en": "Positive", "de": "Positiv"}, "Exclamativa": {"en": "Exclamation", "de": "Ausrufer"}, "Negativa": {"en": "Negative", "de": "Negativ"}, "Vendida": {"en": "Over", "de": "Uebergebracht"}, "Error": {"en": "Error", "de": "Fehler"}, "Kill": {"en": "Kill", "de": "Kill"}, "Pos": {"en": "Pos", "de": "Pos"}, "Neg": {"en": "Neg", "de": "Neg"}, "Bloq": {"en": "Block", "de": "Block"}, "Err": {"en": "Err", "de": "Fehl"}, "Punto": {"en": "Ace", "de": "Ass"}, "Vendido": {"en": "Over", "de": "Angenommen"}, "Positivo": {"en": "Positive", "de": "Positiv"}, "Negativo": {"en": "Negative", "de": "Negativ"}, "\u25b2 RIVAL": {"en": "\u25b2 OPP", "de": "\u25b2 GEGNER"}, "\u25bc PROPIO": {"en": "\u25bc OWN", "de": "\u25bc EIGENES"}, "\u25bc ORIGEN": {"en": "\u25bc ORIGIN", "de": "\u25bc URSPRUNG"}, "EFF Ataque": {"en": "ATK EFF", "de": "Ang.Wirk."}, "EFF Side Out": {"en": "SO EFF", "de": "SO-Wirk."}, "EFF Transicion": {"en": "TR EFF", "de": "Ueberg.Wirk."}, "%Kill": {"en": "%Kill", "de": "%Kill"}, "ataques": {"en": "attacks", "de": "Angriffe"}, "saques": {"en": "serves", "de": "Aufschlaege"}, "recepciones": {"en": "receptions", "de": "Annahmen"}, "armadas": {"en": "sets", "de": "Stellaktionen"}, "arm.": {"en": "sets", "de": "Stz."}, "kills": {"en": "kills", "de": "Kills"}, "Mapas de destino": {"en": "Destination maps", "de": "Zielkarten"}, "EFF por rival": {"en": "EFF by opponent", "de": "Wirk. nach Gegner"}, "Evolucion partido a partido": {"en": "Match-by-match trend", "de": "Spielverlauf"}, "SO vs TR por rival": {"en": "SO vs TR by opponent", "de": "SO vs TR nach Gegner"}, "Combinaciones": {"en": "Combinations", "de": "Kombinationen"}, "Mapa de cancha": {"en": "Court map", "de": "Feldkarte"}, "Distribucion en cancha": {"en": "Court distribution", "de": "Feldverteilung"}, "Analisis por llamada": {"en": "Analysis by call", "de": "Analyse nach Ruf"}, "Distribucion": {"en": "Distribution", "de": "Verteilung"}, "Destino ataque": {"en": "Attack destination", "de": "Angriffsziel"}, "Juego segun posicion del armador": {"en": "Play by setter position", "de": "Spiel nach Stellerposition"}, "EFF segun calidad de recepcion previa": {"en": "EFF by prior reception quality", "de": "Wirk. nach Annahmequalitaet"}, "Combinaciones generadas": {"en": "Generated combinations", "de": "Erzeugte Kombinationen"}, "Distribucion por llamada": {"en": "Distribution by call", "de": "Verteilung nach Ruf"}, "Inicio": {"en": "Start", "de": "Anfang"}, "Final": {"en": "End", "de": "Ende"}, "Mejorando +": {"en": "Improving +", "de": "Verbesserung +"}, "Bajando ": {"en": "Declining ", "de": "Rueckgang "}};
+var T={"Jugador": {"en": "Player", "de": "Spieler"}, "Tipo de ataque": {"en": "Attack type", "de": "Angriffstyp"}, "Tipo de saque": {"en": "Serve type", "de": "Aufschlagtyp"}, "Tipo de recepcion": {"en": "Reception type", "de": "Annahmetyp"}, "Tipo de armado": {"en": "Set type", "de": "Stelltyp"}, "Rival": {"en": "Opponent", "de": "Gegner"}, "Set": {"en": "Set", "de": "Satz"}, "Momento del set": {"en": "Set moment", "de": "Satzzeitpunkt"}, "Valoracion": {"en": "Evaluation", "de": "Bewertung"}, "Combinacion": {"en": "Combination", "de": "Kombination"}, "Combinacion de ataque": {"en": "Attack combination", "de": "Angriffskombination"}, "Llamada del colocador": {"en": "Setter call", "de": "Stellerruf"}, "Posicion del armador": {"en": "Setter position", "de": "Stellerposition"}, "Resultado del ataque": {"en": "Attack result", "de": "Angriffsergebnis"}, "Calidad de la recepcion previa": {"en": "Prior reception quality", "de": "Annahmequalitaet vorher"}, "Calidad de recepcion previa": {"en": "Prior reception quality", "de": "Annahmequalitaet vorher"}, "Quien recibio": {"en": "Who received", "de": "Wer angenommen"}, "Zona origen (saque rival)": {"en": "Origin zone (opp. serve)", "de": "Ursprungszone (Gegneraufschlag)"}, "Zona origen": {"en": "Origin zone", "de": "Ursprungszone"}, "Limpiar filtros": {"en": "Clear filters", "de": "Filter loeschen"}, "acciones filtradas": {"en": "filtered actions", "de": "gefilterte Aktionen"}, "armadas filtradas": {"en": "filtered sets", "de": "gefilterte Stellaktionen"}, "Todos": {"en": "All", "de": "Alle"}, "Todas": {"en": "All", "de": "Alle"}, "Side Out": {"en": "Side Out", "de": "Side Out"}, "Transicion": {"en": "Transition", "de": "Uebergang"}, "Flotado": {"en": "Float", "de": "Flatter"}, "Potencia": {"en": "Power", "de": "Sprung"}, "Perfecta": {"en": "Perfect", "de": "Perfekt"}, "Positiva": {"en": "Positive", "de": "Positiv"}, "Exclamativa": {"en": "Exclamation", "de": "Ausrufer"}, "Negativa": {"en": "Negative", "de": "Negativ"}, "Vendida": {"en": "Over", "de": "Uebergebracht"}, "Error": {"en": "Error", "de": "Fehler"}, "Kill": {"en": "Kill", "de": "Kill"}, "Pos": {"en": "Pos", "de": "Pos"}, "Neg": {"en": "Neg", "de": "Neg"}, "Bloq": {"en": "Block", "de": "Block"}, "Err": {"en": "Err", "de": "Fehl"}, "Punto": {"en": "Ace", "de": "Ass"}, "Vendido": {"en": "Over", "de": "Angenommen"}, "Positivo": {"en": "Positive", "de": "Positiv"}, "Negativo": {"en": "Negative", "de": "Negativ"}, "\u25b2 RIVAL": {"en": "\u25b2 OPP", "de": "\u25b2 GEGNER"}, "\u25bc PROPIO": {"en": "\u25bc OWN", "de": "\u25bc EIGENES"}, "\u25bc ORIGEN": {"en": "\u25bc ORIGIN", "de": "\u25bc URSPRUNG"}, "EFF Ataque": {"en": "ATK EFF", "de": "Ang.Wirk."}, "EFF Side Out": {"en": "SO EFF", "de": "SO-Wirk."}, "EFF Transicion": {"en": "TR EFF", "de": "Ueberg.Wirk."}, "%Kill": {"en": "%Kill", "de": "%Kill"}, "ataques": {"en": "attacks", "de": "Angriffe"}, "saques": {"en": "serves", "de": "Aufschlaege"}, "recepciones": {"en": "receptions", "de": "Annahmen"}, "armadas": {"en": "sets", "de": "Stellaktionen"}, "arm.": {"en": "sets", "de": "Stz."}, "kills": {"en": "kills", "de": "Kills"}, "Mapas de destino": {"en": "Destination maps", "de": "Zielkarten"}, "EFF por rival": {"en": "EFF by opponent", "de": "Wirk. nach Gegner"}, "Evolucion partido a partido": {"en": "Match-by-match trend", "de": "Spielverlauf"}, "SO vs TR por rival": {"en": "SO vs TR by opponent", "de": "SO vs TR nach Gegner"}, "Combinaciones": {"en": "Combinations", "de": "Kombinationen"}, "Mapa de cancha": {"en": "Court map", "de": "Feldkarte"}, "Distribucion en cancha": {"en": "Court distribution", "de": "Feldverteilung"}, "Analisis por llamada": {"en": "Analysis by call", "de": "Analyse nach Ruf"}, "Distribucion": {"en": "Distribution", "de": "Verteilung"}, "Destino ataque": {"en": "Attack destination", "de": "Angriffsziel"}, "Juego segun posicion del armador": {"en": "Play by setter position", "de": "Spiel nach Stellerposition"}, "EFF segun calidad de recepcion previa": {"en": "EFF by prior reception quality", "de": "Wirk. nach Annahmequalitaet"}, "Combinaciones generadas": {"en": "Generated combinations", "de": "Erzeugte Kombinationen"}, "Distribucion por llamada": {"en": "Distribution by call", "de": "Verteilung nach Ruf"}, "Inicio": {"en": "Start", "de": "Anfang"}, "Final": {"en": "End", "de": "Ende"}, "Mejorando +": {"en": "Improving +", "de": "Verbesserung +"}, "Bajando ": {"en": "Declining ", "de": "Rueckgang "}};
 function t(k){if(LANG==='es')return k;return(T[k]&&T[k][LANG])?T[k][LANG]:k;}
 function setLang(l){LANG=l;try{localStorage.setItem('vb_lang',l);}catch(e){}translatePage();if(typeof buildChips==='function')buildChips();if(typeof render==='function')render();}
 function translatePage(){document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n'));});['es','en','de'].forEach(function(x){var b=document.getElementById('lang-'+x);if(b)b.style.opacity=(x===LANG)?'1':'0.4';});}
 // ─────────────────────────────────────────────────────────────────
 
 var RIVALS=RAW.rivals,GAMES=RAW.games;
-var RES_D=['#','/','+','!','=','-'],MOM_D=['early','mid','late'];
+var RES_D=['#','+','-','/','=','!'],MOM_D=['early','mid','late'];
 var OBJ_VAL=20;
 var T1K='SM',T2K='SQ';
 var TKEY='s',TYPESKEY='stypes';
 var ORIG_SIDE='own',DEST_SIDE='rival';
 var RES_LABEL={"#": "Punto", "+": "Positivo", "-": "Negativo", "/": "Vendido", "=": "Error", "!": "Exclamativo"};
 var RES_COLOR={"#": "#22c55e", "+": "#a3e635", "-": "#f59e0b", "/": "#86efac", "=": "#ef4444", "!": "#fbbf24"};
-var F={player:'',stype:'all',rival:'all',gi:'all',set:'all',moment:'all',result:'all',origin:'all'};
+var F={player:'',stype:'all',rival:'all',set:'all',moment:'all',result:'all',origin:'all'};
 var PLAYERS={};
 Object.keys(RAW.players).forEach(function(num){
   var p=RAW.players[num],types=p[TYPESKEY]||[];
@@ -209,18 +213,9 @@ function buildChips(){
   buildCG('f-result',ress.map(function(r){return [r,r==='all'?'Todos':(RES_LABEL[r]||r)];}),'result','on-g');
   var origs=['all'].concat(uniq(acts.map(function(a){return a.origin;})).filter(Boolean).sort(function(a,b){return a-b;}));
   buildCG('f-origin',origs.map(function(o){return [o,o==='all'?'Todas':'Zona '+o];}),'origin','on-c');
-  var ugi=uniq(acts.map(function(a){return a.gi;})).filter(function(g){return g>=0;}).sort(function(a,b){return a-b;});
-  buildCG('fsel-gi',[['all','Todos']].concat(ugi.map(function(g){var G=GAMES[g];var rs=G?String(G.rival).split(' ').pop().substring(0,10):('P'+g);var dl='';if(G&&G.date){var pp=String(G.date).split('-');if(pp.length===3){dl=' '+parseInt(pp[2])+'/'+parseInt(pp[1]);}}return [g,rs+dl];})),'gi','on-i');
 }
 function buildCG(id,opts,key,cls){
-  var _M={'f-type':'fsel-stype','f-rival':'fsel-rival','f-set':'fsel-set','f-moment':'fsel-moment','f-result':'fsel-result','f-origin':'fsel-origin'};
-  var el=document.getElementById(_M[id]||id); if(!el) return;
-  if(el.tagName==='SELECT'){
-    el.innerHTML='';
-    opts.forEach(function(opt){var op=document.createElement('option');op.value=opt[0];op.textContent=opt[1];if(F[key]===opt[0]||F[key]===String(opt[0]))op.selected=true;el.appendChild(op);});
-    el.onchange=function(){setF(key,el.value);};
-    return;
-  }
+  var el=document.getElementById(id); if(!el) return;
   el.innerHTML='';
   opts.forEach(function(opt){
     var val=opt[0],lbl=opt[1];
@@ -239,60 +234,32 @@ function buildZones(acts,key){
 // Single court SVG: shows both origin and destination on correct halves
 // RIVAL field (top): zones [[1,6,5],[9,8,7],[2,3,4]]
 // OWN field (bottom): zones [[4,3,2],[7,8,9],[5,6,1]]
-function singleCourtSVG(origZones, destZones, origColor, destColor, total, extra){
-  var RIVAL=[[1,6,5],[9,8,7],[2,3,4]];
-  var OWN=[[4,3,2],[7,8,9],[5,6,1]];
-  var maxO=Math.max.apply(null,Object.values(origZones))||1;
-  var maxD=Math.max.apply(null,Object.values(destZones))||1;
-  var W=160,H=220,P=4,CW=(W-P*2)/3,CH=(H/2-P)/3;
-  var s="<svg viewBox='0 0 "+W+" "+H+"' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-width:170px;display:block;margin:0 auto'>";
-  s+="<style>text{pointer-events:none}</style><rect width='"+W+"' height='"+H+"' fill='rgba(13,14,26,.97)' rx='8'/>";
-  // Rival field background
-  s+="<rect x='"+P+"' y='"+P+"' width='"+(W-P*2)+"' height='"+(H/2-P)+"' fill='rgba(232,25,44,.03)' rx='3'/>";
-  // Own field background
-  s+="<rect x='"+P+"' y='"+(H/2)+"' width='"+(W-P*2)+"' height='"+(H/2-P)+"' fill='rgba(129,140,248,.03)' rx='3'/>";
-  // Net
-  s+="<rect x='"+P+"' y='"+(H/2-1.5)+"' width='"+(W-P*2)+"' height='3' fill='rgba(255,255,255,.35)' rx='1.5'/>";
-  // Grid lines
-  for(var i=1;i<3;i++){
-    s+="<line x1='"+(P+CW*i)+"' y1='"+P+"' x2='"+(P+CW*i)+"' y2='"+(H-P)+"' stroke='rgba(255,255,255,.06)' stroke-width='0.5'/>";
-    s+="<line x1='"+P+"' y1='"+(P+CH*i)+"' x2='"+(W-P)+"' y2='"+(P+CH*i)+"' stroke='rgba(255,255,255,.06)' stroke-width='0.5'/>";
-    s+="<line x1='"+P+"' y1='"+(H/2+CH*i)+"' x2='"+(W-P)+"' y2='"+(H/2+CH*i)+"' stroke='rgba(255,255,255,.06)' stroke-width='0.5'/>";
-  }
-  // ORIGIN zones (on ORIG_SIDE)
-  var origLayout = ORIG_SIDE==='rival' ? RIVAL : OWN;
-  var origYOff   = ORIG_SIDE==='rival' ? P : H/2;
-  origLayout.forEach(function(row,ri){
-    row.forEach(function(zone,ci){
-      var cnt=origZones[zone]||0,x=P+ci*CW,y=origYOff+ri*CH;
-      if(cnt>0){
-        var op=0.08+(cnt/maxO)*0.7;
-        s+="<rect x='"+(x+1.5)+"' y='"+(y+1.5)+"' width='"+(CW-3)+"' height='"+(CH-3)+"' fill='"+origColor+"' opacity='"+op+"' rx='3' onclick=\"verVideoOrig("+zone+",'"+(extra||'')+"')\" style=\"cursor:pointer\"/>";
-        s+="<text x='"+(x+CW/2)+"' y='"+(y+CH/2+5)+"' font-family='Bebas Neue,sans-serif' font-size='11' fill='white' text-anchor='middle'>"+cnt+"</text>";
-        if(total>0) s+="<text x='"+(x+CW/2)+"' y='"+(y+CH/2+15)+"' font-size='6' fill='rgba(255,255,255,.5)' text-anchor='middle'>"+Math.round(cnt/total*100)+"%</text>";
-      }
-      s+="<text x='"+(x+5)+"' y='"+(y+11)+"' font-size='6' fill='rgba(255,255,255,.2)' font-family='Bebas Neue,sans-serif'>"+zone+"</text>";
-    });
-  });
-  // DEST zones (on DEST_SIDE)
-  var destLayout = DEST_SIDE==='rival' ? RIVAL : OWN;
-  var destYOff   = DEST_SIDE==='rival' ? P : H/2;
-  destLayout.forEach(function(row,ri){
-    row.forEach(function(zone,ci){
-      var cnt=destZones[zone]||0,x=P+ci*CW,y=destYOff+ri*CH;
-      if(cnt>0){
-        var op=0.08+(cnt/maxD)*0.7;
-        s+="<rect x='"+(x+1.5)+"' y='"+(y+1.5)+"' width='"+(CW-3)+"' height='"+(CH-3)+"' fill='"+destColor+"' opacity='"+op+"' rx='3' onclick=\"verVideoDest("+zone+",'"+(extra||'')+"')\" style=\"cursor:pointer\"/>";
-        s+="<text x='"+(x+CW/2)+"' y='"+(y+CH/2+5)+"' font-family='Bebas Neue,sans-serif' font-size='11' fill='white' text-anchor='middle'>"+cnt+"</text>";
-        if(total>0) s+="<text x='"+(x+CW/2)+"' y='"+(y+CH/2+15)+"' font-size='6' fill='rgba(255,255,255,.5)' text-anchor='middle'>"+Math.round(cnt/total*100)+"%</text>";
-      }
-      s+="<text x='"+(x+5)+"' y='"+(y+11)+"' font-size='6' fill='rgba(255,255,255,.2)' font-family='Bebas Neue,sans-serif'>"+zone+"</text>";
-    });
-  });
-  s+="<text x='"+(W/2)+"' y='"+(P+9)+"' font-size='6' fill='rgba(232,25,44,.5)' text-anchor='middle' font-family='Barlow Condensed,sans-serif' font-weight='800' letter-spacing='2'>▲ RIVAL</text>";
-  s+="<text x='"+(W/2)+"' y='"+(H-3)+"' font-size='6' fill='rgba(129,140,248,.35)' text-anchor='middle' font-family='Barlow Condensed,sans-serif' font-weight='800' letter-spacing='2'>▼ PROPIO</text>";
-  s+='</svg>';
-  return s;
+
+
+
+
+
+
+
+
+
+/* === Canchita estilo Plan de Partido (una cancha + linea de origen) === */
+var CC_MIN=2;
+function _ccRGB(c){if(!c)return '129,140,248';c=String(c);if(c.charAt(0)==='#'){var x=c.slice(1);if(x.length===3)x=x.charAt(0)+x.charAt(0)+x.charAt(1)+x.charAt(1)+x.charAt(2)+x.charAt(2);var n=parseInt(x,16);return ((n>>16)&255)+','+((n>>8)&255)+','+(n&255);}var m=c.match(/(\d+)\D+(\d+)\D+(\d+)/);return m?(m[1]+','+m[2]+','+m[3]):'129,140,248';}
+function ccGrid(zones,layout,color,total,opts){opts=opts||{};var minN=opts.minN||0,rgb=_ccRGB(color);var vals=[];layout.forEach(function(r){r.forEach(function(z){vals.push(zones[z]||0);});});var mx=Math.max.apply(null,vals)||1;var h="<div class='cc-grid'>";layout.forEach(function(row){row.forEach(function(z){var cnt=zones[z]||0,low=(minN>0&&cnt>0&&cnt<minN),bg,inner='';if(cnt<=0){bg='rgba(255,255,255,.02)';}else if(low){bg='rgba(255,255,255,.05)';inner="<div class='cn' style='color:#64748b;font-size:20px'>"+cnt+"</div>";}else{var a=0.16+(cnt/mx)*0.72;bg='rgba('+rgb+','+a.toFixed(2)+')';inner="<div class='cn'>"+cnt+"</div>"+((total>0)?"<div class='pc'>"+Math.round(cnt/total*100)+"%</div>":'');}h+="<div class='cc-cell' style='background:"+bg+"'><div class='zn'>"+z+"</div>"+inner+"</div>";});});return h+"</div>";}
+function ccOriginLine(zones,total){var arr=[];for(var z in zones){if(zones[z]>0)arr.push([z,zones[z]]);}arr.sort(function(a,b){return b[1]-a[1];});if(!arr.length)return "";var top=arr.slice(0,3).map(function(p){return "Z"+p[0]+(total>0?" "+Math.round(p[1]/total*100)+"%":" ("+p[1]+")");}).join(" \u00b7 ");return "<div class='cc-origin'>Zona de origen: <b>"+top+"</b></div>";}
+
+function singleCourtSVG(origZones, destZones, origColor, destColor, total){
+  /* La cancha del rival, como se ve desde el banco: la red arriba y la
+     fila delantera 4-3-2. Antes estaba invertida en los dos ejes, así que
+     los números caían en el lugar equivocado de la cancha. */
+  var RIVAL=[[4,3,2],[7,8,9],[5,6,1]], OWN=[[4,3,2],[7,8,9],[5,6,1]];
+  var dL=(DEST_SIDE==='rival')?RIVAL:OWN;
+  var h="<div class='cc-wrap'>";
+  h+=ccOriginLine(origZones,total);
+  h+=ccGrid(destZones,dL,destColor,total,{minN:CC_MIN});
+  h+="<div class='cc-lbl' style='color:rgba(129,140,248,.5)'>\u25bc DESTINO</div>";
+  return h+"</div>";
 }
 function buildZonesFrom(acts,key){
   var z={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
@@ -302,12 +269,6 @@ function buildZonesFrom(acts,key){
 function sc(label,color,val,sub){
   return "<div class='scard'><div style='font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px'>"+label+"</div><div class='big' style='color:"+color+"'>"+val+"</div><div class='lbl'>"+sub+"</div></div>";
 }
-var VSK='Saque';
-function _vchk(){ if(typeof equipo!=='undefined'&&equipo&&equipo!=='{{club}}'){alert('Por ahora el video está disponible solo para {{Club}}.');return false;} if(!F.player){alert('Elegí un jugador primero.');return false;} return true; }
-function verVideoDest(zone,extra){ if(!_vchk())return; window.open('cortes.html?num='+encodeURIComponent(F.player)+'&sk='+encodeURIComponent(VSK)+'&dz='+zone+(extra||''),'_blank'); }
-function verVideoOrig(zone,extra){ if(!_vchk())return; window.open('cortes.html?num='+encodeURIComponent(F.player)+'&sk='+encodeURIComponent(VSK)+'&oz='+zone+(extra||''),'_blank'); }
-function abrirVideo(){ if(!_vchk())return; window.open('cortes.html?num='+encodeURIComponent(F.player)+'&sk='+encodeURIComponent(VSK),'_blank'); }
-function accToggle(id){ var hdr=document.getElementById('acc-hdr-'+id); if(!hdr) return; hdr.classList.toggle('active'); }
 function render(){
   var content=document.getElementById('content');
   var acts=getFiltered();
@@ -332,12 +293,12 @@ function render(){
   // Result bar
   html+="<div style='background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:18px'>";
   html+="<div style='display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap'>";
-  ['#','/','+','!','-','='].forEach(function(r){
+  ['#','+','-','/','!','='].forEach(function(r){
     var cnt=rc[r]||0; if(!cnt) return;
     html+="<div style='text-align:center'><div style='font-family:Bebas Neue,sans-serif;font-size:22px;color:"+(RES_COLOR[r]||'#475569')+"'>"+cnt+"</div><div style='font-size:11px;color:var(--muted)'>"+( RES_LABEL[r]||r)+' ('+Math.round(cnt/total*100)+'%)</div></div>';
   });
   html+="</div><div style='display:flex;height:8px;border-radius:4px;overflow:hidden'>";
-  ['#','/','+','!','-','='].forEach(function(r){var cnt=rc[r]||0;if(cnt) html+="<div style='flex:"+cnt+";background:"+(RES_COLOR[r]||'#475569')+"'></div>";});
+  ['#','+','-','/','!','='].forEach(function(r){var cnt=rc[r]||0;if(cnt) html+="<div style='flex:"+cnt+";background:"+(RES_COLOR[r]||'#475569')+"'></div>";});
   html+='</div></div>';
   // Heatmap courts - all in one flex row
   html+="<div class='sec'>Mapa de cancha</div>";
@@ -349,7 +310,7 @@ function render(){
     var origZ=buildZonesFrom(wO,'origin'),destZones=buildZonesFrom(wD,'dest');
     html+="<div style='text-align:center'>";
     html+="<div class='court-title' style='color:#94a3b8'>Todos ("+total+")</div>";
-    html+=singleCourtSVG(origZ,destZones,'#818CF8','#F97316',Math.max(wO.length,wD.length),'');
+    html+=singleCourtSVG(origZ,destZones,'#818CF8','#F97316',Math.max(wO.length,wD.length));
     html+="<div class='legend' style='justify-content:center'>";
     html+="<div class='leg-item'><div class='leg-dot' style='background:#818CF8'></div>Origen</div>";
     html+="<div class='leg-item'><div class='leg-dot' style='background:#F97316'></div>Destino</div>";
@@ -363,7 +324,7 @@ function render(){
     var rD=buildZonesFrom(rA.filter(function(a){return a.dest;}),'dest');
     html+="<div style='text-align:center'>";
     html+="<div class='court-title' style='color:"+(RES_COLOR[r]||'#94a3b8')+"'>"+(RES_LABEL[r]||r)+' ('+rA.length+")</div>";
-    html+=singleCourtSVG(rO,rD,'rgba(129,140,248,0.5)',RES_COLOR[r]||'#F97316',rA.length,'&ev='+encodeURIComponent(r));
+    html+=singleCourtSVG(rO,rD,'rgba(129,140,248,0.5)',RES_COLOR[r]||'#F97316',rA.length);
     html+='</div>';
   });
   html+='</div></div>';
@@ -443,8 +404,5 @@ function _initModoBtns(){
 document.addEventListener('DOMContentLoaded', _initModoBtns);
 
 </script>
-<script src="lang.js"></script>
-<script src="temporadas_menu.js"></script>
 </body>
 </html>
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->

@@ -1,0 +1,141 @@
+SCOUTEAR SIN INTERNET
+=====================================================================
+
+
+   Un partido se juega donde se juega, y en muchos clubes ahí no hay
+   señal. El panel funciona igual.
+
+   Lo único que hace falta es prepararlo antes de salir.
+
+
+
+---------------------------------------------------------------------
+   ANTES DE IR AL PARTIDO   (una sola vez, en tu casa o en el club)
+---------------------------------------------------------------------
+
+   1.  Con señal, abrí el panel en la computadora que vas a llevar:
+
+           tuclub.vercel.app/panel_vivo.html
+
+   2.  Esperá a que cargue del todo y quedate unos diez segundos.
+
+       Ahí el navegador se guarda la página. No vas a ver ningún aviso:
+       pasa solo.
+
+   3.  Cerrá la pestaña.
+
+
+   >>  Con eso ya está. Esa computadora abre el panel sin señal.
+
+       Hacelo una vez por computadora. Si el scout usa la suya, tiene
+       que hacerlo en la suya.
+
+
+
+---------------------------------------------------------------------
+   EN EL PARTIDO   (sin señal)
+---------------------------------------------------------------------
+
+   1.  Abrí el navegador y andá a la misma dirección de siempre.
+
+       Si la tenés en favoritos, mejor. También sirve el historial.
+
+   2.  El panel abre normal.
+
+       Arriba, en el medio, vas a ver un cartel amarillo que dice
+       "Sin señal · se guarda igual". Eso confirma que está
+       funcionando sin conexión.
+
+   3.  Scouteá como siempre. No cambia nada.
+
+
+   >>  Todo lo que cargues queda guardado en esa computadora, aunque
+       cierres el navegador o se apague la máquina.
+
+
+
+---------------------------------------------------------------------
+   AL VOLVER   (con señal)
+---------------------------------------------------------------------
+
+   1.  Abrí el panel. El cartel amarillo desaparece solo.
+
+   2.  Exportá el partido con  "Exportar .dvw".
+
+   3.  Subilo desde  "Subir partido", como siempre.
+
+
+   >>  De ahí en adelante el sistema hace el resto solo.
+
+
+
+---------------------------------------------------------------------
+   PARA QUE QUEDE COMO UNA APLICACIÓN
+---------------------------------------------------------------------
+
+   No es obligatorio, pero es más cómodo: el panel abre en su propia
+   ventana, sin la barra del navegador, y queda como un ícono más.
+
+   EN LA COMPUTADORA (Chrome o Edge)
+
+       Con el panel abierto, mirá la barra de direcciones. A la
+       derecha aparece un ícono de una pantallita con una flecha.
+
+       Hacé clic ahí y elegí "Instalar".
+
+       Si no lo ves: menú de tres puntos arriba a la derecha →
+       "Enviar, guardar y compartir" → "Instalar página como
+       aplicación".
+
+   EN EL CELULAR O LA TABLET
+
+       Android:  menú de tres puntos → "Agregar a pantalla principal"
+       iPhone:   el botón de compartir → "Agregar a inicio"
+
+
+
+---------------------------------------------------------------------
+   LO QUE CONVIENE SABER
+---------------------------------------------------------------------
+
+   LA PRIMERA VEZ SÍ HACE FALTA SEÑAL.
+       Es cuando se guarda la página. Después no.
+
+   SI PUBLICAMOS UNA CORRECCIÓN, SE ACTUALIZA SOLA.
+       La próxima vez que abras con señal se pone al día sin que
+       tengas que hacer nada ni borrar nada.
+
+   NO BORRES LOS DATOS DEL NAVEGADOR.
+       Ahí es donde queda lo que scouteaste. Si limpiás el historial
+       con la opción de "datos de sitios", se pierde lo que no hayas
+       exportado todavía.
+
+   EXPORTÁ APENAS PUEDAS.
+       No es que se vaya a perder, pero el .dvw en tu carpeta es el
+       respaldo de verdad.
+
+   UNA COMPUTADORA, UN PARTIDO.
+       Lo guardado vive en el navegador de esa máquina. Si scouteás en
+       una y querés seguir en otra, exportá y abrí el .dvw en la otra.
+
+
+
+---------------------------------------------------------------------
+   SI ALGO NO FUNCIONA
+---------------------------------------------------------------------
+
+   "No abre sin señal"
+       Probablemente no llegó a guardarse. Volvé a abrirlo con señal,
+       esperá diez segundos y cerrá la pestaña. Después probá de nuevo
+       sin conexión.
+
+   "Abre pero no veo el cartel amarillo"
+       Puede que la computadora crea que tiene conexión aunque no
+       navegue. No es un problema: el panel funciona igual.
+
+   "Perdí lo que había scouteado"
+       Fijate si alguien limpió los datos del navegador. Si el partido
+       estaba exportado, abrilo con "Abrir .dvw" y seguí desde ahí.
+
+
+=====================================================================

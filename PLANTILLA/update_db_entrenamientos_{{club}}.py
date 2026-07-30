@@ -24,6 +24,27 @@ ESTRUCTURA DE ARCHIVOS:
 import os, re, json, argparse, shutil
 from collections import defaultdict, Counter
 
+# ── LA CONFIGURACION DEL CLUB ───────────────────────────────────────────────
+#    Las tablas ya no van escritas aca adentro: viven en config_club.json, que
+#    se arma al dar de alta leyendo los propios partidos del club.
+#
+#    Antes iban aca, con marcadores, y al reemplazar el nombre del club se
+#    rompian: el motor terminaba sin reconocer un solo equipo y la app aparecia
+#    vacia. Leyendolas de afuera, no hay nada que romper.
+try:
+    import config_club as _cfg
+    MAIN_TEAM = _cfg.equipo_propio()
+    TEAM_NORM = _cfg.tabla_de_equipos()
+    NLA_TEAMS = _cfg.equipos()
+except Exception as _e:
+    print('  [aviso] no pude leer config_club.json (%s)' % _e)
+    print('          corre crear_config.py una vez en la carpeta del club.')
+    MAIN_TEAM = ''
+    TEAM_NORM = {}
+    NLA_TEAMS = []
+# ────────────────────────────────────────────────────────────────────────────
+
+
 # ── NORMALIZACIÓN DE COMBOS AL CANÓNICO MUNDIAL ──────────────────────
 # Equivalencias argentino → canónico (mismo ataque, distinto idioma de scout)
 COMBO_EQUIV = {
@@ -39,34 +60,14 @@ def normalize_combo(combo):
 # ═══════════════════════════════════════════════════════════════════
 # CONFIGURACIÓN {{CLUB}} (Liga Argentina División de Honor)
 # ═══════════════════════════════════════════════════════════════════
-NLA_TEAMS = ['{{RIVAL1}}','{{RIVAL6}}','{{RIVAL8}}','{{RIVAL12}}','{{RIVAL5}}','{{Club}}','{{RIVAL2}}','{{RIVAL9}}']
-
-TEAM_NORM = {
-    'Biogas Volley {{Club}} ({{LIGA}} Men)': '{{Club}}',
-    'Volley NFELS': '{{Club}}', 'Volley Nfels': '{{Club}}',
-    'Volley {{RIVAL1}} ({{LIGA}} Men)': '{{RIVAL1}}',
-    'Volley {{RIVAL3}} ({{LIGA}} Men)': '{{RIVAL2}}',
-    '{{RIVAL7}} Genève Volleyball ({{LIGA}} Men)': '{{RIVAL6}}',
-    'Chnois Genve Volleyball': '{{RIVAL6}}',
-    '{{RIVAL8}} Volley ({{LIGA}} Men)': '{{RIVAL8}}',
-    'STV {{RIVAL9}} ({{LIGA}} Men)': '{{RIVAL9}}',
-    'TSV {{RIVAL12}} Volleyball ({{LIGA}} Men)': '{{RIVAL12}}',
-    'TSV {{RIVAL12}} Volleyball': '{{RIVAL12}}',
-    '{{RIVAL5}} UC ({{LIGA}} Men)': '{{RIVAL5}}',
-    'VBC {{RIVAL13}} (NLB Men)': '{{RIVAL13}}',
-    '{{RIVAL15}} Stars': '{{RIVAL15}}', 'CSU Corona {{RIVAL16}}': '{{RIVAL16}}',
-    'Neftohimic 2010 {{RIVAL14}}': '{{RIVAL14}}',
-    'SCM ZALAU': 'Zalau', 'SCM Zalau': 'Zalau',
-}
-MAIN_TEAM = '{{Club}}'
-
+# (NLA_TEAMS sale de config_club.json)
+# (TEAM_NORM sale de config_club.json)
+# (MAIN_TEAM sale de config_club.json)
 # Posiciones oficiales del plantel {{CLUB}} (por número de camiseta).
 # Fuente única de verdad — coincide con EQUIPO_DEMO de jugador.html.
-{{CLUB}}_POS_OFICIAL = {
-    1:'ARMADOR', 2:'CENTRAL', 3:'OPUESTO', 4:'ARMADOR', 5:'CENTRAL',
-    6:'OPUESTO', 7:'CENTRAL', 8:'LIBERO', 9:'PUNTA', 10:'PUNTA',
-    11:'PUNTA', 14:'PUNTA', 15:'CENTRAL'
-}
+{{CLUB}}_POS_OFICIAL = {}   # el puesto sale de lo que hace cada uno en la cancha
+# (antes iban aca los numeros del club de origen, que en otro club
+#  le asignan a cada jugador el puesto de otra persona)
 
 
 TEAM_COLORS = {
@@ -637,7 +638,7 @@ def _build_armador_page(team, slug, display, rivals_list, SUBS, template_dir, ou
     if not rallies: return
     src_path = os.path.join(template_dir, '_tpl_armador.html')
     if not os.path.exists(src_path):
-        for cand in ['armador_{{club}}.html','armador_{{RIVAL1}}.html']:
+        for cand in ['armador_{{club}}.html','armador_amriswil.html']:
             cp = os.path.join(output_dir, cand)
             if os.path.exists(cp): src_path = cp; break
         else: return
@@ -767,7 +768,7 @@ def build_heatmaps(teams_data, template_dir='.', output_dir='.', temporada_filte
             src_path = os.path.join(template_dir, src)
             if not os.path.exists(src_path):
                 # fallback: usar una página ya existente del mismo tipo como plantilla
-                for cand in ([f'{skill}_{{club}}.html', f'{skill}_{{RIVAL1}}.html']):
+                for cand in ([f'{skill}_{{club}}.html', f'{skill}_amriswil.html']):
                     cp = os.path.join(output_dir, cand)
                     if os.path.exists(cp): src_path = cp; break
                 else: continue

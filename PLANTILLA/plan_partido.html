@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Plan de Partido — {{Club}}</title>
+<title>Plan de Partido — {{CLUB}}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -42,7 +42,7 @@ header.masthead .sub{color:var(--mut);font-size:13.5px}
 .mitem b{margin-left:auto;color:var(--txt)}
 .armsec{margin:16px 0 4px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:12px}
 .armsec.hidden{display:none}
-.armhead{display:flex;align-items:{{RIVAL19}}ine;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.armhead{display:flex;align-items:baseline;gap:12px;margin-bottom:10px;flex-wrap:wrap}
 .armhead h2{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.04em;color:#a78bfa;margin:0}
 .armhead .sub{font-size:14px;color:var(--mut)}
 .armctrl{display:flex;gap:9px;flex-wrap:nowrap;align-items:center;margin-bottom:14px;overflow-x:auto}
@@ -55,7 +55,7 @@ header.masthead .sub{color:var(--mut);font-size:13.5px}
 @media(max-width:900px){.armgrid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.armgrid{grid-template-columns:1fr}}
 .armrot{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px}
-.armrot .rt{display:flex;justify-content:space-between;align-items:{{RIVAL19}}ine;margin-bottom:7px}
+.armrot .rt{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
 .armrot .rt b{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.03em;color:var(--txt)}
 .armrot .rt span{font-size:12px;color:var(--faint)}
 .armcourt{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
@@ -64,7 +64,7 @@ header.masthead .sub{color:var(--mut);font-size:13.5px}
 .armcourt .cell .cn-p{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;line-height:1;opacity:.95;white-space:nowrap}
 .armcourt .cell.has{cursor:pointer}
 .armnote{font-size:12px;color:var(--faint);margin-top:12px}
-.rolehead{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;color:var(--red);margin:22px 0 10px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:{{RIVAL19}}ine;gap:10px}
+.rolehead{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;color:var(--red);margin:22px 0 10px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:10px}
 .rolehead span{font-family:'Barlow Condensed';font-size:12px;font-weight:500;color:var(--faint);text-transform:none;letter-spacing:0}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
@@ -170,26 +170,23 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
 .mopt{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--text)}
 .mopt input{width:auto;min-width:0;margin:0;padding:0}
 .msel{position:relative}
+#focusSel,#focusSel option{color:#111 !important;background:#fff !important;font-weight:700}
 </style>
 <style>
 .tabsbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 12px 0;align-items:center}
 .tabteam{font-weight:800;font-size:15px;color:var(--red,#e0384f);margin-right:6px;padding:6px 10px;background:rgba(224,56,79,.1);border-radius:8px;letter-spacing:.3px}
-.ptab{background:var(--card,#151521);color:var(--mut,#8a8aa0);border:1px solid var(--b,#2a2a3a);
-  border-radius:9px;padding:9px 15px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.3px}
+.ptab{background:var(--card,#151521);color:var(--mut,#8a8aa0);border:1px solid var(--b,#2a2a3a);border-radius:9px;padding:9px 15px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.3px}
 .ptab.active{background:var(--red,#e0384f);color:#fff;border-color:var(--red,#e0384f)}
 .teambtns{display:inline-flex;gap:6px;margin-right:8px}
-.teambtn{background:var(--card,#151521);color:var(--mut,#8a8aa0);border:1px solid var(--b,#2a2a3a);
-  border-radius:8px;padding:6px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
+.teambtn{background:var(--card,#151521);color:var(--mut,#8a8aa0);border:1px solid var(--b,#2a2a3a);border-radius:8px;padding:6px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
 .teambtn.active{background:#2563eb;color:#fff;border-color:#2563eb}
-.tabgroup{display:none}
-.tabgroup.show{display:block}
-#armsec.tabhide{display:none}
+.tabgroup{display:none}.tabgroup.show{display:block}#armsec.tabhide{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header class="masthead">
-  <div class="eyebrow">{{CLUB_COMPLETO}} · DataVolley 4</div>
+  <div class="eyebrow">{{CLUB}} · DataVolley 4</div>
   <h1>Plan de partido</h1>
   <div class="sub">Análisis de: <b id="teamname" style="color:var(--red)">—</b></div>
   <div class="legend">
@@ -207,6 +204,7 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
   <span class="mhint" id="mhint"></span></div>
 <div class="tabsbar" id="tabsbar">
   <span class="tabteam" id="tabteam">—</span>
+  <select id="focusSel" onchange="applyFocus()" style="margin-left:8px;background:#fff;color:#111;border:1px solid var(--border);border-radius:8px;padding:5px 9px;font-family:inherit;font-weight:700;font-size:12px;max-width:220px"><option value="all">Todos los jugadores</option></select>
   <button class="ptab active" data-tab="armador" onclick="setTab('armador')">Distribución armador</button>
   <button class="ptab" data-tab="ataque" onclick="setTab('ataque')">Direcciones ataque</button>
   <button class="ptab" data-tab="saque" onclick="setTab('saque')">Direcciones saque</button>
@@ -241,7 +239,7 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
 <div class="grid3" id="row-defense"></div>
 </div><div class="tabgroup" id="tab-bloqueo"><div class="rolehead">Bloqueo <span>dónde bloquea según la zona de origen del ataque rival · celeste</span></div>
 <div class="grid3" id="row-bloqueo"></div>
-</div><footer>Ataque (rojo): dirección según recepción. Saque (azul): tipo, zona de origen, momento (puntos del set) y fuerza sobre la recepción; / = vendido (2ª mejor). Recepción (naranja): según tipo/zona del saque rival; zona real de caída de la pelota (todas las zonas). Video por timestamp (reproduce en partidos publicados en la app {{Club}}). Muestras chicas = tomar con cuidado.</footer>
+</div><footer>Ataque (rojo): dirección según recepción. Saque (azul): tipo, zona de origen, momento (puntos del set) y fuerza sobre la recepción; / = vendido (2ª mejor). Recepción (naranja): según tipo/zona del saque rival; zona real de caída de la pelota (todas las zonas). Video por timestamp (reproduce en partidos publicados en la app {{CLUB}}). Muestras chicas = tomar con cuidado.</footer>
 </div>
 
 <div id="vmodal" class="vmodal" onclick="if(event.target===this)closeV()">
@@ -258,8 +256,8 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
           <button class="sec" id="vfsbtn" onclick="toggleFullV()" title="Pantalla completa (tecla F)">⛶ Pantalla completa</button>
           <span class="vcount" id="vcount"></span>
           <label>Vel <select id="vspeed" onchange="setSpeed(this.value)" style="width:auto"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
-          <label>Antes <input id="vpre" type="number" value="7" min="0" max="20" onchange="pre=+this.value||7"></label>
-          <label>Después <input id="vpost" type="number" value="3" min="0" max="20" onchange="post=+this.value||3"></label>
+          <label>Antes <input id="vpre" type="number" value="2" min="0" max="20" onchange="pre=+this.value||2"></label>
+          <label>Después <input id="vpost" type="number" value="8" min="0" max="20" onchange="post=+this.value||8"></label>
         </div>
       </div>
       <div class="vside">
@@ -271,21 +269,19 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
   </div>
 </div>
 
-<script src="datos_seguros.js"></script>
-  <script src="liga_data.js.enc" onerror="window.LIGA_DATA={teams:{},combos:[],calls:[]}"></script>
+<script src="liga_data.js" onerror="window.LIGA_DATA={teams:{},combos:[],calls:[]}"></script>
+<script src="mapa_videos.js" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
 <script src="firebase.js"></script>
-<script src="plan_partido_data.js.enc" onerror="void 0"></script>
-<script src="datos_bloqueo.js.enc" onerror="void 0"></script>
-  <script>abrirDatos();</script>
+<script src="plan_partido_data.js" onerror="void 0"></script>
+<script src="datos_bloqueo.js" onerror="void 0"></script>
 <script src="plan_partido_vivo.js" onerror="void 0"></script>
 <script>
-/* MODO VIVO: si la URL trae ?vivo=1, el plan NO usa plan_partido_data.js;
-   se llena con los datos que publica el Scout en Vivo (voley_codes de Firebase). */
 const QP=new URLSearchParams(location.search);
+var FOCUS_NUM=(QP.get('jug')||'').trim();
 const VIVO=QP.get('vivo')==='1';
 let TEAMS = VIVO ? {} : (window.PP_DATA||{});
 let TEAM=(QP.get('rival')||QP.get('equipo')||'').toLowerCase();
-if(VIVO){ TEAM = TEAM || 'home'; }              /* en vivo: home=nuestro, away=rival */
+if(VIVO){ TEAM = TEAM || 'home'; }
 if(!TEAMS[TEAM]) TEAM=Object.keys(TEAMS)[0]||'home';
 if(!TEAMS[TEAM]) TEAMS[TEAM]={name:'—',players:[],info:{}};
 let PLAYERS=TEAMS[TEAM].players;
@@ -294,7 +290,7 @@ let INFO=TEAMS[TEAM].info;
 let RIVALS=[],MATCHES=[],RSEL=new Set(),MSEL=new Set();
 function computeMatchMeta(){
   RIVALS=Array.from(new Set(Object.keys(INFO).map(function(k){return INFO[k].opp;}))).sort();
-  MATCHES=Object.keys(INFO).map(function(k){return {mid:k,opp:INFO[k].opp,date:INFO[k].date,res:INFO[k].res,yt:INFO[k].yt};}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
+  MATCHES=Object.keys(INFO).map(function(k){return {mid:k,opp:INFO[k].opp,date:INFO[k].date,res:INFO[k].res,yt:ppVid(k)};}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
   RSEL=new Set(RIVALS);MSEL=new Set(MATCHES.map(function(m){return m.mid;}));
 }
 const RECS=[["all","Todas"],["g","# / +"],["b","! / -"]];
@@ -349,7 +345,7 @@ var GPL=window.LIGA_DATA||{teams:{},combos:[],calls:[]};
 var GP_COMBOS=GPL.combos||[];
 var GP_FRONT_POS=[4,3,2];
 var RESARM=["#","/","+","!","=","-"];
-var ARM_SLUG={{{RIVAL1}}:"{{RIVAL1}}",{{club}}:"{{club}}",{{RIVAL2}}:"{{RIVAL2}}",{{RIVAL6}}:"{{RIVAL6}}",{{RIVAL12}}:"{{RIVAL12}}",{{RIVAL8}}:"{{RIVAL8}}",stgallen:"{{RIVAL9}}",{{RIVAL5}}:"{{RIVAL5}}",{{RIVAL15}}:null};
+var ARM_SLUG={defensores:"defensores",river:"river",hacoaj:"hacoaj",campana:"campana",lomas:"lomas",boca:"boca",ciudad:"ciudad",{{club}}:"{{club}}",untref:"untref",ferro:"ferro",uba:"uba",velez:"velez"};
 var ARMZ=["4","3","2","7","8","9","5","6","1"];
 var ARM_ZCOL={"4":"245,158,11","3":"168,85,247","2":"59,130,246","7":"20,184,166","8":"6,182,212","9":"236,72,153","5":"239,68,68","6":"234,179,8","1":"249,115,22"};
 function armHeat(z,v,pct){if(v<=0)return["var(--h0)","#6b7280","1px solid var(--border)"];var rgb=ARM_ZCOL[z]||"124,134,148",op=Math.max(0.18,pct/100*0.6+0.18);return["rgba("+rgb+","+op.toFixed(2)+")","#f1f5f9","1px solid rgba("+rgb+",.8)"];}
@@ -369,6 +365,7 @@ function gpGetZone(c,orig,sp){
 function apellidoJS(n){n=(n||"").trim();return n?n.split(" ").pop():"";}
 function apeArm(n){n=(n||"").trim();return n?n.split(/\s+/)[0]:"";}
 function armDates(){var d={};MATCHES.forEach(function(m){if(MSEL.has(m.mid))d[m.date]=1;});return d;}
+function midByDate(d){if(typeof MATCHES==="undefined")return"";var m=MATCHES.find(function(x){return x.date===d;});return m?m.mid:"";}
 function armRallies(setter,pos){var dates=armDates(),mt=(armTeam.matches||[]);
   return setter.s.filter(function(r){
     if(r[6]!==pos)return false;
@@ -383,15 +380,30 @@ function armRallies(setter,pos){var dates=armDates(),mt=(armTeam.matches||[]);
 }
 function renderArmador(){
   var sec=document.getElementById("armsec");
-  /* En vivo TEAM es 'home'/'away' y GPL.teams tiene esas claves (buildPlanVivo las llena).
-     Fuera de vivo, se mapea por ARM_SLUG a los equipos de la liga. */
   var slug=(typeof VIVO!=='undefined'&&VIVO)?TEAM:ARM_SLUG[TEAM];
   armTeam=(slug&&GPL.teams&&GPL.teams[slug])?GPL.teams[slug]:null;
   if(!armTeam||!(armTeam.setters&&armTeam.setters.length)){sec.classList.add("hidden");return;}
   sec.classList.remove("hidden");
+  var _fs=document.getElementById("focusSel");var _foc=(_fs&&_fs.value&&_fs.value!=="all")?_fs.value:"";
+  var _asel=document.getElementById("armsetsel");
+  if(_foc){
+    var _si=armTeam.setters.map(function(s){return String(s.num);}).indexOf(String(_foc));
+    if(_si>=0){ armSetIdx=_si; if(_asel)_asel.style.display="none"; }
+    else {
+      if(_asel)_asel.style.display="none";
+      ["armctrl","armgrid","armnote"].forEach(function(id){var e=document.getElementById(id)||document.querySelector("."+id);if(e)e.style.display="none";});
+      var mn=document.getElementById("arm-nomsg"); if(!mn){mn=document.createElement("div");mn.id="arm-nomsg";mn.style.cssText="padding:34px 16px;text-align:center;color:#94a3b8;font-weight:700;font-size:14px";sec.appendChild(mn);}
+      mn.style.display=""; mn.textContent="Este jugador no arma regularmente \u2014 no hay distribuci\u00f3n de armado para mostrar.";
+      var _an=document.getElementById("armname"); if(_an)_an.textContent="\u2014";
+      return;
+    }
+  } else { if(_asel)_asel.style.display=""; }
+  ["armctrl","armgrid","armnote"].forEach(function(id){var e=document.getElementById(id)||document.querySelector("."+id);if(e)e.style.display="";});
+  var _mn0=document.getElementById("arm-nomsg"); if(_mn0)_mn0.style.display="none";
   if(armSetIdx>=armTeam.setters.length)armSetIdx=0;
   document.getElementById("armsetsel").innerHTML='<label>Armador</label>'+armTeam.setters.map(function(s,i){return '<button class="'+(i===armSetIdx?"on":"")+'" onclick="setArmSetter('+i+')">#'+s.num+" "+apeArm(s.name)+'</button>';}).join("");
   var setter=armTeam.setters[armSetIdx]||armTeam.setters[0];
+  if(typeof MSEL!=="undefined"&&typeof MATCHES!=="undefined"&&MSEL.size<MATCHES.length){var _ad=armDates();setter=Object.assign({},setter,{s:(setter.s||[]).filter(function(r){var _m=(armTeam.matches||[])[r[12]];return _m&&_ad[_m.date];})});}
   document.getElementById("armname").textContent=apeArm(setter.name)+" · "+setter.s.length+" armados";
   var callCount={};setter.s.forEach(function(r){if(r[5]>=0)callCount[r[5]]=(callCount[r[5]]||0)+1;});
   var callIdxs=Object.keys(callCount).map(Number).sort(function(a,b){return callCount[b]-callCount[a];});
@@ -407,7 +419,7 @@ function renderArmador(){
   var grid=document.getElementById("armgrid");grid.innerHTML="";
   [4,3,2,5,6,1].forEach(function(pos){
     var rows=armRallies(setter,pos),tot=rows.length,zc={};
-    var zp={},zvc={},_mt=(armTeam.matches||[]);rows.forEach(function(r){var z=gpGetZone(GP_COMBOS[r[8]]||"",r[11],r[6]);if(z>0){zc[z]=(zc[z]||0)+1;if(r[9]===0)zp[z]=(zp[z]||0)+1;var _mm=_mt[r[12]]||{},_yt=(INFO[_mm.code||""]||{}).yt,_tt=r[14]||r[13];if(_yt&&_tt)zvc[z]=(zvc[z]||0)+1;}});
+    var zp={},zvc={},_mt=(armTeam.matches||[]);rows.forEach(function(r){var z=gpGetZone(GP_COMBOS[r[8]]||"",r[11],r[6]);if(z>0){zc[z]=(zc[z]||0)+1;if(r[9]===0)zp[z]=(zp[z]||0)+1;var _mm=_mt[r[12]]||{},_yt=ppVid(_mm.code||midByDate(_mm.date)),_tt=r[14]||r[13];if(_yt&&_tt)zvc[z]=(zvc[z]||0)+1;}});
     var mx=1;ARMZ.forEach(function(z){if((zc[z]||0)>mx)mx=zc[z];});
     var cells=ARMZ.map(function(z){var v=zc[z]||0,has=v>0,hasVid=(zvc[z]||0)>0,pct=tot?Math.round(v/tot*100):0,kp=v?Math.round((zp[z]||0)/v*100):0,h=armHeat(z,v,pct);
       return '<div class="cell'+(hasVid?" has vid":"")+'" style="background:'+h[0]+';border:'+h[2]+'"'+(hasVid?' ondblclick="openArmZone('+pos+",'"+z+"')\"":"")+'>'+(has?'<div class="cn-n" style="color:'+h[1]+'">'+v+'</div><div class="cn-p" style="color:'+h[1]+'">'+pct+'% · '+kp+'%</div>':"")+'</div>';}).join("");
@@ -422,9 +434,10 @@ function setArmRecNum(v){armRecNum=v?parseInt(v,10):null;renderArmador();}
 function setArmCall(v){armCall=(v==="all")?"all":parseInt(v,10);renderArmador();}
 function openArmZone(pos,zn){
   var setter=armTeam.setters[armSetIdx]||armTeam.setters[0];
+  if(typeof MSEL!=="undefined"&&typeof MATCHES!=="undefined"&&MSEL.size<MATCHES.length){var _ad=armDates();setter=Object.assign({},setter,{s:(setter.s||[]).filter(function(r){var _m=(armTeam.matches||[])[r[12]];return _m&&_ad[_m.date];})});}
   var rows=armRallies(setter,pos).filter(function(r){return String(gpGetZone(GP_COMBOS[r[8]]||"",r[11],r[6]))===zn;});
   var mt=(armTeam.matches||[]);
-  clips=rows.map(function(r){var mm=mt[r[12]]||{},mid=mm.code||"",yt=(INFO[mid]||{}).yt||"";return {tag:GP_COMBOS[r[8]]||"",ev:RESARM[r[9]]||"",t:r[14]||r[13],vid:yt,sel:true};}).filter(function(c){return c.vid&&c.t;});
+  clips=rows.map(function(r){var mm=mt[r[12]]||{},mid=mm.code||midByDate(mm.date),yt=ppVid(mid);return {tag:GP_COMBOS[r[8]]||"",ev:RESARM[r[9]]||"",t:r[14]||r[13],vid:yt,sel:true};}).filter(function(c){return c.vid&&c.t;});
   curP=null;curZn=zn;curKey=TEAM+"|arm"+armSetIdx+"|P"+pos+"|"+zn;onlyShow=false;var _vo=document.getElementById("vonly");if(_vo)_vo.checked=false;applySavedSel();cur=firstSel();
   document.getElementById("vfilters").innerHTML="";
   document.getElementById("vtitle").textContent=setter.name+" · P"+pos+" · zona "+zn+" · "+rows.length+" armados"+(clips.length<rows.length?" ("+clips.length+" c/video)":"");
@@ -438,7 +451,8 @@ function tiles3(p,cfg){var t=cfg.tiles.map(function(lb,i){var hl=cfg.hl.indexOf(
 function U(role){return role==='saque'?' saques':role==='reception'?' recep.':role==='defense'?' defensas':role==='bloqueo'?' bloqueos':' ataques';}
 function mAll(btn,val){var pop=btn.closest(".mpop");var cbs=pop.querySelectorAll('input[type=checkbox]');cbs.forEach(function(c){c.checked=!!val;});if(cbs[0])cbs[0].dispatchEvent(new Event("change",{bubbles:true}));}
 function _isMulti(fl){return fl.multi||fl.lab==="Resultado";}
-function filterOpts(p,fl){if(fl.lab==="Recibe"&&fl.idx===9){var NB={};((window.PP_DATA&&window.PP_DATA[TEAM]&&window.PP_DATA[TEAM].players)||[]).forEach(function(pp){NB[pp.num]=pp.name;});var rc={};(p&&p.data||[]).forEach(function(a){var rn=a[9];if(rn>0)rc[rn]=1;});return [["all","Todas"]].concat(Object.keys(rc).map(Number).sort(function(x,y){return x-y;}).map(function(n){return [String(n),"#"+n+" "+(NB[n]?apellidoJS(NB[n]):"")];}));}if(fl.dyn==='combo'){var cc={};(p&&p.data||[]).forEach(function(a){var cb=a[fl.idx]||'';if(cb)cc[cb]=(cc[cb]||0)+1;});return [["all","Todas"]].concat(Object.keys(cc).sort(function(x,y){return cc[y]-cc[x];}).map(function(c){return [c,c+" ("+cc[c]+")"];}));}return fl.opts;}
+function filterOpts(p,fl){if(fl.lab==="Combo"&&fl.idx===0){var cm={};(p&&p.data||[]).forEach(function(a){if(a[0])cm[a[0]]=1;});return [["all","Todas"]].concat(Object.keys(cm).sort().map(function(c){return [c,c];}));}if(fl.lab==="Recibe"&&fl.idx===9){var NB={};((window.PP_DATA&&window.PP_DATA[TEAM]&&window.PP_DATA[TEAM].players)||[]).forEach(function(pp){NB[pp.num]=pp.name;});var rc={};(p&&p.data||[]).forEach(function(a){var rn=a[9];if(rn>0)rc[rn]=1;});return [["all","Todas"]].concat(Object.keys(rc).map(Number).sort(function(x,y){return x-y;}).map(function(n){return [String(n),"#"+n+" "+(NB[n]?apellidoJS(NB[n]):"")];}));}if(fl.dyn==='combo'){var cc={};(p&&p.data||[]).forEach(function(a){var cb=a[fl.idx]||'';if(cb)cc[cb]=(cc[cb]||0)+1;});return [["all","Todas"]].concat(Object.keys(cc).sort(function(x,y){return cc[y]-cc[x];}).map(function(c){return [c,c+" ("+cc[c]+")"];}));}return fl.opts;}
+/* refresca las opciones de "Tipo" (combos) de defensa según la zona elegida */
 function defRefreshTipo(p){var tsel=document.getElementById(p.id+'-f0'),zsel=document.getElementById(p.id+'-f1');if(!tsel||!zsel)return;var zv=zsel.value,prev=tsel.value,cc={};p.data.forEach(function(a){if(zv!=='all'&&String(a[1])!==zv)return;var cb=a[7]||'';if(cb)cc[cb]=(cc[cb]||0)+1;});var op=[["all","Todas"]].concat(Object.keys(cc).sort(function(x,y){return cc[y]-cc[x];}).map(function(c){return [c,c+" ("+cc[c]+")"];}));tsel.innerHTML=op.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>';}).join('');tsel.value=op.some(function(o){return o[0]===prev;})?prev:'all';}
 function filtCtrl(id,fl,onchg,op){op=op||fl.opts;
   if(_isMulti(fl)){var boxes=op.filter(function(o){return o[0]!=="all";}).map(function(o){return '<label class="mopt"><input type="checkbox" value="'+o[0]+'" checked'+(onchg?' onchange="'+onchg+'"':"")+'>'+o[1]+'</label>';}).join("");
@@ -450,13 +464,14 @@ function readFilt(id,fl){var el=document.getElementById(id);if(!el)return "all";
     var sm=el.querySelector("summary");var allsel=(ch.length===0||ch.length===bx.length);if(sm)sm.textContent=allsel?"Todas":(ch.length+" sel");return allsel?"all":ch;}
   if(fl.lab==="Fase"){var fv=el.value;return fv==="SO"?["g","b"]:fv==="TR"?["o"]:"all";}
   return el.value;}
+function ppVid(code){var M=window.MAPA_VIDEOS||{};var u=M[code]||"";if(!u)return "";u=String(u);var m=u.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);return m?m[1]:(u.length===11?u:"");}
 function readKey(pid){return "ppread:"+(typeof TEAM!=="undefined"?TEAM:"")+":"+pid;}
 function readVal(p){try{var v=localStorage.getItem(readKey(p.id));if(v!==null)return v;}catch(e){}return p.read||"";}
 function saveRead(el){try{localStorage.setItem(readKey(el.getAttribute("data-pid")),el.innerHTML);}catch(e){}}
 function buildSection(p){var cfg=ROLECFG[p.role];
   var fh=cfg.filters.map(function(fl,i){return filtCtrl(p.id+'-f'+i,fl,'',filterOpts(p,fl));}).join('');
   if(cfg.stats==='atk'||cfg.stats==='srv'||cfg.stats==='dig'){fh+='<div class="fgroup"><label title="Mín. pelotas">Mín.</label><input type="number" min="0" value="0" id="'+p.id+'-min" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;font-family:inherit;font-weight:700"></div>';}
-  return '<div class="player"><div class="phead"><div class="pnum">'+p.num+'</div><div class="pname">'+p.name+'</div><div class="prole">'+(p.pos||p.role)+'</div><div class="pmeta">'+p.total+U(p.role)+'</div><button class="vtodo" onclick="openZone(\''+p.id+'\',\'*\')" title="Ver todos los videos juntos, de todas las zonas">&#9654; Ver todo</button></div>'
+  return '<div class="player" data-num="'+p.num+'"><div class="phead"><div class="pnum">'+p.num+'</div><div class="pname">'+p.name+'</div><div class="prole">'+(p.pos||p.role)+'</div><div class="pmeta">'+p.total+U(p.role)+'</div><button class="vtodo" onclick="openZone(\''+p.id+'\',\'*\')" title="Ver todos los videos juntos, de todas las zonas">&#9654; Ver todo</button></div>'
    +'<div class="filters">'+fh+'</div><div class="natt" id="'+p.id+'-n"></div>'
    +'<div class="body"><div class="courtwrap"><div class="court" id="'+p.id+'-court"></div><div class="cnote">Doble-click en zona con ▶ → video (partidos con 🎥)</div></div>'
    +'<div class="stats">'+tiles3(p,cfg)+'</div></div>'+'<div class="read" contenteditable="true" spellcheck="false" data-pid="'+p.id+'" data-ph="Escribí tu análisis…" title="Click para editar" oninput="saveRead(this)">'+readVal(p)+'</div>'+'</div>';
@@ -465,7 +480,7 @@ function render(p){var cfg=ROLECFG[p.role];
   var vals=cfg.filters.map(function(fl,i){return readFilt(p.id+'-f'+i,fl);});
   var f=p.data.filter(function(a){return MSEL.has(a[cfg.vIdx])&&passes(a,cfg,vals);}),n=f.length;
   var z={"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0},vz={};
-  f.forEach(function(a){var _blk=(cfg.stats==='atk'&&a[cfg.evIdx]==='/');if(_blk)return;if(z[a[cfg.court]]!==undefined)z[a[cfg.court]]++;if((INFO[a[cfg.vIdx]]||{}).yt){vz[a[cfg.court]]=(vz[a[cfg.court]]||0)+1;}});
+  f.forEach(function(a){var _blk=(cfg.stats==='atk'&&a[cfg.evIdx]==='/');if(_blk)return;if(z[a[cfg.court]]!==undefined)z[a[cfg.court]]++;if(ppVid(a[cfg.vIdx])){vz[a[cfg.court]]=(vz[a[cfg.court]]||0)+1;}});
   var P=function(x){return n?Math.round(x/n*100)+'%':'–';};
   var v;
   if(cfg.stats==='atk'){var k=0,e=0,b=0,hd=0,sf=0,tp=0,d0=0,d1=0,d2=0;
@@ -483,12 +498,13 @@ function render(p){var cfg=ROLECFG[p.role];
   var mx=Math.max(1,z["1"],z["2"],z["3"],z["4"],z["5"],z["6"],z["7"],z["8"],z["9"]);
   var _useMin=(cfg.stats==='atk'||cfg.stats==='srv'||cfg.stats==='dig');
   var _min=0; if(_useMin){var _me=document.getElementById(p.id+'-min'); _min=_me?(parseInt(_me.value,10)||0):0;}
+  try{var _cc=document.getElementById(p.id+'-court');if(_cc){var _pp=_cc.closest('.player');if(_pp){var _pm=_pp.querySelector('.pmeta');if(_pm)_pm.textContent=n+U(p.role);}}}catch(e){}
   document.getElementById(p.id+'-court').innerHTML=ORDER.map(function(zn){var val=z[zn];
     if(_useMin&&_min>0&&val<_min){return '<div class="cell" style="background:var(--h0);border:1px solid var(--border)"><div class="zn" style="color:#3a4358;opacity:.4">z'+zn+'</div></div>';}
     var h=heat(val,mx,cfg.pal),hasVid=(vz[zn]||0)>0;
     return '<div class="cell'+(hasVid?' has vid':'')+'" style="background:'+h[0]+';border:'+h[2]+'"'+(hasVid?' ondblclick="openZone(\''+p.id+'\',\''+zn+'\')"':'')+'><div class="zn" style="color:'+h[1]+'">z'+zn+'</div><div class="cn" style="color:'+h[1]+'">'+val+'</div></div>';}).join('');
 }
-function renderAll(){PLAYERS.concat(TEAMCARDS).forEach(render);}
+function renderAll(){PLAYERS.concat(TEAMCARDS).forEach(render);if(typeof renderArmador==="function")renderArmador();}
 function fmtDate(d){if(!d||d==='?')return'?';var p=d.split('-');return p.length===3?p[2]+'/'+p[1]:d;}
 function togglePanel(w){var p=document.getElementById(w==='r'?'rpanel':'mpanel');var o=p.classList.contains('open');document.querySelectorAll('.mpanel').forEach(function(x){x.classList.remove('open');});if(!o)p.classList.add('open');}
 document.addEventListener('click',function(e){if(!e.target.closest('.msel'))document.querySelectorAll('.mpanel').forEach(function(x){x.classList.remove('open');});});
@@ -519,7 +535,9 @@ function buildTeam(){
   renderArmador();
 }
 function setTeam(slug){TEAM=slug;document.querySelectorAll('.mpanel').forEach(function(x){x.classList.remove('open');});pintarBotonesEquipo();buildTeam();}
-/* ── SOLAPAS: armador / ataque / recepción ── */
+/* ── SOLAPAS ── */
+function buildFocusSel(){var sel=document.getElementById("focusSel");if(!sel)return;var seen={},o='<option value="all">Todos los jugadores</option>';(PLAYERS||[]).slice().sort(function(a,b){return (a.num||0)-(b.num||0);}).forEach(function(p){if(seen[p.num])return;seen[p.num]=1;o+='<option value="'+p.num+'">#'+p.num+' '+p.name+'</option>';});sel.innerHTML=o;sel.value=(FOCUS_NUM&&seen[FOCUS_NUM])?FOCUS_NUM:"all";}
+function applyFocus(){var sel=document.getElementById("focusSel");var v=sel?sel.value:"all";document.querySelectorAll(".player").forEach(function(el){var mn=el.getAttribute("data-num");el.style.display=(v==="all"||String(mn)===String(v))?"":"none";});if(typeof renderArmador==="function")renderArmador();}
 function setTab(t){
   document.querySelectorAll('.ptab').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===t); });
   document.getElementById('armsec').classList.toggle('tabhide', t!=='armador');
@@ -529,7 +547,9 @@ function setTab(t){
   document.getElementById('tab-defensa').classList.toggle('show', t==='defensa');
   document.getElementById('tab-bloqueo').classList.toggle('show', t==='bloqueo');
   try{ location.hash=t; }catch(e){}
+  if(typeof applyFocus==="function")applyFocus();
 }
+function solapaActiva(){ var b=document.querySelector('.ptab.active'); return b?b.dataset.tab:'armador'; }
 
 /* ── BOTONES DE EQUIPO (nuestro / rival) ── */
 function pintarBotonesEquipo(){
@@ -539,7 +559,6 @@ function pintarBotonesEquipo(){
   if(cont) cont.innerHTML = slugs.map(function(sl){
     return '<button class="teambtn'+(sl===TEAM?' active':'')+'" onclick="setTeam(\''+sl+'\')">'+etqDe(sl)+'</button>';
   }).join('');
-  /* desplegable de equipo (el que queda activo) */
   var sel=document.getElementById('teamsel');
   if(sel){
     sel.innerHTML = slugs.map(function(sl){
@@ -549,12 +568,8 @@ function pintarBotonesEquipo(){
   }
 }
 
-/* ── MODO VIVO: leer del scout y refrescar solo ── */
+/* ── MODO VIVO: lee del scout y NO te saca de donde estás mirando ── */
 var _vivoTS='';
-function solapaActiva(){
-  var b=document.querySelector('.ptab.active');
-  return b?b.dataset.tab:'armador';
-}
 function cargarVivo(primera){
   if(typeof fbGet!=='function' || typeof window.buildPlanVivo!=='function') return;
   fbGet('voley_codes', function(D){
@@ -563,15 +578,12 @@ function cargarVivo(primera){
     _vivoTS=D.ts;
     var pp=window.buildPlanVivo(D);
     if(!pp) return;
-    /* GUARDAR dónde está mirando el usuario, para NO sacarlo de ahí al refrescar */
     var tabPrevia = solapaActiva();
     var scrollY = window.scrollY || window.pageYOffset || 0;
-    var equipoPrevio = TEAM;
     TEAMS=pp;
     if(!TEAMS[TEAM]) TEAM=Object.keys(TEAMS)[0]||'home';
     pintarBotonesEquipo();
     buildTeam();
-    /* RESTAURAR la solapa y la posición: el análisis se actualiza pero no se mueve */
     setTab(tabPrevia);
     window.scrollTo(0, scrollY);
   });
@@ -582,17 +594,14 @@ document.getElementById('teamsel').value=TEAM;
 document.getElementById('teamsel').addEventListener('change',function(){setTeam(this.value);});
 /* el desplegable de equipo queda siempre visible (se sacó la fila de botones) */
 pintarBotonesEquipo();
-
-/* solapa inicial: por hash (#ataque) o armador por defecto */
 var _h=(location.hash||'').replace('#','');
 setTab(['armador','ataque','saque','recepcion','defensa','bloqueo'].indexOf(_h)>=0?_h:'armador');
-
-/* arrancar el modo vivo */
 if(VIVO){ cargarVivo(true); setInterval(function(){ cargarVivo(false); }, 2000); }
 buildTeam();
+buildFocusSel(); applyFocus();
 
 /* ---- Video ---- */
-let YTP=null,YTReady=false,clips=[],cur=0,loadedVid="",vtimer=null,pre=7,post=3,speed=1,curP=null
+let YTP=null,YTReady=false,clips=[],cur=0,loadedVid="",vtimer=null,pre=2,post=8,speed=1,curP=null
 var VSEL={};try{VSEL=JSON.parse(localStorage.getItem("pp_vsel")||"{}")||{};}catch(e){VSEL={};}var onlyShow=false,curKey="";
 /* pp_vsel_sync: selección de clips compartida (Firebase) */
 if(typeof fbGet==="function"){fbGet("pp_vsel",function(d){if(d&&typeof d==="object"){VSEL=d;try{localStorage.setItem("pp_vsel",JSON.stringify(VSEL));}catch(e){}if(curKey&&VSEL[curKey]&&VSEL[curKey].length&&typeof applySavedSel==="function"){applySavedSel();onlyShow=true;var _v=document.getElementById("vonly");if(_v)_v.checked=true;if(typeof renderList==="function")renderList();}}});}
@@ -617,7 +626,7 @@ function recompute(){if(!curP)return;var cfg=ROLECFG[curP.role];
   var vals=cfg.filters.map(function(fl,i){return readFilt('vf'+i,fl);});
   var todas=(curZn==='*');
   var all=curP.data.filter(function(a){return (todas||String(a[cfg.court])===curZn)&&MSEL.has(a[cfg.vIdx])&&passes(a,cfg,vals);});
-  clips=all.map(function(a){return {tag:(cfg.stats==='dig'?(a[7]||a[cfg.tagIdx]):a[cfg.tagIdx]),ev:a[cfg.evIdx],t:a[cfg.tIdx],vid:(INFO[a[cfg.vIdx]]||{}).yt||'',sel:true};}).filter(function(c){return c.vid;});
+  clips=all.map(function(a){return {tag:(cfg.stats==='dig'?(a[7]||a[cfg.tagIdx]):a[cfg.tagIdx]),ev:a[cfg.evIdx],t:a[cfg.tIdx],vid:ppVid(a[cfg.vIdx]),sel:true};}).filter(function(c){return c.vid;});
   applySavedSel();cur=firstSel();document.getElementById("vtitle").textContent=curP.name+" · "+(todas?"todas las zonas":"zona "+curZn)+" · "+all.length+U(curP.role)+(clips.length<all.length?' ('+clips.length+' c/video)':'');renderList();
   if(!clips.length){document.getElementById("vcount").textContent="sin video";document.getElementById("vlist").innerHTML='<div class="novid">No hay video en los partidos seleccionados con 🎥. Probá otra zona, destildá «Solo esta zona» o cambiá el filtro de Partido.</div>';return;}
   ensureYT(function(){if(!YTP){YTP=new YT.Player("ytplayer",{playerVars:{rel:0,modestbranding:1,controls:0,playsinline:1},events:{onReady:function(){YTReady=true;playCur();}}});}else{playCur();}});}

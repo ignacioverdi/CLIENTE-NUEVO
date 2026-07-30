@@ -3,8 +3,8 @@
 build_video.py - Lee los .dvw de una carpeta y arma el archivo de VIDEO (cortes).
 Saca el SEGUNDO de video de cada accion del DVW.
 
-ABANICO (v2): extrae las acciones de LOS DOS equipos de cada partido (no solo {{Club}}),
-etiquetando cada accion con su equipo (campo 'tm' = slug, ej. '{{club}}','{{RIVAL1}}').
+ABANICO (v2): extrae las acciones de LOS DOS equipos de cada partido (no solo Nafels),
+etiquetando cada accion con su equipo (campo 'tm' = slug, ej. 'nafels','amriswil').
 Asi el editor de cortes permite elegir CUALQUIER equipo de la liga.
 
 MERGE SEGURO: preserva las entradas existentes y solo agrega los partidos nuevos.
@@ -12,8 +12,8 @@ Si el archivo previo es de la version vieja (sin 'v':2), regenera todo de cero
 automaticamente (para que el abanico aplique a los partidos ya cargados).
 
 Uso:
-  python build_video.py "DVW {{CLUB}} 2026" datos_video.js VIDEO_DATA
-  python build_video.py "DVW ENTRENAMIENTOS {{CLUB}} 2026" datos_video_ent.js VIDEO_DATA_ENT ent
+  python build_video.py "DVW NAFELS 2026" datos_video.js VIDEO_DATA
+  python build_video.py "DVW ENTRENAMIENTOS NAFELS 2026" datos_video_ent.js VIDEO_DATA_ENT ent
 """
 import os,re,sys,json,glob,unicodedata
 
@@ -29,22 +29,22 @@ def fix_enc(x):
 COMBOS = json.loads(r'''{"PP":"Setter tip","V0":"High set in 5","V5":"High set in 4","V6":"High set in 2","V8":"High set in 1","VB":"High Pipe set to 6-1","VP":"High Pipe","VR":"High Pipe set to 6-5","X0":"Shoot in 5","X1":"Quick","X2":"X2","X3":"Mezza da posto 2","X4":"Mezza dietro","X5":"Shoot in 4","X6":"Shoot in 2","X7":"Quick lower set","X8":"Shoot in 1","X9":"Mezza davanti dopo 7","XB":"Pipe set to 6-1","XL":"XL","XM":"Quick in 3","XP":"Pipe","XR":"Pipe set to 6-5"}''')
 SK={'S':'Saque','R':'Recepción','A':'Ataque','B':'Bloqueo','D':'Defensa','E':'Armado','F':'Freeball'}
 
-# Mapeo de nombres de equipo del DVW -> nombre canonico (igual que update_db_{{club}}_FULL.py)
+# Mapeo de nombres de equipo del DVW -> nombre canonico (igual que update_db_nafels_FULL.py)
 TEAM_NORM = {
-    'Biogas Volley {{Club}} ({{LIGA}} Men)': '{{Club}}',
-    'Volley NFELS': '{{Club}}', 'Volley Nfels': '{{Club}}',
-    'Volley {{RIVAL1}} ({{LIGA}} Men)': '{{RIVAL1}}',
-    'Volley {{RIVAL3}} ({{LIGA}} Men)': '{{RIVAL2}}',
-    '{{RIVAL7}} Genève Volleyball ({{LIGA}} Men)': '{{RIVAL6}}',
-    'Chnois Genve Volleyball': '{{RIVAL6}}',
-    '{{RIVAL8}} Volley ({{LIGA}} Men)': '{{RIVAL8}}',
-    'STV {{RIVAL9}} ({{LIGA}} Men)': '{{RIVAL9}}',
-    'TSV {{RIVAL12}} Volleyball ({{LIGA}} Men)': '{{RIVAL12}}',
-    'TSV {{RIVAL12}} Volleyball': '{{RIVAL12}}',
-    '{{RIVAL5}} UC ({{LIGA}} Men)': '{{RIVAL5}}',
-    'VBC {{RIVAL13}} (NLB Men)': '{{RIVAL13}}',
-    '{{RIVAL15}} Stars': '{{RIVAL15}}', 'CSU Corona {{RIVAL16}}': '{{RIVAL16}}',
-    'Neftohimic 2010 {{RIVAL14}}': '{{RIVAL14}}',
+    'Biogas Volley Näfels (NLA Men)': 'Nafels',
+    'Volley NFELS': 'Nafels', 'Volley Nfels': 'Nafels',
+    'Volley Amriswil (NLA Men)': 'Amriswil',
+    'Volley Schönenwerd (NLA Men)': 'Schonenwerd',
+    'Chênois Genève Volleyball (NLA Men)': 'Chenois',
+    'Chnois Genve Volleyball': 'Chenois',
+    'Colombier Volley (NLA Men)': 'Colombier',
+    'STV St Gallen (NLA Men)': 'St Gallen',
+    'TSV Jona Volleyball (NLA Men)': 'Jona',
+    'TSV Jona Volleyball': 'Jona',
+    'Lausanne UC (NLA Men)': 'Lausanne',
+    'VBC Sursee (NLB Men)': 'Sursee',
+    'Orion Stars': 'Orion', 'CSU Corona Brasov': 'Brasov',
+    'Neftohimic 2010 BURGAS': 'Burgas',
     'SCM ZALAU': 'Zalau', 'SCM Zalau': 'Zalau',
 }
 
@@ -53,14 +53,31 @@ def is_naf(n): return bool(re.search(r'n[aä]fels|biogas',n or '',re.I))
 def norm_team(name):
     name=fix_enc(name or '')
     if name in TEAM_NORM: return TEAM_NORM[name]
-    n=re.sub(r'\({{LIGA}}[^)]*\)|\(NLB[^)]*\)','',name)
+    n=re.sub(r'\(NLA[^)]*\)|\(NLB[^)]*\)','',name)
     n=re.sub(r'\b(Volley|Volleyball|TSV|VBC|TV)\b','',n,flags=re.I)
     n=re.sub(r'\s+',' ',n).split('(')[0].strip()
     return n or 'Equipo'
 
 def slugify(name):
-    n=unicodedata.normalize('NFKD',name or '').encode('ascii','ignore').decode('ascii')
-    return re.sub(r'\s+','_',n.lower().strip())
+    """El nombre corto del equipo, el mismo que usa el resto de la app.
+
+       Antes se armaba pasando el nombre largo a minúsculas y con guiones bajos:
+       'Club Atlético San Lorenzo de Almagro' quedaba como
+       'club_atletico_san_lorenzo_de_almagro'. Pero el plan de partido y las
+       demás pantallas lo llaman 'casla', así que no coincidían y las acciones
+       de video quedaban sin equipo: el mapa de bloqueo salía vacío.
+
+       Ahora sale de config_club.json, que es donde vive esa tabla."""
+    try:
+        import config_club
+        corto = config_club.normalizar(name)
+        if corto and corto != name:
+            n = unicodedata.normalize('NFKD', corto).encode('ascii', 'ignore').decode('ascii')
+            return re.sub(r'[^a-z0-9]', '', n.lower().strip())
+    except Exception:
+        pass
+    n = unicodedata.normalize('NFKD', name or '').encode('ascii', 'ignore').decode('ascii')
+    return re.sub(r'\s+', '_', n.lower().strip())
 
 def parse_set_result(txt):
     """Devuelve (sets_local, sets_visitante) leyendo [3SET]."""
@@ -89,7 +106,13 @@ def parse_dvw(path, ent=False):
     home_slug=slugify(home_name); away_slug=slugify(away_name)
 
     base=os.path.basename(path)
-    mcode=re.search(r'(\d{6})',base); mdate=re.search(r'(\d{4}-\d{2}-\d{2})',base)
+    # El código del partido: NÄFELS usa 6 dígitos (636587) y la liga argentina
+    # 5 (10100). Antes se exigían 6 y todos los partidos argentinos se
+    # descartaban en silencio: el video nunca se generaba.
+    # Se busca al principio del nombre, después del "&", para no confundirlo
+    # con la fecha ni con el resultado.
+    mcode=re.search(r'^&?\s*(\d{5,6})\b', base) or re.search(r'(\d{6})', base)
+    mdate=re.search(r'(\d{4}-\d{2}-\d{2})',base)
     date=mdate.group(1) if mdate else ''
     if mcode: code=mcode.group(1)
     elif ent and date: code='ENT'+date.replace('-','')
@@ -169,13 +192,39 @@ def parse_dvw(path, ent=False):
     return code,{'home':home_slug,'away':away_slug,'homeName':home_name,'awayName':away_name,
                  'date':date,'result':_res,'teams':teams_meta,'players':players,'actions':actions}
 
+def _mes_de_arranque():
+    """En qué mes arranca la temporada de este club.
+
+       Antes estaba fijo en agosto, el calendario europeo. En Argentina la
+       División de Honor va de mayo a agosto, así que con ese corte los partidos
+       quedaban repartidos en dos temporadas y la app aparecía vacía.
+
+       Ahora sale de config_temporada.js, que es el único lugar donde se define.
+       Si el archivo no está, se asume agosto y todo sigue como antes."""
+    try:
+        ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config_temporada.js')
+        if os.path.exists(ruta):
+            t = open(ruta, encoding='utf-8', errors='replace').read()
+            m = re.search(r'inicio\s*:\s*(\d{1,2})', t)
+            if m:
+                v = int(m.group(1))
+                if 1 <= v <= 12: return v
+    except Exception:
+        pass
+    return 8
+
+
+_INICIO = _mes_de_arranque()
+
+
 def season_of(date):
-    # Temporada oct->abr. 2025-10 -> "25-26"; 2026-04 -> "25-26"; 2026-10 -> "26-27".
-    if not date or len(date)<7: return 'sin-fecha'
-    try: y=int(date[:4]); mo=int(date[5:7])
-    except: return 'sin-fecha'
-    s = y if mo>=8 else y-1
-    return '%02d-%02d'%(s%100,(s+1)%100)
+    """De qué temporada es una fecha. Devuelve la etiqueta que va en el nombre
+       del archivo: con arranque en agosto, 2025-10 -> "25-26"."""
+    if not date or len(date) < 7: return 'sin-fecha'
+    try: y = int(date[:4]); mo = int(date[5:7])
+    except Exception: return 'sin-fecha'
+    s = y if mo >= _INICIO else y - 1
+    return '%02d-%02d' % (s % 100, (s + 1) % 100)
 
 def load_existing_season(path):
     # Lee un archivo por-temporada (formato auto-fusion: var D = {...};)
@@ -259,4 +308,4 @@ if __name__=='__main__':
         tot=sum(len(m['actions']) for m in existentes.values())
         print('  '+season_out+': '+str(len(existentes))+' partidos ('+str(agregados)+' nuevos), '+str(tot)+' acciones')
 
-# © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados
+# © 2025-2026 Ignacio Verdi · NAFELS VOLEY · Software propietario - Todos los derechos reservados

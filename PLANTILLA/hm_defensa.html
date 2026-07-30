@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ANALISIS DE DEFENSA — {{Club}} 2026</title>
+<title>ANALISIS DE DEFENSA — {{CLUB}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>*{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#07080F;--card:#0D0E1A;--card2:#111220;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--red:#E8192C;--amber:#F59E0B;--green:#22C55E;--lime:#84CC16;--orange:#F97316;--indigo:#818CF8;--text:#E2E8F0;--muted:#64748B;--subtle:#475569}
@@ -62,7 +62,7 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 <body>
 <div class="hdr">
   <a href="index.html" class="back">← Inicio</a>
-  <div><div class="hdr-t">{{CLUB_COMPLETO}} — ANALISIS DE DEFENSA 2026</div><div class="hdr-s">26 partidos {{LIGA}} · EFF = (1x# + 0.5x+ − 0.5x− − 1x=) / total</div></div>
+  <div><div class="hdr-t" id="hdr-t">ANALISIS DE DEFENSA</div><div class="hdr-s" id="hdr-s">EFF = (1x# + 0.5x+ − 0.5x− − 1x=) / total</div></div>
 </div>
 <div class="layout">
   <div class="sidebar">
@@ -89,14 +89,11 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
   <div class="content" id="content"><div class="nodata">Elegí un jugador para ver su defensa</div></div>
 </div>
 
-<script src="datos_seguros.js"></script>
-  <script src="datos_video_25-26.js.enc" onerror="void 0"></script>
-  <script>abrirDatos();</script>
-<script src="datos_video_26-27.js" onerror="void 0"></script>
-<script src="datos_video_27-28.js" onerror="void 0"></script>
+<script src="datos_video.js" onerror="void 0"></script>
 <script>
 (function(){
   var VD=(window.VIDEO_DATA&&window.VIDEO_DATA.matches)||{};
+  var EQ=(new URLSearchParams(location.search).get('equipo')||'{{club}}').toLowerCase();
   var RES_ORDER=['#','+','!','-','='];
   var RES_LABEL={'#':'Perfecta','+':'Buena','!':'Regular','-':'Mala','=':'Error'};
   var RES_HEX={'#':'#22C55E','+':'#84CC16','!':'#EAB308','-':'#F97316','=':'#EF4444'};
@@ -104,15 +101,20 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
   function rivalOf(m){
     if(!m) return 'Rival';
     var home=m.home||'', away=m.away||'';
-    if(home==='{{club}}') return m.awayName||away||'Rival';
-    if(away==='{{club}}') return m.homeName||home||'Rival';
+    if(home===EQ) return m.awayName||away||'Rival';
+    if(away===EQ) return m.homeName||home||'Rival';
     return m.awayName||m.homeName||away||home||'Rival';
   }
   var ALL=[];
-  Object.keys(VD).forEach(function(c){ var m=VD[c]; (m.actions||[]).forEach(function(a){ if(a.sk==='Defensa' && a.tm==='{{club}}'){ var o={}; for(var k in a)o[k]=a[k]; o.opp=rivalOf(m); o.code=c; o.date=m.date||''; ALL.push(o); } }); });
+  Object.keys(VD).forEach(function(c){ var m=VD[c]; (m.actions||[]).forEach(function(a){ if(a.sk==='Defensa' && a.tm===EQ){ var o={}; for(var k in a)o[k]=a[k]; o.opp=rivalOf(m); o.code=c; o.date=m.date||''; ALL.push(o); } }); });
   var PLAYERS={};
   ALL.forEach(function(a){ if(!PLAYERS[a.num])PLAYERS[a.num]={num:a.num,name:a.name,acts:[]}; PLAYERS[a.num].acts.push(a); });
   var RIVALS=[]; ALL.forEach(function(a){ if(RIVALS.indexOf(a.opp)<0)RIVALS.push(a.opp); }); RIVALS.sort();
+  var NAME=EQ.toUpperCase();
+  (function(){ for(var _k in VD){ var _m=VD[_k]; if(_m.home===EQ){ NAME=_m.homeName||NAME; break; } if(_m.away===EQ){ NAME=_m.awayName||NAME; break; } } })();
+  var _nm=0; (function(){ var seen={}; ALL.forEach(function(a){ if(!seen[a.code]){seen[a.code]=1;_nm++;} }); })();
+  var _th=document.getElementById('hdr-t'); if(_th) _th.textContent=NAME+' — ANALISIS DE DEFENSA';
+  var _ts=document.getElementById('hdr-s'); if(_ts) _ts.textContent=_nm+' partidos · EFF = (1x# + 0.5x+ − 0.5x− − 1x=) / total';
 
   var F={player:'',rival:'all',gi:'all',set:'all',res:'all'};
   var $=function(id){return document.getElementById(id);};
@@ -138,7 +140,7 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
     list.sort(function(x,y){return (x.date||'').localeCompare(y.date||'');});
     return list;
   }
-  function gLabel(g){ var rs=(g.opp||'').split(' ').slice(-1)[0].substring(0,9); var dl=''; if(g.date){var p=g.date.split('-');try{dl=' ('+parseInt(p[2])+' '+_MO[parseInt(p[1])]+')';}catch(e){}} var rr=''; var m=VD[g.code]; if(m&&m.result){ var hs=m.result[0],as=m.result[1]; rr=' · '+(m.home==='{{club}}'?hs+'-'+as:as+'-'+hs); } return rs+dl+rr; }
+  function gLabel(g){ var rs=(g.opp||'').split(' ').slice(-1)[0].substring(0,9); var dl=''; if(g.date){var p=g.date.split('-');try{dl=' ('+parseInt(p[2])+' '+_MO[parseInt(p[1])]+')';}catch(e){}} var rr=''; var m=VD[g.code]; if(m&&m.result){ var hs=m.result[0],as=m.result[1]; rr=' · '+(m.home===EQ?hs+'-'+as:as+'-'+hs); } return rs+dl+rr; }
   function buildFilters(){
     buildSelect('fsel-rival',[['all','Todos']].concat(RIVALS.map(function(r){return [r,r];})),'rival');
     buildSelect('fsel-gi',[['all','Todos']].concat(gamesFor().map(function(g){return [g.code,gLabel(g)];})),'gi');
@@ -167,7 +169,10 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 
   function courtSVG(origZ,destZ,total){
     var W=180,H=218,P=5,BAND=13,CH=32,CW=(W-P*2)/3;
-    var RIVAL=[[1,6,5],[9,8,7],[2,3,4]], OWN=[[4,3,2],[7,8,9],[5,6,1]];
+    /* La cancha del rival, como se ve desde el banco: la red arriba y la
+     fila delantera 4-3-2. Antes estaba invertida en los dos ejes, así que
+     los números caían en el lugar equivocado de la cancha. */
+  var RIVAL=[[4,3,2],[7,8,9],[5,6,1]], OWN=[[4,3,2],[7,8,9],[5,6,1]];
     var maxO=Math.max.apply(null,Object.values(origZ).concat([1])), maxD=Math.max.apply(null,Object.values(destZ).concat([1]));
     var s="<svg viewBox='0 0 "+W+" "+H+"' xmlns='http://www.w3.org/2000/svg' style='width:100%;display:block'>";
     s+="<style>text{pointer-events:none}</style>";
@@ -195,8 +200,8 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
   }
 
   function _vf(){ var s=''; if(F.rival&&F.rival!=='all')s+='&rival='+encodeURIComponent(F.rival); if(F.gi&&F.gi!=='all'){ var m=VD[F.gi]; if(m&&m.date)s+='&date='+encodeURIComponent(m.date); } return s; }
-  window.verZona=function(zone,which){ if(!F.player)return; window.open('cortes.html?num='+encodeURIComponent(F.player)+'&sk=Defensa&'+which+'='+zone+_vf(),'_blank'); };
-  window.abrirVideo=function(){ if(!F.player){alert('Elegí un jugador primero.');return;} window.open('cortes.html?num='+encodeURIComponent(F.player)+'&sk=Defensa'+_vf(),'_blank'); };
+  window.verZona=function(zone,which){ if(!F.player)return; window.open('cortes.html?num='+encodeURIComponent(F.player)+'&sk=Defensa&equipo='+EQ+'&'+which+'='+zone+_vf(),'_blank'); };
+  window.abrirVideo=function(){ if(!F.player){alert('Elegí un jugador primero.');return;} window.open('cortes.html?num='+encodeURIComponent(F.player)+'&sk=Defensa&equipo='+EQ+_vf(),'_blank'); };
 
   function render(){
     var c=$('content'), acts=filtered();
@@ -222,12 +227,17 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
     RES_ORDER.forEach(function(r){ var n=rc[r]||0; if(n)html+="<div style='flex:"+n+";background:"+RES_HEX[r]+"'></div>"; });
     html+="</div></div>";
 
+    var _hasZ=Object.keys(origZ).length||Object.keys(destZ).length;
     html+="<div class='sec'>Mapa de defensa</div>";
     html+="<div class='panel' style='max-width:360px'>";
-    html+="<div class='court-title'>Origen del ataque ↔ destino de la defensa</div>";
-    html+=courtSVG(origZ,destZ,total);
-    html+="<div class='legend'><div class='leg-item'><div class='leg-dot' style='background:#E8192C'></div>De dónde atacaron</div><div class='leg-item'><div class='leg-dot' style='background:#22C55E'></div>A dónde defendió</div></div>";
-    html+="<div style='font-size:11px;color:var(--muted);text-align:center;margin-top:8px'>Clickeá un casillero para ver esas defensas en video 🎬</div>";
+    if(_hasZ){
+      html+="<div class='court-title'>Origen del ataque ↔ destino de la defensa</div>";
+      html+=courtSVG(origZ,destZ,total);
+      html+="<div class='legend'><div class='leg-item'><div class='leg-dot' style='background:#E8192C'></div>De dónde atacaron</div><div class='leg-item'><div class='leg-dot' style='background:#22C55E'></div>A dónde defendió</div></div>";
+      html+="<div style='font-size:11px;color:var(--muted);text-align:center;margin-top:8px'>Clickeá un casillero para ver esas defensas en video 🎬</div>";
+    } else {
+      html+="<div class='nodata' style='padding:22px 12px;font-size:12px'>El scouting de defensa de este club todavía no tiene zonas de origen/destino cargadas (oz/dz), así que el mapa de cancha no se dibuja. El resto — eficiencia, resultados y rival — sí funciona.</div>";
+    }
     html+="</div>";
 
     var byR={}; PLAYERS[F.player].acts.forEach(function(a){ (byR[a.opp]=byR[a.opp]||[]).push(a); });
@@ -247,4 +257,4 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} · Software propietario - Todos los derechos reservados -->

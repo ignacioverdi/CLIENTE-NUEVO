@@ -1605,7 +1605,7 @@ findstr /C:"PARTIDOS_ARMADOR" datos_partidos.js >nul && (echo   OK: armador pres
 findstr /C:"PARTIDOS_TRANSICION" datos_partidos.js >nul && (echo   OK: transicion presente) || (echo   FALTA transicion - avisa)
 findstr /C:"PARTIDOS_INDIVIDUAL" datos_partidos.js >nul && (echo   OK: partidos individuales presentes) || (echo   FALTA individuales - avisa)
 findstr /C:"rFlo" datos_historial.js >nul && (echo   OK: dashboard saque/recep/ataque/bloqueo presente) || (echo   FALTA datos_historial - avisa)
-if exist "ataque_{{RIVAL6}}.html" (echo   OK: paginas por club generadas) else (echo   FALTA paginas por club - avisa)
+if exist "ataque_chenois.html" (echo   OK: paginas por club generadas) else (echo   FALTA paginas por club - avisa)
 
 echo ==================================================
 echo     SUBIR A GITHUB ({{CLUB_REPO}}):

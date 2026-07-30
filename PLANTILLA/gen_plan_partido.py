@@ -12,21 +12,63 @@ from collections import defaultdict, Counter
 
 import unicodedata
 # --- equipos de la liga ({{Club}}): keyword normalizado -> (slug, display) ---
-SLUGS = [
- ('{{RIVAL1}}',   ('{{RIVAL1}}','{{RIVAL1}}')),
- ('{{club}}',     ('{{club}}','N\u00e4fels')),
- ('{{RIVAL2}}',('{{RIVAL2}}','Sch\u00f6nenwerd')),
- ('{{RIVAL6}}',    ('{{RIVAL6}}','Ch\u00eanois')),
- ('{{RIVAL12}}',       ('{{RIVAL12}}','{{RIVAL12}}')),
- ('{{RIVAL8}}',  ('{{RIVAL8}}','{{RIVAL8}}')),
- ('gallen',     ('stgallen','{{RIVAL9}}')),
- ('{{RIVAL5}}',   ('{{RIVAL5}}','{{RIVAL5}}')),
- ('{{RIVAL15}}',      ('{{RIVAL15}}','{{RIVAL15}} Stars')),
-]
-DISP_BY_SLUG = {slug:disp for kw,(slug,disp) in SLUGS}
+# ── LOS EQUIPOS DE LA LIGA ──────────────────────────────────────────────────
+#    Antes iban escritos acá, con el nombre para mostrar de cada uno. Al armar
+#    el paquete de un cliente el generador reemplazaba las claves pero no esos
+#    nombres —tienen acentos y se le escapaban— así que el plan de partido
+#    seguía ofreciendo los equipos del club de origen.
+#
+#    Ahora salen de config_club.json, que es donde vive toda la configuración.
+def _cargar_slugs():
+    try:
+        import config_club
+        equipos = config_club.todo().get('equipos') or {}
+
+        # Sólo sirven las palabras que identifican a UN equipo. "Atletico"
+        # está en cinco clubes y "Universidad" en dos: si se usaran, el plan
+        # de partido le asignaría los datos al equipo equivocado.
+        from collections import Counter
+        cuenta = Counter()
+        por_equipo = {}
+        for largo, corto in equipos.items():
+            palabras = set(_norm(w) for w in re.split(r'[^A-Za-z0-9\u00c0-\u00ff]+', largo)
+                           if len(w) > 3)
+            por_equipo[largo] = palabras
+            for w in palabras:
+                cuenta[w] += 1
+
+        pares = []
+        for largo, corto in equipos.items():
+            clave = _norm(corto)
+            if clave:
+                pares.append((clave, (_norm(corto), corto)))
+            # el nombre completo, que siempre es único
+            pares.append((_norm(largo), (_norm(corto), corto)))
+            # y las palabras que no comparte con nadie
+            for w in por_equipo[largo]:
+                if cuenta[w] == 1 and len(w) > 3:
+                    pares.append((w, (_norm(corto), corto)))
+        # los nombres más largos primero: así "Buenos Aires" gana sobre "Buenos"
+        pares.sort(key=lambda x: -len(x[0]))
+        vistos, salida = set(), []
+        for k, v in pares:
+            if k in vistos: continue
+            vistos.add(k); salida.append((k, v))
+        return salida
+    except Exception as e:
+        print('  [aviso] no pude leer config_club.json (%s)' % e)
+        return []
+
+
+SLUGS = []   # se llena abajo, después de definir _norm
+DISP_BY_SLUG = {}
 def _norm(x):
     x=''.join(c for c in unicodedata.normalize('NFD',x or '') if unicodedata.category(c)!='Mn')
     return re.sub(r'[^a-z0-9]','',x.lower())
+SLUGS = _cargar_slugs()
+DISP_BY_SLUG = {slug: disp for kw, (slug, disp) in SLUGS}
+
+
 def name_to_slug(name):
     k=_norm(name)
     for kw,(slug,disp) in SLUGS:

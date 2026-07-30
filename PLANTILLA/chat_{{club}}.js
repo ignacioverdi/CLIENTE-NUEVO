@@ -159,7 +159,7 @@ var KB={
  heatmap:{
   es:'🔥 **Heat Maps** — La cancha pintada según dónde caen las pelotas.\n\nHay uno por fundamento: ataque, saque, recepción, defensa y distribución del armador. Cuanto más fuerte el color, más acciones en esa zona.\n\nSe pueden filtrar por jugador, por rival y por partido.\n\n💡 Sirven para ver tendencias: si siempre atacás a la misma zona, el rival lo va a leer.',
   en:'🔥 **Heat Maps** — The court coloured by where the ball lands.\n\nOne per skill: attack, serve, reception, defence and setter distribution. The stronger the colour, the more actions in that zone.\n\nFilterable by player, opponent and match.\n\n💡 Great for spotting patterns: if you always hit the same zone, the opponent will read it.',
-  de:'🔥 **Heat Maps** — Das Feld eingefärbt nach Ballaufkommen.\n\nEine pro Element: Angriff, Aufschlag, Annahme, Abwehr und Zuspielverteilung. Je kräftiger die Farbe, desto mehr Aktionen in dieser Zone.\n\nFilterbar nach Spieler, Gegner und Spiel.\n\n💡 Ideal für M{{RIVAL17}}: Wer immer dieselbe Zone angreift, wird gelesen.'
+  de:'🔥 **Heat Maps** — Das Feld eingefärbt nach Ballaufkommen.\n\nEine pro Element: Angriff, Aufschlag, Annahme, Abwehr und Zuspielverteilung. Je kräftiger die Farbe, desto mehr Aktionen in dieser Zone.\n\nFilterbar nach Spieler, Gegner und Spiel.\n\n💡 Ideal für Muster: Wer immer dieselbe Zone angreift, wird gelesen.'
  },
  baterias:{
   es:'⚡ **Baterías** — Series de trabajo para entrenar un fundamento puntual.\n\nSe arman desde el sistema y quedan guardadas. Cada una tiene su objetivo y su forma de puntuar, así podés ver si vas mejorando de una a otra.\n\n💡 Preguntale al cuerpo técnico cuál te toca esta semana.',

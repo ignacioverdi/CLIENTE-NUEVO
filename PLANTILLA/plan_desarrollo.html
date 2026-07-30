@@ -133,7 +133,7 @@
   var DATA={items:[]};
 
   function roster(){
-    var raw=(typeof PLANTEL_{{CLUB}}!=='undefined'&&PLANTEL_{{CLUB}})||window.PLANTEL_{{CLUB}}||(typeof {{CLUB}}_JUGADORES!=='undefined'&&{{CLUB}}_JUGADORES)||window.{{CLUB}}_JUGADORES||null;
+    var raw=(typeof PLANTEL_{{CLUB}}!=='undefined'&&PLANTEL_{{CLUB}})||window.PLANTEL_{{CLUB}}||(typeof ((window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||window.{{CLUB}}_JUGADORES||[])!=='undefined'&&((window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||window.{{CLUB}}_JUGADORES||[]))||((window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||window.{{CLUB}}_JUGADORES||[])||null;
     var r=Array.isArray(raw)?raw:((raw&&(raw.jugadores||raw.lista))||[]);
     return (r||[]).map(function(p){
       var num=p.num!=null?String(p.num):String(((String(p.nombre||'').match(/^\d+/))||[''])[0]);
