@@ -110,6 +110,170 @@ class Corrida:
 
 
 # ── el proceso completo ──────────────────────────────────────────────────────
+
+def _asegurar_config(carpeta):
+    """Arma o completa config_club.json a partir de los partidos.
+
+       Se llama sola en cada corrida. Si el archivo ya está y no hay equipos
+       nuevos, no toca nada."""
+    destino = os.path.join(AQUI, 'config_club.json')
+    crear = os.path.join(AQUI, 'crear_config.py')
+
+    # ── qué equipos aparecen en los partidos ───────────────────────────────
+    def _leer(ruta):
+        b = open(ruta, 'rb').read()
+        t = b.decode('windows-1252', errors='replace')
+        if re.search(r'[\u00C3\u00C2][\u0080-\u00BF]', t):
+            try: t = b.decode('utf-8', errors='replace')
+            except Exception: pass
+        return t
+
+    from collections import Counter
+    vistos = Counter()
+    for f in sorted(glob.glob(os.path.join(carpeta, '*.dvw')))[:200]:
+        try: txt = _leer(f)
+        except Exception: continue
+        lin = txt.split('\n')
+        i = [k for k, l in enumerate(lin) if l.strip().upper() == '[3TEAMS]']
+        if not i: continue
+        for k in (1, 2):
+            try:
+                n = lin[i[0] + k].split(';')[1].strip()
+                if n: vistos[n] += 1
+            except Exception:
+                pass
+    if not vistos:
+        return
+
+    # ── lo que ya había ────────────────────────────────────────────────────
+    cfg = {}
+    if os.path.exists(destino):
+        try:
+            cfg = json.load(open(destino, encoding='utf-8'))
+        except Exception:
+            cfg = {}
+    equipos = dict(cfg.get('equipos') or {})
+
+    nuevos = [n for n in vistos if n not in equipos]
+    if not nuevos and cfg.get('club'):
+        return                       # ya estaba y no hay nada nuevo
+
+    # ── el nombre corto de cada equipo nuevo ───────────────────────────────
+    #    Primero se prueba con los nombres que usan los entrenadores en las
+    #    ligas que conocemos. Si el equipo no está, se deduce del nombre largo.
+    CONOCIDOS = {
+        # Argentina
+        'san lorenzo': 'Casla', 'defensores de banfield': 'Defensores',
+        'river plate': 'River', 'universidad de buenos aires': 'UBA',
+        'ciudad de campana': 'Campana', 'lomas de zamora': 'Lomas',
+        'velez sarsfield': 'Velez', 'ciudad de buenos aires': 'Ciudad',
+        'tres de febrero': 'Untref', 'ferro carril oeste': 'Ferro',
+        'nautico hacoaj': 'Hacoaj', 'boca juniors': 'Boca',
+        # Suiza
+        'nafels': 'Nafels', 'amriswil': 'Amriswil', 'schonenwerd': 'Schonenwerd',
+        'chenois': 'Chenois', 'colombier': 'Colombier', 'lausanne': 'Lausanne',
+        'st gallen': 'St Gallen', 'jona': 'Jona',
+    }
+    import unicodedata
+    relleno = ('club', 'atletico', 'atltico', 'volley', 'voley', 'de', 'del', 'la',
+               'las', 'los', 'y', 'd', 's', 'municipio', 'universidad', 'ciudad',
+               'nacional', 'stv', 'sc', 'vbc', 'asociacion', 'deportivo')
+    usados = set(equipos.values())
+    for largo in nuevos:
+        t = unicodedata.normalize('NFKD', largo).encode('ascii', 'ignore').decode()
+        t = re.sub(r'\([^)]*\)', ' ', t)
+        bajo = t.lower()
+        c = ''
+        for clave, corto in CONOCIDOS.items():
+            if clave in bajo:
+                c = corto; break
+        conocido = bool(c)
+        if not c:
+            pal = [w for w in re.split(r'[^A-Za-z0-9]+', t) if w]
+            ut = [w for w in pal if w.lower() not in relleno and len(w) > 2]
+            c = (ut[0].capitalize() if ut else (pal[0] if pal else largo[:10]))
+
+        # Un mismo equipo aparece escrito de varias formas en los .dvw —"Volley
+        # Näfels", "Biogas Volley Näfels (NLA Men)", "Volley NFELS"— y todas
+        # tienen que dar el mismo nombre corto. Sólo se numera cuando el nombre
+        # se dedujo y choca con otro: ahí sí son equipos distintos.
+        # Antes de numerar: si ya hay un equipo que se llama igual salvo por
+        # las mayusculas o los acentos —"SCM ZALAU" y "SCM Zalau"— es el mismo,
+        # y le toca el mismo nombre corto.
+        def _plano(x):
+            return re.sub(r'[^a-z0-9]', '',
+                          unicodedata.normalize('NFKD', x).encode('ascii', 'ignore')
+                          .decode().lower())
+        gemelo = ''
+        for otro, corto_otro in equipos.items():
+            if _plano(otro) == _plano(largo):
+                gemelo = corto_otro; break
+        if gemelo:
+            equipos[largo] = gemelo
+            continue
+
+        if not conocido:
+            base, k = c, 2
+            while c in usados:
+                c = '%s%d' % (base, k); k += 1
+        usados.add(c)
+        equipos[largo] = c
+
+    # ── cuál de todos es el nuestro ────────────────────────────────────────
+    #    El que juega TODOS los partidos de su propia carpeta. Si hay empate
+    #    —una carpeta con partidos de toda la liga— se respeta el que ya
+    #    estuviera configurado.
+    propio = cfg.get('nombre') or ''
+    if not propio:
+        # El club tiene sus archivos con el nombre adentro —chat_boca.js,
+        # plantel_boca.js— y ese es el dato más confiable: no depende de
+        # cuántos partidos de cada equipo haya en la carpeta.
+        slug = ''
+        for pat in ('chat_*.js', 'plantel_*.js'):
+            for f in glob.glob(os.path.join(AQUI, pat)):
+                m = re.match(r'(?:chat_|plantel_)([a-z0-9]+)\.', os.path.basename(f))
+                if m and m.group(1) not in ('nla', 'liga'):
+                    slug = m.group(1); break
+            if slug: break
+
+        if slug:
+            for largo, corto in equipos.items():
+                lc = unicodedata.normalize('NFKD', corto).encode('ascii','ignore').decode().lower()
+                ll = unicodedata.normalize('NFKD', largo).encode('ascii','ignore').decode().lower()
+                if slug == re.sub(r'[^a-z0-9]', '', lc) or slug in re.sub(r'[^a-z0-9]', '', ll):
+                    propio = largo; break
+
+        if not propio:
+            # sin esa pista, el que más aparece. Si la carpeta trae toda la
+            # liga puede errarle: por eso se avisa.
+            tope = max(vistos.values())
+            candidatos = [n for n, v in vistos.items() if v == tope]
+            propio = candidatos[0]
+            if len(candidatos) > 1 or vistos[propio] < len(archivos):
+                print('    [aviso] deduje que el club es "%s". Si no es, corregilo'
+                      % propio)
+                print('            en config_club.json o corre crear_config.py.')
+
+    cfg.setdefault('club', re.sub(r'[^a-z0-9]', '',
+                   unicodedata.normalize('NFKD', equipos.get(propio, ''))
+                   .encode('ascii', 'ignore').decode().lower()))
+    cfg['nombre'] = propio
+    cfg['equipo'] = equipos.get(propio, cfg.get('equipo', ''))
+    cfg['equipos'] = equipos
+    cfg.setdefault('liga', '')
+    cfg.setdefault('pais', '')
+    cfg.setdefault('temporada', {'inicio': 8})
+
+    try:
+        with open(destino, 'w', encoding='utf-8') as f:
+            json.dump(cfg, f, ensure_ascii=False, indent=2)
+        if nuevos:
+            print('    configuracion: %d equipo(s) nuevo(s) · el club es %s'
+                  % (len(nuevos), cfg['equipo'] or '?'))
+    except Exception as e:
+        print('    [aviso] no pude guardar config_club.json (%s)' % e)
+
+
 def main():
     ap = argparse.ArgumentParser(description='Procesa los partidos y deja todo listo para publicar')
     ap.add_argument('--dvw', help='carpeta de los .dvw (por defecto, la del año más alto)')
@@ -130,6 +294,19 @@ def main():
         return 0
 
     archivos = glob.glob(os.path.join(dvw, '*.dvw')) + glob.glob(os.path.join(dvw, '*.DVW'))
+
+    # ── LA CONFIGURACIÓN DEL CLUB ──────────────────────────────────────────
+    #    Los motores necesitan saber cómo se llama cada equipo y cuál es el
+    #    nuestro. Eso vive en config_club.json y se arma leyendo los partidos.
+    #
+    #    No se puede armar al dar de alta: ahí el club todavía no subió nada.
+    #    Se arma la primera vez que llega un partido, que es cuando existe la
+    #    información. El entrenador no se entera: pasa solo.
+    #
+    #    Si más adelante aparece un rival nuevo, se suma sin pisar los nombres
+    #    cortos que ya estaban.
+    _asegurar_config(dvw)
+
     temporada = temporada_de(dvw)
     t0 = time.time()
 
