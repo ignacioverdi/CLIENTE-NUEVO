@@ -264,6 +264,21 @@ def _asegurar_config(carpeta):
     cfg.setdefault('pais', '')
     cfg.setdefault('temporada', {'inicio': 8})
 
+    # ── LOS TORNEOS ────────────────────────────────────────────────────────
+    #    Un club puede jugar mas de un torneo por ano, y cada uno tiene su
+    #    calendario. En Argentina son dos:
+    #
+    #        Division de Honor    mayo → agosto    empieza y termina el mismo ano
+    #        Liga Nacional        sept → abril     cruza de un ano al otro
+    #
+    #    Un solo corte no sirve para los dos: con abril, la Liga Nacional se
+    #    parte al medio; con septiembre, la Division de Honor cae en el ano
+    #    anterior.
+    #
+    #    La ventana de cada torneo se deduce de los meses en que se jugo, no se
+    #    adivina. Asi funciona en cualquier liga sin configurar nada.
+    _detectar_torneos(carpeta, cfg)
+
     try:
         with open(destino, 'w', encoding='utf-8') as f:
             json.dump(cfg, f, ensure_ascii=False, indent=2)
@@ -272,6 +287,91 @@ def _asegurar_config(carpeta):
                   % (len(nuevos), cfg['equipo'] or '?'))
     except Exception as e:
         print('    [aviso] no pude guardar config_club.json (%s)' % e)
+
+
+
+# Cuántos partidos hacen falta para animarse a deducir la ventana de un torneo.
+# Con menos, la muestra no alcanza y es mejor no configurarlo.
+MINIMO_PARA_DEDUCIR = 5
+
+
+def _detectar_torneos(carpeta, cfg):
+    """Averigua qué torneos juega el club y cuándo se juega cada uno.
+
+       Lee la competencia que declara cada .dvw, agrupa las fases del mismo
+       torneo —"Rueda Clasificación" y "Play Off" son el mismo— y mira en qué
+       meses se jugó para deducir la ventana.
+
+       Un torneo que se juega de mayo a agosto empieza y termina el mismo año.
+       Uno que se juega de septiembre a abril cruza de año. Eso cambia cómo se
+       escribe la temporada: "2026" contra "2026-27"."""
+
+    def _leer(ruta):
+        b = open(ruta, 'rb').read()
+        t = b.decode('windows-1252', errors='replace')
+        if re.search(r'[\u00C3\u00C2][\u0080-\u00BF]', t):
+            try: t = b.decode('utf-8', errors='replace')
+            except Exception: pass
+        return t
+
+    def _corto(nombre):
+        """El nombre del torneo, sin la fase ni el año."""
+        t = re.split(r'\s+[-\u00b7\u2013\u2014|]\s+', (nombre or '').strip())[0].strip()
+        t = re.sub(r'\s*\d{2,4}\s*$', '', t).strip()
+        return t
+
+    meses = {}
+    for f in sorted(glob.glob(os.path.join(carpeta, '*.dvw')))[:300]:
+        try: txt = _leer(f)
+        except Exception: continue
+        lin = txt.split('\n')
+        i = [k for k, l in enumerate(lin) if l.strip().upper() == '[3MATCH]']
+        if not i: continue
+        col = lin[i[0] + 1].split(';')
+        comp = _corto(col[3] if len(col) > 3 else '')
+        if not comp:
+            continue                      # el .dvw no lo declara
+        fecha = (col[0] or '').strip()
+        m = None
+        if '/' in fecha:
+            q = fecha.split('/')
+            try: m = int(q[1]) if len(q[0]) == 4 else int(q[1])
+            except Exception: m = None
+        elif '-' in fecha:
+            try: m = int(fecha.split('-')[1])
+            except Exception: m = None
+        if m and 1 <= m <= 12:
+            meses.setdefault(comp, []).append(m)
+
+    if not meses:
+        return                            # ninguno declara el torneo
+
+    torneos = dict(cfg.get('torneos') or {})
+    nuevos = []
+    for nombre, lista in meses.items():
+        if nombre in torneos:
+            continue
+        # Con pocos partidos no se puede deducir la ventana: dos fechas de
+        # enero no dicen si el torneo va de enero a marzo o de octubre a abril.
+        # Mejor no inventarla y dejar que use el calendario general del club.
+        if len(lista) < MINIMO_PARA_DEDUCIR:
+            continue
+        ms = sorted(set(lista))
+        # ¿los meses son seguidos dentro del ano, o cruzan diciembre?
+        cruza = (12 in ms and 1 in ms) or (max(ms) - min(ms) > 7)
+        if cruza:
+            # el arranque es el primer mes de la segunda mitad del ano
+            arranque = min([m for m in ms if m >= 7] or [min(ms)])
+        else:
+            arranque = min(ms)
+        torneos[nombre] = {'inicio': arranque, 'cruza': bool(cruza)}
+        nuevos.append((nombre, arranque, cruza))
+
+    if nuevos:
+        cfg['torneos'] = torneos
+        for n, a, c in nuevos:
+            print('    torneo: %-30s arranca en el mes %-2d  %s'
+                  % (n[:30], a, 'cruza de ano' if c else 'un solo ano'))
 
 
 def main():
