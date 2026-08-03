@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Recepción — {{CLUB_COMPLETO}}</title>
+<title>Recepción — {{CLUB}} Voley</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="datos_seguros.js"></script>
-  <script src="datos_equipo.js" onerror="void 0"></script>
+<!-- El filtro Partido / Entrenamiento, compartido por todo el sistema.
+     Guarda la eleccion y la deja viajar entre pantallas. -->
+<script src="filtro_tipo.js" onerror="void 0"></script>
+  <script src="datos_equipo.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <!-- VB: selector PARTIDO/ENTRENAMIENTO - carga los datos segun el modo elegido -->
 <script>(function(){var ent=false;try{ent=(localStorage.getItem('vb_modo')||'partido')==='entrenamiento';}catch(e){}
@@ -36,6 +39,9 @@ select, select option { color: #111111 !important; background-color: #ffffff !im
 .empty{text-align:center;padding:60px;color:#475569;font-size:13px;letter-spacing:1px}
 .info-note{font-size:10px;color:#475569;letter-spacing:1px;padding:10px 16px;background:rgba(255,255,255,.02);border-radius:6px;margin-bottom:14px;border:1px solid rgba(255,255,255,.04)}
 </style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
@@ -44,7 +50,7 @@ select, select option { color: #111111 !important; background-color: #ffffff !im
   <a id="back-jug" href="jugador.html" class="back-btn">← Perfil</a>
   <div style="flex-shrink:0">
     <div id="jug-title" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#e2e8f0">RECEPCIÓN</div>
-    <div style="font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase">{{CLUB_COMPLETO}}</div>
+    <div style="font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase">{{CLUB}} VOLEY</div>
   </div>
   <div class="filter-row">
     <select class="subfiltro-select" id="subfiltro-select" style="display:none"></select>
@@ -63,7 +69,12 @@ function buildRecepcionFromHistorial(num){
   var jNombre='';
   // El historial de entrenamientos no trae zona; se agrupa todo en desde_z6/total como referencia.
   sesiones.forEach(function(s){
-    if(s.tipo!=='E') return;
+    /* Antes esta linea era  if(s.tipo!=='E') return;  o sea: la pagina
+       mostraba SOLO entrenamientos, con el tipo escrito a mano. Cuando
+       empiecen los partidos no iba a mostrar ninguno. Ahora respeta el filtro
+       que se eligio, y con "Todos" suma las dos cosas. */
+    var _vt = (typeof vbTipo==='function') ? vbTipo() : 'todos';
+    if(_vt !== 'todos' && (s.tipo||'P') !== _vt) return;
     (s.jugadores||[]).forEach(function(j){
       if(j.c!==num) return;jNombre=j.n;
       var tot2=j.rT||0; if(!tot2) return;
@@ -228,13 +239,13 @@ function getJugadorPartidoRec(){
     }
     return null;
   }
-  // Acumulado: PARTIDOS_JUGADORES (recepcion por zona), fallback {{Club}}_JUGADORES
+  // Acumulado: PARTIDOS_JUGADORES (recepcion por zona), fallback Nafels_JUGADORES
   if(typeof PARTIDOS_JUGADORES!=='undefined'){
     var j=PARTIDOS_JUGADORES.find(function(x){return x.num===currentNum;});
     if(j&&j.recepcion&&j.recepcion.flotado) return j;
   }
-  if(typeof {{Club}}_JUGADORES!=='undefined'){
-    var j={{Club}}_JUGADORES.find(function(x){return x.num===currentNum;});
+  if(typeof Nafels_JUGADORES!=='undefined'){
+    var j=Nafels_JUGADORES.find(function(x){return x.num===currentNum;});
     if(j&&j.recepcion&&j.recepcion.flotado) return j;
   }
   return null;
@@ -295,7 +306,7 @@ function recEffByTipo(jug){
 }
 
 function renderComparativaRecepcion(j, cont, num){
-  var JUG = typeof PARTIDOS_JUGADORES!=='undefined'&&PARTIDOS_JUGADORES.length?PARTIDOS_JUGADORES:(typeof {{Club}}_JUGADORES!=='undefined'?{{Club}}_JUGADORES:[]);
+  var JUG = typeof PARTIDOS_JUGADORES!=='undefined'&&PARTIDOS_JUGADORES.length?PARTIDOS_JUGADORES:(typeof Nafels_JUGADORES!=='undefined'?Nafels_JUGADORES:[]);
   if(!JUG.length) return;
   var mio=recEffByTipo(j);
   if(!mio||!mio.total) return;
@@ -373,7 +384,7 @@ function renderComparativaRecepcion(j, cont, num){
 }
 
 function waitAndInit(tries){
-  var ok=typeof {{Club}}_JUGADORES!=='undefined'||typeof PARTIDOS_JUGADORES!=='undefined'||typeof window.HISTORIAL_DATA!=='undefined';
+  var ok=typeof Nafels_JUGADORES!=='undefined'||typeof PARTIDOS_JUGADORES!=='undefined'||typeof window.HISTORIAL_DATA!=='undefined';
   if(ok){var params=new URLSearchParams(window.location.search);currentNum=parseInt(params.get('num'))||0;buildSubfiltro();document.fonts.ready.then(renderPage).catch(renderPage);}
   else if(tries>0){setTimeout(function(){waitAndInit(tries-1);},200);}
   else {document.getElementById('content').innerHTML='<div class="empty">No se pudieron cargar los datos.</div>';}
@@ -382,7 +393,13 @@ waitAndInit(25);
 </script>
 <script src="lang.js"></script>
 <script src="temporadas_menu.js"></script>
+<script>
+/* La barra del filtro. Al cambiarlo se vuelve a dibujar la pagina entera:
+   estas pantallas leen todo de la direccion, asi que recargar es la forma
+   mas segura de que no quede ningun numero del tipo anterior. */
+try{ vbBarraTipo(); window.vbAlCambiarTipo = function(){ location.reload(); }; }catch(e){}
+</script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

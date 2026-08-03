@@ -2,10 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<!-- Migracion interna de etiquetas {{club}}_* -> vb_* (transparente: conserva sesion, notas y datos) -->
-<script>(function(){try{function m(s){for(var i=s.length-1;i>=0;i--){var k=s.key(i);if(k&&k.indexOf("{{club}}_")===0){var n="vb_"+k.slice(6);if(s.getItem(n)===null)s.setItem(n,s.getItem(k));}}}m(localStorage);m(sessionStorage);}catch(e){}})();</script>
+<!-- Migracion interna de etiquetas casla_* -> vb_* (transparente: conserva sesion, notas y datos) -->
+<script>(function(){try{function m(s){for(var i=s.length-1;i>=0;i--){var k=s.key(i);if(k&&k.indexOf("casla_")===0){var n="vb_"+k.slice(6);if(s.getItem(n)===null)s.setItem(n,s.getItem(k));}}}m(localStorage);m(sessionStorage);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>GAME PLAN — {{RIVAL1}} · {{CLUB}}</title>
+<title>GAME PLAN — AMRISWIL · {{CLUB}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -273,9 +273,9 @@ select, select option {
 
 </style>
 <script src="lang.js" onerror="void 0"></script>
-<script src="liga_data.js"></script>
+<script src="liga_data.js.enc"></script>
 <script src="firebase.js" onerror="void 0"></script>
-<script src="mapa_videos.js" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
+<script src="mapa_videos.js.enc" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
 <script src="videos.js" onerror="window.VIDEOS_DATA=window.VIDEOS_DATA||{}"></script>
 </head>
 <body>
@@ -285,11 +285,11 @@ select, select option {
   <button onclick="descargarPDF()" class="pdf-btn" id="pdf-btn">📄 Descargar PDF</button>
   <div>
     <div class="page-title"><span data-t="game_plan">Plan de Juego</span></div>
-    <div style="font-size:10px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-top:1px">Análisis táctico de rivales — Volley {{Club}}</div>
+    <div style="font-size:10px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-top:1px">Análisis táctico de rivales — {{CLUB}}</div>
   </div>
   <div>
-    <div class="rival-name" id="rival-nombre">{{RIVAL1}}</div>
-    <div class="match-info" id="match-info">{{LIGA}} {{PAIS}} 2026/27 · temporada en curso</div>
+    <div class="rival-name" id="rival-nombre">AMRISWIL</div>
+    <div class="match-info" id="match-info">{{LIGA}} 2026/27 · temporada en curso</div>
     <select id="rival-select" class="rival-select" title="Elegir equipo rival"></select>
   </div>
   <div id="lang-wrap" style="display:flex;align-items:center;gap:4px;margin-right:8px"></div>
@@ -513,7 +513,7 @@ var GP_L = window.LIGA_DATA;
 
 // Si no hay rival especificado, tomar el primero que no sea el equipo propio
 if (!GP_RIVAL_SLUG || !GP_L.teams[GP_RIVAL_SLUG]) {
-  var _keys = Object.keys(GP_L.teams).filter(function(k){ return k !== '{{club}}'; });
+  var _keys = Object.keys(GP_L.teams).filter(function(k){ return k !== '{{CLUB_SLUG}}'; });
   GP_RIVAL_SLUG = _keys[0];
 }
 var GP_TD = GP_L.teams[GP_RIVAL_SLUG];
@@ -1796,7 +1796,7 @@ document.getElementById('rival-nombre').textContent=RIVAL.nombre;
   var sel=document.getElementById('rival-select');
   if(!sel || !GP_L || !GP_L.teams) return;
   var opts=Object.keys(GP_L.teams)
-    .filter(function(s){ return s!=='{{club}}'; })
+    .filter(function(s){ return s!=='{{CLUB_SLUG}}'; })
     .map(function(s){ return {slug:s, name:(GP_L.teams[s].name||s).toUpperCase()}; })
     .sort(function(a,b){ return a.name.localeCompare(b.name); });
   sel.innerHTML=opts.map(function(o){
@@ -3572,4 +3572,4 @@ document.addEventListener('click', function(e){
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

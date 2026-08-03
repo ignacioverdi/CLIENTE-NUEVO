@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparador — Näfels vs Rival</title>
+<style>
+  :root{--bg:#07080F;--card:#11162a;--card2:#0d1322;--border:#1e2944;--text:#e8edf7;--mut:#64748b;--mut2:#94a3b8;
+        --naf:#F97316;--riv:#06B6D4;--ok:#22C55E;--bad:#ef4444}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',system-ui,sans-serif;padding:20px 16px;max-width:840px;margin:0 auto}
+  .hdr{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .back-btn{color:var(--mut2);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-weight:700;font-size:13px}
+  .ttl{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px;line-height:1}
+  .ttl span{color:var(--naf)}
+  .sub{color:var(--mut2);font-size:13px}
+  select{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:10px 14px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:18px}
+  .names{display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;margin-bottom:6px;gap:8px}
+  .nm{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.5px}
+  .nm.l{text-align:right;color:var(--naf)} .nm.r{text-align:left;color:var(--riv)}
+  .grp{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:13px}
+  .grp-t{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.5px;color:var(--mut2);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .grp-t .ic{width:9px;height:9px;border-radius:2px}
+  .row{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:8px;margin:9px 0}
+  .bwrap{height:18px;background:var(--card2);border-radius:5px;overflow:hidden;display:flex}
+  .bwrap.l{justify-content:flex-end}
+  .bar{height:100%;border-radius:5px}
+  .val{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.5px}
+  .val.l{text-align:right} .val.r{text-align:left}
+  .mid{text-align:center;font-size:10px;color:var(--mut);letter-spacing:.5px;text-transform:uppercase;font-weight:700}
+  .win{filter:drop-shadow(0 0 5px currentColor)}
+  .empty{text-align:center;color:var(--mut);padding:60px 20px}
+</style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
+</head>
+<body>
+  <div class="hdr">
+    <a href="scouting_rival.html" class="back-btn">← Scouting</a>
+    <div>
+      <div class="ttl">NÄFELS <span>vs RIVAL</span></div>
+      <div class="sub">Comparación directa de rendimiento</div>
+    </div>
+    <div id="lang-wrap" style="margin-left:auto;display:flex;gap:4px"></div>
+  </div>
+  <select id="sel"></select>
+  <div id="out"><div class="empty">Elegí un rival para comparar.</div></div>
+
+  <script src="datos_seguros.js"></script>
+  <script src="scouting_rival.js.enc"></script>
+  <script>abrirDatos();</script>
+  <script>
+  (function(){
+    var S=window.SCOUTING_RIVAL||{};
+    var NAF='Biogas Volley Näfels';
+    var naf=S[NAF];
+    var teams=Object.keys(S).filter(function(t){return t!==NAF && S[t].matches>=5;}).sort(function(a,b){return S[b].matches-S[a].matches;});
+    var sel=document.getElementById('sel');
+    sel.innerHTML='<option value="">— Elegí un rival —</option>'+teams.map(function(t){return '<option value="'+t.replace(/"/g,'&quot;')+'">'+t+'</option>';}).join('');
+    sel.addEventListener('change',function(){render(this.value);});
+
+    // metricas: [label, getter, higherIsBetter, max-para-barra]
+    var GROUPS=[
+      {t:'Saque', ic:'#F59E0B', rows:[
+        ['Eficacia (ace−err)', function(x){return x.serve.eff;}, true, 20, true],
+        ['Aces %', function(x){return x.serve.acepct;}, true, 12],
+        ['Errores %', function(x){return x.serve.errpct;}, false, 22],
+      ]},
+      {t:'Ataque', ic:'#F97316', rows:[
+        ['Eficacia', function(x){return x.attack.eff;}, true, 45],
+        ['Punto %', function(x){return x.attack.killpct;}, true, 60],
+        ['Bloqueado %', function(x){return x.attack.blkpct;}, false, 15],
+      ]},
+      {t:'Recepción', ic:'#22C55E', rows:[
+        ['% Positiva', function(x){return x.recep.pospct;}, true, 80],
+        ['% Error', function(x){return x.recep.errpct;}, false, 15],
+      ]},
+    ];
+
+    function bar(v,max,color,side,better){
+      var w=Math.max(2,Math.min(100,Math.abs(v)/max*100));
+      return '<div class="bwrap '+side+'"><div class="bar'+(better?' win':'')+'" style="width:'+w+'%;background:'+color+';color:'+color+'"></div></div>';
+    }
+    function render(name){
+      var r=S[name], out=document.getElementById('out');
+      if(!r||!naf){out.innerHTML='<div class="empty">Elegí un rival para comparar.</div>';return;}
+      var h='<div class="names"><div class="nm l">Näfels</div><div class="mid">'+naf.matches+' vs '+r.matches+' PJ</div><div class="nm r">'+name+'</div></div>';
+      GROUPS.forEach(function(g){
+        h+='<div class="grp"><div class="grp-t"><span class="ic" style="background:'+g.ic+'"></span>'+g.t+'</div>';
+        g.rows.forEach(function(row){
+          var lbl=row[0], get=row[1], hib=row[2], max=row[3];
+          var vn=get(naf), vr=get(r);
+          var nafBetter = hib? vn>vr : vn<vr;
+          var rivBetter = hib? vr>vn : vr<vn;
+          h+='<div style="margin:9px 0">'
+            +'<div class="mid" style="margin-bottom:3px">'+lbl+'</div>'
+            +'<div class="row">'
+            +'<div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span class="val l" style="color:var(--naf)">'+vn+'%</span>'+bar(vn,max,'var(--naf)','l',nafBetter)+'</div>'
+            +'<div class="mid">'+(nafBetter?'◀':rivBetter?'▶':'=')+'</div>'
+            +'<div style="display:flex;align-items:center;gap:6px"><span></span>'+bar(vr,max,'var(--riv)','r',rivBetter)+'<span class="val r" style="color:var(--riv)">'+vr+'%</span></div>'
+            +'</div></div>';
+        });
+        h+='</div>';
+      });
+      h+='<div style="font-size:11px;color:var(--mut);text-align:center;margin-top:4px">◀ / ▶ marca quién está mejor en cada métrica · el borde brillante es el mejor valor</div>';
+      out.innerHTML=h;
+    }
+    var q=new URLSearchParams(location.search).get('equipo');
+    if(q && S[q]){ sel.value=q; render(q); }
+  })();
+  </script>
+<style>@media print{#lang-wrap{display:none!important}}</style>
+<script src="lang.js" onerror="void 0"></script>
+</body>
+</html>
+
+<!-- © 2025-2026 Ignacio Verdi · NAFELS VOLEY · Software propietario - Todos los derechos reservados -->

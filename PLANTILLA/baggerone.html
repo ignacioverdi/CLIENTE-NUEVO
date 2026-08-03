@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>BAGGERONE — {{CLUB_COMPLETO}}</title>
+<title>BAGGERONE — {{CLUB}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="lang.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
-  <script src="datos_equipo.js" onerror="window.EQUIPO_DATA=null"></script>
+  <script src="datos_equipo.js.enc" onerror="window.EQUIPO_DATA=null"></script>
+  <!-- El plantel maestro del club. Es la fuente unica: cuando entra un jugador
+       nuevo se agrega ahi y aparece en todas las pantallas. -->
+  <script src="plantel_club.js" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -162,7 +165,7 @@ select, select option {
     <a href="index.html" class="back-btn">← Inicio</a>
     <div>
       <div class="page-title">🏐 Baggerone</div>
-      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB_COMPLETO}} · Ranking interno</div>
+      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB}} VOLEY · Ranking interno</div>
     </div>
   </div>
   <div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div>
@@ -180,6 +183,34 @@ select, select option {
   <div style="font-size:10px;color:var(--mut);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
     Cargar partido
     <div style="flex:1;height:1px;background:var(--border)"></div>
+  </div>
+
+  <!-- Reparte los jugadores por la tabla de posiciones: impares al A, pares al
+       B. Sirve para armar dos equipos parejos sin discutir. -->
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button onclick="abrirAlinear()" title="Elegí quién vino y reparte según la tabla: 1º, 3º, 5º… al A · 2º, 4º, 6º… al B"
+      style="cursor:pointer;background:rgba(55,138,221,.12);border:1px solid rgba(55,138,221,.4);color:#8fc0ee;
+             border-radius:9px;padding:8px 16px;font-family:inherit;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase">
+      ⚖️ Alinear equipos
+    </button>
+  </div>
+
+  <!-- Quien vino hoy. Arranca con todos tildados; se destildan los que
+       faltaron y recien ahi se reparte. -->
+  <div id="alinear-panel" style="display:none;background:var(--card,rgba(255,255,255,.03));border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);font-weight:700">¿Quiénes vinieron hoy?</div>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <button onclick="marcarTodos(1)" style="cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--mut);border-radius:7px;padding:4px 10px;font-family:inherit;font-size:11px">Todos</button>
+      <button onclick="marcarTodos(0)" style="cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--mut);border-radius:7px;padding:4px 10px;font-family:inherit;font-size:11px">Ninguno</button>
+    </div>
+    <div id="alinear-lista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <span id="alinear-cuenta" style="font-size:12px;color:var(--mut)"></span>
+      <div style="flex:1"></div>
+      <button onclick="cerrarAlinear()" style="cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--mut);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:700">Cancelar</button>
+      <button onclick="alinearEquipos()" style="cursor:pointer;background:rgba(55,138,221,.18);border:1px solid rgba(55,138,221,.5);color:#8fc0ee;border-radius:9px;padding:8px 18px;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase">Armar equipos</button>
+    </div>
   </div>
 
   <div class="partido-wrap">
@@ -269,26 +300,56 @@ select, select option {
 <script>
 // ── JUGADORES ─────────────────────────────────────────────────
 var JUGADORES_DEFAULT = [
-  {num:1,nombre:"JUGADOR"},
-    {num:3,nombre:"JUGADOR"},
-    {num:4,nombre:"JUGADOR"},
-    {num:5,nombre:"JUGADOR"},
-    {num:7,nombre:"JUGADOR R"},
-    {num:9,nombre:"JUGADOR"},
-    {num:10,nombre:"JUGADOR"},
-    {num:11,nombre:"JUGADOR"},
-    {num:12,nombre:"JUGADOR"},
-    {num:13,nombre:"JUGADOR"},
-    {num:17,nombre:"JUGADOR"},
-    {num:20,nombre:"JUGADOR J"}];
+  {num:1,nombre:"DURDOS"},
+    {num:2,nombre:"BRUDERER"},
+    {num:3,nombre:"SCHWITTER"},
+    {num:4,nombre:"VAZQUEZ"},
+    {num:5,nombre:"CLEMENT"},
+    {num:7,nombre:"SCHMID R"},
+    {num:9,nombre:"NORRIS"},
+    {num:10,nombre:"BOGDANOVSKI"},
+    {num:11,nombre:"BARTHOLET"},
+    {num:12,nombre:"JOHANSSON"},
+    {num:13,nombre:"STEIMANN"},
+    {num:17,nombre:"ROFFLER"},
+    {num:20,nombre:"SCHMID J"}];
 
+/* ══ El plantel ════════════════════════════════════════════════════════════
+   Hasta ahora esta pantalla leia solo datos_equipo.js, que es una lista
+   aparte y se fue quedando atras: BRUDERER (#2) estaba en el plantel maestro
+   pero no ahi, asi que no aparecia para armar los equipos.
+
+   Ahora manda el plantel maestro (plantel_club.js), que es donde se agrega
+   un jugador nuevo, y datos_equipo.js aporta las fotos y completa lo que
+   falte. Si ninguno de los dos carga, queda la lista de respaldo de arriba. */
 function getJugadores(){
-  if(window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores){
-    return window.EQUIPO_DATA.jugadores.map(function(j){
-      return {num:j.num, nombre:j.nombre, foto:j.foto||null};
+  var porNum = {};
+
+  try{
+    var P = window.PLANTEL_CLUB;
+    var lista = P && (P.jugadores || (P.length ? P : null));
+    if(lista) lista.forEach(function(j){
+      var n = parseInt(j.num, 10);
+      if(isNaN(n)) return;
+      var ap = String(j.ap || j.apellido || j.nombre || '').trim();
+      if(!ap) return;
+      porNum[n] = {num:n, nombre:ap, foto:null};
     });
-  }
-  return JUGADORES_DEFAULT;
+  }catch(e){}
+
+  try{
+    var E = window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores;
+    if(E) E.forEach(function(j){
+      var n = parseInt(j.num, 10);
+      if(isNaN(n)) return;
+      if(!porNum[n]) porNum[n] = {num:n, nombre:j.nombre, foto:j.foto||null};
+      else if(j.foto) porNum[n].foto = j.foto;
+    });
+  }catch(e){}
+
+  var out = Object.keys(porNum).map(function(k){ return porNum[k]; })
+                  .sort(function(a,b){ return a.num - b.num; });
+  return out.length ? out : JUGADORES_DEFAULT;
 }
 
 var JUGADORES = getJugadores();
@@ -348,6 +409,96 @@ if(typeof fbGet!=='undefined'){
 }
 
 // ── RENDER SLOTS ─────────────────────────────────────────────
+/* ══ Alinear equipos ═══════════════════════════════════════════════════════
+   Reparte a los jugadores en zigzag segun la tabla de posiciones: el 1º al
+   equipo A, el 2º al B, el 3º al A, el 4º al B, y asi. Es la forma mas simple
+   de que los dos lados queden parejos, porque los mejores quedan repartidos en
+   vez de amontonados de un lado.
+
+   Se usa exactamente el mismo orden que muestra la tabla, para que lo que se
+   ve en pantalla y lo que reparte el boton sean lo mismo. */
+function ordenDeLaTabla(){
+  return standings.slice().sort(function(a,b){
+    var pa = a.pg*3, pb = b.pg*3;
+    if(pb !== pa) return pb-pa;
+    var da = a.ptsg-a.ptsp, db = b.ptsg-b.ptsp;
+    if(db !== da) return db-da;
+    return b.ptsg-a.ptsg;
+  });
+}
+/* El panel de presentes. Se abre con el boton y muestra el plantel completo,
+   todos tildados. A un entrenamiento no vienen los 13, asi que repartir a todos
+   de una obliga a sacarlos despues a mano — y ahi el reparto deja de ser
+   parejo. Primero se define quien vino, y con esos se arma. */
+function abrirAlinear(){
+  var cont = document.getElementById('alinear-lista');
+  var marcados = {};
+  cont.querySelectorAll('input[type=checkbox]').forEach(function(c){ marcados[c.value] = c.checked; });
+  cont.innerHTML = JUGADORES.map(function(j){
+    var puesto = (marcados[j.nombre] === undefined) ? true : marcados[j.nombre];
+    return '<label style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.03);border:1px solid var(--border);'+
+           'border-radius:8px;padding:7px 9px;cursor:pointer;font-size:13px">'+
+           '<input type="checkbox" value="'+j.nombre+'"'+(puesto?' checked':'')+' onchange="contarPresentes()" style="cursor:pointer">'+
+           '<span style="color:var(--mut);font-size:11px">#'+j.num+'</span> '+j.nombre+'</label>';
+  }).join('');
+  document.getElementById('alinear-panel').style.display = '';
+  contarPresentes();
+}
+function cerrarAlinear(){ document.getElementById('alinear-panel').style.display = 'none'; }
+function marcarTodos(v){
+  document.getElementById('alinear-lista').querySelectorAll('input[type=checkbox]')
+    .forEach(function(c){ c.checked = !!v; });
+  contarPresentes();
+}
+function presentes(){
+  var out = {};
+  document.getElementById('alinear-lista').querySelectorAll('input[type=checkbox]')
+    .forEach(function(c){ if(c.checked) out[c.value] = true; });
+  return out;
+}
+function contarPresentes(){
+  var n = Object.keys(presentes()).length;
+  var el = document.getElementById('alinear-cuenta');
+  if(el) el.textContent = n + ' jugador' + (n===1?'':'es') + ' · quedan ' + Math.ceil(n/2) + ' vs ' + Math.floor(n/2);
+}
+
+function alinearEquipos(){
+  var orden = ordenDeLaTabla();
+  if(!orden.length){ toast('Todavia no hay jugadores en la tabla ⚠️','#f59e0b'); return; }
+
+  /* Solo los que vinieron hoy. Y ademas tienen que seguir en el plantel: si
+     alguien dejo el equipo sigue en la tabla por su historial, pero no se lo
+     puede poner a jugar. */
+  var vino = presentes();
+  if(!Object.keys(vino).length){ toast('Elegí al menos un jugador ⚠️','#f59e0b'); return; }
+  var vigentes = {};
+  JUGADORES.forEach(function(j){ vigentes[j.nombre] = true; });
+  var reparto = orden.filter(function(j){ return vigentes[j.nombre] && vino[j.nombre]; });
+
+  /* Un jugador que vino pero todavia no jugo ningun partido no esta en la
+     tabla. Se agrega al final, que es donde corresponde: sin puntos. */
+  var enTabla = {};
+  reparto.forEach(function(j){ enTabla[j.nombre] = true; });
+  Object.keys(vino).forEach(function(n){
+    if(!enTabla[n] && vigentes[n]) reparto.push({nombre:n});
+  });
+
+  var A = [], B = [];
+  reparto.forEach(function(j, i){ (i % 2 === 0 ? A : B).push(j.nombre); });
+
+  for(var i=1; i<=8; i++){
+    var sa = document.getElementById('slots-a_'+i);
+    var sb = document.getElementById('slots-b_'+i);
+    if(sa) sa.value = A[i-1] || '';
+    if(sb) sb.value = B[i-1] || '';
+  }
+
+  cerrarAlinear();
+  var sobran = Math.max(0, A.length-8) + Math.max(0, B.length-8);
+  toast('Equipos alineados: ' + Math.min(A.length,8) + ' vs ' + Math.min(B.length,8) +
+        (sobran ? ' (' + sobran + ' sin lugar)' : '') + ' ⚖️', 'var(--blue)');
+}
+
 function renderSlots(id){
   var el = document.getElementById(id);
   el.innerHTML = '';
@@ -655,4 +806,4 @@ if(window.EQUIPO_DATA){
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>ARMAR RUTINAS — {{CLUB_COMPLETO}}</title>
+<title>ARMAR RUTINAS — {{CLUB}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="firebase.js" onerror="void 0"></script>
-<script src="plantel_{{club}}.js" onerror="void 0"></script>
+<script src="plantel_club.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
-  <script src="datos_ejercicios.js" onerror="void 0"></script>
+  <script src="datos_ejercicios.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -102,7 +102,7 @@
 <div class="wrap">
   <div class="header">
     <a href="prep_fisica.html" class="back-btn">← Prep Física</a>
-    <div><div class="subtitle">{{CLUB_COMPLETO}} · Cuerpo técnico</div><h1>ARMAR RUTINAS</h1></div>
+    <div><div class="subtitle">{{CLUB}} · Cuerpo técnico</div><h1>ARMAR RUTINAS</h1></div>
     <div class="badge">Preparador físico</div>
   </div>
   <div class="topline"></div>
@@ -159,7 +159,7 @@ var BLOQUES=[
   {nombre:'PREVENTIVOS',icon:'🛡️',color:'#06b6d4'},
   {nombre:'MOVILIDAD',icon:'🧘',color:'#2dd4bf'}
 ];
-function roster(){ return (window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||[]; }
+function roster(){ return (window.PLANTEL_CLUB&&window.PLANTEL_CLUB.jugadores)||[]; }
 function catalogo(){ return (window.EJERCICIOS_DATA&&window.EJERCICIOS_DATA.grupos)||[]; }
 function pname(j){ return '#'+j.num+'  '+(j.ap||j.nombre); }
 function ejById(id){ var g=catalogo(); for(var i=0;i<g.length;i++){var e=g[i].ejercicios.find(function(x){return x.id===id;});if(e)return e;} return null; }
@@ -560,9 +560,9 @@ function cpConfirm(){
 window.addEventListener('beforeunload', function(e){ if(DIRTY){ e.preventDefault(); e.returnValue=''; } });
 </script>
 <script>
-(function(){function a(){try{if(document.getElementById('club-escudo'))return;var a=document.createElement('a');a.id='club-escudo';a.href='index.html';a.title='Inicio · Volley {{Club}}';a.style.cssText='position:fixed;left:12px;bottom:12px;z-index:99990;width:46px;height:46px;border-radius:50%;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.18);box-shadow:0 2px 12px rgba(0,0,0,.55);display:block;';var i=document.createElement('img');i.src='escudo.png';i.alt='Volley {{Club}}';i.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';a.appendChild(i);document.body.appendChild(a);}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();})();
+(function(){function a(){try{if(document.getElementById('club-escudo'))return;var a=document.createElement('a');a.id='club-escudo';a.href='index.html';a.title='Inicio · {{CLUB}}';a.style.cssText='position:fixed;left:12px;bottom:12px;z-index:99990;width:46px;height:46px;border-radius:50%;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.18);box-shadow:0 2px 12px rgba(0,0,0,.55);display:block;';var i=document.createElement('img');i.src='escudo.png';i.alt='{{CLUB}}';i.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';a.appendChild(i);document.body.appendChild(a);}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',a);else a();})();
 </script>
 <script src="lang.js"></script>
 </body></html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

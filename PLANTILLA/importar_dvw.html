@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Importar DVW — {{CLUB_COMPLETO}}</title>
+<title>Importar DVW — {{CLUB}} VOLEY</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -57,6 +57,9 @@ select,select option{color:#111!important;background:#fff!important;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 @media(max-width:768px){.options-grid{grid-template-columns:1fr;}.main{padding:16px;}}
 </style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
@@ -67,7 +70,7 @@ select,select option{color:#111!important;background:#fff!important;}
     <a href="index.html" class="back-btn">← Inicio</a>
     <div>
       <div class="page-title">📥 Importar DVW</div>
-      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB_COMPLETO}} · DataVolley 4</div>
+      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB}} VOLEY · DataVolley 4</div>
     </div>
   </div>
 </div>
@@ -152,9 +155,9 @@ select,select option{color:#111!important;background:#fff!important;}
 <script>
 // ── Plantel {{CLUB}} ─────────────────────────────────────────────
 var NOMBRES = {
-  '01':'JUGADOR','03':'JUGADOR','04':'JUGADOR','05':'JUGADOR',
-  '07':'JUGADOR R','09':'JUGADOR','10':'JUGADOR','11':'JUGADOR',
-  '12':'JUGADOR','13':'JUGADOR','17':'JUGADOR','20':'JUGADOR J'
+  '01':'DURDOS','03':'SCHWITTER','04':'VAZQUEZ','05':'CLEMENT',
+  '07':'SCHMID R','09':'NORRIS','10':'BOGDANOVSKI','11':'BARTHOLET',
+  '12':'JOHANSSON','13':'STEIMANN','17':'ROFFLER','20':'SCHMID J'
 };
 
 var VAL_MAP = {
@@ -187,7 +190,7 @@ function loadFile(file){
     document.getElementById('file-name').textContent = '📄 ' + file.name;
     document.getElementById('btn-procesar').disabled = false;
     // Auto-detectar rival del nombre del archivo
-    var m = file.name.match(/{{Club}}[-_]([^.]+)/i);
+    var m = file.name.match(/Casla[-_]([^.]+)/i);
     if(m && !document.getElementById('opt-rival').value){
       document.getElementById('opt-rival').value = m[1].replace(/[-_]/g,' ');
     }
@@ -246,17 +249,17 @@ function procesarDVW(){
   setTimeout(function(){
     try {
       // Detectar {{CLUB}} por nombres
-      var APEBIO = new Set(['JUGADOR','JUGADOR','JUGADOR','JUGADOR',
-        'JUGADOR','JUGADOR R','JUGADOR J','JUGADOR','JUGADOR','JUGADOR',
-        'JUGADOR','JUGADOR','JUGADOR']);
-      function cnt{{Club}}(sec){
+      var APEBIO = new Set(['DURDOS','SCHWITTER','VAZQUEZ','CLEMENT',
+        'SCHMID','SCHMID R','SCHMID J','NORRIS','BOGDANOVSKI','BARTHOLET',
+        'JOHANSSON','STEIMANN','ROFFLER']);
+      function cntCasla(sec){
         return getSeccion(lines,sec).filter(function(l){
           var p=l.split(';'); if(p.length<10) return false;
           return p[9].trim().toUpperCase().split(' ').some(function(w){return APEBIO.has(w);});
         }).length;
       }
-      var {{club}}Char = cnt{{Club}}('[3PLAYERS-H]') > cnt{{Club}}('[3PLAYERS-V]') ? '*' : 'a';
-      var seccionJugs = {{club}}Char==='*' ? '[3PLAYERS-H]' : '[3PLAYERS-V]';
+      var caslaChar = cntCasla('[3PLAYERS-H]') > cntCasla('[3PLAYERS-V]') ? '*' : 'a';
+      var seccionJugs = caslaChar==='*' ? '[3PLAYERS-H]' : '[3PLAYERS-V]';
       var jugadores = {};
       getSeccion(lines, seccionJugs).forEach(function(line){
         var p = line.split(';');
@@ -267,7 +270,7 @@ function procesarDVW(){
       });
 
       // Sets
-      var sets = []; var {{club}}S = 0; var rivalS = 0;
+      var sets = []; var caslaS = 0; var rivalS = 0;
       getSeccion(lines,'[3SET]').forEach(function(line){
         var p = line.split(';');
         if(p.length >= 5 && p[4].includes('-')){
@@ -275,11 +278,11 @@ function procesarDVW(){
             var parts = p[4].trim().replace(/ /g,'').split('-');
             var h = parseInt(parts[0]); var v = parseInt(parts[1]);
             if(isNaN(h)||isNaN(v)) return;
-            // DVW guarda LOCAL-VISITANTE — invertir si {{CLUB}} es visitante
-            var {{club}}P = {{club}}Char==='a' ? v : h;
-            var rivalP = {{club}}Char==='a' ? h : v;
-            sets.push({h:{{club}}P,v:rivalP});
-            if({{club}}P>rivalP) {{club}}S++; else rivalS++;
+            // DVW guarda LOCAL-VISITANTE — invertir si NAFELS es visitante
+            var caslaP = caslaChar==='a' ? v : h;
+            var rivalP = caslaChar==='a' ? h : v;
+            sets.push({h:caslaP,v:rivalP});
+            if(caslaP>rivalP) caslaS++; else rivalS++;
           }catch(e){}
         }
       });
@@ -310,7 +313,7 @@ function procesarDVW(){
         if(line.includes('[3SCOUT]')){ inScout = true; continue; }
         if(inScout && line.startsWith('[3')){ break; }
         if(!inScout || !line.trim()) continue;
-        if(line[0] !== {{club}}Char) continue; // Solo {{CLUB}}
+        if(line[0] !== caslaChar) continue; // Solo NAFELS
         if(line.length < 6) continue;
 
         var camisa = line.substring(1,3).trim().padStart(2,'0');
@@ -432,12 +435,12 @@ function procesarDVW(){
         fecha: fecha || new Date().toLocaleDateString('es-AR'),
         tipo: tipo,
         rival: rival,
-        resultado: {{{club}}: {{club}}S, rival: rivalS, sets: sets.map(function(s){return s.h+'-'+s.v;})},
+        resultado: {casla: caslaS, rival: rivalS, sets: sets.map(function(s){return s.h+'-'+s.v;})},
         jugadores: jugadoresOut
       };
 
       // Mostrar resultado
-      mostrarResultado(sesionParsed, sets, {{club}}S, rivalS, rival);
+      mostrarResultado(sesionParsed, sets, caslaS, rivalS, rival);
 
       btn.disabled = false;
       btn.textContent = '⚡ PROCESAR ARCHIVO';
@@ -452,20 +455,20 @@ function procesarDVW(){
   }, 100);
 }
 
-function mostrarResultado(sesion, sets, {{club}}S, rivalS, rival){
+function mostrarResultado(sesion, sets, caslaS, rivalS, rival){
   document.getElementById('resultado-section').classList.add('visible');
 
   var tipo = sesion.tipo === 'P' ? 'Partido' : 'Entrenamiento';
   document.getElementById('res-titulo').textContent = tipo + (rival ? ' vs ' + rival : '');
-  document.getElementById('res-sub').textContent = sesion.fecha + ' · {{CLUB}} ' + {{club}}S + ' - ' + rivalS + (rival?' '+rival:'');
+  document.getElementById('res-sub').textContent = sesion.fecha + ' · NAFELS ' + caslaS + ' - ' + rivalS + (rival?' '+rival:'');
 
   // Sets
   var setsRow = document.getElementById('sets-row');
   setsRow.innerHTML = '';
   sets.forEach(function(s, i){
-    var gano{{Club}} = s.h > s.v;
+    var ganoCasla = s.h > s.v;
     var badge = document.createElement('span');
-    badge.className = 'set-badge ' + (gano{{Club}} ? 'set-win' : 'set-loss');
+    badge.className = 'set-badge ' + (ganoCasla ? 'set-win' : 'set-loss');
     badge.textContent = 'S' + (i+1) + ' ' + s.h + '-' + s.v;
     setsRow.appendChild(badge);
   });
@@ -578,4 +581,4 @@ function showToast(msg){
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

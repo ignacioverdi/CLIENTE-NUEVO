@@ -285,7 +285,7 @@ select, select option { color: #111111 !important; background-color: #ffffff !im
 <script src="video_delay.js" onerror="void 0"></script>
 <script>
 // ================================================================
-// {{CLUB_COMPLETO}} — Utils compartidos
+// {{CLUB}} VOLEY — Utils compartidos
 // Cargado por todas las páginas
 // ================================================================
 
@@ -1239,7 +1239,7 @@ function calcFaseKPIs(codes, side){
   side = side || '*';
   var ROL={};
   try{
-    var P=window.PLANTEL_{{CLUB}};
+    var P=window.PLANTEL_CLUB;
     var arr=(P&&P.jugadores)?P.jugadores:(P&&P.lista)?P.lista:(Array.isArray(P)?P:[]);
     arr.forEach(function(j){ var n=(j.num!=null?j.num:j.c); var pos=((j.pos||j.rol||'')+'').toUpperCase(); if(n!=null) ROL[parseInt(n,10)]=pos; });
   }catch(e){}
@@ -1830,15 +1830,15 @@ function showJugDetail(nombre, num){
   if(!jug) return;
 
   // Datos del jugador (posición) desde el PLANTEL
-  // Plantel {{Club}} — lee de plantel_{{club}}.js (fuente única); respaldo abajo
-  var PLANTEL = (window.PLANTEL_{{CLUB}} && window.PLANTEL_{{CLUB}}.jugadores)
-    ? window.PLANTEL_{{CLUB}}.jugadores.map(function(j){ return {num:j.num, nombre:j.ap, pos:j.pos}; })
+  // Plantel Näfels — lee de plantel_club.js (fuente única); respaldo abajo
+  var PLANTEL = (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores)
+    ? window.PLANTEL_CLUB.jugadores.map(function(j){ return {num:j.num, nombre:j.ap, pos:j.pos}; })
     : [
-    {num:4,nombre:'JUGADOR',pos:'ARMADOR'},{num:13,nombre:'JUGADOR',pos:'ARMADOR'},
-    {num:9,nombre:'JUGADOR',pos:'OPUESTO'},{num:3,nombre:'JUGADOR',pos:'OPUESTO'},
-    {num:12,nombre:'JUGADOR',pos:'CENTRAL'},{num:7,nombre:'JUGADOR R',pos:'CENTRAL'},{num:5,nombre:'JUGADOR',pos:'CENTRAL'},
-    {num:1,nombre:'JUGADOR',pos:'PUNTA'},{num:11,nombre:'JUGADOR',pos:'PUNTA'},{num:17,nombre:'JUGADOR',pos:'PUNTA'},{num:10,nombre:'JUGADOR',pos:'PUNTA'},
-    {num:20,nombre:'JUGADOR J',pos:'LIBERO'}
+    {num:4,nombre:'VAZQUEZ',pos:'ARMADOR'},{num:13,nombre:'STEIMANN',pos:'ARMADOR'},
+    {num:9,nombre:'NORRIS',pos:'OPUESTO'},{num:3,nombre:'SCHWITTER',pos:'OPUESTO'},
+    {num:12,nombre:'JOHANSSON',pos:'CENTRAL'},{num:7,nombre:'SCHMID R',pos:'CENTRAL'},{num:5,nombre:'CLEMENT',pos:'CENTRAL'},
+    {num:1,nombre:'DURDOS',pos:'PUNTA'},{num:11,nombre:'BARTHOLET',pos:'PUNTA'},{num:17,nombre:'ROFFLER',pos:'PUNTA'},{num:10,nombre:'BOGDANOVSKI',pos:'PUNTA'},
+    {num:20,nombre:'SCHMID J',pos:'LIBERO'}
   ];
   var jugInfo = null;
   if(typeof PLANTEL !== 'undefined'){
@@ -1948,7 +1948,7 @@ function closeJugDetail(){
   document.getElementById('jug-det').style.display = 'none';
   document.body.style.overflow = '';
 }</script>
-<script src="plantel_{{club}}.js" onerror="void 0"></script>
+<script src="plantel_club.js" onerror="void 0"></script>
 <script src="temporadas_menu.js"></script>
 <div id="m-plan" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);padding:0" >
   <div style="height:100%;display:flex;flex-direction:column">
@@ -2051,4 +2051,4 @@ function vdMaximizar(){ var w=document.getElementById('vd-videowrap'); if(!w) re
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

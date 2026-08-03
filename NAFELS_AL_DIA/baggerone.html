@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BAGGERONE — Axpo Volley Näfels</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="lang.js" onerror="void 0"></script>
+<script src="datos_seguros.js"></script>
+  <script src="datos_equipo.js.enc" onerror="window.EQUIPO_DATA=null"></script>
+  <!-- El plantel maestro del club. Es la fuente unica: cuando entra un jugador
+       nuevo se agrega ahi y aparece en todas las pantallas. -->
+  <script src="plantel_nafels.js" onerror="void 0"></script>
+  <script>abrirDatos();</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080f;--card:#0d0e1a;--card2:#111220;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.12);
+  --red:#e8192c;--green:#22c55e;--amber:#f59e0b;
+  --blue:#378ADD;--coral:#D85A30;
+  --mut:#475569;--txt:#e2e8f0;--white:#ffffff;
+}
+body{background:var(--bg);background-image:radial-gradient(ellipse at 10% 10%,rgba(232,25,44,.07) 0%,transparent 50%),radial-gradient(ellipse at 90% 90%,rgba(55,138,221,.05) 0%,transparent 50%);font-family:'Barlow Condensed',sans-serif;color:var(--txt);min-height:100vh;}
+
+/* HEADER */
+.page-header{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.015);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100;}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:6px;background:linear-gradient(120deg,var(--blue),var(--white) 50%,var(--coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.back-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-decoration:none;text-transform:uppercase;transition:all .15s;}
+.back-btn:hover{color:var(--txt);border-color:var(--border2);}
+
+/* MAIN */
+.main{max-width:1200px;margin:0 auto;padding:24px 28px;}
+
+/* ── PODIO ─────────────────────────────────────────────────── */
+.podio-wrap{margin-bottom:32px;}
+.podio-titulo{font-size:10px;color:var(--mut);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.podio-titulo::after{content:'';flex:1;height:1px;background:var(--border);}
+.podio{display:flex;align-items:flex-end;justify-content:center;gap:12px;height:220px;}
+
+.podio-item{display:flex;flex-direction:column;align-items:center;gap:0;}
+.podio-avatar{width:64px;height:64px;border-radius:50%;overflow:hidden;border:3px solid var(--border2);margin-bottom:8px;background:var(--card2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.podio-avatar img{width:100%;height:100%;object-fit:cover;object-position:top;}
+.podio-avatar-num{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--mut);}
+.podio-nombre{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;text-align:center;margin-bottom:4px;white-space:nowrap;}
+.podio-pts{font-size:10px;color:var(--mut);text-align:center;letter-spacing:1px;margin-bottom:8px;}
+
+.podio-base{border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100px;}
+.podio-rank{font-family:'Bebas Neue',sans-serif;font-size:28px;}
+.podio-pts-base{font-size:10px;letter-spacing:1px;opacity:.7;}
+
+.p1{width:110px;}
+.p1 .podio-avatar{width:76px;height:76px;border-color:rgba(245,158,11,.5);border-width:3px;}
+.p1 .podio-base{height:130px;background:linear-gradient(180deg,rgba(245,158,11,.25) 0%,rgba(245,158,11,.08) 100%);border:1px solid rgba(245,158,11,.3);}
+.p1 .podio-rank{color:var(--amber);}
+.p1 .podio-nombre{font-size:15px;}
+.p1 .podio-avatar-num{color:var(--amber);}
+
+.p2 .podio-base{height:100px;background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,rgba(255,255,255,.03) 100%);border:1px solid rgba(255,255,255,.1);}
+.p2 .podio-rank{color:#94a3b8;}
+
+.p3 .podio-base{height:75px;background:linear-gradient(180deg,rgba(205,127,50,.15) 0%,rgba(205,127,50,.04) 100%);border:1px solid rgba(205,127,50,.2);}
+.p3 .podio-rank{color:#cd7f32;}
+
+/* ── PARTIDO ────────────────────────────────────────────────── */
+.partido-wrap{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;margin-bottom:20px;align-items:start;}
+
+.equipo-card{background:var(--card);border-radius:14px;overflow:hidden;}
+.ea{border-top:3px solid var(--blue);}
+.eb{border-top:3px solid var(--coral);}
+.equipo-header{padding:12px 16px;display:flex;align-items:center;gap:10px;}
+.equipo-color{width:10px;height:10px;border-radius:50%;}
+.equipo-nombre{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;}
+.equipo-slots{padding:8px 12px 12px;}
+
+.slot-row{display:flex;align-items:center;gap:8px;padding:4px 0;}
+.slot-n{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.04);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--mut);flex-shrink:0;}
+.slot-sel{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:7px;color:var(--txt);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;padding:5px 8px;outline:none;cursor:pointer;transition:all .15s;}
+.slot-sel:hover{border-color:var(--border2);}
+.slot-sel:focus{border-color:rgba(55,138,221,.4);background:rgba(55,138,221,.05);}
+
+/* SETS */
+.sets-panel{display:flex;flex-direction:column;gap:12px;align-items:center;padding-top:4px;}
+.sets-label{font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;text-align:center;}
+.set-row{display:flex;align-items:center;gap:6px;}
+.set-lbl{font-size:9px;color:var(--mut);letter-spacing:1px;width:30px;text-align:center;}
+.set-inp{width:46px;height:40px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--txt);outline:none;transition:all .15s;}
+.set-inp:focus{border-color:rgba(55,138,221,.4);background:rgba(55,138,221,.05);}
+.set-sep{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--mut);}
+.set3-row{opacity:.4;transition:opacity .3s;}
+.set3-row.active{opacity:1;}
+
+.vs-badge{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--mut);letter-spacing:3px;text-align:center;}
+
+/* BOTÓN */
+.btn-guardar{width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--blue),#1a6db5);color:var(--white);font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;transition:all .2s;margin-top:4px;}
+.btn-guardar:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(55,138,221,.3);}
+.btn-guardar:active{transform:translateY(0);}
+
+/* ── TABLA ──────────────────────────────────────────────────── */
+.tabla-wrap{background:var(--card);border-radius:14px;overflow:hidden;}
+.tabla-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.tabla-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;}
+.tabla{width:100%;border-collapse:collapse;}
+.tabla th{padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);border-bottom:1px solid var(--border);text-align:center;}
+.tabla th:nth-child(2){text-align:left;}
+.tabla td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03);font-size:13px;text-align:center;transition:background .15s;}
+.tabla td:nth-child(2){text-align:left;}
+.tabla tr:last-child td{border-bottom:none;}
+.tabla tr:hover td{background:rgba(255,255,255,.02);}
+
+.rank-cell{font-size:11px;color:var(--mut);width:32px;}
+.nombre-cell{font-weight:700;letter-spacing:.5px;}
+.pts-cell{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--blue);}
+.diff-pos{color:var(--green);}
+.diff-neg{color:var(--red);}
+.diff-neu{color:var(--mut);}
+.pj-cell{color:var(--mut);}
+
+.rank-gold{color:var(--amber);}
+.rank-silver{color:#94a3b8;}
+.rank-bronze{color:#cd7f32;}
+
+/* TOASTS */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green);color:var(--white);padding:10px 20px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;transition:transform .3s;z-index:999;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* HISTORIAL */
+.historial-wrap{margin-top:20px;background:var(--card);border-radius:14px;overflow:hidden;}
+.hist-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.hist-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;}
+.hist-item{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px;}
+.hist-item:last-child{border-bottom:none;}
+.hist-fecha{font-size:10px;color:var(--mut);min-width:80px;}
+.hist-equipos{flex:1;}
+.hist-ea{font-weight:700;color:var(--blue);}
+.hist-eb{font-weight:700;color:var(--coral);}
+.hist-resultado{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;}
+.hist-vacio{padding:24px;text-align:center;color:var(--mut);font-size:12px;}
+
+@media(max-width:768px){
+  .main{padding:14px;}
+  .partido-wrap{grid-template-columns:1fr;gap:10px;}
+  .sets-panel{flex-direction:row;flex-wrap:wrap;justify-content:center;}
+  .podio{height:180px;gap:8px;}
+  .p1 .podio-base{height:100px;}
+  .p2 .podio-base{height:78px;}
+  .p3 .podio-base{height:58px;}
+  .podio-avatar{width:50px;height:50px;}
+  .p1 .podio-avatar{width:60px;height:60px;}
+}
+
+/* ── DROPDOWNS — texto siempre negro ── */
+select, select option {
+  color: #111111 !important;
+  background-color: #ffffff !important;
+}
+</style>
+<script src="firebase.js" onerror="void 0"></script>
+</head>
+<body>
+
+<div class="page-header">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <a href="index.html" class="back-btn">← Inicio</a>
+    <div>
+      <div class="page-title">🏐 Baggerone</div>
+      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">NAFELS VOLEY · Ranking interno</div>
+    </div>
+  </div>
+  <div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div>
+</div>
+
+<div class="main">
+
+  <!-- PODIO -->
+  <div class="podio-wrap">
+    <div class="podio-titulo">🏆 Ranking</div>
+    <div class="podio" id="podio"></div>
+  </div>
+
+  <!-- PARTIDO -->
+  <div style="font-size:10px;color:var(--mut);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+    Cargar partido
+    <div style="flex:1;height:1px;background:var(--border)"></div>
+  </div>
+
+  <!-- Reparte los jugadores por la tabla de posiciones: impares al A, pares al
+       B. Sirve para armar dos equipos parejos sin discutir. -->
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button onclick="abrirAlinear()" title="Elegí quién vino y reparte según la tabla: 1º, 3º, 5º… al A · 2º, 4º, 6º… al B"
+      style="cursor:pointer;background:rgba(55,138,221,.12);border:1px solid rgba(55,138,221,.4);color:#8fc0ee;
+             border-radius:9px;padding:8px 16px;font-family:inherit;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase">
+      ⚖️ Alinear equipos
+    </button>
+  </div>
+
+  <!-- Quien vino hoy. Arranca con todos tildados; se destildan los que
+       faltaron y recien ahi se reparte. -->
+  <div id="alinear-panel" style="display:none;background:var(--card,rgba(255,255,255,.03));border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);font-weight:700">¿Quiénes vinieron hoy?</div>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <button onclick="marcarTodos(1)" style="cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--mut);border-radius:7px;padding:4px 10px;font-family:inherit;font-size:11px">Todos</button>
+      <button onclick="marcarTodos(0)" style="cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--mut);border-radius:7px;padding:4px 10px;font-family:inherit;font-size:11px">Ninguno</button>
+    </div>
+    <div id="alinear-lista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <span id="alinear-cuenta" style="font-size:12px;color:var(--mut)"></span>
+      <div style="flex:1"></div>
+      <button onclick="cerrarAlinear()" style="cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--mut);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:700">Cancelar</button>
+      <button onclick="alinearEquipos()" style="cursor:pointer;background:rgba(55,138,221,.18);border:1px solid rgba(55,138,221,.5);color:#8fc0ee;border-radius:9px;padding:8px 18px;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase">Armar equipos</button>
+    </div>
+  </div>
+
+  <div class="partido-wrap">
+    <!-- EQUIPO A -->
+    <div class="equipo-card ea">
+      <div class="equipo-header">
+        <div class="equipo-color" style="background:var(--blue)"></div>
+        <div class="equipo-nombre" style="color:var(--blue)">Equipo A</div>
+      </div>
+      <div class="equipo-slots" id="slots-a"></div>
+    </div>
+
+    <!-- SETS -->
+    <div class="sets-panel">
+      <div class="vs-badge">VS</div>
+      <div class="sets-label">Sets</div>
+      <div class="set-row">
+        <div class="set-lbl">S1</div>
+        <input type="number" class="set-inp" id="s1a" min="0" max="99" value="" placeholder="A">
+        <span class="set-sep">—</span>
+        <input type="number" class="set-inp" id="s1b" min="0" max="99" value="" placeholder="B">
+      </div>
+      <div class="set-row">
+        <div class="set-lbl">S2</div>
+        <input type="number" class="set-inp" id="s2a" min="0" max="99" value="" placeholder="A">
+        <span class="set-sep">—</span>
+        <input type="number" class="set-inp" id="s2b" min="0" max="99" value="" placeholder="B">
+      </div>
+      <div class="set-row set3-row" id="set3-row">
+        <div class="set-lbl" style="font-size:8px">S3</div>
+        <input type="number" class="set-inp" id="s3a" min="0" max="99" value="" placeholder="A">
+        <span class="set-sep">—</span>
+        <input type="number" class="set-inp" id="s3b" min="0" max="99" value="" placeholder="B">
+      </div>
+      <button class="btn-guardar" onclick="guardarPartido()">💾 GUARDAR</button>
+    </div>
+
+    <!-- EQUIPO B -->
+    <div class="equipo-card eb">
+      <div class="equipo-header">
+        <div class="equipo-color" style="background:var(--coral)"></div>
+        <div class="equipo-nombre" style="color:var(--coral)">Equipo B</div>
+      </div>
+      <div class="equipo-slots" id="slots-b"></div>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <div class="tabla-wrap">
+    <div class="tabla-header">
+      <span style="font-size:18px">📊</span>
+      <div class="tabla-title">Tabla de posiciones</div>
+    </div>
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th><span data-t="g_jugador">Jugador</span></th>
+          <th>PJ</th>
+          <th>PG</th>
+          <th>PP</th>
+          <th>Pts G</th>
+          <th>Pts P</th>
+          <th>Dif</th>
+          <th>Puntos</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-body"></tbody>
+    </table>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div class="historial-wrap">
+    <div class="hist-header">
+      <span style="font-size:16px">📋</span>
+      <div class="hist-title">Historial de partidos</div>
+      <button onclick="limpiarHistorial()" style="margin-left:auto;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--mut);font-size:10px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;cursor:pointer;">LIMPIAR TODO</button>
+    </div>
+    <div id="historial-lista"></div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── JUGADORES ─────────────────────────────────────────────────
+var JUGADORES_DEFAULT = [
+  {num:1,nombre:"DURDOS"},
+    {num:2,nombre:"BRUDERER"},
+    {num:3,nombre:"SCHWITTER"},
+    {num:4,nombre:"VAZQUEZ"},
+    {num:5,nombre:"CLEMENT"},
+    {num:7,nombre:"SCHMID R"},
+    {num:9,nombre:"NORRIS"},
+    {num:10,nombre:"BOGDANOVSKI"},
+    {num:11,nombre:"BARTHOLET"},
+    {num:12,nombre:"JOHANSSON"},
+    {num:13,nombre:"STEIMANN"},
+    {num:17,nombre:"ROFFLER"},
+    {num:20,nombre:"SCHMID J"}];
+
+/* ══ El plantel ════════════════════════════════════════════════════════════
+   Hasta ahora esta pantalla leia solo datos_equipo.js, que es una lista
+   aparte y se fue quedando atras: BRUDERER (#2) estaba en el plantel maestro
+   pero no ahi, asi que no aparecia para armar los equipos.
+
+   Ahora manda el plantel maestro (plantel_nafels.js), que es donde se agrega
+   un jugador nuevo, y datos_equipo.js aporta las fotos y completa lo que
+   falte. Si ninguno de los dos carga, queda la lista de respaldo de arriba. */
+function getJugadores(){
+  var porNum = {};
+
+  try{
+    var P = window.PLANTEL_NAFELS;
+    var lista = P && (P.jugadores || (P.length ? P : null));
+    if(lista) lista.forEach(function(j){
+      var n = parseInt(j.num, 10);
+      if(isNaN(n)) return;
+      var ap = String(j.ap || j.apellido || j.nombre || '').trim();
+      if(!ap) return;
+      porNum[n] = {num:n, nombre:ap, foto:null};
+    });
+  }catch(e){}
+
+  try{
+    var E = window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores;
+    if(E) E.forEach(function(j){
+      var n = parseInt(j.num, 10);
+      if(isNaN(n)) return;
+      if(!porNum[n]) porNum[n] = {num:n, nombre:j.nombre, foto:j.foto||null};
+      else if(j.foto) porNum[n].foto = j.foto;
+    });
+  }catch(e){}
+
+  var out = Object.keys(porNum).map(function(k){ return porNum[k]; })
+                  .sort(function(a,b){ return a.num - b.num; });
+  return out.length ? out : JUGADORES_DEFAULT;
+}
+
+var JUGADORES = getJugadores();
+
+// ── STORAGE ───────────────────────────────────────────────────
+function getStandings(){
+  var raw = localStorage.getItem('baggerone_standings');
+  if(raw){
+    try{
+      var saved = JSON.parse(raw);
+      // Merge con jugadores actuales
+      var map = {};
+      saved.forEach(function(s){ map[s.nombre]=s; });
+      return JUGADORES.map(function(j){
+        return map[j.nombre] || {nombre:j.nombre,num:j.num,foto:j.foto,pj:0,pg:0,pp:0,ptsg:0,ptsp:0};
+      });
+    }catch(e){}
+  }
+  return JUGADORES.map(function(j){
+    return {nombre:j.nombre,num:j.num,foto:j.foto,pj:0,pg:0,pp:0,ptsg:0,ptsp:0};
+  });
+}
+
+function saveStandings(s){
+  localStorage.setItem('baggerone_standings', JSON.stringify(s));
+  if(typeof fbSet!=='undefined') fbSet('baggerone/standings', s);
+}
+
+function getHistorial(){
+  var raw = localStorage.getItem('baggerone_historial');
+  try{ return raw ? JSON.parse(raw) : []; }catch(e){ return []; }
+}
+
+function saveHistorial(h){
+  localStorage.setItem('baggerone_historial', JSON.stringify(h));
+  if(typeof fbSet!=='undefined') fbSet('baggerone/historial', h);
+}
+
+var standings = getStandings();
+var historial = getHistorial();
+// Sincronizar con Firebase al abrir
+if(typeof fbGet!=='undefined'){
+  fbGet('baggerone/standings', function(data){
+    if(data && Array.isArray(data) && data.length>0){
+      standings = data;
+      localStorage.setItem('baggerone_standings',JSON.stringify(data));
+      renderTabla(); renderPodio();
+    }
+  });
+  fbGet('baggerone/historial', function(data){
+    if(data && Array.isArray(data) && data.length>0){
+      historial = data;
+      localStorage.setItem('baggerone_historial',JSON.stringify(data));
+      renderHistorial();
+    }
+  });
+}
+
+// ── RENDER SLOTS ─────────────────────────────────────────────
+/* ══ Alinear equipos ═══════════════════════════════════════════════════════
+   Reparte a los jugadores en zigzag segun la tabla de posiciones: el 1º al
+   equipo A, el 2º al B, el 3º al A, el 4º al B, y asi. Es la forma mas simple
+   de que los dos lados queden parejos, porque los mejores quedan repartidos en
+   vez de amontonados de un lado.
+
+   Se usa exactamente el mismo orden que muestra la tabla, para que lo que se
+   ve en pantalla y lo que reparte el boton sean lo mismo. */
+function ordenDeLaTabla(){
+  return standings.slice().sort(function(a,b){
+    var pa = a.pg*3, pb = b.pg*3;
+    if(pb !== pa) return pb-pa;
+    var da = a.ptsg-a.ptsp, db = b.ptsg-b.ptsp;
+    if(db !== da) return db-da;
+    return b.ptsg-a.ptsg;
+  });
+}
+/* El panel de presentes. Se abre con el boton y muestra el plantel completo,
+   todos tildados. A un entrenamiento no vienen los 13, asi que repartir a todos
+   de una obliga a sacarlos despues a mano — y ahi el reparto deja de ser
+   parejo. Primero se define quien vino, y con esos se arma. */
+function abrirAlinear(){
+  var cont = document.getElementById('alinear-lista');
+  var marcados = {};
+  cont.querySelectorAll('input[type=checkbox]').forEach(function(c){ marcados[c.value] = c.checked; });
+  cont.innerHTML = JUGADORES.map(function(j){
+    var puesto = (marcados[j.nombre] === undefined) ? true : marcados[j.nombre];
+    return '<label style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.03);border:1px solid var(--border);'+
+           'border-radius:8px;padding:7px 9px;cursor:pointer;font-size:13px">'+
+           '<input type="checkbox" value="'+j.nombre+'"'+(puesto?' checked':'')+' onchange="contarPresentes()" style="cursor:pointer">'+
+           '<span style="color:var(--mut);font-size:11px">#'+j.num+'</span> '+j.nombre+'</label>';
+  }).join('');
+  document.getElementById('alinear-panel').style.display = '';
+  contarPresentes();
+}
+function cerrarAlinear(){ document.getElementById('alinear-panel').style.display = 'none'; }
+function marcarTodos(v){
+  document.getElementById('alinear-lista').querySelectorAll('input[type=checkbox]')
+    .forEach(function(c){ c.checked = !!v; });
+  contarPresentes();
+}
+function presentes(){
+  var out = {};
+  document.getElementById('alinear-lista').querySelectorAll('input[type=checkbox]')
+    .forEach(function(c){ if(c.checked) out[c.value] = true; });
+  return out;
+}
+function contarPresentes(){
+  var n = Object.keys(presentes()).length;
+  var el = document.getElementById('alinear-cuenta');
+  if(el) el.textContent = n + ' jugador' + (n===1?'':'es') + ' · quedan ' + Math.ceil(n/2) + ' vs ' + Math.floor(n/2);
+}
+
+function alinearEquipos(){
+  var orden = ordenDeLaTabla();
+  if(!orden.length){ toast('Todavia no hay jugadores en la tabla ⚠️','#f59e0b'); return; }
+
+  /* Solo los que vinieron hoy. Y ademas tienen que seguir en el plantel: si
+     alguien dejo el equipo sigue en la tabla por su historial, pero no se lo
+     puede poner a jugar. */
+  var vino = presentes();
+  if(!Object.keys(vino).length){ toast('Elegí al menos un jugador ⚠️','#f59e0b'); return; }
+  var vigentes = {};
+  JUGADORES.forEach(function(j){ vigentes[j.nombre] = true; });
+  var reparto = orden.filter(function(j){ return vigentes[j.nombre] && vino[j.nombre]; });
+
+  /* Un jugador que vino pero todavia no jugo ningun partido no esta en la
+     tabla. Se agrega al final, que es donde corresponde: sin puntos. */
+  var enTabla = {};
+  reparto.forEach(function(j){ enTabla[j.nombre] = true; });
+  Object.keys(vino).forEach(function(n){
+    if(!enTabla[n] && vigentes[n]) reparto.push({nombre:n});
+  });
+
+  var A = [], B = [];
+  reparto.forEach(function(j, i){ (i % 2 === 0 ? A : B).push(j.nombre); });
+
+  for(var i=1; i<=8; i++){
+    var sa = document.getElementById('slots-a_'+i);
+    var sb = document.getElementById('slots-b_'+i);
+    if(sa) sa.value = A[i-1] || '';
+    if(sb) sb.value = B[i-1] || '';
+  }
+
+  cerrarAlinear();
+  var sobran = Math.max(0, A.length-8) + Math.max(0, B.length-8);
+  toast('Equipos alineados: ' + Math.min(A.length,8) + ' vs ' + Math.min(B.length,8) +
+        (sobran ? ' (' + sobran + ' sin lugar)' : '') + ' ⚖️', 'var(--blue)');
+}
+
+function renderSlots(id){
+  var el = document.getElementById(id);
+  el.innerHTML = '';
+  for(var i=1; i<=8; i++){
+    var row = document.createElement('div');
+    row.className = 'slot-row';
+    var num = document.createElement('div');
+    num.className = 'slot-n';
+    num.textContent = i;
+    var sel = document.createElement('select');
+    sel.className = 'slot-sel';
+    sel.id = id + '_' + i;
+    var opt0 = document.createElement('option');
+    opt0.value = '';
+    opt0.textContent = '— Jugador —';
+    sel.appendChild(opt0);
+    JUGADORES.forEach(function(j){
+      var o = document.createElement('option');
+      o.value = j.nombre;
+      o.textContent = '#' + j.num + ' ' + j.nombre;
+      sel.appendChild(o);
+    });
+    row.appendChild(num);
+    row.appendChild(sel);
+    el.appendChild(row);
+  }
+}
+
+// ── RENDER TABLA ─────────────────────────────────────────────
+function renderTabla(){
+  var sorted = standings.slice().sort(function(a,b){
+    var pa = a.pg*3, pb = b.pg*3;
+    if(pb !== pa) return pb-pa;
+    var da = a.ptsg-a.ptsp, db = b.ptsg-b.ptsp;
+    if(db !== da) return db-da;
+    return b.ptsg-a.ptsg;
+  });
+
+  var tb = document.getElementById('tabla-body');
+  tb.innerHTML = '';
+  sorted.forEach(function(j, i){
+    var dif = j.ptsg - j.ptsp;
+    var pts = j.pg * 3;
+    var rankIcon = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : (i+1);
+    var rankClass = i===0 ? 'rank-gold' : i===1 ? 'rank-silver' : i===2 ? 'rank-bronze' : 'pj-cell';
+    var difClass = dif > 0 ? 'diff-pos' : dif < 0 ? 'diff-neg' : 'diff-neu';
+    var difStr = (dif > 0 ? '+' : '') + dif;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="rank-cell ' + rankClass + '">' + rankIcon + '</td>' +
+      '<td class="nombre-cell">' + (i===0 ? '<strong>' + j.nombre + '</strong>' : j.nombre) + '</td>' +
+      '<td class="pj-cell">' + j.pj + '</td>' +
+      '<td>' + j.pg + '</td>' +
+      '<td class="pj-cell">' + j.pp + '</td>' +
+      '<td>' + j.ptsg + '</td>' +
+      '<td class="pj-cell">' + j.ptsp + '</td>' +
+      '<td class="' + difClass + '">' + difStr + '</td>' +
+      '<td class="pts-cell">' + pts + '</td>';
+    tb.appendChild(tr);
+  });
+}
+
+// ── RENDER PODIO ─────────────────────────────────────────────
+function renderPodio(){
+  var sorted = standings.slice().sort(function(a,b){
+    var pa=a.pg*3,pb=b.pg*3;
+    if(pb!==pa) return pb-pa;
+    return (b.ptsg-b.ptsp)-(a.ptsg-a.ptsp);
+  });
+
+  var top3 = [sorted[1], sorted[0], sorted[2]]; // orden visual: 2°, 1°, 3°
+  var clases = ['p2','p1','p3'];
+  var labels = ['2°','1°','3°'];
+
+  var podio = document.getElementById('podio');
+  podio.innerHTML = '';
+
+  top3.forEach(function(j, vi){
+    if(!j) return;
+    var realPos = vi===1 ? 0 : vi===0 ? 1 : 2; // posición real
+    var item = document.createElement('div');
+    item.className = 'podio-item ' + clases[vi];
+
+    // Avatar
+    var av = document.createElement('div');
+    av.className = 'podio-avatar';
+    // Actualizar foto desde EQUIPO_DATA
+    var jugEq = JUGADORES.find(function(jj){ return jj.nombre===j.nombre; });
+    var fotoUrl = jugEq && jugEq.foto ? jugEq.foto : null;
+    if(fotoUrl){
+      av.innerHTML = '<img src="' + fotoUrl + '" alt="' + j.nombre + '" onerror="this.parentElement.innerHTML=\'<div class=podio-avatar-num>#' + j.num + '</div>\'">';
+    } else {
+      av.innerHTML = '<div class="podio-avatar-num">#' + j.num + '</div>';
+    }
+
+    // Nombre
+    var nom = document.createElement('div');
+    nom.className = 'podio-nombre';
+    nom.textContent = j.nombre.split(' ')[0]; // Solo apellido
+
+    // Puntos bajo el nombre
+    var ptsNom = document.createElement('div');
+    ptsNom.className = 'podio-pts';
+    ptsNom.textContent = (j.pg*3) + ' pts · ' + j.pj + ' PJ';
+
+    // Base del podio
+    var base = document.createElement('div');
+    base.className = 'podio-base';
+    var rankEl = document.createElement('div');
+    rankEl.className = 'podio-rank';
+    rankEl.textContent = labels[vi];
+    base.appendChild(rankEl);
+
+    item.appendChild(av);
+    item.appendChild(nom);
+    item.appendChild(ptsNom);
+    item.appendChild(base);
+    podio.appendChild(item);
+  });
+}
+
+// ── RENDER HISTORIAL ─────────────────────────────────────────
+function renderHistorial(){
+  var lista = document.getElementById('historial-lista');
+  if(historial.length === 0){
+    lista.innerHTML = '<div class="hist-vacio">Sin partidos registrados aún</div>';
+    return;
+  }
+  lista.innerHTML = '';
+  // Mostrar los últimos 10, más reciente primero
+  var recientes = historial.slice().reverse().slice(0, 10);
+  recientes.forEach(function(p){
+    var item = document.createElement('div');
+    item.className = 'hist-item';
+    var setsStr = p.sets.map(function(s){ return s.a+'-'+s.b; }).join(' / ');
+    var ganadorColor = p.ganador==='A' ? 'var(--blue)' : 'var(--coral)';
+    item.innerHTML =
+      '<div class="hist-fecha">' + p.fecha + '</div>' +
+      '<div class="hist-equipos">' +
+        '<span class="hist-ea">Equipo A</span>' +
+        ' <span style="color:var(--mut)">vs</span> ' +
+        '<span class="hist-eb">Equipo B</span>' +
+        '<div style="font-size:10px;color:var(--mut);margin-top:2px">' + p.jugadoresA.join(', ') + ' | ' + p.jugadoresB.join(', ') + '</div>' +
+      '</div>' +
+      '<div class="hist-resultado" style="color:' + ganadorColor + '">' + setsStr + '</div>';
+    lista.appendChild(item);
+  });
+}
+
+// ── SET3 AUTOMÁTICO ───────────────────────────────────────────
+function checkSet3(){
+  var s1a = parseInt(document.getElementById('s1a').value)||0;
+  var s1b = parseInt(document.getElementById('s1b').value)||0;
+  var s2a = parseInt(document.getElementById('s2a').value)||0;
+  var s2b = parseInt(document.getElementById('s2b').value)||0;
+  var w1 = s1a > s1b ? 'A' : s1a < s1b ? 'B' : null;
+  var w2 = s2a > s2b ? 'A' : s2a < s2b ? 'B' : null;
+  var set3 = document.getElementById('set3-row');
+  if(w1 && w2 && w1 !== w2){
+    set3.classList.add('active');
+  } else {
+    set3.classList.remove('active');
+    document.getElementById('s3a').value='';
+    document.getElementById('s3b').value='';
+  }
+}
+
+['s1a','s1b','s2a','s2b'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', checkSet3);
+});
+
+// ── GUARDAR PARTIDO ───────────────────────────────────────────
+function guardarPartido(){
+  // Recolectar jugadores
+  var jugA=[], jugB=[];
+  for(var i=1;i<=8;i++){
+    var va = document.getElementById('slots-a_'+i).value;
+    var vb = document.getElementById('slots-b_'+i).value;
+    if(va) jugA.push(va);
+    if(vb) jugB.push(vb);
+  }
+  if(jugA.length===0 || jugB.length===0){
+    toast('Agregá al menos un jugador por equipo ⚠️','#f59e0b'); return;
+  }
+
+  // Recolectar sets
+  var s1a=parseInt(document.getElementById('s1a').value)||0;
+  var s1b=parseInt(document.getElementById('s1b').value)||0;
+  var s2a=parseInt(document.getElementById('s2a').value)||0;
+  var s2b=parseInt(document.getElementById('s2b').value)||0;
+  var s3a=parseInt(document.getElementById('s3a').value)||0;
+  var s3b=parseInt(document.getElementById('s3b').value)||0;
+
+  if(s1a===0&&s1b===0&&s2a===0&&s2b===0){
+    toast('Ingresá el resultado de al menos un set ⚠️','#f59e0b'); return;
+  }
+
+  // Calcular ganador por sets
+  var setsA=0, setsB=0;
+  var setsData=[];
+
+  if(s1a>0||s1b>0){
+    setsData.push({a:s1a,b:s1b});
+    if(s1a>s1b) setsA++; else if(s1b>s1a) setsB++;
+  }
+  if(s2a>0||s2b>0){
+    setsData.push({a:s2a,b:s2b});
+    if(s2a>s2b) setsA++; else if(s2b>s2a) setsB++;
+  }
+  if(s3a>0||s3b>0){
+    setsData.push({a:s3a,b:s3b});
+    if(s3a>s3b) setsA++; else if(s3b>s3a) setsB++;
+  }
+
+  var ganador = setsA > setsB ? 'A' : setsB > setsA ? 'B' : null;
+  if(!ganador){ toast('Resultado empatado — revisá los sets ⚠️','#f59e0b'); return; }
+
+  // Totales de puntos
+  var totalPtsA=0, totalPtsB=0;
+  setsData.forEach(function(s){ totalPtsA+=s.a; totalPtsB+=s.b; });
+
+  // Actualizar standings
+  function updateJug(nombre, gano, ptsFavor, ptsContra){
+    var j = standings.find(function(s){ return s.nombre===nombre; });
+    if(!j) return;
+    j.pj++;
+    if(gano){ j.pg++; } else { j.pp++; }
+    j.ptsg += ptsFavor;
+    j.ptsp += ptsContra;
+  }
+
+  jugA.forEach(function(n){ updateJug(n, ganador==='A', totalPtsA, totalPtsB); });
+  jugB.forEach(function(n){ updateJug(n, ganador==='B', totalPtsB, totalPtsA); });
+
+  saveStandings(standings);
+
+  // Guardar en historial
+  var ahora = new Date();
+  var fecha = ('0'+ahora.getDate()).slice(-2)+'/'+('0'+(ahora.getMonth()+1)).slice(-2)+'/'+ahora.getFullYear()+' '+('0'+ahora.getHours()).slice(-2)+':'+('0'+ahora.getMinutes()).slice(-2);
+  historial.push({fecha:fecha,jugadoresA:jugA,jugadoresB:jugB,sets:setsData,ganador:ganador});
+  saveHistorial(historial);
+
+  // Re-render todo
+  renderTabla();
+  renderPodio();
+  renderHistorial();
+
+  // Toast
+  var msg = ganador==='A' ? '🔵 Ganó Equipo A! +3 pts' : '🔴 Ganó Equipo B! +3 pts';
+  toast(msg, ganador==='A' ? 'var(--blue)' : 'var(--coral)');
+
+  // Limpiar formulario
+  ['s1a','s1b','s2a','s2b','s3a','s3b'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  for(var i=1;i<=8;i++){
+    document.getElementById('slots-a_'+i).value='';
+    document.getElementById('slots-b_'+i).value='';
+  }
+  document.getElementById('set3-row').classList.remove('active');
+}
+
+// ── LIMPIAR HISTORIAL ─────────────────────────────────────────
+function limpiarHistorial(){
+  if(!confirm('¿Limpiar todo el historial y la tabla de posiciones?')) return;
+  standings = JUGADORES.map(function(j){
+    return {nombre:j.nombre,num:j.num,foto:j.foto,pj:0,pg:0,pp:0,ptsg:0,ptsp:0};
+  });
+  historial = [];
+  saveStandings(standings);
+  saveHistorial(historial);
+  renderTabla();
+  renderPodio();
+  renderHistorial();
+  toast('Tabla limpiada ✓','var(--mut)');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg, color){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color || 'var(--green)';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+renderSlots('slots-a');
+renderSlots('slots-b');
+renderTabla();
+renderPodio();
+renderHistorial();
+
+// Actualizar fotos si llegan de EQUIPO_DATA
+if(window.EQUIPO_DATA){
+  JUGADORES = getJugadores();
+  standings.forEach(function(s){
+    var j = JUGADORES.find(function(jj){ return jj.nombre===s.nombre; });
+    if(j) s.foto=j.foto;
+  });
+  renderPodio();
+}
+</script>
+<script src="temporadas_menu.js"></script>
+</body>
+</html>
+
+<!-- © 2025-2026 Ignacio Verdi · NAFELS VOLEY · Software propietario - Todos los derechos reservados -->

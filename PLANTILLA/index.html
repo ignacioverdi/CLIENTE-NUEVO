@@ -2,18 +2,18 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<!-- Migracion interna de etiquetas {{club}}_* -> vb_* (transparente: conserva sesion, notas y datos) -->
-<script>(function(){try{function m(s){for(var i=s.length-1;i>=0;i--){var k=s.key(i);if(k&&k.indexOf("{{club}}_")===0){var n="vb_"+k.slice(6);if(s.getItem(n)===null)s.setItem(n,s.getItem(k));}}}m(localStorage);m(sessionStorage);}catch(e){}})();</script>
+<!-- Migracion interna de etiquetas casla_* -> vb_* (transparente: conserva sesion, notas y datos) -->
+<script>(function(){try{function m(s){for(var i=s.length-1;i>=0;i--){var k=s.key(i);if(k&&k.indexOf("casla_")===0){var n="vb_"+k.slice(6);if(s.getItem(n)===null)s.setItem(n,s.getItem(k));}}}m(localStorage);m(sessionStorage);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a0a12">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="{{Club}} Volley">
+<meta name="apple-mobile-web-app-title" content="{{CLUB}}">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<title>{{CLUB_COMPLETO}} — Sistema de Análisis</title>
+<title>{{CLUB}} VOLEY — Sistema de Análisis</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -249,7 +249,7 @@ select, select option {
 <script src="datos_seguros.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
 <script src="lang.js"></script>
-<script src="plantel_{{club}}.js"></script>
+<script src="plantel_club.js"></script>
 
 <style>
 @media(max-width:768px){
@@ -308,11 +308,11 @@ select, select option {
 
 <header>
   <div class="logo-wrap">
-    <img src="escudo.png" alt="Volley {{Club}}" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'font-family:Bebas Neue,sans-serif;font-size:20px;color:#e8192c;letter-spacing:1px\'>CA<br>SL</div>'">
+    <img src="escudo.png" alt="{{CLUB}}" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'font-family:Bebas Neue,sans-serif;font-size:20px;color:#e8192c;letter-spacing:1px\'>CA<br>SL</div>'">
   </div>
   <div class="header-text">
-    <div class="club-name">{{CLUB_COMPLETO}}</div>
-    <div class="club-sub"><span data-t="club_sub">Sistema de Análisis · {{LIGA}} {{PAIS}} 2026/27</span></div>
+    <div class="club-name">{{CLUB}} VOLEY</div>
+    <div class="club-sub"><span data-t="club_sub">Sistema de Análisis · {{LIGA}} 2026/27</span></div>
   </div>
   <div class="header-right">
     <div id="lang-wrap" style="display:flex;align-items:center;gap:4px;margin-left:8px"></div>
@@ -323,7 +323,7 @@ select, select option {
 
 <main>
 
-  <div class="section"><div class="sec-head"><span class="sec-ic">🎯</span><div><div class="sec-title">El próximo rival</div><div class="sec-sub">Todo para llegar preparado al partido</div></div></div><div class="cards-grid"><a href="Team_Playbook_{{Club}}.html" class="card" style="--card-color:#e6a743;grid-column:1/-1"><div class="card-glow"></div><div class="card-top"><div class="card-icon" style="background:rgba(230,167,67,.1);border-color:rgba(230,167,67,.25)">📖</div><div class="card-badge">Equipo</div></div><div class="card-body"><div class="card-title">Team Playbook</div><div class="card-desc">Nuestra identidad, principios y sistemas de juego. Cómo jugamos — para todo el equipo.</div></div><div class="card-arrow">→</div></a><a href="plan_partido.html" class="card" style="--card-color:#e6a743">
+  <div class="section"><div class="sec-head"><span class="sec-ic">🎯</span><div><div class="sec-title">El próximo rival</div><div class="sec-sub">Todo para llegar preparado al partido</div></div></div><div class="cards-grid"><a href="Team_Playbook_Nafels.html" class="card" style="--card-color:#e6a743;grid-column:1/-1"><div class="card-glow"></div><div class="card-top"><div class="card-icon" style="background:rgba(230,167,67,.1);border-color:rgba(230,167,67,.25)">📖</div><div class="card-badge">Equipo</div></div><div class="card-body"><div class="card-title">Team Playbook</div><div class="card-desc">Nuestra identidad, principios y sistemas de juego. Cómo jugamos — para todo el equipo.</div></div><div class="card-arrow">→</div></a><a href="plan_partido.html" class="card" style="--card-color:#e6a743">
         <div class="card-glow"></div>
         <div class="card-top">
           <div class="card-icon" style="background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.2)">📋</div>
@@ -335,31 +335,7 @@ select, select option {
         </div>
         <div class="card-arrow">→</div>
       </a></div></div>
-  <div class="section"><div class="sec-head"><span class="sec-ic">📊</span><div><div class="sec-title">Mi rendimiento</div><div class="sec-sub">Tus números y los del equipo</div></div></div><div class="cards-grid"><a href="playbook.html" class="card" style="--card-color:#a78bfa">
-        <div class="card-glow"></div>
-        <div class="card-top">
-          <div class="card-icon" style="background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.2)">📘</div>
-          <div class="card-badge" style="background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.2)">Equipo</div>
-        </div>
-        <div class="card-body">
-          <div class="card-title" style="color:#a78bfa">Team Playbook</div>
-          <div class="card-desc">Cómo juega el equipo, en un solo lugar: identidad, sistemas, saque, recepción y lenguaje común. Lo escribe el cuerpo técnico y lo lee todo el plantel.</div>
-        </div>
-        <div class="card-arrow">→</div>
-      </a>
-      <a href="plan_desarrollo.html" class="card" style="--card-color:#a78bfa"><div class="card-glow"></div><div class="card-top"><div class="card-icon" style="background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.2)">🚀</div><div class="card-badge" style="background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.2)">Por jugador</div></div><div class="card-body"><div class="card-title" style="color:#a78bfa">Plan de Desarrollo</div><div class="card-desc">Objetivos técnico-tácticos a mejorar por jugador, con seguimiento del progreso. Elegí tu nombre para ver el tuyo.</div></div><div class="card-arrow" style="color:#a78bfa">→</div></a><a href="alta_jugadores.html" class="card" style="--card-color:#3ddc84">
-        <div class="card-glow"></div>
-        <div class="card-top">
-          <div class="card-icon" style="background:rgba(61,220,132,.1);border-color:rgba(61,220,132,.2)">🔑</div>
-          <div class="card-badge" style="background:rgba(61,220,132,.1);color:#3ddc84;border:1px solid rgba(61,220,132,.2)">Acceso</div>
-        </div>
-        <div class="card-body">
-          <div class="card-title" style="color:#3ddc84">Acceso de los jugadores</div>
-          <div class="card-desc">Cargá tu plantel una vez y cada jugador entra con su mail. Reciben los avisos del equipo en el celular.</div>
-        </div>
-        <div class="card-arrow">→</div>
-      </a>
-      <a href="equipo.html" class="card" style="--card-color:#e6a743">
+  <div class="section"><div class="sec-head"><span class="sec-ic">📊</span><div><div class="sec-title">Mi rendimiento</div><div class="sec-sub">Tus números y los del equipo</div></div></div><div class="cards-grid"><a href="plan_desarrollo.html" class="card" style="--card-color:#a78bfa"><div class="card-glow"></div><div class="card-top"><div class="card-icon" style="background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.2)">🚀</div><div class="card-badge" style="background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.2)">Por jugador</div></div><div class="card-body"><div class="card-title" style="color:#a78bfa">Plan de Desarrollo</div><div class="card-desc">Objetivos técnico-tácticos a mejorar por jugador, con seguimiento del progreso. Elegí tu nombre para ver el tuyo.</div></div><div class="card-arrow" style="color:#a78bfa">→</div></a><a href="equipo.html" class="card" style="--card-color:#e6a743">
         <div class="card-glow"></div>
         <div class="card-top">
           <div class="card-icon" style="background:rgba(232,25,44,.1);border-color:rgba(232,25,44,.2)">🏐</div>
@@ -383,11 +359,11 @@ select, select option {
         <div class="card-glow"></div>
         <div class="card-top">
           <div class="card-icon" style="background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.2)">🏆</div>
-          <div class="card-badge" style="background:rgba(59,130,246,.1);color:#3b82f6;border:1px solid rgba(59,130,246,.2)"><span data-t="b_liga_nla">Liga {{LIGA}}</span></div>
+          <div class="card-badge" style="background:rgba(59,130,246,.1);color:#3b82f6;border:1px solid rgba(59,130,246,.2)"><span data-t="b_liga_nla">Liga NLA</span></div>
         </div>
         <div class="card-body">
           <div class="card-title" style="color:#3b82f6"><span data-t="c_stats_liga">Estadísticas Liga</span></div>
-          <div class="card-desc"><span data-t="d_stats_liga">Base de datos completa {{LIGA}} 2026/27. Ranking por equipo y stats individuales de toda la liga. Ataque, saque, recepción y bloqueo.</span></div>
+          <div class="card-desc"><span data-t="d_stats_liga">Base de datos completa NLA 2026/27. Ranking por equipo y stats individuales de toda la liga. Ataque, saque, recepción y bloqueo.</span></div>
         </div>
         <div class="card-arrow">→</div>
       </a><a href="analisis.html" class="card" style="--card-color:#e6a743">
@@ -441,19 +417,7 @@ select, select option {
         </div>
         <div class="card-arrow">→</div>
       </a></div></div>
-  <div class="section"><div class="sec-head"><span class="sec-ic">📅</span><div><div class="sec-title">Agenda</div><div class="sec-sub">Cuándo y dónde</div></div></div><div class="cards-grid"><a href="escudos.html" class="card" style="--card-color:#38bdf8">
-        <div class="card-glow"></div>
-        <div class="card-top">
-          <div class="card-icon" style="background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.2)">🛡️</div>
-          <div class="card-badge" style="background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.2)">Config</div>
-        </div>
-        <div class="card-body">
-          <div class="card-title" style="color:#38bdf8">Escudos</div>
-          <div class="card-desc">Subí el escudo de tu club y el de cada rival. Aparecen en el calendario y en el plan de partido. Al que le falte, se le muestran sus iniciales.</div>
-        </div>
-        <div class="card-arrow">→</div>
-      </a>
-      <a href="calendario.html" class="card" style="--card-color:#e6a743">
+  <div class="section"><div class="sec-head"><span class="sec-ic">📅</span><div><div class="sec-title">Agenda</div><div class="sec-sub">Cuándo y dónde</div></div></div><div class="cards-grid"><a href="calendario.html" class="card" style="--card-color:#e6a743">
         <div class="card-glow"></div>
         <div class="card-top">
           <div class="card-icon" style="background:rgba(45,212,191,.1);border-color:rgba(45,212,191,.2)">📅</div>
@@ -530,7 +494,7 @@ select, select option {
         </div>
         <div class="card-body">
           <div class="card-title" style="color:#06b6d4">Comparador</div>
-          <div class="card-desc">{{Club}} vs cualquier rival, lado a lado: saque, ataque y recepción con barras que marcan quién está mejor en cada métrica.</div>
+          <div class="card-desc">{{CLUB}} vs cualquier rival, lado a lado: saque, ataque y recepción con barras que marcan quién está mejor en cada métrica.</div>
         </div>
         <div class="card-arrow">→</div>
       </a><a href="subir_partido.html" class="card" style="--card-color:#3ddc84">
@@ -555,6 +519,17 @@ select, select option {
           <div class="card-desc">Pegá el link de YouTube de cada partido de la temporada y generá el archivo. Sin que participe nadie más.</div>
         </div>
         <div class="card-arrow">→</div>
+      </a><a href="sesiones.html" class="card" style="--card-color:#e6a743">
+        <div class="card-glow"></div>
+        <div class="card-top">
+          <div class="card-icon" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2)">🔐</div>
+          <div class="card-badge" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2)">Acceso</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title" style="color:#ef4444"><span data-t="c_sesiones">Sesiones y dispositivos</span></div>
+          <div class="card-desc"><span data-t="d_sesiones">Quién tiene acceso, desde qué dispositivo y cuándo entró. Podés cerrarle la sesión a uno o a todos.</span></div>
+        </div>
+        <div class="card-arrow">→</div>
       </a><a href="pizarron.html" class="card" style="--card-color:#e6a743">
         <div class="card-glow"></div>
         <div class="card-top">
@@ -571,7 +546,7 @@ select, select option {
 
   <!-- CALENDARIO -->
     <div class="cal-section" style="display:none">
-    <div class="section-lbl"><span data-t="sec_fixture">📅 Fixture · {{LIGA}} {{PAIS}} 2026/27</span></div>
+    <div class="section-lbl"><span data-t="sec_fixture">📅 Fixture · {{LIGA}} 2026/27</span></div>
     <div class="cal-grid">
       <div style="position:relative;opacity:1;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .2s;">
         <div style="display:flex;align-items:stretch;">
@@ -584,7 +559,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J1</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL5}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> LAUSANNE</div>
           </div>
         </div>
       </div>
@@ -599,7 +574,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J2</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL11}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> ST. GALLEN</div>
           </div>
         </div>
       </div>
@@ -614,7 +589,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J3</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL8}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> COLOMBIER</div>
           </div>
         </div>
       </div>
@@ -629,7 +604,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J4</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL12}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> JONA</div>
           </div>
         </div>
       </div>
@@ -644,7 +619,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J5</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL1}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
           </div>
         </div>
       </div>
@@ -659,7 +634,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J6</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL2}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> SCHONENWERD</div>
           </div>
         </div>
       </div>
@@ -674,7 +649,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J7</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL6}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> CHENOIS</div>
           </div>
         </div>
       </div>
@@ -689,7 +664,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J8</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL12}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> JONA</div>
           </div>
         </div>
       </div>
@@ -704,7 +679,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J9</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL5}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> LAUSANNE</div>
           </div>
         </div>
       </div>
@@ -719,7 +694,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J10</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL11}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> ST. GALLEN</div>
           </div>
         </div>
       </div>
@@ -734,7 +709,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J11</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL8}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> COLOMBIER</div>
           </div>
         </div>
       </div>
@@ -749,7 +724,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J12</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL1}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
           </div>
         </div>
       </div>
@@ -764,7 +739,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J13</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL13}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> SURSEE</div>
           </div>
         </div>
       </div>
@@ -779,7 +754,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J14</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL2}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> SCHONENWERD</div>
           </div>
         </div>
       </div>
@@ -794,7 +769,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J15</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL6}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> CHENOIS</div>
           </div>
         </div>
       </div>
@@ -809,7 +784,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J16</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL12}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> JONA</div>
           </div>
         </div>
       </div>
@@ -824,7 +799,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J17</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL8}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> COLOMBIER</div>
           </div>
         </div>
       </div>
@@ -839,7 +814,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J18</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL8}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> COLOMBIER</div>
           </div>
         </div>
       </div>
@@ -854,7 +829,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J19</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL8}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> COLOMBIER</div>
           </div>
         </div>
       </div>
@@ -869,7 +844,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J20</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL6}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> CHENOIS</div>
           </div>
         </div>
       </div>
@@ -884,7 +859,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J21</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL6}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> CHENOIS</div>
           </div>
         </div>
       </div>
@@ -899,7 +874,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J22</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL6}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> CHENOIS</div>
           </div>
         </div>
       </div>
@@ -914,7 +889,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J23</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL1}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
           </div>
         </div>
       </div>
@@ -929,7 +904,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J24</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL1}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
           </div>
         </div>
       </div>
@@ -944,7 +919,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J25</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL1}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
           </div>
         </div>
       </div>
@@ -959,7 +934,7 @@ select, select option {
               <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J26</span>
               <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> {{RIVAL1}}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
           </div>
         </div>
       </div>
@@ -990,7 +965,7 @@ select, select option {
   </div>
 
 <footer>
-  <div>{{CLUB_COMPLETO}} · Sistema de Análisis v1.0</div>
+  <div>{{CLUB}} VOLEY · Sistema de Análisis v1.0</div>
   <div id="footer-time"></div>
 </footer>
 
@@ -1021,7 +996,7 @@ if(window.GAMEPLAN_DATA){
 // FIXTURE generado automáticamente desde PARTIDOS_META (datos_partidos.js)
 // + próximos partidos hardcodeados que aún no están en el Excel
 var FIXTURE_PROXIMOS = [
-  // {{Club}} {{LIGA}} 2026/27 season completed - 26 matches played
+  // {{CLUB}} NLA 2026/27 season completed - 26 matches played
 ];
 
 function buildFixture(){
@@ -1035,7 +1010,7 @@ function buildFixture(){
         ? new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]), 21, 0, 0).getTime()
         : 0;
       var jugado = !!m.resultado || ts < Date.now();
-      var _sn=(m.sets_{{club}}!==undefined?m.sets_{{club}}:m.sets_{{club}});
+      var _sn=(m.sets_club!==undefined?m.sets_club:m.sets_club);
       var res = (_sn!==undefined && m.sets_rival!==undefined) ? _sn+'-'+m.sets_rival : (m.resultado||'');
       fixture.push({
         num: i+1,
@@ -1066,7 +1041,7 @@ function buildFixture(){
         num: (fixture.length||0)+i+1,
         rival: p.rival,
         fecha: p.fecha,
-        torneo: '{{LIGA}} {{PAIS}} 2026/27',
+        torneo: '{{LIGA}} 2026/27',
         ts: ts,
         jugado: ts < Date.now(),
         res: '',
@@ -1149,7 +1124,7 @@ function initBaggeroneTop3(){
 function updateResultados(){
   if(typeof PARTIDOS_META === 'undefined') return;
   PARTIDOS_META.forEach(function(m){
-    var _sn2=(m.sets_{{club}}!==undefined?m.sets_{{club}}:m.sets_{{club}});
+    var _sn2=(m.sets_club!==undefined?m.sets_club:m.sets_club);
     if(_sn2===undefined || m.sets_rival===undefined) return;
     var rival = (m.rival||'').toUpperCase();
     // Find card by rival name
@@ -1158,15 +1133,15 @@ function updateResultados(){
     // Check if result already shown
     if(card.querySelector('.auto-result')) return;
     // Build result
-    var {{club}} = parseInt(m.sets_{{club}}!==undefined?m.sets_{{club}}:m.sets_{{club}});
+    var casla = parseInt(m.sets_club!==undefined?m.sets_club:m.sets_club);
     var riv   = parseInt(m.sets_rival);
-    var win   = {{club}} > riv;
+    var win   = casla > riv;
     var color = win ? '#22c55e' : '#ef4444';
     var tipo  = win ? 'VICTORIA' : 'DERROTA';
     var div = document.createElement('div');
     div.className = 'auto-result';
     div.style.cssText = "font-family:'Bebas Neue',sans-serif;font-size:16px;color:"+color+";letter-spacing:2px;";
-    div.innerHTML = {{club}}+' — '+riv+' <span style="font-size:9px;color:#64748b;letter-spacing:1px;">'+tipo+'</span>';
+    div.innerHTML = casla+' — '+riv+' <span style="font-size:9px;color:#64748b;letter-spacing:1px;">'+tipo+'</span>';
     // Insert after the {{CLUB}} vs RIVAL line
     var rivalDiv = card.querySelector('[style*="font-size:17px"]');
     if(rivalDiv && rivalDiv.nextSibling){
@@ -1235,13 +1210,13 @@ function highlightNextMatch(){
   <div class="hm-box">
     <div class="hm-title"><span>🔥 HEAT MAPS</span><button class="hm-close" onclick="closeHeatmapMenu()">✕</button></div>
     <div class="hm-grid">
-      <a class="hm-card" href="hm_ataque.html?equipo={{club}}"    style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.3)"><span class="hm-icon">⚡</span><span class="hm-lbl" style="color:#F97316">ATAQUE</span><span class="hm-sub">EFF · SO/TR · Zonas<br>Combos · Calidad rec.</span></a>
-      <a class="hm-card" href="hm_saque.html?equipo={{club}}"     style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)"><span class="hm-icon">🎯</span><span class="hm-lbl" style="color:#22C55E">SAQUE</span><span class="hm-sub">EFF · Flotado/Potencia<br>Zonas origen/destino</span></a>
-      <a class="hm-card" href="hm_recepcion.html?equipo={{club}}" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🛡️</span><span class="hm-lbl" style="color:#818CF8">RECEPCION</span><span class="hm-sub">EFF · Calidad · Zonas</span></a>
-      <a class="hm-card" href="hm_armador.html?equipo={{club}}"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
-      <a class="hm-card" href="hm_defensa.html" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🧤</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Por rival</span></a>
+      <a class="hm-card" href="hm_ataque.html?equipo=nafels"    style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.3)"><span class="hm-icon">⚡</span><span class="hm-lbl" style="color:#F97316">ATAQUE</span><span class="hm-sub">EFF · SO/TR · Zonas<br>Combos · Calidad rec.</span></a>
+      <a class="hm-card" href="hm_saque.html?equipo=nafels"     style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)"><span class="hm-icon">🎯</span><span class="hm-lbl" style="color:#22C55E">SAQUE</span><span class="hm-sub">EFF · Flotado/Potencia<br>Zonas origen/destino</span></a>
+      <a class="hm-card" href="hm_recepcion.html?equipo=nafels" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🛡️</span><span class="hm-lbl" style="color:#818CF8">RECEPCION</span><span class="hm-sub">EFF · Calidad · Zonas</span></a>
+      <a class="hm-card" href="hm_armador.html?equipo=nafels"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
+      <a class="hm-card" href="hm_defensa.html" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🧤</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Por rival</span></a><a class="hm-card" href="hm_bloqueo.html" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🧱</span><span class="hm-lbl" style="color:#818CF8">BLOQUEO</span><span class="hm-sub">EFF · Zona del ataque · Combos</span></a>
     </div>
-    <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">{{LIGA}} {{PAIS}} 2026/27 · temporada en curso</div>
+    <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">{{LIGA}} 2026/27 · temporada en curso</div>
   </div>
 </div>
 <script>
@@ -1249,7 +1224,7 @@ function showHeatmapMenu(){ document.getElementById('hm-overlay').classList.add(
 function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.remove('open'); }
 </script>
 
-<script src="chat_{{club}}.js"></script>
+<script src="chat_club.js"></script>
 
 <script src="proximo_rival.js" onerror="window.FIXTURE_DATA=null"></script>
 <script>
@@ -1353,4 +1328,4 @@ function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.rem
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

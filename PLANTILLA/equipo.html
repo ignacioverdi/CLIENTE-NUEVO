@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>EQUIPO — {{CLUB_COMPLETO}}</title>
+<title>EQUIPO — {{CLUB}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="lang.js" onerror="void 0"></script>
 <script src="utils.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
-  <script src="datos_equipo.js" onerror="window.EQUIPO_DATA=null"></script>
+  <script src="datos_equipo.js.enc" onerror="window.EQUIPO_DATA=null"></script>
   <script>abrirDatos();</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -65,6 +65,9 @@ body{background:var(--bg);background-image:radial-gradient(ellipse at 20% 20%,rg
   .jug-foto-wrap{height:140px;}
 }
 </style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 
@@ -74,14 +77,14 @@ body{background:var(--bg);background-image:radial-gradient(ellipse at 20% 20%,rg
     <button onclick="showHeatmapMenu()" style="background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);color:#F97316;padding:6px 14px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;cursor:pointer;letter-spacing:1px">🔥 HEAT MAPS</button>
     <div>
       <div class="page-title">🏐 <span data-t="equipo">Equipo</span></div>
-      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB_COMPLETO}} · {{LIGA}} {{PAIS}} 2026/27</div>
+      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB}} VOLEY · {{LIGA}} 2026/27</div>
     </div>
   </div>
   <div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div>
 </div>
 
 <div class="main">
-  <div class="section-lbl">Plantel {{LIGA}} 2026/27</div>
+  <div class="section-lbl">Plantel NLA 2026/27</div>
   <div class="jugadores-grid" id="jugadores-grid"></div>
 
   <div class="section-lbl" style="margin-top:8px;">Cuerpo Técnico</div>
@@ -92,18 +95,18 @@ body{background:var(--bg);background-image:radial-gradient(ellipse at 20% 20%,rg
 // ── DATOS POR DEFECTO (reemplazados por datos_equipo.js) ─────────
 var EQUIPO_DEMO = {
   jugadores: [
-    {num:1, nombre:"JUGADOR", pos:"PUNTA", foto:null, pais:"🇦🇷", altura:"", edad:0},
-    {num:3, nombre:"JUGADOR", pos:"OPUESTO", foto:null, pais:"🇨🇭", altura:"", edad:0},
-    {num:4, nombre:"JUGADOR", pos:"ARMADOR", foto:null, pais:"🇦🇷", altura:"", edad:0},
-    {num:5, nombre:"JUGADOR", pos:"CENTRAL", foto:null, pais:"🇨🇭", altura:"", edad:0},
-    {num:7, nombre:"JUGADOR R", pos:"CENTRAL", foto:null, pais:"🇨🇭", altura:"", edad:0},
-    {num:9, nombre:"JUGADOR", pos:"OPUESTO", foto:null, pais:"🇺🇸", altura:"", edad:0},
-    {num:10, nombre:"JUGADOR", pos:"PUNTA", foto:null, pais:"🇨🇭", altura:"", edad:0},
-    {num:11, nombre:"JUGADOR", pos:"PUNTA", foto:null, pais:"🇨🇭", altura:"", edad:0},
-    {num:12, nombre:"JUGADOR", pos:"CENTRAL", foto:null, pais:"🇸🇪", altura:"", edad:0},
-    {num:13, nombre:"JUGADOR", pos:"ARMADOR", foto:null, pais:"🇨🇭", altura:"", edad:0},
-    {num:17, nombre:"JUGADOR", pos:"PUNTA", foto:null, pais:"🇨🇭", altura:"", edad:0},
-    {num:20, nombre:"JUGADOR J", pos:"LIBERO", foto:null, pais:"🇨🇭", altura:"", edad:0}
+    {num:1, nombre:"DURDOS", pos:"PUNTA", foto:null, pais:"🇦🇷", altura:"", edad:0},
+    {num:3, nombre:"SCHWITTER", pos:"OPUESTO", foto:null, pais:"🇨🇭", altura:"", edad:0},
+    {num:4, nombre:"VAZQUEZ", pos:"ARMADOR", foto:null, pais:"🇦🇷", altura:"", edad:0},
+    {num:5, nombre:"CLEMENT", pos:"CENTRAL", foto:null, pais:"🇨🇭", altura:"", edad:0},
+    {num:7, nombre:"SCHMID R", pos:"CENTRAL", foto:null, pais:"🇨🇭", altura:"", edad:0},
+    {num:9, nombre:"NORRIS", pos:"OPUESTO", foto:null, pais:"🇺🇸", altura:"", edad:0},
+    {num:10, nombre:"BOGDANOVSKI", pos:"PUNTA", foto:null, pais:"🇨🇭", altura:"", edad:0},
+    {num:11, nombre:"BARTHOLET", pos:"PUNTA", foto:null, pais:"🇨🇭", altura:"", edad:0},
+    {num:12, nombre:"JOHANSSON", pos:"CENTRAL", foto:null, pais:"🇸🇪", altura:"", edad:0},
+    {num:13, nombre:"STEIMANN", pos:"ARMADOR", foto:null, pais:"🇨🇭", altura:"", edad:0},
+    {num:17, nombre:"ROFFLER", pos:"PUNTA", foto:null, pais:"🇨🇭", altura:"", edad:0},
+    {num:20, nombre:"SCHMID J", pos:"LIBERO", foto:null, pais:"🇨🇭", altura:"", edad:0}
   ],
   staff: [
     {nombre:"IGNACIO VERDI", rol:"Head Coach", icon:"📋"},
@@ -201,13 +204,13 @@ render();
   <div class="hm-box">
     <div class="hm-title"><span>🔥 HEAT MAPS</span><button class="hm-close" onclick="closeHeatmapMenu()">✕</button></div>
     <div class="hm-grid">
-      <a class="hm-card" href="hm_ataque.html?equipo={{club}}"    style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.3)"><span class="hm-icon">⚡</span><span class="hm-lbl" style="color:#F97316">ATAQUE</span><span class="hm-sub">EFF · SO/TR · Zonas</span></a>
-      <a class="hm-card" href="hm_saque.html?equipo={{club}}"     style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)"><span class="hm-icon">🎯</span><span class="hm-lbl" style="color:#22C55E">SAQUE</span><span class="hm-sub">EFF · Zonas origen/destino</span></a>
-      <a class="hm-card" href="hm_recepcion.html?equipo={{club}}" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🛡️</span><span class="hm-lbl" style="color:#818CF8">RECEPCION</span><span class="hm-sub">EFF · Calidad · Zonas</span></a>
-      <a class="hm-card" href="hm_armador.html?equipo={{club}}"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
-      <a class="hm-card" href="hm_defensa.html" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🧤</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Por rival</span></a>
+      <a class="hm-card" href="hm_ataque.html?equipo=nafels"    style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.3)"><span class="hm-icon">⚡</span><span class="hm-lbl" style="color:#F97316">ATAQUE</span><span class="hm-sub">EFF · SO/TR · Zonas</span></a>
+      <a class="hm-card" href="hm_saque.html?equipo=nafels"     style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)"><span class="hm-icon">🎯</span><span class="hm-lbl" style="color:#22C55E">SAQUE</span><span class="hm-sub">EFF · Zonas origen/destino</span></a>
+      <a class="hm-card" href="hm_recepcion.html?equipo=nafels" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🛡️</span><span class="hm-lbl" style="color:#818CF8">RECEPCION</span><span class="hm-sub">EFF · Calidad · Zonas</span></a>
+      <a class="hm-card" href="hm_armador.html?equipo=nafels"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
+      <a class="hm-card" href="hm_defensa.html" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🧤</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Por rival</span></a><a class="hm-card" href="hm_bloqueo.html" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🧱</span><span class="hm-lbl" style="color:#818CF8">BLOQUEO</span><span class="hm-sub">EFF · Zona del ataque · Combos</span></a>
     </div>
-    <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">{{LIGA}} {{PAIS}} 2026/27 · temporada en curso</div>
+    <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">{{LIGA}} 2026/27 · temporada en curso</div>
   </div>
 </div>
 <script>
@@ -215,9 +218,9 @@ function showHeatmapMenu(){ document.getElementById('hm-overlay').classList.add(
 function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.remove('open'); }
 </script>
 
-<script src="chat_{{club}}.js"></script>
+<script src="chat_club.js"></script>
 <script src="temporadas_menu.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

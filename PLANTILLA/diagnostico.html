@@ -42,11 +42,29 @@
 <button id="copiar" onclick="copiar()">Copiar todo para mandar</button>
 
 <!-- los mismos archivos que carga el plan de partido -->
-<script src="liga_data.js" onerror="void 0"></script>
+<!-- Los datos del club estan cifrados: el archivo se llama .enc y hace falta
+     abrirlo. Se cargan las dos formas —cifrada y sin cifrar— porque no todos
+     los clubes cifran, y despues se abre lo que haya. -->
 <script src="plan_partido_data.js" onerror="void 0"></script>
-<script src="datos_bloqueo.js" onerror="void 0"></script>
-<script src="datos_equipo.js" onerror="void 0"></script>
+  <script src="datos_bloqueo.js" onerror="void 0"></script>
+  <script src="datos_equipo.js" onerror="void 0"></script>
+  <script src="plan_partido_data.js.enc" onerror="void 0"></script>
+  <script src="datos_bloqueo.js.enc" onerror="void 0"></script>
+  <script src="datos_equipo.js.enc" onerror="void 0"></script>
+  <script src="plan_partido_vivo.js" onerror="void 0"></script>
+  <script src="datos_seguros.js" onerror="void 0"></script>
+<script src="liga_data.js.enc" onerror="void 0"></script>
+<script src="liga_data.js.enc" onerror="void 0"></script>
+<script src="plan_partido_data.js.enc" onerror="void 0"></script>
+<script src="plan_partido_data.js.enc" onerror="void 0"></script>
+<script src="datos_bloqueo.js.enc" onerror="void 0"></script>
+<script src="datos_bloqueo.js.enc" onerror="void 0"></script>
+<script src="datos_equipo.js.enc" onerror="void 0"></script>
+<script src="datos_equipo.js.enc" onerror="void 0"></script>
+<script src="datos_baterias.js.enc" onerror="void 0"></script>
 <script src="datos_baterias.js" onerror="void 0"></script>
+<script src="plantel_club.js" onerror="void 0"></script>
+<script>try{ if(typeof abrirDatos==='function') abrirDatos(); }catch(e){}</script>
 
 <script>
 var errores = [];

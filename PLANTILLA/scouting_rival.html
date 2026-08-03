@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scouting Rival — {{CLUB_COMPLETO}}</title>
+<title>Scouting Rival — {{CLUB}} Voley</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -131,6 +131,9 @@
   .atktab:hover{color:#fff}
   .atktab.on{background:rgba(249,115,22,.14);border-color:rgba(249,115,22,.5);color:var(--ataque)}
 </style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="wrap">
@@ -140,7 +143,7 @@
   <a href="dashboard.html" class="back-btn">← Dashboard</a>
   <div>
     <div class="hdr-t">SCOUTING <span>RIVAL</span></div>
-    <div class="hdr-s">Dossier del próximo rival · {{LIGA}} {{PAIS}}</div>
+    <div class="hdr-s">Dossier del próximo rival · {{LIGA}}</div>
   </div>
 </div>
 
@@ -151,7 +154,7 @@
 </div>
 
 <script src="datos_seguros.js"></script>
-  <script src="scouting_rival.js" onerror="void 0"></script>
+  <script src="scouting_rival.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <script>
 var SC = window.SCOUTING_RIVAL || {};
@@ -577,7 +580,7 @@ function renderDossier(n){
   h+='<div class="dteam"><div><div class="dteam-name">'+n+'</div>'
     +'<div class="dteam-sub"><b>'+t.matches+'</b> partidos analizados · scouting basado en datos reales</div></div>'
     +'<div class="dteam-act"><a href="plan_partido.html?equipo='+enc+'" class="dact">📋 Plan de partido</a>'
-    +'<a href="comparador.html?equipo='+enc+'" class="dact">⚖ Comparar con {{Club}}</a></div></div>';
+    +'<a href="comparador.html?equipo='+enc+'" class="dact">⚖ Comparar con {{CLUB}}</a></div></div>';
 
   h+='<div class="grid">';
 
@@ -721,4 +724,4 @@ buildTeams();
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

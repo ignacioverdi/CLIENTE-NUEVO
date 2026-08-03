@@ -5,8 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ranking — {{CLUB}} Voley</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="datos_{{club}}.js" onerror="void 0"></script>
-<script src="datos_partidos.js" onerror="void 0"></script>
+  <!-- datos_club.js sacado: es del club de origen. -->
+<script src="datos_seguros.js"></script>
+  <script src="datos_partidos.js.enc" onerror="void 0"></script>
+  <script src="datos_baterias.js.enc" onerror="void 0"></script>
+  <!-- El plantel real de la temporada. Sin esto, window.EQUIPO_DATA nunca existe
+     y la pagina cae en su lista de respaldo, que trae el plantel de otro anio.
+     Va DESPUES de datos_seguros.js y ANTES de abrirDatos(), como en equipo.html. -->
+  <script src="datos_equipo.js.enc" onerror="window.EQUIPO_DATA=null"></script>
+  <script>abrirDatos();</script>
 <script src="datos_historial.js" onerror="void 0"></script>
 <script src="objetivos_config.js" onerror="void 0"></script>
 <style>
@@ -37,6 +44,11 @@ html,body{background:var(--bg);color:var(--txt);font-family:'Barlow Condensed',s
 .ver-mas{width:100%;margin-top:8px;padding:5px;border-radius:6px;border:1px solid var(--b);background:transparent;color:var(--mut);font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;transition:all .15s}
 .ver-mas:hover{color:var(--txt);border-color:var(--b2)}
 </style>
+<!-- Motor de idiomas (ES / EN / DE). Traduce por data-t y por texto. -->
+<script src="lang.js"></script>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="hdr">
@@ -68,7 +80,7 @@ var SK = [
 ];
 
 function tryInit(n){
-  if(typeof ((window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||window.{{CLUB}}_JUGADORES||[])!=='undefined' && typeof objCalcVals!=='undefined'){ init(); }
+  if(typeof _plantelNormalizado()!=='undefined' && typeof objCalcVals!=='undefined'){ init(); }
   else if(n>0){ setTimeout(function(){ tryInit(n-1); }, 300); }
   else { document.getElementById('grid').innerHTML='<div style="grid-column:span 3;text-align:center;padding:40px;color:#ef4444">Error: verificar objetivos_config.js y datos_partidos.js en GitHub.</div>'; }
 }
@@ -130,11 +142,64 @@ function getActionCount(pjug, sk){
   return null;
 }
 
+
+/* Los numeros salen de datos_baterias.js, que trae el detalle partido por
+   partido. El sistema viejo los buscaba en un archivo que no lo tiene. */
+var _OBJ_NULOS = {sq:null,rec:null,bqpos:null,bqpt:null,atqq:null,atqhb:null,atqx:null,atqrp:null,atqri:null,atqrm:null,atqtr:null};
+
+function _batMatchName(nombre, keys){
+  var b=(nombre||'').replace(/^\d+\s*/,'').toLowerCase().trim(); var bs=b.split(' ')[0];
+  for(var i=0;i<keys.length;i++){ if(keys[i].toLowerCase().replace(/^\d+\s*/,'').trim()===b) return keys[i]; }
+  for(var i=0;i<keys.length;i++){ var k=keys[i].toLowerCase().replace(/^\d+\s*/,'').trim(); if(k.split(' ')[0]===bs || (bs.length>2&&k.indexOf(bs)>=0)) return keys[i]; }
+  return null;
+}
+
+function batGet(nombre, partido){
+  var B=window.BAT_PARTIDOS; if(!B) return null;
+  /* Con el filtro en Partidos o en Entrenamientos, el acumulado NO puede ser el
+     de todo: sale de porTipo, que el generador arma por separado. Sin esto, con
+     "Partidos" y cero partidos jugados se mostraban igual los numeros de los
+     entrenamientos.
+
+     Si el archivo de datos todavia es el viejo —sin porTipo— no pasa nada: se
+     sigue de largo y queda el comportamiento de antes. */
+  if(!partido || partido==='acumulado'){
+    var _tp = (typeof batTipoActual==='function') ? batTipoActual() : null;
+    if(_tp && B.porTipo && B.porTipo[_tp]){
+      var _pt = B.porTipo[_tp];
+      if(nombre){
+        var _kt=_batMatchName(nombre, Object.keys(_pt.jug||{}));
+        return (_kt && _pt.jug[_kt]) ? _pt.jug[_kt] : _OBJ_NULOS;
+      }
+      return _pt.eq || _OBJ_NULOS;
+    }
+  }
+  if(partido && partido!=='acumulado'){
+    var m=(B.ind||[]).find(function(x){return String(x.id)===String(partido);});
+    if(!m) return _OBJ_NULOS;
+    if(nombre){ var k=_batMatchName(nombre, Object.keys(m.jug||{})); return (k&&m.jug[k])?m.jug[k]:_OBJ_NULOS; }
+    return m.eq||_OBJ_NULOS;
+  }
+  if(nombre){ var k2=_batMatchName(nombre, Object.keys(B.jug||{})); return (k2&&B.jug[k2])?B.jug[k2]:_OBJ_NULOS; }
+  return B.eq||_OBJ_NULOS;
+}
+
+function _plantelNormalizado(){
+  try{
+    var P = (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores) || [];
+    if(P.length) return P.map(function(j){
+      return {num:j.num, nombre:(j.ap || j.nombre || ''), pos:j.pos, foto:j.foto};
+    });
+  }catch(e){}
+  try{ if(window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores) return window.EQUIPO_DATA.jugadores; }catch(e){}
+  return [];
+}
+
 function getData(){
-  var {{club}}=typeof ((window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||window.{{CLUB}}_JUGADORES||[])!=='undefined'?((window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||window.{{CLUB}}_JUGADORES||[]):[];
+  var casla=typeof _plantelNormalizado()!=='undefined'?_plantelNormalizado():[];
   var pjugs=typeof PARTIDOS_JUGADORES!=='undefined'?PARTIDOS_JUGADORES:[];
-  return {{club}}.filter(function(j){return j.num;}).map(function(j){
-    var v=objCalcVals(j.nombre)||{};
+  return casla.filter(function(j){return j.num;}).map(function(j){
+    var v=(window.BAT_PARTIDOS ? batGet(j.nombre, "acumulado") : (typeof objCalcVals==="function"?objCalcVals(j.nombre):null))||{};
     var pjug=pjugs.find(function(p){return p.num===j.num;})||j;
     return {num:j.num,nm:(j.nombre||'').replace(/^\d+\s*/,''),pos:j.pos||'',col:PC[j.pos]||'#64748b',pjug:pjug,
       sq:v.sq!=null?v.sq:null,rec:v.rec!=null?v.rec:null,bqpos:v.bqpos!=null?v.bqpos:null,

@@ -83,8 +83,8 @@
 <script src="firebase.js" onerror="void 0"></script>
 <script src="lang.js" onerror="void 0"></script>
 <script src="correcciones_tecnicas.js" onerror="void 0"></script>
-<script src="plantel_{{club}}.js" onerror="void 0"></script>
-<script src="datos_{{club}}.js" onerror="void 0"></script>
+<script src="plantel_club.js" onerror="void 0"></script>
+<script src="datos_club.js" onerror="void 0"></script>
 <script>
 (function(){
   /* ---------- i18n ---------- */
@@ -133,7 +133,7 @@
   var DATA={items:[]};
 
   function roster(){
-    var raw=(typeof PLANTEL_{{CLUB}}!=='undefined'&&PLANTEL_{{CLUB}})||window.PLANTEL_{{CLUB}}||(typeof ((window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||window.{{CLUB}}_JUGADORES||[])!=='undefined'&&((window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||window.{{CLUB}}_JUGADORES||[]))||((window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||window.{{CLUB}}_JUGADORES||[])||null;
+    var raw=(typeof PLANTEL_CLUB!=='undefined'&&PLANTEL_CLUB)||window.PLANTEL_CLUB||(typeof ((window.PLANTEL_CLUB&&window.PLANTEL_CLUB.jugadores)||window.CASLA_JUGADORES||[])!=='undefined'&&((window.PLANTEL_CLUB&&window.PLANTEL_CLUB.jugadores)||window.CASLA_JUGADORES||[]))||((window.PLANTEL_CLUB&&window.PLANTEL_CLUB.jugadores)||window.CASLA_JUGADORES||[])||null;
     var r=Array.isArray(raw)?raw:((raw&&(raw.jugadores||raw.lista))||[]);
     return (r||[]).map(function(p){
       var num=p.num!=null?String(p.num):String(((String(p.nombre||'').match(/^\d+/))||[''])[0]);

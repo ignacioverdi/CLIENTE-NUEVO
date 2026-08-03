@@ -199,8 +199,24 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
   <span id="teambtns" class="teambtns" style="display:none"></span>
   <select id="teamsel" class="teamsel"></select>
   <span class="mlab" style="margin-left:6px">Filtrar</span>
+  <!-- Partido / Entrenamiento. Va primero porque manda sobre los otros dos:
+       recorta que sesiones existen antes de elegir rival o partido. -->
+  <div class="msel" id="tipobar" style="display:none">
+    <button class="mbtn" data-pptipo="todos" onclick="ppSetTipo('todos')">Todos</button>
+    <button class="mbtn" data-pptipo="P"     onclick="ppSetTipo('P')">Partidos</button>
+    <button class="mbtn" data-pptipo="E"     onclick="ppSetTipo('E')">Entrenamientos</button>
+  </div>
   <div class="msel"><button class="mbtn" onclick="togglePanel('r')">Rival <b id="rc"></b> ▾</button><div class="mpanel" id="rpanel"></div></div>
   <div class="msel"><button class="mbtn" onclick="togglePanel('m')">Partido <b id="mc"></b> ▾</button><div class="mpanel" id="mpanel"></div></div>
+  <!-- El minimo de acciones, ahora en pantalla. Antes estaba escondido en el
+       generador (30 saques, 30 recepciones) y no habia forma de moverlo sin
+       tocar el codigo. En 0 se ve todo; subiendolo se sacan de la vista los
+       jugadores con pocas pelotas, que es util cuando mirás a un rival con una
+       temporada entera encima. -->
+  <span class="mlab" style="margin-left:6px">Mín. acciones</span>
+  <input id="minacc" type="number" min="0" step="1" value="0" title="Oculta a los jugadores con menos acciones que este número"
+         style="width:64px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:5px 7px;font-family:inherit;font-weight:700;font-size:12px"
+         oninput="ppVisibilidad()">
   <span class="mhint" id="mhint"></span></div>
 <div class="tabsbar" id="tabsbar">
   <span class="tabteam" id="tabteam">—</span>
@@ -239,7 +255,7 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
 <div class="grid3" id="row-defense"></div>
 </div><div class="tabgroup" id="tab-bloqueo"><div class="rolehead">Bloqueo <span>dónde bloquea según la zona de origen del ataque rival · celeste</span></div>
 <div class="grid3" id="row-bloqueo"></div>
-</div><footer>Ataque (rojo): dirección según recepción. Saque (azul): tipo, zona de origen, momento (puntos del set) y fuerza sobre la recepción; / = vendido (2ª mejor). Recepción (naranja): según tipo/zona del saque rival; zona real de caída de la pelota (todas las zonas). Video por timestamp (reproduce en partidos publicados en la app {{CLUB}}). Muestras chicas = tomar con cuidado.</footer>
+</div><footer>Ataque (rojo): dirección según recepción. Saque (azul): tipo, zona de origen, momento (puntos del set) y fuerza sobre la recepción; / = vendido (2ª mejor). Recepción (naranja): según tipo/zona del saque rival; zona real de caída de la pelota (todas las zonas). Video por timestamp (reproduce en partidos publicados en la app). Muestras chicas = tomar con cuidado.</footer>
 </div>
 
 <div id="vmodal" class="vmodal" onclick="if(event.target===this)closeV()">
@@ -269,11 +285,17 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
   </div>
 </div>
 
-<script src="liga_data.js" onerror="window.LIGA_DATA={teams:{},combos:[],calls:[]}"></script>
-<script src="mapa_videos.js" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
+<script src="datos_seguros.js"></script>
+<script src="filtro_tipo.js" onerror="void 0"></script>
+  <script src="liga_data.js.enc" onerror="window.LIGA_DATA={teams:{},combos:[],calls:[]}"></script>
+<script src="mapa_videos.js.enc" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
+<!-- Los videos de las practicas viven en su propio mapa. Sin esto, un
+     entrenamiento con video cargado igual no abria el cuadrante. -->
+<script src="mapa_videos_ent.js.enc" onerror="window.MAPA_VIDEOS_ENT=window.MAPA_VIDEOS_ENT||{}"></script>
 <script src="firebase.js"></script>
-<script src="plan_partido_data.js" onerror="void 0"></script>
-<script src="datos_bloqueo.js" onerror="void 0"></script>
+<script src="plan_partido_data.js.enc" onerror="void 0"></script>
+<script src="datos_bloqueo.js.enc" onerror="void 0"></script>
+  <script>abrirDatos();</script>
 <script src="plan_partido_vivo.js" onerror="void 0"></script>
 <script>
 const QP=new URLSearchParams(location.search);
@@ -288,10 +310,67 @@ let PLAYERS=TEAMS[TEAM].players;
 let TEAMCARDS=[];
 let INFO=TEAMS[TEAM].info;
 let RIVALS=[],MATCHES=[],RSEL=new Set(),MSEL=new Set();
+/* ══ Partido / Entrenamiento ═══════════════════════════════════════════════
+   Todas las acciones de esta pagina guardan de que sesion salieron, y todas
+   las solapas —ataque, saque, recepcion, defensa, bloqueo, armado— filtran por
+   el conjunto MSEL. Asi que para separar partidos de entrenamientos alcanza
+   con dejar afuera de ese conjunto las sesiones del otro tipo: no hay que
+   tocar ni una accion ni ninguna solapa.
+
+   El tipo lo trae el generador en info[mid].tipo. Si los datos son los viejos
+   —sin ese campo— no se filtra nada y la pagina se comporta como antes. */
+function ppTipoActual(){
+  try{ if(typeof vbTipo==='function') return vbTipo(); }catch(e){}
+  return 'todos';
+}
+function ppHayTipos(){
+  try{ return Object.keys(INFO).some(function(k){ return INFO[k] && INFO[k].tipo; }); }catch(e){ return false; }
+}
+function ppEsDelTipo(k){
+  var t = ppTipoActual();
+  if(t==='todos' || !ppHayTipos()) return true;
+  var q = (t==='E') ? 'entrenamiento' : 'partido';
+  return ((INFO[k] && INFO[k].tipo) || 'partido') === q;
+}
+function ppSetTipo(t){
+  try{ if(typeof vbSetTipo==='function') vbSetTipo(t); }catch(e){}
+  computeMatchMeta();
+  buildRivalPanel(); buildMatchPanel(); updateCounts(); renderAll();
+  ppPintarTipo();
+}
+function ppPintarTipo(){
+  var barra=document.getElementById('tipobar');
+  if(barra) barra.style.display = ppHayTipos() ? '' : 'none';
+  /* El boton que abre la lista de sesiones dice lo que corresponda. */
+  try{
+    var _mb=document.getElementById('mc');
+    if(_mb && _mb.parentNode){
+      var _t=ppTipoActual();
+      var _txt = _t==='E' ? 'Entrenamiento' : (_t==='P' ? 'Partido' : 'Sesión');
+      _mb.parentNode.childNodes[0].nodeValue = _txt+' ';
+    }
+  }catch(e){}
+  var t=ppTipoActual();
+  var bs=document.querySelectorAll('[data-pptipo]');
+  for(var i=0;i<bs.length;i++){
+    var on = bs[i].getAttribute('data-pptipo')===t;
+    bs[i].style.background  = on ? 'rgba(239,39,64,.18)' : '';
+    bs[i].style.borderColor = on ? 'rgba(239,39,64,.55)' : '';
+    bs[i].style.fontWeight  = on ? '800' : '';
+  }
+}
+
 function computeMatchMeta(){
-  RIVALS=Array.from(new Set(Object.keys(INFO).map(function(k){return INFO[k].opp;}))).sort();
-  MATCHES=Object.keys(INFO).map(function(k){return {mid:k,opp:INFO[k].opp,date:INFO[k].date,res:INFO[k].res,yt:ppVid(k)};}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
+  var CLAVES = Object.keys(INFO).filter(ppEsDelTipo);
+  RIVALS=Array.from(new Set(CLAVES.map(function(k){return INFO[k].opp;}))).sort();
+  MATCHES=CLAVES.map(function(k){return {mid:k,opp:INFO[k].opp,date:INFO[k].date,res:INFO[k].res,yt:ppVid(k)};}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
   RSEL=new Set(RIVALS);MSEL=new Set(MATCHES.map(function(m){return m.mid;}));
+  /* La barra se pinta ACA y no al final de la pagina: los datos llegan
+     despues de que se dibuja el HTML, asi que al arrancar INFO todavia esta
+     vacio, ppHayTipos() daba false y la barra quedaba escondida para siempre.
+     computeMatchMeta() corre cada vez que se carga o cambia el equipo, que es
+     justo cuando INFO ya tiene contenido. */
+  try{ ppPintarTipo(); }catch(e){}
 }
 const RECS=[["all","Todas"],["g","# / +"],["b","! / -"]];
 const FASE=[["all","Todas"],["SO","Side Out"],["TR","Transici\u00f3n"]];
@@ -345,7 +424,17 @@ var GPL=window.LIGA_DATA||{teams:{},combos:[],calls:[]};
 var GP_COMBOS=GPL.combos||[];
 var GP_FRONT_POS=[4,3,2];
 var RESARM=["#","/","+","!","=","-"];
-var ARM_SLUG={defensores:"defensores",river:"river",hacoaj:"hacoaj",campana:"campana",lomas:"lomas",boca:"boca",ciudad:"ciudad",{{club}}:"{{club}}",untref:"untref",ferro:"ferro",uba:"uba",velez:"velez"};
+var ARM_SLUG = (function(){
+  /* Con que nombre figura cada equipo en los datos del armador. Antes iba una
+     tabla escrita a mano, y al traer esta pantalla de otro club quedo
+     apuntando a equipos que aca no existen. Ahora sale de los propios datos. */
+  var m = {};
+  try {
+    var t = (window.LIGA_DATA && window.LIGA_DATA.teams) || {};
+    Object.keys(t).forEach(function(k){ m[k] = k; });
+  } catch(e) {}
+  return m;
+})();
 var ARMZ=["4","3","2","7","8","9","5","6","1"];
 var ARM_ZCOL={"4":"245,158,11","3":"168,85,247","2":"59,130,246","7":"20,184,166","8":"6,182,212","9":"236,72,153","5":"239,68,68","6":"234,179,8","1":"249,115,22"};
 function armHeat(z,v,pct){if(v<=0)return["var(--h0)","#6b7280","1px solid var(--border)"];var rgb=ARM_ZCOL[z]||"124,134,148",op=Math.max(0.18,pct/100*0.6+0.18);return["rgba("+rgb+","+op.toFixed(2)+")","#f1f5f9","1px solid rgba("+rgb+",.8)"];}
@@ -464,14 +553,23 @@ function readFilt(id,fl){var el=document.getElementById(id);if(!el)return "all";
     var sm=el.querySelector("summary");var allsel=(ch.length===0||ch.length===bx.length);if(sm)sm.textContent=allsel?"Todas":(ch.length+" sel");return allsel?"all":ch;}
   if(fl.lab==="Fase"){var fv=el.value;return fv==="SO"?["g","b"]:fv==="TR"?["o"]:"all";}
   return el.value;}
-function ppVid(code){var M=window.MAPA_VIDEOS||{};var u=M[code]||"";if(!u)return "";u=String(u);var m=u.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);return m?m[1]:(u.length===11?u:"");}
+/* Cada sesion busca su video en el mapa que le corresponde: los partidos en
+   MAPA_VIDEOS y las practicas en MAPA_VIDEOS_ENT. Antes se miraba solo el de
+   partidos, asi que un entrenamiento nunca encontraba su video por mas que
+   estuviera cargado. Se prueban los dos por las dudas. */
+function ppVid(code){
+  var _ent = false;
+  try{ _ent = ((INFO[code]&&INFO[code].tipo)==='entrenamiento'); }catch(e){}
+  var M1 = (_ent ? window.MAPA_VIDEOS_ENT : window.MAPA_VIDEOS) || {};
+  var M2 = (_ent ? window.MAPA_VIDEOS : window.MAPA_VIDEOS_ENT) || {};
+  var M = M1; var u=M[code]||M2[code]||"";if(!u)return "";u=String(u);var m=u.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);return m?m[1]:(u.length===11?u:"");}
 function readKey(pid){return "ppread:"+(typeof TEAM!=="undefined"?TEAM:"")+":"+pid;}
 function readVal(p){try{var v=localStorage.getItem(readKey(p.id));if(v!==null)return v;}catch(e){}return p.read||"";}
 function saveRead(el){try{localStorage.setItem(readKey(el.getAttribute("data-pid")),el.innerHTML);}catch(e){}}
 function buildSection(p){var cfg=ROLECFG[p.role];
   var fh=cfg.filters.map(function(fl,i){return filtCtrl(p.id+'-f'+i,fl,'',filterOpts(p,fl));}).join('');
   if(cfg.stats==='atk'||cfg.stats==='srv'||cfg.stats==='dig'){fh+='<div class="fgroup"><label title="Mín. pelotas">Mín.</label><input type="number" min="0" value="0" id="'+p.id+'-min" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;font-family:inherit;font-weight:700"></div>';}
-  return '<div class="player" data-num="'+p.num+'"><div class="phead"><div class="pnum">'+p.num+'</div><div class="pname">'+p.name+'</div><div class="prole">'+(p.pos||p.role)+'</div><div class="pmeta">'+p.total+U(p.role)+'</div><button class="vtodo" onclick="openZone(\''+p.id+'\',\'*\')" title="Ver todos los videos juntos, de todas las zonas">&#9654; Ver todo</button></div>'
+  return '<div class="player" data-num="'+p.num+'" data-pid="'+p.id+'"><div class="phead"><div class="pnum">'+p.num+'</div><div class="pname">'+p.name+'</div><div class="prole">'+(p.pos||p.role)+'</div><div class="pmeta">'+p.total+U(p.role)+'</div><button class="vtodo" onclick="openZone(\''+p.id+'\',\'*\')" title="Ver todos los videos juntos, de todas las zonas">&#9654; Ver todo</button></div>'
    +'<div class="filters">'+fh+'</div><div class="natt" id="'+p.id+'-n"></div>'
    +'<div class="body"><div class="courtwrap"><div class="court" id="'+p.id+'-court"></div><div class="cnote">Doble-click en zona con ▶ → video (partidos con 🎥)</div></div>'
    +'<div class="stats">'+tiles3(p,cfg)+'</div></div>'+'<div class="read" contenteditable="true" spellcheck="false" data-pid="'+p.id+'" data-ph="Escribí tu análisis…" title="Click para editar" oninput="saveRead(this)">'+readVal(p)+'</div>'+'</div>';
@@ -480,7 +578,31 @@ function render(p){var cfg=ROLECFG[p.role];
   var vals=cfg.filters.map(function(fl,i){return readFilt(p.id+'-f'+i,fl);});
   var f=p.data.filter(function(a){return MSEL.has(a[cfg.vIdx])&&passes(a,cfg,vals);}),n=f.length;
   var z={"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0},vz={};
-  f.forEach(function(a){var _blk=(cfg.stats==='atk'&&a[cfg.evIdx]==='/');if(_blk)return;if(z[a[cfg.court]]!==undefined)z[a[cfg.court]]++;if(ppVid(a[cfg.vIdx])){vz[a[cfg.court]]=(vz[a[cfg.court]]||0)+1;}});
+  f.forEach(function(a){
+    /* Los ataques bloqueados se salteaban siempre: la idea era que no contaran
+       como direccion —la pelota no llego a la cancha rival—. Pero cuando se
+       filtra justo por "Bloqueado", saltearlos deja la cancha vacia.
+
+       Ahora solo se saltean si NO se esta mirando puntualmente los bloqueados:
+       asi el filtro sirve para ver desde donde te bloquean. */
+    var _blk=(cfg.stats==='atk'&&a[cfg.evIdx]==='/');
+    /* El filtro puede venir como texto —"/"— o como lista —["/"]—, segun sea
+       de una opcion o de varias. Comparando solo el texto nunca daba verdadero
+       y los cuadrantes quedaban en cero. */
+    var _viendoBlq = vals.some(function(v){
+      return v === '/' || (Array.isArray(v) && v.indexOf('/') >= 0);
+    });
+    if(_blk && !_viendoBlq) return;
+    /* El campo [4] es el DESTINO —a donde fue la pelota—. Un ataque bloqueado
+       no tiene destino, asi que se lo cuenta en su zona de ORIGEN, que viene
+       en [10].
+
+       Si ese campo no esta —los datos todavia no se regeneraron— el ataque NO
+       se cuenta. Antes se caia al destino, y eso pintaba zonas donde la pelota
+       nunca estuvo: es peor mostrar un dato falso que no mostrar nada. */
+    if(_blk && !a[10]) return;
+    var _zona = _blk ? a[10] : a[cfg.court];
+    if(z[_zona]!==undefined)z[_zona]++;if(ppVid(a[cfg.vIdx])){vz[_zona]=(vz[_zona]||0)+1;}});
   var P=function(x){return n?Math.round(x/n*100)+'%':'–';};
   var v;
   if(cfg.stats==='atk'){var k=0,e=0,b=0,hd=0,sf=0,tp=0,d0=0,d1=0,d2=0;
@@ -504,18 +626,28 @@ function render(p){var cfg=ROLECFG[p.role];
     var h=heat(val,mx,cfg.pal),hasVid=(vz[zn]||0)>0;
     return '<div class="cell'+(hasVid?' has vid':'')+'" style="background:'+h[0]+';border:'+h[2]+'"'+(hasVid?' ondblclick="openZone(\''+p.id+'\',\''+zn+'\')"':'')+'><div class="zn" style="color:'+h[1]+'">z'+zn+'</div><div class="cn" style="color:'+h[1]+'">'+val+'</div></div>';}).join('');
 }
-function renderAll(){PLAYERS.concat(TEAMCARDS).forEach(render);if(typeof renderArmador==="function")renderArmador();}
+function renderAll(){PLAYERS.concat(TEAMCARDS).forEach(render);try{ppVisibilidad();}catch(e){}if(typeof renderArmador==="function")renderArmador();}
 function fmtDate(d){if(!d||d==='?')return'?';var p=d.split('-');return p.length===3?p[2]+'/'+p[1]:d;}
 function togglePanel(w){var p=document.getElementById(w==='r'?'rpanel':'mpanel');var o=p.classList.contains('open');document.querySelectorAll('.mpanel').forEach(function(x){x.classList.remove('open');});if(!o)p.classList.add('open');}
 document.addEventListener('click',function(e){if(!e.target.closest('.msel'))document.querySelectorAll('.mpanel').forEach(function(x){x.classList.remove('open');});});
 function buildRivalPanel(){var h='<div class="mhead"><button onclick="allRivals(1)">Todos</button><button onclick="allRivals(0)">Ninguno</button></div>';h+=RIVALS.map(function(r,i){return '<label class="mitem"><input type="checkbox" '+(RSEL.has(r)?'checked':'')+' onchange="toggleRival('+i+')">'+r+' <b>'+MATCHES.filter(function(m){return m.opp===r;}).length+'</b></label>';}).join('');document.getElementById('rpanel').innerHTML=h;}
-function buildMatchPanel(){var ms=MATCHES.filter(function(m){return RSEL.has(m.opp);});var h='<div class="mhead"><button onclick="allMatchesSel(1)">Todos</button><button onclick="allMatchesSel(0)">Ninguno</button></div>';h+=ms.map(function(m){return '<label class="mitem"><input type="checkbox" '+(MSEL.has(m.mid)?'checked':'')+' onchange="toggleMatchSel(\''+m.mid+'\')">'+fmtDate(m.date)+' · '+m.opp+' <b>'+m.res+(m.yt?' 🎥':'')+'</b></label>';}).join('');document.getElementById('mpanel').innerHTML=h;}
+/* Cada sesion, una por una, con su fecha. En un entrenamiento el resultado no
+   significa nada (viene 0-0), asi que en su lugar se aclara que es una
+   practica. Con esto se puede mirar fecha por fecha tanto los partidos como
+   los entrenamientos. */
+function buildMatchPanel(){var ms=MATCHES.filter(function(m){return RSEL.has(m.opp);});var h='<div class="mhead"><button onclick="allMatchesSel(1)">Todos</button><button onclick="allMatchesSel(0)">Ninguno</button></div>';h+=ms.map(function(m){var _e=((INFO[m.mid]&&INFO[m.mid].tipo)==='entrenamiento');var _et=_e?'🏋️ práctica':(m.res||'');return '<label class="mitem"><input type="checkbox" '+(MSEL.has(m.mid)?'checked':'')+' onchange="toggleMatchSel(\''+m.mid+'\')">'+fmtDate(m.date)+' · '+m.opp+' <b>'+_et+(m.yt?' 🎥':'')+'</b></label>';}).join('');document.getElementById('mpanel').innerHTML=h;}
 function syncMatches(){MSEL=new Set(MATCHES.filter(function(m){return RSEL.has(m.opp);}).map(function(m){return m.mid;}));}
 function toggleRival(i){var r=RIVALS[i];if(RSEL.has(r))RSEL.delete(r);else RSEL.add(r);syncMatches();buildRivalPanel();buildMatchPanel();updateCounts();renderAll();}
 function allRivals(on){RSEL=on?new Set(RIVALS):new Set();syncMatches();buildRivalPanel();buildMatchPanel();updateCounts();renderAll();}
 function toggleMatchSel(mid){if(MSEL.has(mid))MSEL.delete(mid);else MSEL.add(mid);updateCounts();renderAll();}
 function allMatchesSel(on){MATCHES.filter(function(m){return RSEL.has(m.opp);}).forEach(function(m){if(on)MSEL.add(m.mid);else MSEL.delete(m.mid);});buildMatchPanel();updateCounts();renderAll();}
-function updateCounts(){document.getElementById('rc').textContent='('+RSEL.size+')';document.getElementById('mc').textContent='('+MSEL.size+')';document.getElementById('mhint').textContent=MSEL.size+' partido'+(MSEL.size===1?'':'s');}
+function updateCounts(){document.getElementById('rc').textContent='('+RSEL.size+')';document.getElementById('mc').textContent='('+MSEL.size+')';
+  /* "3 partidos" no sirve cuando lo que se esta mirando son practicas. */
+  var _t=ppTipoActual(), _n=MSEL.size;
+  var _p = _t==='E' ? (_n===1?'entrenamiento':'entrenamientos')
+         : _t==='P' ? (_n===1?'partido':'partidos')
+         :            (_n===1?'sesión':'sesiones');
+  document.getElementById('mhint').textContent=_n+' '+_p;}
 function makeTeamPlayer(role){
   var rows=[]; PLAYERS.forEach(function(p){ if(p.role===role && p.data && p.data.length) rows=rows.concat(p.data); });
   if(!rows.length) return null;
@@ -537,7 +669,38 @@ function buildTeam(){
 function setTeam(slug){TEAM=slug;document.querySelectorAll('.mpanel').forEach(function(x){x.classList.remove('open');});pintarBotonesEquipo();buildTeam();}
 /* ── SOLAPAS ── */
 function buildFocusSel(){var sel=document.getElementById("focusSel");if(!sel)return;var seen={},o='<option value="all">Todos los jugadores</option>';(PLAYERS||[]).slice().sort(function(a,b){return (a.num||0)-(b.num||0);}).forEach(function(p){if(seen[p.num])return;seen[p.num]=1;o+='<option value="'+p.num+'">#'+p.num+' '+p.name+'</option>';});sel.innerHTML=o;sel.value=(FOCUS_NUM&&seen[FOCUS_NUM])?FOCUS_NUM:"all";}
-function applyFocus(){var sel=document.getElementById("focusSel");var v=sel?sel.value:"all";document.querySelectorAll(".player").forEach(function(el){var mn=el.getAttribute("data-num");el.style.display=(v==="all"||String(mn)===String(v))?"":"none";});if(typeof renderArmador==="function")renderArmador();}
+/* ══ Que jugadores se ven ══════════════════════════════════════════════════
+   Dos condiciones: el jugador elegido arriba, y el minimo de acciones.
+
+   Las acciones se cuentan DESPUES de aplicar el filtro de sesiones, no sobre
+   el total historico: si estas mirando un solo partido, el minimo se compara
+   contra lo que hizo en ESE partido. Es lo unico que tiene sentido cuando la
+   lista de sesiones cambia. */
+function ppMinAcciones(){
+  var el=document.getElementById("minacc");
+  var v=el?parseInt(el.value,10):0;
+  return (isNaN(v)||v<0)?0:v;
+}
+function ppCuenta(p){
+  try{
+    var cfg=ROLECFG[p.role];
+    return (p.data||[]).filter(function(a){return MSEL.has(a[cfg.vIdx]);}).length;
+  }catch(e){ return (p.total||0); }
+}
+function ppVisibilidad(){
+  var sel=document.getElementById("focusSel"); var v=sel?sel.value:"all";
+  var min=ppMinAcciones();
+  var porId={};
+  try{ PLAYERS.concat(TEAMCARDS).forEach(function(p){ porId[p.id]=p; }); }catch(e){}
+  document.querySelectorAll(".player").forEach(function(el){
+    var mn=el.getAttribute("data-num"), pid=el.getAttribute("data-pid");
+    var okJug=(v==="all"||String(mn)===String(v));
+    var p=porId[pid];
+    var okMin=(!p) || (ppCuenta(p)>=min);
+    el.style.display=(okJug&&okMin)?"":"none";
+  });
+}
+function applyFocus(){ ppVisibilidad(); if(typeof renderArmador==="function")renderArmador(); }
 function setTab(t){
   document.querySelectorAll('.ptab').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===t); });
   document.getElementById('armsec').classList.toggle('tabhide', t!=='armador');
@@ -625,7 +788,15 @@ function cambiarZona(soloEsta){
 function recompute(){if(!curP)return;var cfg=ROLECFG[curP.role];
   var vals=cfg.filters.map(function(fl,i){return readFilt('vf'+i,fl);});
   var todas=(curZn==='*');
-  var all=curP.data.filter(function(a){return (todas||String(a[cfg.court])===curZn)&&MSEL.has(a[cfg.vIdx])&&passes(a,cfg,vals);});
+  /* La zona con la que se compara tiene que ser la misma que uso el cuadrante:
+     el DESTINO en un ataque normal, y el ORIGEN —el campo [10]— en uno
+     bloqueado. Comparando siempre el destino, al tocar la zona de bloqueados
+     se buscaban ataques que FUERON ahi en vez de los que SALIERON de ahi. */
+  var _zonaDe=function(a){
+    var blq=(cfg.stats==='atk' && a[cfg.evIdx]==='/');
+    return String((blq && a[10]) ? a[10] : a[cfg.court]);
+  };
+  var all=curP.data.filter(function(a){return (todas||_zonaDe(a)===curZn)&&MSEL.has(a[cfg.vIdx])&&passes(a,cfg,vals);});
   clips=all.map(function(a){return {tag:(cfg.stats==='dig'?(a[7]||a[cfg.tagIdx]):a[cfg.tagIdx]),ev:a[cfg.evIdx],t:a[cfg.tIdx],vid:ppVid(a[cfg.vIdx]),sel:true};}).filter(function(c){return c.vid;});
   applySavedSel();cur=firstSel();document.getElementById("vtitle").textContent=curP.name+" · "+(todas?"todas las zonas":"zona "+curZn)+" · "+all.length+U(curP.role)+(clips.length<all.length?' ('+clips.length+' c/video)':'');renderList();
   if(!clips.length){document.getElementById("vcount").textContent="sin video";document.getElementById("vlist").innerHTML='<div class="novid">No hay video en los partidos seleccionados con 🎥. Probá otra zona, destildá «Solo esta zona» o cambiá el filtro de Partido.</div>';return;}
@@ -660,7 +831,7 @@ document.addEventListener("fullscreenchange",function(){
 });
 document.addEventListener("keydown",function(e){if(document.getElementById("vmodal").style.display!=="flex")return;if(e.key==="f"||e.key==="F"){e.preventDefault();toggleFullV();return;}if(e.key==="Escape"){if(enPantallaCompleta())return;closeV();}if(e.key==="ArrowRight")nextClip();if(e.key==="ArrowLeft")prevClip();if(e.key===" "||e.code==="Space"){e.preventDefault();togglePlay();}});
 </script>
-<script src="chat_{{club}}.js" onerror="void 0"></script>
+<script src="chat_club.js" onerror="void 0"></script>
 <script src="lang.js" onerror="void 0"></script>
 <script>
 (function(){
@@ -673,6 +844,11 @@ document.addEventListener("keydown",function(e){if(document.getElementById("vmod
     document.body.appendChild(a);
   }catch(e){}
 })();
+</script>
+<script>
+/* Los botones se pintan cuando ya estan los datos. Si el archivo todavia es el
+   viejo —sin el campo tipo— la barra queda oculta y no molesta. */
+try{ ppPintarTipo(); }catch(e){}
 </script>
 </body>
 </html>

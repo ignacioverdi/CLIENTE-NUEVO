@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Videos — {{CLUB_COMPLETO}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="datos_videos.js" onerror="void 0"></script>
+<script src="datos_seguros.js"></script>
+  <script src="datos_equipo.js" onerror="void 0"></script>
+  <script>abrirDatos();</script>
+<script src="lang.js" onerror="void 0"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080f;--card:#0d0e1a;--card2:#111220;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.12);
+  --red:#e8192c;--green:#22c55e;--amber:#f59e0b;
+  --indigo:#818cf8;--mut:#475569;--txt:#e2e8f0;
+}
+body{background:var(--bg);font-family:'Barlow Condensed',sans-serif;color:var(--txt);min-height:100vh;}
+
+.header{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.01);position:sticky;top:0;z-index:200;backdrop-filter:blur(20px);}
+.title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:5px;background:linear-gradient(120deg,#e8192c,#fff 50%,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.back-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-decoration:none;text-transform:uppercase;}
+
+/* LAYOUT 3 columnas: sidebar | detalle | videos */
+.layout{display:grid;grid-template-columns:240px 220px 1fr;min-height:calc(100vh - 57px);}
+.col{border-right:1px solid var(--border);overflow-y:auto;height:calc(100vh - 57px);position:sticky;top:57px;}
+.col-main{padding:24px 28px;overflow-y:auto;height:calc(100vh - 57px);}
+
+/* VISTA TOGGLE */
+.vista-toggle{display:flex;gap:1px;background:var(--border);margin:0;}
+.vista-btn{flex:1;padding:10px 8px;border:none;background:var(--bg);color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.5px;}
+.vista-btn.active{background:rgba(232,25,44,.08);color:var(--txt);}
+
+/* LISTAS SIDEBAR */
+.col-label{font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;padding:14px 16px 8px;display:flex;align-items:center;gap:8px;}
+.col-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.item-btn{width:100%;padding:10px 16px;border:none;background:transparent;color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;transition:all .15s;}
+.item-btn:hover{background:rgba(255,255,255,.04);color:var(--txt);}
+.item-btn.active{background:rgba(232,25,44,.08);color:var(--txt);border-left:2px solid var(--red);}
+.item-num{width:28px;height:28px;border-radius:50%;background:rgba(232,25,44,.1);border:1px solid rgba(232,25,44,.2);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:11px;color:var(--red);flex-shrink:0;}
+.item-count{margin-left:auto;font-size:10px;background:rgba(255,255,255,.06);padding:2px 7px;border-radius:10px;color:var(--mut);flex-shrink:0;}
+.item-count.has-videos{background:rgba(34,197,94,.1);color:var(--green);}
+
+.partido-icon{width:8px;height:8px;border-radius:50%;background:var(--mut);flex-shrink:0;}
+.item-btn.active .partido-icon{background:var(--red);}
+
+/* CATEGORIAS (col 2) */
+.cat-btn{width:100%;padding:14px 16px;border:none;background:transparent;color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;transition:all .15s;border-bottom:1px solid var(--border);}
+.cat-btn:hover{background:rgba(255,255,255,.04);color:var(--txt);}
+.cat-btn.active{background:var(--card2);color:var(--txt);}
+.cat-icon{font-size:18px;width:32px;text-align:center;flex-shrink:0;}
+.cat-count{margin-left:auto;font-size:11px;background:rgba(255,255,255,.06);padding:3px 9px;border-radius:10px;flex-shrink:0;}
+.cat-count.has{background:rgba(129,140,248,.12);color:var(--indigo);}
+
+/* VIDEO GRID */
+.section-hdr{margin-bottom:20px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;margin-bottom:4px;}
+.section-sub{font-size:12px;color:var(--mut);}
+
+.video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.video-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s,transform .15s;}
+.video-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+
+.video-thumb{position:relative;padding-top:56.25%;background:#000;cursor:pointer;}
+.video-thumb iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+.video-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d0e1a 0%,#111220 100%);cursor:pointer;gap:8px;}
+.play-btn{width:52px;height:52px;border-radius:50%;background:rgba(232,25,44,.85);display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform .2s,background .2s;}
+.video-placeholder:hover .play-btn{transform:scale(1.12);background:var(--red);}
+.thumb-label{font-size:10px;color:var(--mut);letter-spacing:.5px;}
+
+.video-info{padding:12px 14px;}
+.video-titulo{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;margin-bottom:6px;line-height:1.2;}
+.video-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.vmeta-tag{font-size:9px;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--mut);font-weight:700;letter-spacing:.5px;}
+.vmeta-jugador{font-size:11px;color:var(--mut);}
+.video-actions{padding:0 14px 12px;display:flex;gap:6px;}
+.vbtn{flex:1;padding:7px 8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;text-decoration:none;text-align:center;display:block;}
+.vbtn:hover{background:rgba(255,255,255,.04);color:var(--txt);}
+.vbtn.primary{background:rgba(232,25,44,.08);border-color:rgba(232,25,44,.3);color:var(--red);}
+.vbtn.primary:hover{background:rgba(232,25,44,.15);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 30px;color:var(--mut);}
+.empty-icon{font-size:52px;margin-bottom:14px;}
+.empty-txt{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;margin-bottom:8px;}
+.empty-sub{font-size:12px;line-height:1.7;}
+.empty-sub code{background:rgba(255,255,255,.06);padding:2px 8px;border-radius:4px;font-family:monospace;font-size:11px;}
+
+/* MODAL */
+.vmodal{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.96);align-items:center;justify-content:center;padding:20px;}
+.vmodal.open{display:flex;}
+.vmodal-box{width:100%;max-width:920px;background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--border2);}
+.vmodal-hdr{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.vmodal-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;}
+.vmodal-close{background:none;border:none;color:var(--mut);font-size:24px;cursor:pointer;line-height:1;padding:2px 8px;}
+.vmodal-close:hover{color:var(--txt);}
+.vmodal-embed{position:relative;padding-top:56.25%;}
+.vmodal-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+.vmodal-meta{padding:12px 20px;font-size:12px;color:var(--mut);display:flex;gap:12px;flex-wrap:wrap;}
+
+/* POS BADGE */
+.pos-badge{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;}
+.pos-CENTRAL{background:rgba(249,115,22,.1);color:#f97316;}
+.pos-PUNTA{background:rgba(34,197,94,.1);color:#22c55e;}
+.pos-ARMADOR{background:rgba(245,158,11,.1);color:#f59e0b;}
+.pos-OPUESTO{background:rgba(129,140,248,.1);color:#818cf8;}
+.pos-LIBERO{background:rgba(6,182,212,.1);color:#06b6d4;}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr;}
+  .col{height:auto;position:relative;border-right:none;border-bottom:1px solid var(--border);}
+  .col-main{height:auto;padding:16px;}
+}
+</style>
+<script src="utils.js" onerror="void 0"></script>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:14px">
+    <a href="index.html" class="back-btn">← <span data-tv="vinicio">Inicio</span></a>
+    <div>
+      <div class="title">🎬 <span data-tv="vvideos">Videos</span></div>
+      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase">{{CLUB_COMPLETO}} · {{LIGA}} {{PAIS}} 2026/27</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div>
+    <div id="total-videos" style="font-size:10px;color:var(--mut)"></div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- COL 1: Jugadores o Partidos -->
+  <div class="col" id="col1">
+    <div class="vista-toggle">
+      <button class="vista-btn active" onclick="setVista('jugador',this)">👤 <span data-tv="vjugadores">JUGADORES</span></button>
+      <button class="vista-btn" onclick="setVista('partido',this)">🏆 <span data-tv="vpartidos">PARTIDOS</span></button>
+    </div>
+    <div class="col-label" id="col1-label">Jugadores</div>
+    <div id="col1-lista"></div>
+  </div>
+
+  <!-- COL 2: Categorías -->
+  <div class="col" id="col2">
+    <div class="col-label"><span data-tv="vcategoria">Categoría</span></div>
+    <div id="col2-cats">
+      <div class="empty-state" style="padding:30px 16px">
+        <div class="empty-icon" style="font-size:32px">👈</div>
+        <div class="empty-sub"><span data-tv="velegiprimero">Elegí primero</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COL 3: Videos -->
+  <div class="col-main">
+    <div id="section-hdr" class="section-hdr" style="display:none">
+      <div class="section-title" id="section-title"></div>
+      <div class="section-sub" id="section-sub"></div>
+    </div>
+    <div id="video-grid" class="video-grid">
+      <div class="empty-state">
+        <div class="empty-icon">🎬</div>
+        <div class="empty-txt"><span data-tv="vbienvenido">Bienvenido a Videos</span></div>
+        <div class="empty-sub">
+          Elegí un jugador o partido en la izquierda,<br>
+          luego la categoría, y acá aparecen los clips.<br><br>
+          Los videos se cargan desde <code>datos_videos.js</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL VIDEO -->
+<div class="vmodal" id="vmodal" onclick="if(event.target===this)closeVModal()">
+  <div class="vmodal-box">
+    <div class="vmodal-hdr">
+      <div class="vmodal-title" id="vmodal-title"></div>
+      <button class="vmodal-close" onclick="closeVModal()">✕</button>
+    </div>
+    <div class="vmodal-embed">
+      <iframe id="vmodal-iframe" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    </div>
+    <div class="vmodal-meta" id="vmodal-meta"></div>
+  </div>
+</div>
+
+<script>
+var DATA = null;
+var VISTA = 'jugador';
+var SEL1 = null;  // jugador_num o partido string
+var SEL_CAT = 'TODOS';
+
+var CATS = [
+  {id:'TODOS', icon:'📋', label:'TODOS'},
+  {id:'S',     icon:'⚡', label:'SAQUE'},
+  {id:'R',     icon:'🛡️', label:'RECEPCIÓN'},
+  {id:'AR',    icon:'🎯', label:'ARMADO'},
+  {id:'A',     icon:'💥', label:'ATAQUE'},
+  {id:'B',     icon:'🧱', label:'BLOQUEO'},
+  {id:'D',     icon:'🔵', label:'DEFENSA'},
+];
+
+/* PLANTEL automático: se llena con el plantel de la temporada desde datos_equipo.js
+   (misma fuente que dashboard y el perfil de jugador). Si cambia el plantel,
+   esta página se actualiza sola — no hay que tocar nada acá. */
+var PLANTEL = {}, POSICIONES = {};
+(function(){
+  var roster = (window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores) ? window.EQUIPO_DATA.jugadores : [];
+  roster.forEach(function(j){
+    if(j && j.num != null){
+      PLANTEL[j.num]    = j.nombre || ('Jugador #'+j.num);
+      POSICIONES[j.num] = j.pos || '';
+    }
+  });
+})();
+
+// ── INIT ──────────────────────────────────────────────────────
+window.addEventListener('load', function(){
+  setTimeout(function(){
+    DATA = window.VIDEOS_DATA || null;
+    if(DATA && DATA.videos){
+      var total = DATA.videos.length;
+      document.getElementById('total-videos').textContent = total + ' video' + (total!==1?'s':'');
+    }
+    renderCol1();
+  }, 200);
+});
+
+// ── VISTA TOGGLE ──────────────────────────────────────────────
+function setVista(v, btn){
+  VISTA = v; SEL1 = null; SEL_CAT = 'TODOS';
+  document.querySelectorAll('.vista-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('col1-label').textContent = v==='jugador' ? 'Jugadores' : 'Partidos';
+  renderCol1();
+  renderCol2();
+  renderVideos([]);
+  document.getElementById('section-hdr').style.display = 'none';
+}
+
+// ── COL 1 ─────────────────────────────────────────────────────
+function renderCol1(){
+  if(VISTA === 'jugador') renderCol1Jugadores();
+  else renderCol1Partidos();
+}
+
+function renderCol1Jugadores(){
+  var conteo = {};
+  if(DATA) DATA.videos.forEach(function(v){ conteo[v.jugador_num] = (conteo[v.jugador_num]||0)+1; });
+
+  var html = '';
+  Object.keys(PLANTEL).sort(function(a,b){return parseInt(a)-parseInt(b);}).forEach(function(num){
+    num = parseInt(num);
+    var nombre = PLANTEL[num];
+    var pos = POSICIONES[num] || '';
+    var cnt = conteo[num] || 0;
+    var active = SEL1===num ? ' active' : '';
+    html += '<button class="item-btn'+active+'" onclick="selJugador('+num+',this)">'+
+      '<div class="item-num">#'+num+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+nombre+'</div>'+
+        (pos?'<div class="pos-badge pos-'+pos+'" style="margin-top:2px">'+pos+'</div>':'')+
+      '</div>'+
+      '<span class="item-count'+(cnt>0?' has-videos':'')+'">'+cnt+'</span>'+
+    '</button>';
+  });
+  document.getElementById('col1-lista').innerHTML = html;
+}
+
+function renderCol1Partidos(){
+  if(!DATA || !DATA.videos.length){
+    document.getElementById('col1-lista').innerHTML =
+      '<div style="padding:20px;color:var(--mut);font-size:12px;text-align:center">Sin videos cargados.</div>';
+    return;
+  }
+  var partidos = {};
+  DATA.videos.forEach(function(v){
+    if(!partidos[v.partido]) partidos[v.partido] = 0;
+    partidos[v.partido]++;
+  });
+  var sorted = Object.keys(partidos).sort();
+  var html = '';
+  sorted.forEach(function(p){
+    var active = SEL1===p ? ' active' : '';
+    html += '<button class="item-btn'+active+'" onclick="selPartido(\''+escHtml(p)+'\',this)">'+
+      '<div class="partido-icon"></div>'+
+      '<div style="flex:1;font-size:12px;line-height:1.3">'+p+'</div>'+
+      '<span class="item-count has-videos">'+partidos[p]+'</span>'+
+    '</button>';
+  });
+  document.getElementById('col1-lista').innerHTML = html;
+}
+
+// ── SELECCIÓN JUGADOR / PARTIDO ───────────────────────────────
+function selJugador(num, btn){
+  SEL1 = num; SEL_CAT = 'TODOS';
+  document.querySelectorAll('#col1-lista .item-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  var nombre = PLANTEL[num] || 'Jugador #'+num;
+  var pos = POSICIONES[num] || '';
+  document.getElementById('section-title').textContent = '#'+num+' '+nombre;
+  document.getElementById('section-sub').textContent = (pos ? pos+' · ' : '') + getVideosPara().length + ' videos en total';
+  document.getElementById('section-hdr').style.display = 'block';
+  renderCol2();
+  renderVideosActuales();
+}
+
+function selPartido(partido, btn){
+  SEL1 = partido; SEL_CAT = 'TODOS';
+  document.querySelectorAll('#col1-lista .item-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('section-title').textContent = partido;
+  var vs = getVideosPara();
+  var jugs = new Set(vs.map(function(v){return v.jugador_num;})).size;
+  document.getElementById('section-sub').textContent = vs.length+' videos · '+jugs+' jugadores';
+  document.getElementById('section-hdr').style.display = 'block';
+  renderCol2();
+  renderVideosActuales();
+}
+
+// ── COL 2: CATEGORÍAS ─────────────────────────────────────────
+function renderCol2(){
+  if(!SEL1){ document.getElementById('col2-cats').innerHTML =
+    '<div class="empty-state" style="padding:30px 16px"><div class="empty-icon" style="font-size:32px">👈</div><div class="empty-sub">Elegí primero</div></div>';
+    return;
+  }
+  var videos = getVideosPara();
+  var html = '';
+  CATS.forEach(function(cat){
+    var cnt = cat.id==='TODOS' ? videos.length : videos.filter(function(v){return v.categoria===cat.id;}).length;
+    var active = SEL_CAT===cat.id ? ' active' : '';
+    html += '<button class="cat-btn'+active+'" onclick="selCat(\''+cat.id+'\',this)">'+
+      '<span class="cat-icon">'+cat.icon+'</span>'+
+      '<span style="flex:1">'+cat.label+'</span>'+
+      '<span class="cat-count'+(cnt>0?' has':'')+'">'+cnt+'</span>'+
+    '</button>';
+  });
+  document.getElementById('col2-cats').innerHTML = html;
+}
+
+function selCat(cat, btn){
+  SEL_CAT = cat;
+  document.querySelectorAll('#col2-cats .cat-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderVideosActuales();
+}
+
+// ── VIDEOS ────────────────────────────────────────────────────
+function getVideosPara(){
+  if(!DATA || !SEL1) return [];
+  return DATA.videos.filter(function(v){
+    if(VISTA==='jugador') return v.jugador_num===SEL1;
+    return v.partido===SEL1;
+  });
+}
+
+function renderVideosActuales(){
+  var videos = getVideosPara();
+  if(SEL_CAT !== 'TODOS') videos = videos.filter(function(v){return v.categoria===SEL_CAT;});
+  renderVideos(videos);
+  // Actualizar sub
+  var allVideos = getVideosPara();
+  var catLabel = SEL_CAT==='TODOS' ? 'todos' : CATS.find(function(c){return c.id===SEL_CAT;}).label.toLowerCase();
+  document.getElementById('section-sub').textContent =
+    videos.length+' videos ('+catLabel+')' +
+    (VISTA==='partido' ? ' · '+new Set(getVideosPara().map(function(v){return v.jugador_num;})).size+' jugadores' : '');
+}
+
+function renderVideos(videos){
+  var grid = document.getElementById('video-grid');
+  if(!videos.length){
+    var msg = !SEL1 ? 'Elegí un jugador o partido' : 'Sin videos en esta categoría';
+    var sub = !SEL1 ? 'Los clips aparecen acá según tu selección' : 'Podés agregar videos en <code>datos_videos.js</code>';
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📹</div><div class="empty-txt">'+msg+'</div><div class="empty-sub">'+sub+'</div></div>';
+    return;
+  }
+  var html = '';
+  videos.forEach(function(v){
+    var embed = getEmbedUrl(v.url);
+    var catInfo = CATS.find(function(c){return c.id===v.categoria;}) || {icon:'📹',label:v.categoria};
+    var jugHtml = VISTA==='partido' ?
+      '<span class="vmeta-jugador">#'+v.jugador_num+' '+v.jugador+'</span>' : '';
+
+    html += '<div class="video-card">'+
+      '<div class="video-thumb" onclick="openVideo(\''+esc(v.url)+'\',\''+esc(v.titulo)+'\',\''+esc(v.partido)+'\',\''+esc(v.jugador)+'\')" style="cursor:pointer">'+
+        (embed ?
+          '<iframe src="'+embed+'?rel=0&modestbranding=1" loading="lazy" allowfullscreen></iframe>' :
+          '<div class="video-placeholder">'+
+            '<div class="play-btn">▶</div>'+
+            '<div class="thumb-label">'+esc(v.url.substring(0,40))+'...</div>'+
+          '</div>'
+        )+
+      '</div>'+
+      '<div class="video-info">'+
+        '<div class="video-titulo">'+esc(v.titulo)+'</div>'+
+        '<div class="video-meta">'+
+          jugHtml+
+          '<span class="vmeta-tag">'+catInfo.icon+' '+catInfo.label+'</span>'+
+          '<span class="vmeta-tag" style="color:var(--mut)">'+esc(v.partido)+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="video-actions">'+
+        '<button class="vbtn primary" onclick="openVideo(\''+esc(v.url)+'\',\''+esc(v.titulo)+'\',\''+esc(v.partido)+'\',\''+esc(v.jugador)+'\')">▶ Ver</button>'+
+        '<a class="vbtn" href="'+esc(v.url)+'" target="_blank" rel="noopener">↗ Abrir</a>'+
+      '</div>'+
+    '</div>';
+  });
+  grid.innerHTML = html;
+}
+
+// ── MODAL ─────────────────────────────────────────────────────
+function openVideo(url, titulo, partido, jugador){
+  var embed = getEmbedUrl(url);
+  document.getElementById('vmodal-title').textContent = titulo;
+  document.getElementById('vmodal-meta').innerHTML =
+    '<span>'+jugador+'</span><span style="color:var(--border2)">·</span><span>'+partido+'</span>';
+  document.getElementById('vmodal-iframe').src = embed ? embed+'?autoplay=1&rel=0' : url;
+  document.getElementById('vmodal').classList.add('open');
+}
+
+function closeVModal(){
+  document.getElementById('vmodal').classList.remove('open');
+  document.getElementById('vmodal-iframe').src = '';
+}
+
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeVModal(); });
+
+// ── HELPERS ───────────────────────────────────────────────────
+function getEmbedUrl(url){
+  if(!url) return null;
+  var yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  if(yt) return 'https://www.youtube.com/embed/'+yt[1];
+  var gd = url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
+  if(gd) return 'https://drive.google.com/file/d/'+gd[1]+'/preview';
+  return null;
+}
+
+function esc(s){ return String(s||'').replace(/'/g,"&#39;").replace(/"/g,"&quot;"); }
+function escHtml(s){ return String(s||'').replace(/'/g,"&#39;"); }
+</script>
+<script src="temporadas_menu.js"></script>
+<script>
+/* i18n local de esta página (auto-contenido, no depende del diccionario de lang.js) */
+(function(){
+  var V={
+    vinicio:{es:'Inicio',en:'Home',de:'Start'},
+    vvideos:{es:'Videos',en:'Videos',de:'Videos'},
+    vjugadores:{es:'JUGADORES',en:'PLAYERS',de:'SPIELER'},
+    vpartidos:{es:'PARTIDOS',en:'MATCHES',de:'SPIELE'},
+    vcategoria:{es:'Categoría',en:'Category',de:'Kategorie'},
+    velegiprimero:{es:'Elegí primero',en:'Pick one first',de:'Zuerst wählen'},
+    vbienvenido:{es:'Bienvenido a Videos',en:'Welcome to Videos',de:'Willkommen bei Videos'}
+  };
+  function paint(){
+    var L=(window.getLang?window.getLang():'es'); if(!V.vinicio[L]) L='es';
+    document.querySelectorAll('[data-tv]').forEach(function(el){
+      var k=el.getAttribute('data-tv'); if(V[k]&&V[k][L]) el.textContent=V[k][L];
+    });
+  }
+  window.addEventListener('langchange',paint);
+  if(document.readyState!=='loading') paint();
+  else document.addEventListener('DOMContentLoaded',paint);
+})();
+</script>
+</body>
+</html>
+
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->

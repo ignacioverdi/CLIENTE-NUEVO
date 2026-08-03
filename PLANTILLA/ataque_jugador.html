@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ataques — {{CLUB_COMPLETO}}</title>
+<title>Ataques — {{CLUB}} Voley</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="datos_seguros.js"></script>
-  <script src="datos_equipo.js" onerror="void 0"></script>
+<!-- El filtro Partido / Entrenamiento, compartido por todo el sistema.
+     Guarda la eleccion y la deja viajar entre pantallas. -->
+<script src="filtro_tipo.js" onerror="void 0"></script>
+  <script src="datos_equipo.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <!-- VB: selector PARTIDO/ENTRENAMIENTO - carga los datos segun el modo elegido -->
 <script>(function(){var ent=false;try{ent=(localStorage.getItem('vb_modo')||'partido')==='entrenamiento';}catch(e){}
@@ -48,6 +51,9 @@ select, select option { color: #111111 !important; background-color: #ffffff !im
 .main{max-width:1100px;margin:0 auto;padding:20px 16px}
 .empty{text-align:center;padding:60px;color:#475569;font-size:13px;letter-spacing:1px}
 </style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
@@ -56,7 +62,7 @@ select, select option { color: #111111 !important; background-color: #ffffff !im
   <a id="back-jug" href="jugador.html" class="back-btn">← Perfil</a>
   <div style="flex-shrink:0">
     <div id="jug-title" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#e2e8f0">ATAQUES</div>
-    <div style="font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase">{{CLUB_COMPLETO}}</div>
+    <div style="font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase">{{CLUB}} VOLEY</div>
   </div>
   <div class="filter-row">
     <select class="subfiltro-select" id="subfiltro-select" style="display:none"></select>
@@ -209,14 +215,19 @@ var DVW_MAP = {'J1':['X1',3],'J2':['X7',3],'J3':['X2',3],'J4':['XM',3],'JJ':['XM
 var COMBOS_POS={'PUNTA':['X5','V5','X6','V6','XP'],'CENTRAL':['X1','X7','XM','X2'],'OPUESTO':['X5','V5','X6','V6','X8','V8'],'ARMADOR':[],'LIBERO':[]};
 function getPosFromData(num){
   if(typeof PARTIDOS_JUGADORES!=='undefined'){var j=PARTIDOS_JUGADORES.find(function(x){return x.num===num;});if(j&&j.pos) return j.pos.toUpperCase();}
-  if(typeof {{Club}}_JUGADORES!=='undefined'){var j={{Club}}_JUGADORES.find(function(x){return x.num===num;});if(j&&j.pos) return j.pos.toUpperCase();}
+  if(typeof Nafels_JUGADORES!=='undefined'){var j=Nafels_JUGADORES.find(function(x){return x.num===num;});if(j&&j.pos) return j.pos.toUpperCase();}
   return '';
 }
 function buildFromHistorial(num){
   if(typeof window.HISTORIAL_DATA==='undefined') return null;
   var sesiones=window.HISTORIAL_DATA.entrenamientos||[];var ataques={};var jNombre='';
   sesiones.forEach(function(s){
-    if(s.tipo!=='E') return;
+    /* Antes esta linea era  if(s.tipo!=='E') return;  o sea: la pagina
+       mostraba SOLO entrenamientos, con el tipo escrito a mano. Cuando
+       empiecen los partidos no iba a mostrar ninguno. Ahora respeta el filtro
+       que se eligio, y con "Todos" suma las dos cosas. */
+    var _vt = (typeof vbTipo==='function') ? vbTipo() : 'todos';
+    if(_vt !== 'todos' && (s.tipo||'P') !== _vt) return;
     (s.jugadores||[]).forEach(function(j){
       if(j.c!==num) return;jNombre=j.n;
       Object.keys(j.dv4||{}).forEach(function(dvw){
@@ -289,7 +300,7 @@ function renderPage(){
   var cont=document.getElementById('content');var j=null;
   if(currentFiltro==='partido'){
     j=getJugadorPartido();
-    if(!j){if(typeof {{Club}}_JUGADORES!=='undefined') j={{Club}}_JUGADORES.find(function(x){return x.num===currentNum;});}
+    if(!j){if(typeof Nafels_JUGADORES!=='undefined') j=Nafels_JUGADORES.find(function(x){return x.num===currentNum;});}
     if(!j){cont.innerHTML='<div class="empty">Sin datos de partido</div>';return;}
     if(!j.ataques||!j.ataques.length){cont.innerHTML='<div class="empty">Sin ataques registrados</div>';return;}
   } else {
@@ -313,7 +324,7 @@ function renderPage(){
   renderComparativaPosicion(cont, currentNum, 'ataque');
 }
 function waitAndInit(tries){
-  var ok=typeof {{Club}}_JUGADORES!=='undefined'||typeof PARTIDOS_JUGADORES!=='undefined'||typeof window.HISTORIAL_DATA!=='undefined';
+  var ok=typeof Nafels_JUGADORES!=='undefined'||typeof PARTIDOS_JUGADORES!=='undefined'||typeof window.HISTORIAL_DATA!=='undefined';
   if(ok){var params=new URLSearchParams(window.location.search);currentNum=parseInt(params.get('num'))||0;buildSubfiltro();document.fonts.ready.then(renderPage).catch(renderPage);}
   else if(tries>0){setTimeout(function(){waitAndInit(tries-1);},200);}
   else {document.getElementById('content').innerHTML='<div class="empty">No se pudieron cargar los datos.</div>';}
@@ -322,7 +333,7 @@ waitAndInit(25);
 
 // ── COMPARATIVA JUGADOR VS EQUIPO ──
 function calcTeamAtqAvg(){
-  var jugs = typeof PARTIDOS_JUGADORES!=='undefined'&&PARTIDOS_JUGADORES.length?PARTIDOS_JUGADORES:(typeof {{Club}}_JUGADORES!=='undefined'?{{Club}}_JUGADORES:[]);
+  var jugs = typeof PARTIDOS_JUGADORES!=='undefined'&&PARTIDOS_JUGADORES.length?PARTIDOS_JUGADORES:(typeof Nafels_JUGADORES!=='undefined'?Nafels_JUGADORES:[]);
   var combos = {};
   jugs.forEach(function(j){
     (j.ataques||[]).forEach(function(a){
@@ -373,7 +384,7 @@ function renderComparativa(j, cont){
 
 // ── COMPARATIVA VS POSICION (usa PARTIDOS_JUGADORES: pos oficial + canchitas) ──
 function getJugadoresPosicion(currentNum){
-  var fuente = typeof PARTIDOS_JUGADORES!=='undefined'&&PARTIDOS_JUGADORES.length?PARTIDOS_JUGADORES:(typeof {{Club}}_JUGADORES!=='undefined'?{{Club}}_JUGADORES:[]);
+  var fuente = typeof PARTIDOS_JUGADORES!=='undefined'&&PARTIDOS_JUGADORES.length?PARTIDOS_JUGADORES:(typeof Nafels_JUGADORES!=='undefined'?Nafels_JUGADORES:[]);
   var curInfo = fuente.find(function(c){ return c.num === currentNum; });
   if(!curInfo) return {pos:'', same:[]};
   var pos = curInfo.pos || '';
@@ -393,7 +404,7 @@ function renderComparativaPosicion(cont, currentNum, type){
     if(pdm && pdm.jugadores) pjugs = pdm.jugadores;
   }
   if(!pjugs.length){
-    pjugs = typeof PARTIDOS_JUGADORES !== 'undefined' && PARTIDOS_JUGADORES.length ? PARTIDOS_JUGADORES : (typeof {{Club}}_JUGADORES !== 'undefined' ? {{Club}}_JUGADORES : []);
+    pjugs = typeof PARTIDOS_JUGADORES !== 'undefined' && PARTIDOS_JUGADORES.length ? PARTIDOS_JUGADORES : (typeof Nafels_JUGADORES !== 'undefined' ? Nafels_JUGADORES : []);
   }
   if(!pjugs.length) return;
   var pd = getJugadoresPosicion(currentNum);
@@ -453,7 +464,13 @@ function renderComparativaPosicion(cont, currentNum, type){
 </script>
 <script src="lang.js"></script>
 <script src="temporadas_menu.js"></script>
+<script>
+/* La barra del filtro. Al cambiarlo se vuelve a dibujar la pagina entera:
+   estas pantallas leen todo de la direccion, asi que recargar es la forma
+   mas segura de que no quede ningun numero del tipo anterior. */
+try{ vbBarraTipo(); window.vbAlCambiarTipo = function(){ location.reload(); }; }catch(e){}
+</script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CALENDARIO — Axpo Volley Näfels</title>
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="datos_seguros.js"></script>
+<script src="firebase.js" onerror="void 0"></script>
+<style>
+  :root{--bg:#0a0f1a;--surface:#111827;--card:#0f1020;--card2:#151b2e;--border:rgba(255,255,255,.08);--b2:rgba(255,255,255,.13);
+    --text:#e2e8f0;--muted:#64748b;--mut2:#94a3b8;--green:#22c55e;--amber:#f59e0b;--orange:#f97316;--red:#ef4444;--acc:#2dd4bf;--accd:#14b8a6}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1200px 600px at 50% -200px,rgba(45,212,191,.07),transparent),var(--bg);color:var(--text);
+    font-family:'Barlow Condensed',sans-serif;min-height:100vh;padding-bottom:90px}
+  .wrap{max-width:760px;margin:0 auto;padding:18px 16px}
+  .header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+  .back-btn{color:var(--muted);text-decoration:none;font-size:13px;font-weight:700;letter-spacing:1px;white-space:nowrap}
+  .header h1{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;line-height:1}
+  .subtitle{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+  .tabs{display:flex;gap:8px;margin-bottom:18px}
+  .tab{flex:1;font-family:'Barlow Condensed';font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+    padding:13px 8px;border-radius:12px;border:1px solid var(--border);background:var(--card2);color:var(--mut2);cursor:pointer;text-align:center}
+  .tab.on{background:linear-gradient(180deg,rgba(45,212,191,.18),rgba(45,212,191,.05));border-color:rgba(45,212,191,.4);color:var(--acc)}
+  .add-btn{width:100%;padding:13px;border-radius:12px;border:1px dashed rgba(45,212,191,.45);background:rgba(45,212,191,.06);
+    color:var(--acc);font-family:'Barlow Condensed';font-weight:700;font-size:15px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-bottom:16px}
+  .entry{display:flex;align-items:center;gap:14px;background:linear-gradient(180deg,var(--surface),var(--card));
+    border:1px solid var(--border);border-radius:14px;padding:14px 15px;margin-bottom:11px}
+  .entry .date{flex-shrink:0;width:52px;text-align:center}
+  .entry .date .d{font-family:'Bebas Neue';font-size:27px;line-height:1;color:var(--acc)}
+  .entry .date .m{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  .entry .info{flex:1;min-width:0}
+  .entry .info .t1{font-family:'Bebas Neue';font-size:19px;letter-spacing:1px;color:var(--text)}
+  .entry .info .t2{font-size:12px;color:var(--mut2);letter-spacing:.5px;margin-top:3px}
+  .entry .acts{display:flex;gap:6px;flex-shrink:0}
+  .icon-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:var(--card2);
+    color:var(--mut2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+  .icon-btn.del{color:var(--red);border-color:rgba(239,68,68,.25)}
+  .empty{text-align:center;color:var(--muted);padding:46px 14px;font-size:14px;letter-spacing:.5px;
+    border:1px dashed var(--border);border-radius:14px}
+  .form{background:linear-gradient(180deg,var(--surface),var(--card));border:1px solid rgba(45,212,191,.25);
+    border-radius:16px;padding:18px;margin-bottom:18px}
+  .form-ti{font-family:'Bebas Neue';font-size:20px;letter-spacing:1.5px;color:var(--acc);margin-bottom:14px}
+  .frow{margin-bottom:13px}
+  label.fld{display:block;font-size:11px;color:var(--mut2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+  input,select{width:100%;background:var(--card2);border:1px solid var(--b2);color:var(--text);border-radius:10px;
+    padding:11px 12px;font-family:'Barlow Condensed';font-size:15px;font-weight:600;outline:none}
+  input:focus,select:focus{border-color:rgba(45,212,191,.5)}
+  .cond{display:flex;gap:8px}
+  .cond .chip{flex:1;text-align:center;padding:11px;border-radius:10px;border:1px solid var(--border);background:var(--card2);
+    color:var(--mut2);font-weight:700;letter-spacing:.5px;cursor:pointer;text-transform:uppercase;font-size:14px}
+  .cond .chip.on{background:rgba(45,212,191,.15);border-color:rgba(45,212,191,.4);color:var(--acc)}
+  .form-acts{display:flex;gap:10px;margin-top:4px}
+  .btn{flex:1;padding:12px;border-radius:11px;border:none;font-family:'Barlow Condensed';font-weight:700;
+    font-size:15px;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+  .btn.save{background:var(--acc);color:#06231f}
+  .btn.cancel{background:var(--card2);color:var(--mut2);border:1px solid var(--border)}
+  @media(max-width:520px){.entry .info .t1{font-size:17px}.header h1{font-size:26px}}
+  /* ── escudos + fixture ── */
+  .entry .info .t1{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .crest{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;
+    font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.5px;color:#fff;background:var(--cc,#555);
+    position:relative;overflow:hidden;flex:none;box-shadow:0 1px 2px rgba(0,0,0,.28)}
+  .crest img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff}
+  .t1 .vs{color:var(--muted);font-size:12px;letter-spacing:.5px;opacity:.7}
+  .t1 .nm{white-space:nowrap}
+  .import-btn{width:100%;padding:11px;border-radius:12px;border:1px solid rgba(45,212,191,.5);
+    background:rgba(45,212,191,.12);color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.5px;
+    cursor:pointer;margin-bottom:14px}
+  .import-btn:active{transform:scale(.99)}
+  .t2 a{color:var(--acc);text-decoration:none}
+  /* ── fixture pro en una línea ── */
+  #list .fx{display:grid;grid-template-columns:52px 1fr 30px 22px 30px 1fr minmax(76px,auto) auto;align-items:center;gap:9px;
+    background:linear-gradient(180deg,var(--surface),var(--card));border:1px solid var(--line,#243040);border-left:3px solid var(--line,#243040);
+    border-radius:13px;padding:8px 12px;margin-bottom:8px;transition:transform .12s,border-color .12s,box-shadow .12s}
+  #list .fx:hover{transform:translateY(-1px);border-color:#33475e;box-shadow:0 6px 16px rgba(0,0,0,.32)}
+  #list .fx[data-cond="Local"]{border-left-color:var(--acc)}
+  #list .fx[data-cond="Visitante"]{border-left-color:#f59e0b}
+  .fx-date{display:flex;flex-direction:column;align-items:center;line-height:1;border-right:1px solid var(--line,#243040);padding-right:7px}
+  .fx-date .d{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text)}
+  .fx-date .mo{font-size:9px;font-weight:700;letter-spacing:1.3px;color:var(--acc)}
+  .fx-date .dow{font-size:8px;letter-spacing:1px;color:var(--muted);margin-top:1px}
+  .fx-home,.fx-away{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.6px;color:var(--text);min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .fx-home{text-align:right} .fx-away{text-align:left}
+  .fx-home.us,.fx-away.us{color:var(--acc)}
+  .fx .ta{display:none}
+  .fx-cr{width:30px;height:30px;border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+  .fx-cr img{width:100%;height:100%;object-fit:contain;padding:2px}
+  .fx-cr.mono{background:var(--cc,#555);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.5px}
+  .fx-vs{font-family:'Bebas Neue',sans-serif;font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px}
+  .fx-meta{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15;padding-left:7px;border-left:1px solid var(--line,#243040)}
+  .fx-time{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--acc);letter-spacing:1px}
+  .fx-place{display:flex;align-items:center;gap:5px;max-width:150px}
+  .fx-venue{font-size:10px;color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .fx-map{text-decoration:none;font-size:13px;line-height:1;flex:none}
+  .fx-acts{display:flex;gap:2px}
+  @media(max-width:600px){
+    #list .fx{grid-template-columns:38px 1fr 24px 15px 24px 1fr auto auto;gap:5px;padding:7px 8px}
+    .fx-home,.fx-away{font-size:15px;letter-spacing:.3px}
+    .fx-cr{width:24px;height:24px}
+    .fx-venue{display:none}
+    .fx-meta{border-left:none;padding-left:3px}
+    .fx-time{font-size:15px}
+    .fx-map{font-size:16px}
+  }
+
+  /* ── Vista Planificación (grilla en 1 hoja) ───────────────── */
+  .wrap.wide{max-width:1100px}
+  .view-toggle{display:flex;gap:8px;margin-bottom:16px}
+  .view-toggle .vt{flex:1;padding:12px 8px;border-radius:12px;border:1px solid var(--border);background:var(--card2);
+    color:var(--mut2);font-family:'Barlow Condensed';font-weight:700;font-size:15px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;text-align:center}
+  .view-toggle .vt.on{background:linear-gradient(180deg,rgba(45,212,191,.18),rgba(45,212,191,.05));border-color:rgba(45,212,191,.4);color:var(--acc)}
+  .plan-ctrl{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .range-toggle{display:flex;gap:6px}
+  .range-toggle .rg{padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card2);
+    color:var(--mut2);font-weight:700;font-size:13px;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;font-family:'Barlow Condensed'}
+  .range-toggle .rg.on{background:rgba(45,212,191,.15);border-color:rgba(45,212,191,.4);color:var(--acc)}
+  .plan-nav{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .nav-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);cursor:pointer;font-size:18px;line-height:1}
+  .nav-btn:hover{border-color:var(--acc)}
+  .plan-label{font-family:'Bebas Neue';font-size:20px;letter-spacing:1px;color:var(--text);min-width:150px;text-align:center;text-transform:capitalize}
+  .today-btn{padding:8px 13px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--mut2);
+    font-family:'Barlow Condensed';font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;cursor:pointer}
+  .today-btn:hover{border-color:var(--acc);color:var(--acc)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cal-dow{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;text-align:center;padding:4px 0;font-weight:700}
+  .cal-cell{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:6px 6px 7px;min-height:80px;
+    display:flex;flex-direction:column;gap:3px;overflow:hidden}
+  .cal-grid.r-semana .cal-cell{min-height:155px}
+  .cal-grid.r-quincena .cal-cell{min-height:110px}
+  .cal-cell.out{opacity:.34}
+  .cal-cell.today{border-color:var(--acc);box-shadow:inset 0 0 0 1px rgba(45,212,191,.45)}
+  .cal-daynum{font-family:'Bebas Neue';font-size:15px;color:var(--mut2);line-height:1.1}
+  .cal-cell.today .cal-daynum{color:var(--acc)}
+  .cal-ev{font-size:11px;line-height:1.25;padding:3px 6px;border-radius:6px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cal-ev.p{background:rgba(249,115,22,.16);border:1px solid rgba(249,115,22,.32);color:#fdba74}
+  .cal-ev.e{background:rgba(45,212,191,.13);border:1px solid rgba(45,212,191,.28);color:#5eead4}
+  .cal-ev .eh{opacity:.7;font-size:10px}
+  .plan-legend{display:flex;gap:18px;margin-top:14px;font-size:12px;color:var(--mut2);flex-wrap:wrap}
+  .plan-legend .lg{display:flex;align-items:center;gap:6px}
+  .plan-legend .dot{width:11px;height:11px;border-radius:3px}
+  @media(max-width:680px){
+    .cal-cell{min-height:60px;padding:4px;gap:2px}
+    .cal-grid.r-semana .cal-cell{min-height:96px}
+    .cal-grid.r-quincena .cal-cell{min-height:74px}
+    .cal-ev{font-size:9px;padding:2px 4px}
+    .cal-daynum{font-size:13px}
+    .cal-dow{font-size:9px}
+    .plan-label{font-size:16px;min-width:auto}
+    .plan-nav{margin-left:0;width:100%;justify-content:center}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="header">
+    <a href="index.html" class="back-btn">← Hub</a>
+    <div>
+      <h1>📅 CALENDARIO</h1>
+      <div class="subtitle">Axpo Volley Näfels</div>
+    </div>
+  </div>
+
+  <div class="view-toggle">
+    <button class="vt on" id="vt-lista" onclick="setView('lista')">📋 Lista</button>
+    <button class="vt" id="vt-plan" onclick="setView('plan')">🗓️ Planificación</button>
+  </div>
+
+  <!-- ── VISTA LISTA ── -->
+  <div id="lista-view">
+    <div class="tabs">
+      <button class="tab on" id="tab-partidos" onclick="setTab('partidos')">🏆 Partidos</button>
+      <button class="tab" id="tab-entrenamientos" onclick="setTab('entrenamientos')">🏋️ Entrenamientos</button>
+    </div>
+    <button class="add-btn" id="add-btn" onclick="openForm()" data-solo-editor>+ Agregar</button>
+    <button class="import-btn" id="import-btn" onclick="importFixture()" data-solo-editor>⬇️ Importar fixture 2026/27 (14 partidos)</button>
+    <button class="import-btn" id="import-gym-btn" onclick="importGym()" data-solo-editor style="display:none">🏋️ Gimnasio (Lun/Mié/Vie · sep–abr)</button>
+    <button class="import-btn" id="import-xmas-btn" onclick="importHolidays()" data-solo-editor style="display:none">🎄 Christmas Holidays (20–25 dic)</button>
+    <button class="import-btn" id="import-volley-btn" onclick="importVolley()" data-solo-editor style="display:none">🏐 Vóley (01/09 – 30/04, sin vacaciones)</button>
+    <button class="import-btn" id="import-filzbach-btn" onclick="importFilzbach()" data-solo-editor style="display:none">📍 Filzbach (19 · sep–abr)</button>
+    <div id="form-wrap"></div>
+    <div id="list"></div>
+  </div>
+
+  <!-- ── VISTA PLANIFICACIÓN ── -->
+  <div id="plan-view" style="display:none">
+    <div class="plan-ctrl">
+      <div class="range-toggle">
+        <button class="rg on" id="rg-semana" onclick="setRange('semana')">Semana</button>
+        <button class="rg" id="rg-quincena" onclick="setRange('quincena')">Quincena</button>
+        <button class="rg" id="rg-mes" onclick="setRange('mes')">Mes</button>
+      </div>
+      <div class="plan-nav">
+        <button class="today-btn" id="btn-hoy" onclick="goToday()">Hoy</button>
+        <button class="nav-btn" onclick="navPlan(-1)" title="Anterior">‹</button>
+        <div class="plan-label" id="plan-label"></div>
+        <button class="nav-btn" onclick="navPlan(1)" title="Siguiente">›</button>
+      </div>
+    </div>
+    <div id="plan-grid"></div>
+    <div class="plan-legend">
+      <div class="lg"><span class="dot" style="background:#f97316"></span> <span id="lg-partido">Partido</span></div>
+      <div class="lg"><span class="dot" style="background:#2dd4bf"></span> <span id="lg-entren">Entrenamiento</span></div>
+      <div class="lg" style="color:var(--muted)" id="lg-tap">Tocá un evento para editarlo</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var MESES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  var TIPOS=['VOLLEYBALL SESSION','VIDEO SESSION','LIFTING SESSION','CHRISTMAS HOLIDAYS','Técnica','Táctica','Físico','Gimnasio','Recepción','Saque','Amistoso','Recuperación','Libre','Otro'];
+
+  // ── Traducción de la vista (es/en/de) ──
+  var CAL_I18N={
+    es:{lista:'📋 Lista',plan:'🗓️ Planificación',semana:'Semana',quincena:'Quincena',mes:'Mes',hoy:'Hoy',partido:'Partido',entren:'Entrenamiento',tap:'Tocá un evento para editarlo',
+        dow:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],mc:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+        ml:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']},
+    en:{lista:'📋 List',plan:'🗓️ Planning',semana:'Week',quincena:'Fortnight',mes:'Month',hoy:'Today',partido:'Match',entren:'Training',tap:'Tap an event to edit it',
+        dow:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],mc:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+        ml:['January','February','March','April','May','June','July','August','September','October','November','December']},
+    de:{lista:'📋 Liste',plan:'🗓️ Planung',semana:'Woche',quincena:'Zwei Wochen',mes:'Monat',hoy:'Heute',partido:'Spiel',entren:'Training',tap:'Tippe auf ein Ereignis zum Bearbeiten',
+        dow:['Mo','Di','Mi','Do','Fr','Sa','So'],mc:['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
+        ml:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']}
+  };
+  function calT(){ var l=(typeof getLang==='function')?getLang():'es'; return CAL_I18N[l]||CAL_I18N.es; }
+  function setTxt(id,s){ var el=document.getElementById(id); if(el) el.textContent=s; }
+  function applyCalLang(){
+    var t=calT();
+    setTxt('vt-lista',t.lista); setTxt('vt-plan',t.plan);
+    setTxt('rg-semana',t.semana); setTxt('rg-quincena',t.quincena); setTxt('rg-mes',t.mes);
+    setTxt('btn-hoy',t.hoy);
+    setTxt('lg-partido',t.partido); setTxt('lg-entren',t.entren); setTxt('lg-tap',t.tap);
+  }
+  var data={partidos:[],entrenamientos:[]};
+  var tab='partidos', editId=null, formCond='Local';
+  var viewMode='lista', planRange='semana', anchor=new Date();
+
+  function load(){
+    fbGet('calendario/partidos',function(d){ data.partidos=Array.isArray(d)?d:[]; render(); });
+    fbGet('calendario/entrenamientos',function(d){ data.entrenamientos=Array.isArray(d)?d:[]; render(); });
+  }
+  function setTab(t){
+    tab=t; editId=null;
+    document.getElementById('tab-partidos').classList.toggle('on',t==='partidos');
+    document.getElementById('tab-entrenamientos').classList.toggle('on',t==='entrenamientos');
+    var ib=document.getElementById('import-btn'); if(ib) ib.style.display=(t==='partidos')?'':'none';
+    var ig=document.getElementById('import-gym-btn'); if(ig) ig.style.display=(t==='entrenamientos')?'':'none';
+    var ix=document.getElementById('import-xmas-btn'); if(ix) ix.style.display=(t==='entrenamientos')?'':'none';
+    var iv=document.getElementById('import-volley-btn'); if(iv) iv.style.display=(t==='entrenamientos')?'':'none';
+    var iff=document.getElementById('import-filzbach-btn'); if(iff) iff.style.display=(t==='entrenamientos')?'':'none';
+    document.getElementById('form-wrap').innerHTML='';
+    render();
+  }
+  function fmtDate(f){
+    if(!f) return {d:'--',m:''};
+    var p=f.split('-');
+    return {d:p[2]||'--', m:(calT().mc[parseInt(p[1],10)-1]||'')};
+  }
+  function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+  // ── Escudos de los clubes (monograma con color real; reemplazable por logo real vía ESCUDOS) ──
+  var CLUBS={
+    'Näfels':{ab:'NÄF',c:'#d81e28'}, 'Nafels':{ab:'NÄF',c:'#d81e28'},
+    'Lausanne':{ab:'LUC',c:'#00397a'},
+    'St. Gallen':{ab:'SG',c:'#0a7a37'}, 'St Gallen':{ab:'SG',c:'#0a7a37'},
+    'Jona':{ab:'JON',c:'#1d4f91'},
+    'Chênois':{ab:'CHE',c:'#1e7a46'}, 'Chenois':{ab:'CHE',c:'#1e7a46'},
+    'Schönenwerd':{ab:'SCH',c:'#b3121f'}, 'Schonenwerd':{ab:'SCH',c:'#b3121f'},
+    'Amriswil':{ab:'AMR',c:'#005bac'},
+    'Colombier':{ab:'COL',c:'#d0361f'}
+  };
+  // Logos reales: dejá los 8 archivos PNG en una carpeta "escudos/" junto a este archivo.
+  // Si el archivo existe, se muestra el logo; si falta, queda el monograma. Nunca se rompe.
+  var ESCUDOS={
+    'Näfels':'escudos/nafels.png', 'Nafels':'escudos/nafels.png',
+    'Lausanne':'escudos/lausanne.png',
+    'St. Gallen':'escudos/stgallen.png', 'St Gallen':'escudos/stgallen.png',
+    'Jona':'escudos/jona.png',
+    'Chênois':'escudos/chenois.png', 'Chenois':'escudos/chenois.png',
+    'Schönenwerd':'escudos/schoenenwerd.png', 'Schonenwerd':'escudos/schoenenwerd.png',
+    'Amriswil':'escudos/amriswil.png',
+    'Colombier':'escudos/colombier.png'
+  };
+  // ── Escudo del rival subido a mano (por partido): se guarda con el partido y se reutiliza por nombre de rival ──
+  var FORM_ESCUDO='';
+  var ESCUDOS_CUSTOM={};
+  function buildCustomEscudos(){ ESCUDOS_CUSTOM={}; try{ (data.partidos||[]).forEach(function(e){ if(e && e.escudo && e.rival){ ESCUDOS_CUSTOM[e.rival]=e.escudo; } }); }catch(_){} }
+  function escudoQuitar(){ FORM_ESCUDO=''; var p=document.getElementById('f-esc-prev'); if(p) p.innerHTML='<span style="opacity:.5;font-size:12px">— sin escudo —</span>'; }
+  function escudoUpload(inp){
+    var file=inp.files&&inp.files[0]; if(!file) return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      var img=new Image();
+      img.onload=function(){
+        var max=140, sc=Math.min(1, max/Math.max(img.width,img.height));
+        var w=Math.max(1,Math.round(img.width*sc)), hh=Math.max(1,Math.round(img.height*sc));
+        var cv=document.createElement('canvas'); cv.width=w; cv.height=hh;
+        cv.getContext('2d').drawImage(img,0,0,w,hh);
+        try{ FORM_ESCUDO=cv.toDataURL('image/png'); }catch(_){ FORM_ESCUDO=rd.result; }
+        var p=document.getElementById('f-esc-prev'); if(p) p.innerHTML='<img src="'+FORM_ESCUDO+'" style="width:44px;height:44px;object-fit:contain;border-radius:8px;background:#fff;padding:2px">';
+      };
+      img.onerror=function(){ alert('No pude leer esa imagen, probá con otra.'); };
+      img.src=rd.result;
+    };
+    rd.readAsDataURL(file);
+  }
+  function crestHTML(name){
+    var k=name||'', c=CLUBS[k]||{ab:(k.substr(0,3)||'?').toUpperCase(),c:'#555'};
+    var url=ESCUDOS_CUSTOM[k]||ESCUDOS[k]||'';
+    var img=url?'<img src="'+url+'" alt="" onerror="this.remove()">':'';
+    return '<span class="crest" style="--cc:'+c.c+'" title="'+esc(k)+'">'+img+c.ab+'</span>';
+  }
+  var DOW_ES=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  function fxDate(f){
+    var p=(f||'').split('-'); if(p.length<3) return {d:'--',mo:'',dow:''};
+    var dt=new Date(+p[0],(+p[1])-1,+p[2]);
+    var mc=(calT().mc||[]), dw=(calT().dow||DOW_ES);
+    return {d:p[2], mo:(mc[(+p[1])-1]||'').toUpperCase(), dow:(dw[(dt.getDay()+6)%7]||'').toUpperCase()};
+  }
+  function fxCrest(name){
+    var k=name||'', c=CLUBS[k]||{ab:((k.substr(0,3))||'?').toUpperCase(),c:'#555'};
+    var url=ESCUDOS_CUSTOM[k]||ESCUDOS[k]||'';
+    if(!url) return '<div class="fx-cr mono" style="--cc:'+c.c+'">'+c.ab+'</div>';
+    var alt=(url.indexOf('escudos/')===0)?('escudos/'+url):'';  // respaldo si la carpeta quedó anidada (escudos/escudos/)
+    var oe="var i=this,p=i.parentNode;if(i.getAttribute('data-alt')){i.src=i.getAttribute('data-alt');i.removeAttribute('data-alt');return;}p.classList.add('mono');p.style.setProperty('--cc','"+c.c+"');p.textContent='"+c.ab+"';";
+    return '<div class="fx-cr"><img src="'+url+'"'+(alt?' data-alt="'+alt+'"':'')+' alt="" onerror="'+oe+'"></div>';
+  }
+
+  // ── Fixture NLA 2026/27 (temporada regular) ──
+  var FIXTURE=[
+    {fecha:'2026-10-18',hora:'17:00',rival:'Lausanne',condicion:'Local',lugar:'Lintharena, Näfels',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-10-24',hora:'18:00',rival:'St. Gallen',condicion:'Visitante',lugar:'St. Gallen',mapa:'https://www.google.com/maps/search/?api=1&query=8FVFC88X%2BRW'},
+    {fecha:'2026-10-31',hora:'17:00',rival:'Jona',condicion:'Local',lugar:'Lintharena, Näfels',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-11-07',hora:'18:00',rival:'Chênois',condicion:'Visitante',lugar:'Genève',mapa:'https://www.google.com/maps/search/?api=1&query=8FR855QV%2BF3'},
+    {fecha:'2026-11-14',hora:'17:30',rival:'Schönenwerd',condicion:'Visitante',lugar:'Schönenwerd',mapa:'https://www.google.com/maps/search/?api=1&query=8FVC92H3%2BVH'},
+    {fecha:'2026-11-21',hora:'17:00',rival:'Amriswil',condicion:'Local',lugar:'Lintharena, Näfels',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-11-28',hora:'17:00',rival:'Colombier',condicion:'Local',lugar:'Lintharena, Näfels',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-12-05',hora:'17:30',rival:'Lausanne',condicion:'Visitante',lugar:'Lausanne',mapa:'https://www.google.com/maps/search/?api=1&query=8FR8GH9H%2BPM'},
+    {fecha:'2026-12-13',hora:'17:00',rival:'St. Gallen',condicion:'Local',lugar:'Lintharena, Näfels',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-12-19',hora:'17:00',rival:'Jona',condicion:'Visitante',lugar:'Jona',mapa:'https://www.google.com/maps/search/?api=1&query=8FVC6RCV%2BRJ'},
+    {fecha:'2027-01-03',hora:'17:00',rival:'Chênois',condicion:'Local',lugar:'Lintharena, Näfels',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2027-01-16',hora:'17:00',rival:'Schönenwerd',condicion:'Local',lugar:'Lintharena, Näfels',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2027-01-30',hora:'17:00',rival:'Amriswil',condicion:'Visitante',lugar:'Amriswil',mapa:'https://www.google.com/maps/search/?api=1&query=8FVFG7XQ%2BCP'},
+    {fecha:'2027-02-13',hora:'17:30',rival:'Colombier',condicion:'Visitante',lugar:'Colombier',mapa:'https://www.google.com/maps/search/?api=1&query=8FV83W73%2B5G'}
+  ];
+  function importFixture(){ if(window.VB_esEditor&&!VB_esEditor())return;
+    if(!confirm('¿Agregar los 14 partidos del fixture 2026/27 al calendario?')) return;
+    var arr=(data.partidos||[]).slice(), added=0;
+    FIXTURE.forEach(function(m){
+      var dup=arr.some(function(x){ return x.fecha===m.fecha && (x.rival||'')===m.rival && (x.condicion||'')===m.condicion; });
+      if(dup) return;
+      arr.push({ id:Date.now()+Math.floor(Math.random()*100000), fecha:m.fecha, hora:m.hora, lugar:m.lugar, rival:m.rival, condicion:m.condicion, mapa:m.mapa });
+      added++;
+    });
+    data.partidos=arr;
+    fbSet('calendario/partidos', arr);
+    render();
+    alert(added+' partido(s) agregado(s)'+(added<FIXTURE.length?'. '+(FIXTURE.length-added)+' ya estaban cargados.':'.'));
+  }
+  // ── Importar sesiones de gimnasio: Lun/Mié/Vie de sep–dic 2026, 10:00–11:45, Welcome Fitness ──
+  function importGym(){ if(window.VB_esEditor&&!VB_esEditor())return;
+    if(!confirm('¿Agregar las sesiones de gimnasio (Lun/Mié/Vie de sep 2026 – abr 2027, 10:00–11:45) al calendario?')) return;
+    var arr=(data.entrenamientos||[]).slice(), added=0;
+    var lugar='Welcome Fitness';
+    var mapa='https://maps.app.goo.gl/AmbXHh34SnPQbBja8?g_st=iw';
+    var _d=new Date(2026,8,1), _fin=new Date(2027,3,30);   // 1 sep 2026 -> 30 abr 2027
+    while(_d<=_fin){
+      var wd=_d.getDay();                      // 1=lunes 3=miércoles 5=viernes
+      if(wd===1||wd===3||wd===5){
+        var fecha=_d.getFullYear()+'-'+pad2(_d.getMonth()+1)+'-'+pad2(_d.getDate());
+        var dup=arr.some(function(x){ return x.fecha===fecha && (x.tipo||'')==='LIFTING SESSION'; });
+        if(!dup){ arr.push({ id:Date.now()+Math.floor(Math.random()*1000000), fecha:fecha, hora:'10:00', horaFin:'11:45', tipo:'LIFTING SESSION', lugar:lugar, mapa:mapa }); added++; }
+      }
+      _d.setDate(_d.getDate()+1);
+    }
+    data.entrenamientos=arr;
+    fbSet('calendario/entrenamientos', arr);
+    setTab('entrenamientos'); render();
+    alert(added+' sesión(es) de gimnasio agregada(s).');
+  }
+  function importHolidays(){ if(window.VB_esEditor&&!VB_esEditor())return;
+    if(!confirm('¿Agregar CHRISTMAS HOLIDAYS (20/12 al 25/12 2026) al calendario?')) return;
+    var arr=(data.entrenamientos||[]).slice();
+    var dup=arr.some(function(x){ return (x.tipo||'')==='CHRISTMAS HOLIDAYS' && x.fecha==='2026-12-20'; });
+    if(dup){ alert('Las vacaciones de Navidad ya estaban cargadas.'); return; }
+    arr.push({ id:Date.now()+Math.floor(Math.random()*1000000), fecha:'2026-12-20', fechaFin:'2026-12-25', tipo:'CHRISTMAS HOLIDAYS' });
+    data.entrenamientos=arr; fbSet('calendario/entrenamientos', arr); setTab('entrenamientos'); render();
+    alert('CHRISTMAS HOLIDAYS agregado (20/12 – 25/12).');
+  }
+  // ── Importar entrenamientos de FILZBACH (19 sesiones · sep 2026 – abr 2027). Reemplaza lo que haya en esas fechas. ──
+  function importFilzbach(){ if(window.VB_esEditor&&!VB_esEditor())return;
+    if(!confirm('¿Cargar los 19 entrenamientos de FILZBACH (sep 2026 – abr 2027)? Reemplaza los entrenamientos que ya haya en esas fechas; los demás días quedan igual.')) return;
+    var lugar='FILZBACH', mapa='https://maps.app.goo.gl/k5vqApj5PkWGKDG2A?g_st=iw';
+    var SES=[
+      ['2026-09-22','19:30','21:30'],['2026-09-23','17:30','20:30'],['2026-09-24','18:00','20:00'],
+      ['2026-10-09','16:30','18:30'],['2026-11-04','17:30','20:30'],['2026-11-05','18:00','20:00'],
+      ['2026-11-06','16:30','18:30'],['2026-11-11','17:30','20:30'],['2026-12-04','16:30','18:30'],
+      ['2026-12-23','17:30','20:30'],['2026-12-26','10:30','12:30'],['2026-12-28','17:00','19:00'],
+      ['2026-12-29','17:00','19:00'],['2026-12-30','17:00','19:00'],['2027-01-01','17:00','19:00'],
+      ['2027-01-02','17:00','19:00'],['2027-02-17','17:30','20:30'],['2027-03-18','18:00','20:00'],
+      ['2027-04-09','16:30','18:30']
+    ];
+    var fechas={}; SES.forEach(function(s){ fechas[s[0]]=1; });
+    var prev=(data.entrenamientos||[]);
+    var arr=prev.filter(function(e){ return !fechas[e.fecha]; });   // saca lo existente en esas fechas
+    var reemplazados=prev.length-arr.length;
+    var _id=Date.now()*1000, _c=0;
+    SES.forEach(function(s){ arr.push({ id:_id+(_c++), fecha:s[0], hora:s[1], horaFin:s[2], tipo:'VOLLEYBALL SESSION', lugar:lugar, mapa:mapa }); });
+    arr.sort(function(a,b){ return String(a.fecha||'').localeCompare(String(b.fecha||'')); });
+    data.entrenamientos=arr;
+    fbSet('calendario/entrenamientos', arr);
+    setTab('entrenamientos'); render();
+    alert(SES.length+' entrenamientos de FILZBACH cargados'+(reemplazados?' ('+reemplazados+' reemplazado(s) en esas fechas).':'.'));
+  }
+  function importVolley(){ if(window.VB_esEditor&&!VB_esEditor())return;
+    if(!confirm('¿Agregar la seguidilla de entrenamientos de vóley (01/09/26 – 30/04/27, sin vacaciones)?')) return;
+    var arr=(data.entrenamientos||[]).slice(), added=0;
+    var lugar='Lintharena, Näfels', mapa='https://maps.app.goo.gl/MtXaacJWfLWZ1QKM8?g_st=iw';
+    var SEM={ 1:[['VOLLEYBALL SESSION','17:30','19:00']],
+      2:[['VOLLEYBALL SESSION','10:00','11:30'],['VOLLEYBALL SESSION','18:30','20:30']],
+      3:[['VOLLEYBALL SESSION','17:00','19:00']],
+      4:[['VOLLEYBALL SESSION','10:00','11:30'],['VIDEO SESSION','17:30',''],['VOLLEYBALL SESSION','18:00','20:00']],
+      5:[['VOLLEYBALL SESSION','17:00','18:30']] };
+    function esVacacion(fecha){ return (data.entrenamientos||[]).some(function(hh){ if(!/HOLIDAY|VACACION/i.test(hh.tipo||''))return false; var ini=hh.fecha, fin=hh.fechaFin||hh.fecha; return fecha>=ini && fecha<=fin; }); }
+    var _idb=Date.now()*1000, _idc=0, _d=new Date(2026,8,1), _fin=new Date(2027,3,30);
+    while(_d<=_fin){
+      var wd=_d.getDay();
+      if(SEM[wd]){
+        var fecha=_d.getFullYear()+'-'+pad2(_d.getMonth()+1)+'-'+pad2(_d.getDate());
+        if(!esVacacion(fecha)){
+          SEM[wd].forEach(function(s){
+            var dup=arr.some(function(x){ return x.fecha===fecha && (x.tipo||'')===s[0] && (x.hora||'')===s[1]; });
+            if(!dup){ arr.push({ id:_idb+(_idc++), fecha:fecha, hora:s[1], horaFin:s[2], tipo:s[0], lugar:lugar, mapa:mapa }); added++; }
+          });
+        }
+      }
+      _d.setDate(_d.getDate()+1);
+    }
+    data.entrenamientos=arr; fbSet('calendario/entrenamientos', arr); setTab('entrenamientos'); render();
+    alert(added+' entrenamiento(s) de vóley agregado(s).');
+  }
+
+  // ── Lugar inteligente: si es un link de Google Maps, muestra 📍 y saca el nombre del lugar ──
+  function parseMapUrl(s){
+    s=(s||'').trim(); if(!s) return null;
+    var looks=/^https?:\/\//i.test(s) || /^(maps\.app\.goo\.gl|goo\.gl\/maps|maps\.google)/i.test(s);
+    if(!looks) return null;
+    var u = /^https?:\/\//i.test(s) ? s : ('https://'+s);
+    var isMap=/google\.[^\/]*\/maps|maps\.google|goo\.gl\/maps|maps\.app\.goo\.gl/i.test(u);
+    if(!isMap) return null;
+    var name='';
+    var m=u.match(/\/place\/([^\/@?]+)/); if(m){ try{ name=decodeURIComponent(m[1].replace(/\+/g,' ')).trim(); }catch(_){ name=m[1].replace(/\+/g,' ').trim(); } }
+    if(!name){ var q=u.match(/[?&](?:q|query|destination|daddr)=([^&]+)/); if(q){ try{ name=decodeURIComponent(q[1].replace(/\+/g,' ')).trim(); }catch(_){ name=q[1]; } } }
+    if(/^[-\d.,\s]+$/.test(name)) name='';   // si es solo coordenadas, sin nombre
+    return { url:u, name:name };
+  }
+  function venueBits(e){
+    var mp=parseMapUrl(e&&e.lugar);
+    if(mp) return { name:mp.name, mapUrl:mp.url };       // link en Lugar -> nombre extraído + mapa
+    return { name:(e&&e.lugar)||'', mapUrl:(e&&e.mapa)||'' };  // texto normal + mapa aparte si hay
+  }
+  function venueRender(e){
+    var v=venueBits(e), out='';
+    if(v.name) out+='<span class="fx-venue">'+esc(v.name)+'</span>';
+    if(v.mapUrl) out+='<a class="fx-map" href="'+esc(v.mapUrl)+'" target="_blank" rel="noopener" title="Abrir en Google Maps">📍</a>';
+    return out;
+  }
+  function render(){ buildCustomEscudos();
+    if(viewMode==='plan'){ renderPlan(); return; }
+    renderList();
+  }
+
+  function renderList(){
+    var list=document.getElementById('list');
+    var arr=(data[tab]||[]).slice().sort(function(a,b){
+      var ka=(a.fecha||'')+(a.hora||''), kb=(b.fecha||'')+(b.hora||'');
+      return ka<kb?-1:(ka>kb?1:0);
+    });
+    if(arr.length===0){
+      list.innerHTML='<div class="empty">'+(tab==='partidos'?'No hay partidos cargados':'No hay entrenamientos cargados')+'</div>';
+      retranslate(); return;
+    }
+    var h='';
+    arr.forEach(function(e){
+      if(tab==='partidos'){
+        var rival=e.rival||'—';
+        var home=((e.condicion||'').indexOf('Visit')===0)?rival:'Näfels';
+        var away=((e.condicion||'').indexOf('Visit')===0)?'Näfels':rival;
+        var dd=fxDate(e.fecha);
+        function tName(x){ return (x==='Näfels'||x==='Nafels')?'NÄFELS':esc(x); }
+        function tAbbr(x){ var c=CLUBS[x]; return c?c.ab:esc((x||'').substr(0,3).toUpperCase()); }
+        h+='<div class="fx" data-cond="'+esc(e.condicion||'')+'">'+
+             '<div class="fx-date"><span class="d">'+dd.d+'</span><span class="mo">'+dd.mo+'</span><span class="dow">'+dd.dow+'</span></div>'+
+             '<div class="fx-home'+(home==='Näfels'?' us':'')+'">'+tName(home)+'</div>'+
+             fxCrest(home)+
+             '<div class="fx-vs">vs</div>'+
+             fxCrest(away)+
+             '<div class="fx-away'+(away==='Näfels'?' us':'')+'">'+tName(away)+'</div>'+
+             '<div class="fx-meta"><span class="fx-time">'+esc(e.hora||'')+'</span><span class="fx-place">'+venueRender(e)+'</span></div>'+
+             '<div class="fx-acts">'+
+               ((window.VB_esEditor&&!VB_esEditor())?'':
+                 '<button class="icon-btn" title="Editar" onclick="editEntry('+e.id+')">✏️</button>'+
+                 '<button class="icon-btn del" title="Eliminar" onclick="delEntry('+e.id+')">🗑️</button>')+
+             '</div>'+
+           '</div>';
+      } else {
+        var dt=fmtDate(e.fecha);
+        var t1=esc(e.tipo||'Entrenamiento');
+        var _vb=venueBits(e); var _finR=(e.fechaFin&&e.fechaFin!==e.fecha)?(function(){var _p=e.fechaFin.split('-');return '→ '+_p[2]+' '+(calT().mc[parseInt(_p[1],10)-1]||'');})():''; var _hr=e.hora?(e.horaFin?e.hora+'–'+e.horaFin:e.hora):''; var _mid=[_finR,_hr,esc(_vb.name||'')].filter(Boolean).join(' · '); var t2=_mid+(_vb.mapUrl?' <a href="'+esc(_vb.mapUrl)+'" target="_blank" rel="noopener" title="Abrir en Google Maps" style="text-decoration:none">📍</a>':'');
+        h+='<div class="entry">'+
+          '<div class="date"><div class="d">'+dt.d+'</div><div class="m">'+dt.m+'</div></div>'+
+          '<div class="info"><div class="t1">'+t1+'</div><div class="t2">'+t2+'</div></div>'+
+          '<div class="acts">'+
+            ((window.VB_esEditor&&!VB_esEditor())?'':
+              '<button class="icon-btn" title="Editar" onclick="editEntry('+e.id+')">✏️</button>'+
+              '<button class="icon-btn del" title="Eliminar" onclick="delEntry('+e.id+')">🗑️</button>')+
+          '</div>'+
+        '</div>';
+      }
+    });
+    list.innerHTML=h;
+    retranslate();
+  }
+
+  // ── Vista Planificación (grilla) ──────────────────────────
+  function setView(v){
+    viewMode=v;
+    document.getElementById('vt-lista').classList.toggle('on',v==='lista');
+    document.getElementById('vt-plan').classList.toggle('on',v==='plan');
+    document.getElementById('lista-view').style.display=(v==='lista')?'':'none';
+    document.getElementById('plan-view').style.display=(v==='plan')?'':'none';
+    document.getElementById('wrap').classList.toggle('wide',v==='plan');
+    render();
+  }
+  function setRange(r){
+    planRange=r;
+    ['semana','quincena','mes'].forEach(function(x){ document.getElementById('rg-'+x).classList.toggle('on',x===r); });
+    renderPlan();
+  }
+  function navPlan(dir){
+    if(planRange==='mes'){ anchor=new Date(anchor.getFullYear(), anchor.getMonth()+dir, 1); }
+    else { anchor=addDays(anchor, dir*(planRange==='quincena'?14:7)); }
+    renderPlan();
+  }
+  function goToday(){ anchor=new Date(); renderPlan(); }
+
+  function pad2(n){ return (n<10?'0':'')+n; }
+  function ymd(dt){ return dt.getFullYear()+'-'+pad2(dt.getMonth()+1)+'-'+pad2(dt.getDate()); }
+  function addDays(dt,n){ var d=new Date(dt); d.setHours(0,0,0,0); d.setDate(d.getDate()+n); return d; }
+  function startOfWeek(dt){ var d=new Date(dt); d.setHours(0,0,0,0); var wd=(d.getDay()+6)%7; d.setDate(d.getDate()-wd); return d; }
+
+  function buildEventsMap(){
+    var map={};
+    (data.partidos||[]).forEach(function(e){ if(!e.fecha)return; (map[e.fecha]=map[e.fecha]||[]).push({type:'p',e:e}); });
+    (data.entrenamientos||[]).forEach(function(e){ if(!e.fecha)return;
+      if(e.fechaFin && e.fechaFin>e.fecha){
+        var _d=new Date(e.fecha+'T12:00:00'), _f=new Date(e.fechaFin+'T12:00:00');
+        while(_d<=_f){ var _k=ymd(_d); (map[_k]=map[_k]||[]).push({type:'e',e:e}); _d.setDate(_d.getDate()+1); }
+      } else { (map[e.fecha]=map[e.fecha]||[]).push({type:'e',e:e}); }
+    });
+    Object.keys(map).forEach(function(k){ map[k].sort(function(a,b){ return (a.e.hora||'')<(b.e.hora||'')?-1:1; }); });
+    return map;
+  }
+  function planCells(){
+    var cells=[];
+    if(planRange==='mes'){
+      var first=new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+      var start=startOfWeek(first);
+      var monthEnd=new Date(anchor.getFullYear(), anchor.getMonth()+1, 0);
+      var end=addDays(startOfWeek(monthEnd),6);
+      for(var d=new Date(start); d<=end; d=addDays(d,1)){ cells.push({date:new Date(d), out:d.getMonth()!==anchor.getMonth()}); }
+    } else {
+      var n=(planRange==='quincena')?14:7, s=startOfWeek(anchor);
+      for(var i=0;i<n;i++){ cells.push({date:addDays(s,i), out:false}); }
+    }
+    return cells;
+  }
+  function planLabel(){
+    var t=calT();
+    if(planRange==='mes'){ return t.ml[anchor.getMonth()]+' '+anchor.getFullYear(); }
+    var s=startOfWeek(anchor), e=addDays(s,(planRange==='quincena')?13:6);
+    return s.getDate()+' '+t.mc[s.getMonth()]+' – '+e.getDate()+' '+t.mc[e.getMonth()];
+  }
+  function renderPlan(){
+    document.getElementById('plan-label').textContent=planLabel();
+    var grid=document.getElementById('plan-grid');
+    var map=buildEventsMap(), cells=planCells(), todayY=ymd(new Date()), T=calT();
+    var DOW=T.dow;
+    var h='<div class="cal-grid r-'+planRange+'">';
+    DOW.forEach(function(d){ h+='<div class="cal-dow">'+d+'</div>'; });
+    cells.forEach(function(c){
+      var y=ymd(c.date), evs=map[y]||[];
+      var cls='cal-cell'+(c.out?' out':'')+(y===todayY?' today':'');
+      h+='<div class="'+cls+'">';
+      h+='<div class="cal-daynum">'+c.date.getDate()+(c.date.getDate()===1?'<span style="font-size:10px;color:var(--muted)"> '+T.mc[c.date.getMonth()]+'</span>':'')+'</div>';
+      evs.forEach(function(ev){
+        var label, cl;
+        if(ev.type==='p'){ cl='p'; label=(((ev.e.condicion||'').indexOf('Visit')===0)?'@ ':'vs ')+esc(ev.e.rival||'—'); }
+        else { cl='e'; label=esc(ev.e.tipo||'Entren.'); }
+        var hora=ev.e.hora?'<span class="eh">'+esc(ev.e.hora)+'</span> ':'';
+        h+='<div class="cal-ev '+cl+'" title="'+label+'" onclick="planEdit(\''+ev.type+'\','+ev.e.id+')">'+hora+label+'</div>';
+      });
+      h+='</div>';
+    });
+    h+='</div>';
+    grid.innerHTML=h;
+    retranslate();
+  }
+  function planEdit(type,id){
+    var t=(type==='p')?'partidos':'entrenamientos';
+    setView('lista'); setTab(t);
+    var arr=data[t]||[];
+    for(var i=0;i<arr.length;i++){ if(arr[i].id===id){ openForm(arr[i]); return; } }
+  }
+
+  function openForm(entry){ if(window.VB_esEditor&&!VB_esEditor())return;
+    editId=entry?entry.id:null;
+    FORM_ESCUDO=(entry&&entry.escudo)?entry.escudo:'';
+    formCond=(entry&&entry.condicion)?entry.condicion:'Local';
+    var isP=(tab==='partidos');
+    var h='<div class="form"><div class="form-ti">'+
+      (editId ? (isP?'Editar partido':'Editar entrenamiento') : (isP?'Nuevo partido':'Nuevo entrenamiento'))+'</div>';
+    h+='<div class="frow"><label class="fld">Fecha</label><input type="date" id="f-fecha" value="'+esc(entry?entry.fecha:'')+'"></div>';
+    h+='<div class="frow"><label class="fld">Hora</label><input type="time" id="f-hora" value="'+esc(entry?entry.hora:'')+'"></div>';
+    if(isP){
+      h+='<div class="frow"><label class="fld">Rival</label><input type="text" id="f-rival" placeholder="Ej: Jona" value="'+esc(entry?entry.rival:'')+'"></div>';
+      h+='<div class="frow"><label class="fld">Escudo del rival</label><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
+         '<div id="f-esc-prev">'+(FORM_ESCUDO?'<img src="'+FORM_ESCUDO+'" style="width:44px;height:44px;object-fit:contain;border-radius:8px;background:#fff;padding:2px">':'<span style="opacity:.5;font-size:12px">— sin escudo —</span>')+'</div>'+
+         '<label class="btn save" style="cursor:pointer;margin:0">Subir foto<input type="file" accept="image/*" onchange="escudoUpload(this)" style="display:none"></label>'+
+         '<button type="button" class="btn cancel" onclick="escudoQuitar()">Quitar</button>'+
+         '</div></div>';
+      h+='<div class="frow"><label class="fld"></label><div style="font-size:11px;opacity:.6">Opcional. Si no ponés, se muestra el monograma con las iniciales. Se guarda con el partido y se reutiliza para ese rival.</div></div>';
+      h+='<div class="frow"><label class="fld">Condición</label><div class="cond" id="f-cond">'+
+          '<div class="chip'+(formCond==='Local'?' on':'')+'" data-c="Local" onclick="setCond(\'Local\')">Local</div>'+
+          '<div class="chip'+(formCond==='Visita'?' on':'')+'" data-c="Visita" onclick="setCond(\'Visita\')">Visita</div>'+
+        '</div></div>';
+      h+='<div class="frow"><label class="fld">Lugar</label><input type="text" id="f-lugar" placeholder="Nombre del lugar, o pegá el link de Google Maps" value="'+esc(entry?entry.lugar:'')+'"></div>';
+    } else {
+      h+='<div class="frow"><label class="fld">Fecha fin</label><input type="date" id="f-fechafin" value="'+esc(entry?entry.fechaFin:'')+'"></div>';
+      h+='<div class="frow"><label class="fld">Hora fin</label><input type="time" id="f-horafin" value="'+esc(entry?entry.horaFin:'')+'"></div>';
+      h+='<div class="frow"><label class="fld">Tipo de entrenamiento</label><select id="f-tipo">'+
+          TIPOS.map(function(t){ return '<option value="'+t+'"'+((entry&&entry.tipo===t)?' selected':'')+'>'+t+'</option>'; }).join('')+
+        '</select></div>';
+      h+='<div class="frow"><label class="fld">Lugar</label><input type="text" id="f-lugar" placeholder="Nombre del lugar, o pegá el link de Google Maps" value="'+esc(entry?entry.lugar:'')+'"></div>';
+    }
+    h+='<div class="form-acts"><button class="btn cancel" onclick="closeForm()">Cancelar</button>'+
+       '<button class="btn save" onclick="saveEntry()">Guardar</button></div></div>';
+    document.getElementById('form-wrap').innerHTML=h;
+    retranslate();
+    document.getElementById('form-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function setCond(c){
+    formCond=c;
+    var w=document.getElementById('f-cond'); if(!w) return;
+    [].forEach.call(w.children,function(ch){ ch.classList.toggle('on', ch.getAttribute('data-c')===c); });
+  }
+  function closeForm(){ document.getElementById('form-wrap').innerHTML=''; editId=null; }
+
+  function saveEntry(){ if(window.VB_esEditor&&!VB_esEditor())return;
+    var fecha=document.getElementById('f-fecha').value;
+    if(!fecha){ alert('Poné una fecha'); return; }
+    var e={ id: editId||Date.now(), fecha:fecha, hora:document.getElementById('f-hora').value, lugar:document.getElementById('f-lugar').value.trim() };
+    if(tab==='partidos'){ e.rival=document.getElementById('f-rival').value.trim(); e.condicion=formCond; e.escudo=FORM_ESCUDO||''; }
+    else { e.tipo=document.getElementById('f-tipo').value; var _hf=document.getElementById('f-horafin'); if(_hf) e.horaFin=_hf.value; var _ff=document.getElementById('f-fechafin'); if(_ff) e.fechaFin=_ff.value; }
+    var arr=data[tab], found=false;
+    for(var i=0;i<arr.length;i++){ if(arr[i].id===e.id){ arr[i]=e; found=true; break; } }
+    if(!found) arr.push(e);
+    fbSet('calendario/'+tab, arr);
+    closeForm(); render();
+  }
+  function editEntry(id){ if(window.VB_esEditor&&!VB_esEditor())return;
+    var arr=data[tab]||[];
+    for(var i=0;i<arr.length;i++){ if(arr[i].id===id){ openForm(arr[i]); return; } }
+  }
+  function delEntry(id){ if(window.VB_esEditor&&!VB_esEditor())return;
+    if(!confirm('¿Eliminar esta entrada?')) return;
+    data[tab]=(data[tab]||[]).filter(function(x){ return x.id!==id; });
+    fbSet('calendario/'+tab, data[tab]);
+    render();
+  }
+  function retranslate(){ if(window.translateTextNodes){ try{ window.translateTextNodes(); }catch(e){} } }
+
+  window.addEventListener('langchange', function(){ applyCalLang(); render(); });
+
+  applyCalLang();
+  load(); render();
+</script>
+<script src="lang.js" onerror="void 0"></script>
+</body></html>
+
+<!-- © 2025-2026 Ignacio Verdi · NAFELS VOLEY · Software propietario - Todos los derechos reservados -->

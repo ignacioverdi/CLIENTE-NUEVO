@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>WELLNESS — {{CLUB_COMPLETO}}</title>
+<title>WELLNESS — {{CLUB}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="datos_seguros.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
@@ -70,7 +70,7 @@
 <div class="wrap">
   <div class="header">
     <a href="index.html" class="back-btn">← Hub</a>
-    <div><div class="subtitle">{{CLUB_COMPLETO}}</div><h1>WELLNESS</h1></div>
+    <div><div class="subtitle">{{CLUB}}</div><h1>WELLNESS</h1></div>
     <div class="badge">Estado físico diario</div>
   </div>
   <div class="topline"></div>
@@ -132,7 +132,7 @@
   </div>
 </div>
 
-<script src="plantel_{{club}}.js" onerror="void 0"></script>
+<script src="plantel_club.js" onerror="void 0"></script>
 <script>
 /* ============================================================================
    CAPA DE DATOS  —  local + nube (Firebase) usando el mismo fbSet/fbGet que ya
@@ -204,7 +204,7 @@ function feedback(p){
   return       {t:'🔴 Alerta — posible fatiga, priorizar recuperación.', c:'var(--red)'};
 }
 function todayISO(){ var d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
-function roster(){ return (window.PLANTEL_{{CLUB}} && window.PLANTEL_{{CLUB}}.jugadores) || []; }
+function roster(){ return (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores) || []; }
 function pname(j){ return (j.ap||'') + (j.nombre?' '+j.nombre.charAt(0)+'.':''); }
 
 /* ---- construir sliders ---- */
@@ -380,4 +380,4 @@ function showTab(t){
 <script src="onesignal_push.js" defer></script>
 </body></html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

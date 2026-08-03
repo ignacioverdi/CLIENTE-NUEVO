@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>CALENDARIO — {{CLUB_COMPLETO}}</title>
+<title>CALENDARIO — {{CLUB}}</title>
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="datos_seguros.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
-<script src="escudos_nube.js"></script>   <!-- escudos que sube el club -->
 <style>
   :root{--bg:#0a0f1a;--surface:#111827;--card:#0f1020;--card2:#151b2e;--border:rgba(255,255,255,.08);--b2:rgba(255,255,255,.13);
     --text:#e2e8f0;--muted:#64748b;--mut2:#94a3b8;--green:#22c55e;--amber:#f59e0b;--orange:#f97316;--red:#ef4444;--acc:#2dd4bf;--accd:#14b8a6}
@@ -160,7 +159,7 @@
     <a href="index.html" class="back-btn">← Hub</a>
     <div>
       <h1>📅 CALENDARIO</h1>
-      <div class="subtitle">{{CLUB_COMPLETO}}</div>
+      <div class="subtitle">{{CLUB}}</div>
     </div>
   </div>
 
@@ -263,26 +262,26 @@
 
   // ── Escudos de los clubes (monograma con color real; reemplazable por logo real vía ESCUDOS) ──
   var CLUBS={
-    '{{Club}}':{ab:'NÄF',c:'#d81e28'}, '{{Club}}':{ab:'NÄF',c:'#d81e28'},
-    '{{RIVAL5}}':{ab:'LUC',c:'#00397a'},
-    '{{RIVAL11}}':{ab:'SG',c:'#0a7a37'}, '{{RIVAL9}}':{ab:'SG',c:'#0a7a37'},
-    '{{RIVAL12}}':{ab:'JON',c:'#1d4f91'},
-    '{{RIVAL7}}':{ab:'CHE',c:'#1e7a46'}, '{{RIVAL6}}':{ab:'CHE',c:'#1e7a46'},
-    '{{RIVAL3}}':{ab:'SCH',c:'#b3121f'}, '{{RIVAL2}}':{ab:'SCH',c:'#b3121f'},
-    '{{RIVAL1}}':{ab:'AMR',c:'#005bac'},
-    '{{RIVAL8}}':{ab:'COL',c:'#d0361f'}
+    'Näfels':{ab:'NÄF',c:'#d81e28'}, 'Nafels':{ab:'NÄF',c:'#d81e28'},
+    'Lausanne':{ab:'LUC',c:'#00397a'},
+    'St. Gallen':{ab:'SG',c:'#0a7a37'}, 'St Gallen':{ab:'SG',c:'#0a7a37'},
+    'Jona':{ab:'JON',c:'#1d4f91'},
+    'Chênois':{ab:'CHE',c:'#1e7a46'}, 'Chenois':{ab:'CHE',c:'#1e7a46'},
+    'Schönenwerd':{ab:'SCH',c:'#b3121f'}, 'Schonenwerd':{ab:'SCH',c:'#b3121f'},
+    'Amriswil':{ab:'AMR',c:'#005bac'},
+    'Colombier':{ab:'COL',c:'#d0361f'}
   };
   // Logos reales: dejá los 8 archivos PNG en una carpeta "escudos/" junto a este archivo.
   // Si el archivo existe, se muestra el logo; si falta, queda el monograma. Nunca se rompe.
   var ESCUDOS={
-    '{{Club}}':'escudos/{{club}}.png', '{{Club}}':'escudos/{{club}}.png',
-    '{{RIVAL5}}':'escudos/{{RIVAL5}}.png',
-    '{{RIVAL11}}':'escudos/stgallen.png', '{{RIVAL9}}':'escudos/stgallen.png',
-    '{{RIVAL12}}':'escudos/{{RIVAL12}}.png',
-    '{{RIVAL7}}':'escudos/{{RIVAL6}}.png', '{{RIVAL6}}':'escudos/{{RIVAL6}}.png',
-    '{{RIVAL3}}':'escudos/{{RIVAL4}}.png', '{{RIVAL2}}':'escudos/{{RIVAL4}}.png',
-    '{{RIVAL1}}':'escudos/{{RIVAL1}}.png',
-    '{{RIVAL8}}':'escudos/{{RIVAL8}}.png'
+    'Näfels':'escudos/nafels.png', 'Nafels':'escudos/nafels.png',
+    'Lausanne':'escudos/lausanne.png',
+    'St. Gallen':'escudos/stgallen.png', 'St Gallen':'escudos/stgallen.png',
+    'Jona':'escudos/jona.png',
+    'Chênois':'escudos/chenois.png', 'Chenois':'escudos/chenois.png',
+    'Schönenwerd':'escudos/schoenenwerd.png', 'Schonenwerd':'escudos/schoenenwerd.png',
+    'Amriswil':'escudos/amriswil.png',
+    'Colombier':'escudos/colombier.png'
   };
   // ── Escudo del rival subido a mano (por partido): se guarda con el partido y se reutiliza por nombre de rival ──
   var FORM_ESCUDO='';
@@ -329,22 +328,22 @@
     return '<div class="fx-cr"><img src="'+url+'"'+(alt?' data-alt="'+alt+'"':'')+' alt="" onerror="'+oe+'"></div>';
   }
 
-  // ── Fixture {{LIGA}} 2026/27 (temporada regular) ──
+  // ── Fixture NLA 2026/27 (temporada regular) ──
   var FIXTURE=[
-    {fecha:'2026-10-18',hora:'17:00',rival:'{{RIVAL5}}',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-10-24',hora:'18:00',rival:'{{RIVAL11}}',condicion:'Visitante',lugar:'{{RIVAL11}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVFC88X%2BRW'},
-    {fecha:'2026-10-31',hora:'17:00',rival:'{{RIVAL12}}',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-11-07',hora:'18:00',rival:'{{RIVAL7}}',condicion:'Visitante',lugar:'Genève',mapa:'https://www.google.com/maps/search/?api=1&query=8FR855QV%2BF3'},
-    {fecha:'2026-11-14',hora:'17:30',rival:'{{RIVAL3}}',condicion:'Visitante',lugar:'{{RIVAL3}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVC92H3%2BVH'},
-    {fecha:'2026-11-21',hora:'17:00',rival:'{{RIVAL1}}',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-11-28',hora:'17:00',rival:'{{RIVAL8}}',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-12-05',hora:'17:30',rival:'{{RIVAL5}}',condicion:'Visitante',lugar:'{{RIVAL5}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FR8GH9H%2BPM'},
-    {fecha:'2026-12-13',hora:'17:00',rival:'{{RIVAL11}}',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-12-19',hora:'17:00',rival:'{{RIVAL12}}',condicion:'Visitante',lugar:'{{RIVAL12}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVC6RCV%2BRJ'},
-    {fecha:'2027-01-03',hora:'17:00',rival:'{{RIVAL7}}',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2027-01-16',hora:'17:00',rival:'{{RIVAL3}}',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2027-01-30',hora:'17:00',rival:'{{RIVAL1}}',condicion:'Visitante',lugar:'{{RIVAL1}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVFG7XQ%2BCP'},
-    {fecha:'2027-02-13',hora:'17:30',rival:'{{RIVAL8}}',condicion:'Visitante',lugar:'{{RIVAL8}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FV83W73%2B5G'}
+    {fecha:'2026-10-18',hora:'17:00',rival:'Lausanne',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-10-24',hora:'18:00',rival:'St. Gallen',condicion:'Visitante',lugar:'St. Gallen',mapa:'https://www.google.com/maps/search/?api=1&query=8FVFC88X%2BRW'},
+    {fecha:'2026-10-31',hora:'17:00',rival:'Jona',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-11-07',hora:'18:00',rival:'Chênois',condicion:'Visitante',lugar:'Genève',mapa:'https://www.google.com/maps/search/?api=1&query=8FR855QV%2BF3'},
+    {fecha:'2026-11-14',hora:'17:30',rival:'Schönenwerd',condicion:'Visitante',lugar:'Schönenwerd',mapa:'https://www.google.com/maps/search/?api=1&query=8FVC92H3%2BVH'},
+    {fecha:'2026-11-21',hora:'17:00',rival:'Amriswil',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-11-28',hora:'17:00',rival:'Colombier',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-12-05',hora:'17:30',rival:'Lausanne',condicion:'Visitante',lugar:'Lausanne',mapa:'https://www.google.com/maps/search/?api=1&query=8FR8GH9H%2BPM'},
+    {fecha:'2026-12-13',hora:'17:00',rival:'St. Gallen',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-12-19',hora:'17:00',rival:'Jona',condicion:'Visitante',lugar:'Jona',mapa:'https://www.google.com/maps/search/?api=1&query=8FVC6RCV%2BRJ'},
+    {fecha:'2027-01-03',hora:'17:00',rival:'Chênois',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2027-01-16',hora:'17:00',rival:'Schönenwerd',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2027-01-30',hora:'17:00',rival:'Amriswil',condicion:'Visitante',lugar:'Amriswil',mapa:'https://www.google.com/maps/search/?api=1&query=8FVFG7XQ%2BCP'},
+    {fecha:'2027-02-13',hora:'17:30',rival:'Colombier',condicion:'Visitante',lugar:'Colombier',mapa:'https://www.google.com/maps/search/?api=1&query=8FV83W73%2B5G'}
   ];
   function importFixture(){ if(window.VB_esEditor&&!VB_esEditor())return;
     if(!confirm('¿Agregar los 14 partidos del fixture 2026/27 al calendario?')) return;
@@ -418,7 +417,7 @@
   function importVolley(){ if(window.VB_esEditor&&!VB_esEditor())return;
     if(!confirm('¿Agregar la seguidilla de entrenamientos de vóley (01/09/26 – 30/04/27, sin vacaciones)?')) return;
     var arr=(data.entrenamientos||[]).slice(), added=0;
-    var lugar='Lintharena, {{Club}}', mapa='https://maps.app.goo.gl/MtXaacJWfLWZ1QKM8?g_st=iw';
+    var lugar='Lintharena, Näfels', mapa='https://maps.app.goo.gl/MtXaacJWfLWZ1QKM8?g_st=iw';
     var SEM={ 1:[['VOLLEYBALL SESSION','17:30','19:00']],
       2:[['VOLLEYBALL SESSION','10:00','11:30'],['VOLLEYBALL SESSION','18:30','20:30']],
       3:[['VOLLEYBALL SESSION','17:00','19:00']],
@@ -487,18 +486,18 @@
     arr.forEach(function(e){
       if(tab==='partidos'){
         var rival=e.rival||'—';
-        var home=((e.condicion||'').indexOf('Visit')===0)?rival:'{{Club}}';
-        var away=((e.condicion||'').indexOf('Visit')===0)?'{{Club}}':rival;
+        var home=((e.condicion||'').indexOf('Visit')===0)?rival:'{{CLUB}}';
+        var away=((e.condicion||'').indexOf('Visit')===0)?'{{CLUB}}':rival;
         var dd=fxDate(e.fecha);
-        function tName(x){ return (x==='{{Club}}'||x==='{{Club}}')?'{{CLUB}}':esc(x); }
+        function tName(x){ return (x==='{{CLUB}}'||x==='{{CLUB}}')?'{{CLUB}}':esc(x); }
         function tAbbr(x){ var c=CLUBS[x]; return c?c.ab:esc((x||'').substr(0,3).toUpperCase()); }
         h+='<div class="fx" data-cond="'+esc(e.condicion||'')+'">'+
              '<div class="fx-date"><span class="d">'+dd.d+'</span><span class="mo">'+dd.mo+'</span><span class="dow">'+dd.dow+'</span></div>'+
-             '<div class="fx-home'+(home==='{{Club}}'?' us':'')+'">'+tName(home)+'</div>'+
+             '<div class="fx-home'+(home==='Näfels'?' us':'')+'">'+tName(home)+'</div>'+
              fxCrest(home)+
              '<div class="fx-vs">vs</div>'+
              fxCrest(away)+
-             '<div class="fx-away'+(away==='{{Club}}'?' us':'')+'">'+tName(away)+'</div>'+
+             '<div class="fx-away'+(away==='Näfels'?' us':'')+'">'+tName(away)+'</div>'+
              '<div class="fx-meta"><span class="fx-time">'+esc(e.hora||'')+'</span><span class="fx-place">'+venueRender(e)+'</span></div>'+
              '<div class="fx-acts">'+
                ((window.VB_esEditor&&!VB_esEditor())?'':
@@ -626,7 +625,7 @@
     h+='<div class="frow"><label class="fld">Fecha</label><input type="date" id="f-fecha" value="'+esc(entry?entry.fecha:'')+'"></div>';
     h+='<div class="frow"><label class="fld">Hora</label><input type="time" id="f-hora" value="'+esc(entry?entry.hora:'')+'"></div>';
     if(isP){
-      h+='<div class="frow"><label class="fld">Rival</label><input type="text" id="f-rival" placeholder="Ej: {{RIVAL12}}" value="'+esc(entry?entry.rival:'')+'"></div>';
+      h+='<div class="frow"><label class="fld">Rival</label><input type="text" id="f-rival" placeholder="Ej: Jona" value="'+esc(entry?entry.rival:'')+'"></div>';
       h+='<div class="frow"><label class="fld">Escudo del rival</label><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
          '<div id="f-esc-prev">'+(FORM_ESCUDO?'<img src="'+FORM_ESCUDO+'" style="width:44px;height:44px;object-fit:contain;border-radius:8px;background:#fff;padding:2px">':'<span style="opacity:.5;font-size:12px">— sin escudo —</span>')+'</div>'+
          '<label class="btn save" style="cursor:pointer;margin:0">Subir foto<input type="file" accept="image/*" onchange="escudoUpload(this)" style="display:none"></label>'+
@@ -691,4 +690,4 @@
 <script src="lang.js" onerror="void 0"></script>
 </body></html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

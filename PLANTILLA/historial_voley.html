@@ -3,10 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mi Performance — {{CLUB_COMPLETO}}</title>
+<title>Mi Performance — {{CLUB}} Voley</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="datos_seguros.js"></script>
-  <script src="datos_equipo.js" onerror="void 0"></script>
+  <!-- El historial y los entrenamientos: la pagina los usa pero no los
+       pedia, asi que la lista salia vacia. -->
+  <script src="datos_historial.js" onerror="void 0"></script>
+  <script src="datos_entrenamientos.js.enc" onerror="void 0"></script>
+  <script src="datos_historial_ent.js.enc" onerror="void 0"></script>
+  
+  <script src="datos_equipo.js.enc" onerror="void 0"></script>
+  <!-- El plantel del club. La lista de jugadores sale de EQUIPO_DATA, que
+       viene cifrado y a veces no llega: sin eso la pagina queda en blanco. -->
+  <script src="plantel_club.js" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <!-- VB: selector PARTIDO/ENTRENAMIENTO - carga los datos segun el modo elegido -->
 <script>(function(){var ent=false;try{ent=(localStorage.getItem('vb_modo')||'partido')==='entrenamiento';}catch(e){}
@@ -14,7 +23,7 @@ function w(s){document.write('<scr'+'ipt src="'+s+'" onerror="void 0"><\/scr'+'i
 if(ent){ w('datos_entrenamientos.js'); w('datos_historial_ent.js'); w('adapter_entrenamiento.js'); }
 else   { w('datos_partidos.js'); w('datos_historial.js'); }
 })();</script>
-<script src="modo_toggle.js" onerror="void 0"></script>
+  <!-- modo_toggle.js sacado: se superponia con el selector de idioma. -->
 <script>window.ENTRENAMIENTOS_DATA=window.ENTRENAMIENTOS_DATA||{};</script>
 <!-- datos_historial.js: lo carga el selector de modo (arriba) -->
 <script>window.OBJETIVOS_CONFIG=window.OBJETIVOS_CONFIG||{};</script>
@@ -108,6 +117,9 @@ html,body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',
 /* UTIL */
 .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
 </style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
@@ -173,7 +185,7 @@ var POS_COLOR={ARMADOR:'#F59E0B',OPUESTO:'#F97316',PUNTA:'#22C55E',CENTRAL:'#F97
 
 // ── INIT ──────────────────────────────────────────────────────────────
 function tryInit(n){
-  var ready = (typeof {{Club}}_JUGADORES!=='undefined') || (typeof PARTIDOS_JUGADORES!=='undefined') || (window.EQUIPO_DATA&&window.EQUIPO_DATA.jugadores);
+  var ready = (typeof Nafels_JUGADORES!=='undefined') || (typeof PARTIDOS_JUGADORES!=='undefined') || (window.EQUIPO_DATA&&window.EQUIPO_DATA.jugadores) || (window.PLANTEL_CLUB && (window.PLANTEL_CLUB.jugadores||[]).length);
   if(ready){
     buildSelector();
     var p=new URLSearchParams(window.location.search);
@@ -181,7 +193,7 @@ function tryInit(n){
     if(n2){ selectJug(n2); }
     else {
       // auto-select first player with match data
-      var jugs=(typeof PARTIDOS_JUGADORES!=='undefined')?PARTIDOS_JUGADORES:(window.EQUIPO_DATA?window.EQUIPO_DATA.jugadores:[]);
+      var jugs=_plantelDelClub();
       if(jugs && jugs.length) selectJug(jugs[0].num);
     }
   }
@@ -204,9 +216,9 @@ function buildSelector(){
   var el=document.getElementById('jug-scroller');
   if(!el) return;
   var jugs=[];
-  if(typeof {{Club}}_JUGADORES!=='undefined') jugs={{Club}}_JUGADORES;
+  if(typeof Nafels_JUGADORES!=='undefined') jugs=Nafels_JUGADORES;
   else if(typeof PARTIDOS_JUGADORES!=='undefined') jugs=PARTIDOS_JUGADORES;
-  else if(window.EQUIPO_DATA&&window.EQUIPO_DATA.jugadores) jugs=window.EQUIPO_DATA.jugadores;
+  else jugs=_plantelDelClub();
   el.innerHTML=jugs.map(function(j){
     var nm=j.nombre?j.nombre.replace(/^\d+\s*/,'').split(' ')[0]:'#'+j.num;
     return '<button class="jbtn" onclick="selectJug('+j.num+')">#'+j.num+' '+nm+'</button>';
@@ -215,7 +227,7 @@ function buildSelector(){
 
 function selectJug(num){
   G.num = num;
-  var jugs=(typeof PARTIDOS_JUGADORES!=='undefined')?PARTIDOS_JUGADORES:(window.EQUIPO_DATA?window.EQUIPO_DATA.jugadores:[]);
+  var jugs=_plantelDelClub();
   G.jug = jugs.find(function(j){return j.num===num;}) || {num:num,nombre:'#'+num};
   // Set accumulated data for ataque/saque/recepcion tabs
   G.partJug = (typeof PARTIDOS_JUGADORES!=='undefined') ? PARTIDOS_JUGADORES.find(function(j){return j.num===num;}) : null;
@@ -400,8 +412,8 @@ function renderCalendario(c){
     var bg=isP?'rgba(232,25,44,.1)':'rgba(34,197,94,.1)';
     var icon=isP?'🏆':'🏋️';
     var res=s.resultado||{};
-    var resStr=isP?(res.{{club}}!==undefined?(res.{{club}}+'-'+res.rival):''):'';
-    var resColor=isP?(res.{{club}}>res.rival?'var(--green)':'var(--red)'):'var(--muted)';
+    var resStr=isP?(res.nafels!==undefined?(res.nafels+'-'+res.rival):''):'';
+    var resColor=isP?(res.nafels>res.rival?'var(--green)':'var(--red)'):'var(--muted)';
     // Build onclick to filter to this session
     var sesNom='';
     var meta=isP?(typeof PARTIDOS_META!=='undefined'?PARTIDOS_META:[])
@@ -798,7 +810,7 @@ function renderPanelRecepcion(j, container){
 </script>
 <script>
 if(typeof window.OBJETIVOS_CONFIG==='undefined'){
-// objetivos_config.js — {{CLUB_COMPLETO}}
+// objetivos_config.js — {{CLUB}} Voley
 // Configuracion compartida de baterias y objetivos
 // Importar en: jugador.html, dashboard.html, historial_voley.html
 
@@ -951,13 +963,13 @@ function setObjTipo(tipo, btn){
   <div class="hm-box">
     <div class="hm-title"><span>🔥 HEAT MAPS</span><button class="hm-close" onclick="closeHeatmapMenu()">✕</button></div>
     <div class="hm-grid">
-      <a class="hm-card" href="hm_ataque.html?equipo={{club}}"    style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.3)"><span class="hm-icon">⚡</span><span class="hm-lbl" style="color:#F97316">ATAQUE</span><span class="hm-sub">EFF · SO/TR · Zonas</span></a>
-      <a class="hm-card" href="hm_saque.html?equipo={{club}}"     style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)"><span class="hm-icon">🎯</span><span class="hm-lbl" style="color:#22C55E">SAQUE</span><span class="hm-sub">EFF · Zonas origen/destino</span></a>
-      <a class="hm-card" href="hm_recepcion.html?equipo={{club}}" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🛡️</span><span class="hm-lbl" style="color:#818CF8">RECEPCION</span><span class="hm-sub">EFF · Calidad · Zonas</span></a>
-      <a class="hm-card" href="hm_armador.html?equipo={{club}}"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
-      <a class="hm-card" href="hm_defensa.html" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🧤</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Por rival</span></a>
+      <a class="hm-card" href="hm_ataque.html?equipo=nafels"    style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.3)"><span class="hm-icon">⚡</span><span class="hm-lbl" style="color:#F97316">ATAQUE</span><span class="hm-sub">EFF · SO/TR · Zonas</span></a>
+      <a class="hm-card" href="hm_saque.html?equipo=nafels"     style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)"><span class="hm-icon">🎯</span><span class="hm-lbl" style="color:#22C55E">SAQUE</span><span class="hm-sub">EFF · Zonas origen/destino</span></a>
+      <a class="hm-card" href="hm_recepcion.html?equipo=nafels" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🛡️</span><span class="hm-lbl" style="color:#818CF8">RECEPCION</span><span class="hm-sub">EFF · Calidad · Zonas</span></a>
+      <a class="hm-card" href="hm_armador.html?equipo=nafels"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
+      <a class="hm-card" href="hm_defensa.html" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🧤</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Por rival</span></a><a class="hm-card" href="hm_bloqueo.html" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🧱</span><span class="hm-lbl" style="color:#818CF8">BLOQUEO</span><span class="hm-sub">EFF · Zona del ataque · Combos</span></a>
     </div>
-    <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">{{LIGA}} {{PAIS}} 2026/27 · temporada en curso</div>
+    <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">{{LIGA}} 2026/27 · temporada en curso</div>
   </div>
 </div>
 <script>
@@ -965,10 +977,39 @@ function showHeatmapMenu(){ document.getElementById('hm-overlay').classList.add(
 function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.remove('open'); }
 </script>
 
-<script src="chat_{{club}}.js"></script>
+<script src="chat_club.js"></script>
 <script src="lang.js"></script>
 <script src="temporadas_menu.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   EL PLANTEL, VENGA DE DONDE VENGA
+   --------------------------------------------------------------------------
+   La lista de jugadores salia de EQUIPO_DATA, que viene cifrado y a veces no
+   llega: sin eso la pagina quedaba en blanco, sin siquiera los nombres.
+
+   Se prueban las fuentes en orden y se usa la primera que tenga gente. El
+   plantel del club guarda el apellido en "ap" y las pantallas lo esperan en
+   "nombre", asi que se normaliza.
+   ══════════════════════════════════════════════════════════════════════════ */
+function _plantelDelClub(){
+  try{
+    if(typeof PARTIDOS_JUGADORES !== 'undefined' && PARTIDOS_JUGADORES.length)
+      return PARTIDOS_JUGADORES;
+  }catch(e){}
+  try{
+    if(window.EQUIPO_DATA && (window.EQUIPO_DATA.jugadores||[]).length)
+      return window.EQUIPO_DATA.jugadores;
+  }catch(e){}
+  try{
+    var P = (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores) || [];
+    if(P.length) return P.map(function(j){
+      return {num:j.num, nombre:(j.ap || j.nombre || ''), pos:j.pos, foto:j.foto};
+    });
+  }catch(e){}
+  return [];
+}
+</script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

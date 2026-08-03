@@ -89,6 +89,8 @@ tr.tot td{border-top:2px solid var(--b2);font-weight:800;background:var(--card2)
   @page{size:A4 landscape;margin:12mm}
 }
 </style>
+<!-- Motor de idiomas (ES / EN / DE). Traduce por data-t y por texto. -->
+<script src="lang.js"></script>
 </head>
 <body>
 
@@ -406,7 +408,7 @@ function plantel(lado, num){
     if(P && P[num] && P[num].nombre) return P[num].nombre;
   }catch(e){}
   try{
-    var L = window.PLANTEL || window.PLANTEL_DATA || window.PLANTEL_{{CLUB}} || null;
+    var L = window.PLANTEL || window.PLANTEL_DATA || window.PLANTEL_CLUB || null;
     if(L && L.length){
       for(var i=0;i<L.length;i++)
         if(Number(L[i].num)===Number(num)) return L[i].nombre || L[i].apellido || ('#'+num);

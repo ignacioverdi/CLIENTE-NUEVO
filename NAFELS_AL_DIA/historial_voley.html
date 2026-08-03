@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mi Performance — Nafels Voley</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="datos_seguros.js"></script>
+  <!-- El historial y los entrenamientos: la pagina los usa pero no los
+       pedia, asi que la lista salia vacia. -->
+  <script src="datos_historial.js" onerror="void 0"></script>
+  <script src="datos_entrenamientos.js.enc" onerror="void 0"></script>
+  <script src="datos_historial_ent.js.enc" onerror="void 0"></script>
+  
+  <script src="datos_equipo.js.enc" onerror="void 0"></script>
+  <!-- El plantel del club. La lista de jugadores sale de EQUIPO_DATA, que
+       viene cifrado y a veces no llega: sin eso la pagina queda en blanco. -->
+  <script src="plantel_nafels.js" onerror="void 0"></script>
+  <script>abrirDatos();</script>
+<!-- VB: selector PARTIDO/ENTRENAMIENTO - carga los datos segun el modo elegido -->
+<script>(function(){var ent=false;try{ent=(localStorage.getItem('vb_modo')||'partido')==='entrenamiento';}catch(e){}
+function w(s){document.write('<scr'+'ipt src="'+s+'" onerror="void 0"><\/scr'+'ipt>');}
+if(ent){ w('datos_entrenamientos.js'); w('datos_historial_ent.js'); w('adapter_entrenamiento.js'); }
+else   { w('datos_partidos.js'); w('datos_historial.js'); }
+})();</script>
+  <!-- modo_toggle.js sacado: se superponia con el selector de idioma. -->
+<script>window.ENTRENAMIENTOS_DATA=window.ENTRENAMIENTOS_DATA||{};</script>
+<!-- datos_historial.js: lo carga el selector de modo (arriba) -->
+<script>window.OBJETIVOS_CONFIG=window.OBJETIVOS_CONFIG||{};</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080F;--card:#0D0E1A;--card2:#111220;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.12);
+  --red:#E8192C;--amber:#F59E0B;--green:#22C55E;--blue:#3B82F6;
+  --indigo:#818CF8;--cyan:#06B6D4;
+  --text:#E2E8F0;--muted:#64748B;--subtle:#475569;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;min-height:100vh}
+
+/* HDR */
+.hdr{background:rgba(7,8,15,.97);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.hdr-top{display:flex;align-items:center;gap:10px;padding:10px 20px;flex-wrap:wrap}
+.back-btn{padding:5px 14px;border-radius:8px;border:1px solid var(--border2);background:rgba(255,255,255,.04);color:var(--subtle);font-size:10px;font-weight:700;letter-spacing:1px;text-decoration:none;text-transform:uppercase;flex-shrink:0}
+.hdr-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--text)}
+
+/* JUG SELECTOR */
+.jug-scroller{display:flex;gap:5px;flex-wrap:wrap;padding:8px 20px;border-bottom:1px solid var(--border);background:var(--card)}
+.jbtn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;transition:all .15s}
+.jbtn:hover{border-color:var(--border2);color:var(--text)}
+.jbtn.on{background:rgba(232,25,44,.12);border-color:rgba(232,25,44,.4);color:var(--red)}
+
+/* HERO */
+.hero{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap;display:none}
+.hero-num{font-family:'Bebas Neue',sans-serif;font-size:64px;line-height:1;color:rgba(255,255,255,.06);letter-spacing:-3px}
+.hero-name{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;line-height:1}
+.hero-pos{font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-top:3px}
+.hero-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chip{padding:5px 12px;border-radius:8px;background:var(--card2);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center}
+.chip-val{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1}
+.chip-lbl{font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+
+/* TIPO + SESION FILTERS */
+.filter-row{padding:8px 20px;border-bottom:1px solid var(--border);display:none;flex-wrap:wrap;gap:6px;align-items:center;background:var(--card)}
+.tfbtn{padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--subtle);font-size:10px;font-weight:800;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;transition:all .15s}
+.tfbtn.on-p{background:rgba(232,25,44,.12);border-color:rgba(232,25,44,.4);color:var(--red)}
+.tfbtn.on-e{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.4);color:var(--green)}
+.sfbtn{padding:3px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;transition:all .15s}
+.sfbtn.on{background:rgba(232,25,44,.1);border-color:rgba(232,25,44,.35);color:var(--red)}
+.divider{width:1px;height:16px;background:var(--border2);flex-shrink:0}
+
+/* BATERIAS */
+.bat-wrap{padding:10px 20px;border-bottom:1px solid var(--border);display:none;overflow-x:auto}
+
+/* TABS */
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto;display:none}
+.tab{padding:11px 18px;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;font-family:'Barlow Condensed',sans-serif}
+.tab.on{color:var(--red);border-bottom-color:var(--red)}
+
+/* MAIN */
+.main{max-width:1000px;margin:0 auto;padding:20px 16px}
+.sec-title{font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.empty-msg{text-align:center;padding:60px 20px;color:var(--muted);font-size:12px;letter-spacing:2px}
+
+/* CALENDARIO */
+.cal-list{display:flex;flex-direction:column;gap:8px}
+.cal-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s}
+.cal-card:hover{border-color:var(--border2)}
+.cal-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.cal-info{flex:1;min-width:0}
+.cal-rival{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;line-height:1}
+.cal-fecha{font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px}
+.cal-stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.cal-stat{font-size:10px;color:var(--muted)}
+.cal-stat b{color:var(--text);font-weight:700}
+.cal-res{font-family:'Bebas Neue',sans-serif;font-size:26px;flex-shrink:0}
+
+/* RENDIMIENTO */
+.evol-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.evol-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.evol-title{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
+.evol-bars{display:flex;gap:8px;align-items:flex-end;height:120px;margin-bottom:8px}
+.evol-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.evol-bar{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .4s}
+.evol-val{font-family:'Bebas Neue',sans-serif;font-size:16px;text-align:center;line-height:1}
+.evol-lbl{font-size:8px;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%}
+.evol-avg{font-size:9px;color:var(--muted);text-align:right;margin-top:4px}
+.evol-obj{height:2px;background:rgba(255,255,255,.15);border-radius:1px;margin-top:8px;position:relative}
+.evol-obj-lbl{position:absolute;right:0;top:-14px;font-size:8px;color:var(--muted)}
+
+/* CANCHA */
+.canchas-grid{display:flex;flex-wrap:wrap;gap:14px}
+.cancha-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+.cancha-title{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.cancha-stat{font-size:11px;color:var(--text);font-weight:700}
+
+/* UTIL */
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+</style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
+</head>
+<body>
+<div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
+
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-top">
+    <a href="dashboard.html" class="back-btn">← Dashboard</a>
+    <button onclick="showHeatmapMenu()" style="background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);color:#F97316;padding:6px 14px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;cursor:pointer;letter-spacing:1px">🔥 HEAT MAPS</button>
+    <div class="hdr-title">MI PERFORMANCE</div>
+  </div>
+</div>
+
+<!-- JUGADOR SELECTOR -->
+<div class="jug-scroller" id="jug-scroller"></div>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-num" id="hero-num"></div>
+  <div style="flex:1">
+    <div class="hero-name" id="hero-name"></div>
+    <div class="hero-pos" id="hero-pos"></div>
+    <div class="hero-chips" id="hero-chips"></div>
+  </div>
+</div>
+
+<!-- BATERIAS -->
+<div class="bat-wrap" id="bat-wrap">
+  <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
+    <button class="tfbtn on-p" id="bat-tbtn-p" onclick="batSetTipo('partido',this)">🏆 PARTIDO</button>
+    <button class="tfbtn" id="bat-tbtn-e" onclick="batSetTipo('entrenamiento',this)">🏋️ ENTRENAMIENTO</button>
+  </div>
+  <div id="bat-sfrow" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px"></div>
+  <div id="objetivos-jugador"></div>
+</div>
+
+<!-- TIPO + SESION FILTER -->
+<div class="filter-row" id="filter-row">
+  <button class="tfbtn on-p" id="tfbtn-p" onclick="setTipo('partido',this)">🏆 PARTIDO</button>
+  <button class="tfbtn" id="tfbtn-e" onclick="setTipo('entrenamiento',this)">🏋️ ENTRENAMIENTO</button>
+  <div class="divider"></div>
+  <div id="sfrow" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs" id="tabs">
+  <button class="tab on" onclick="setTab('calendario',this)">📅 CALENDARIO</button>
+  <button class="tab" onclick="setTab('rendimiento',this)">📈 RENDIMIENTO</button>
+  <button class="tab" onclick="setTab('ataque',this)">💥 ATAQUE</button>
+  <button class="tab" onclick="setTab('saque',this)">⚡ SAQUE</button>
+  <button class="tab" onclick="setTab('recepcion',this)">🛡 RECEPCIÓN</button>
+</div>
+
+<div class="main" id="main"></div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────
+var G = {num:0, jug:null, partJug:null, entJug:null,
+         tipo:'partido', sesion:'acumulado', tab:'calendario'};
+
+var POS_COLOR={ARMADOR:'#F59E0B',OPUESTO:'#F97316',PUNTA:'#22C55E',CENTRAL:'#F97316',LIBERO:'#06B6D4'};
+
+// ── INIT ──────────────────────────────────────────────────────────────
+function tryInit(n){
+  var ready = (typeof Nafels_JUGADORES!=='undefined') || (typeof PARTIDOS_JUGADORES!=='undefined') || (window.EQUIPO_DATA&&window.EQUIPO_DATA.jugadores) || (window.PLANTEL_NAFELS && (window.PLANTEL_NAFELS.jugadores||[]).length);
+  if(ready){
+    buildSelector();
+    var p=new URLSearchParams(window.location.search);
+    var n2=parseInt(p.get('num'))||0;
+    if(n2){ selectJug(n2); }
+    else {
+      // auto-select first player with match data
+      var jugs=_plantelDelClub();
+      if(jugs && jugs.length) selectJug(jugs[0].num);
+    }
+  }
+  else if(n>0) setTimeout(function(){tryInit(n-1);},200);
+}
+(function(){
+  function _go(){ tryInit(25); }
+  if(document.fonts && document.fonts.ready){ (function(){var _f=_go;if(document.fonts&&document.fonts.ready){document.fonts.ready.then(_f).catch(_f);}else{if(document.readyState!=="loading")setTimeout(_f,50);else document.addEventListener("DOMContentLoaded",function(){setTimeout(_f,50);});}})(); }
+  else if(document.readyState !== "loading"){ setTimeout(_go,50); }
+  else { document.addEventListener("DOMContentLoaded", function(){ setTimeout(_go,50); }); }
+})();
+
+function checkURL(){
+  var p=new URLSearchParams(window.location.search);
+  var n=parseInt(p.get('num'))||0;
+  if(n) selectJug(n);
+}
+
+function buildSelector(){
+  var el=document.getElementById('jug-scroller');
+  if(!el) return;
+  var jugs=[];
+  if(typeof Nafels_JUGADORES!=='undefined') jugs=Nafels_JUGADORES;
+  else if(typeof PARTIDOS_JUGADORES!=='undefined') jugs=PARTIDOS_JUGADORES;
+  else jugs=_plantelDelClub();
+  el.innerHTML=jugs.map(function(j){
+    var nm=j.nombre?j.nombre.replace(/^\d+\s*/,'').split(' ')[0]:'#'+j.num;
+    return '<button class="jbtn" onclick="selectJug('+j.num+')">#'+j.num+' '+nm+'</button>';
+  }).join('');
+}
+
+function selectJug(num){
+  G.num = num;
+  var jugs=_plantelDelClub();
+  G.jug = jugs.find(function(j){return j.num===num;}) || {num:num,nombre:'#'+num};
+  // Set accumulated data for ataque/saque/recepcion tabs
+  G.partJug = (typeof PARTIDOS_JUGADORES!=='undefined') ? PARTIDOS_JUGADORES.find(function(j){return j.num===num;}) : null;
+  G.entJug  = G.partJug;
+  document.querySelectorAll('.jbtn').forEach(function(b){b.classList.remove('active');});
+  var btns=document.querySelectorAll('.jbtn');
+  for(var i=0;i<btns.length;i++){if(btns[i].textContent.indexOf('#'+num+' ')===0){btns[i].classList.add('active');break;}}
+  if(typeof renderHero==='function') renderHero();
+  if(typeof renderFilters==='function') renderFilters();
+  if(typeof renderContent==='function') renderContent();
+}
+
+// ── HERO ─────────────────────────────────────────────────────────────
+function renderHero(){
+  if(!G.jug){document.getElementById('hero').style.display='none';return;}
+  document.getElementById('hero').style.display='flex';
+  var j=G.jug;
+  document.getElementById('hero-num').textContent=j.num;
+  var nm=j.nombre?j.nombre.replace(/^\d+\s*/,''):'';
+  document.getElementById('hero-name').textContent=nm.toUpperCase();
+  var posEl=document.getElementById('hero-pos');
+  posEl.textContent=j.pos||''; posEl.style.color=POS_COLOR[j.pos]||'#64748b';
+
+  var pj=G.partJug||j;
+  var chips=[];
+  var meta=typeof PARTIDOS_META!=='undefined'?PARTIDOS_META:[];
+  if(meta.length) chips.push({val:meta.length,lbl:'Partidos'});
+  var emeta=typeof ENTRENAMIENTOS_META!=='undefined'?ENTRENAMIENTOS_META:[];
+  if(emeta.length) chips.push({val:emeta.length,lbl:'Entrenos'});
+  if(pj.ataques){
+    var totA=pj.ataques.reduce(function(s,a){return s+(a.tot||0);},0);
+    if(totA) chips.push({val:totA,lbl:'Ataques'});
+  }
+  document.getElementById('hero-chips').innerHTML=chips.map(function(c){
+    return '<div class="chip"><div class="chip-val">'+c.val+'</div><div class="chip-lbl">'+c.lbl+'</div></div>';
+  }).join('');
+}
+
+// ── BATERIAS ─────────────────────────────────────────────────────────
+var _batTipo='partido'; var _batSesion='acumulado';
+
+function batSetTipo(tipo,btn){
+  _batTipo=tipo; _batSesion='acumulado';
+  document.getElementById('bat-tbtn-p').className='tfbtn'+(tipo==='partido'?' on-p':'');
+  document.getElementById('bat-tbtn-e').className='tfbtn'+(tipo==='entrenamiento'?' on-e':'');
+  buildBatSfrow(); renderBaterias();
+}
+
+function buildBatSfrow(){
+  var row=document.getElementById('bat-sfrow');
+  if(!row) return;
+  row.innerHTML='';
+  var meta=_batTipo==='entrenamiento'
+    ?(typeof ENTRENAMIENTOS_META!=='undefined'?ENTRENAMIENTOS_META:[])
+    :(typeof PARTIDOS_META!=='undefined'?PARTIDOS_META:[]);
+  if(!meta.length){row.style.display='none';return;}
+  row.style.display='flex';
+  function mkSF(lbl,nom){
+    var b=document.createElement('button');
+    b.className='sfbtn'+(nom===_batSesion?' on':'');
+    b.textContent=lbl;
+    b.onclick=function(){
+      _batSesion=nom;
+      row.querySelectorAll('.sfbtn').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on'); renderBaterias();
+    };
+    return b;
+  }
+  row.appendChild(mkSF('Acumulado','acumulado'));
+  meta.forEach(function(m){
+    var lbl=_batTipo==='entrenamiento'?(m.fecha||m.nombre):(m.rival||m.nombre);
+    if(m.resultado&&_batTipo==='partido') lbl+=' ('+m.resultado+')';
+    row.appendChild(mkSF(lbl,m.nombre));
+  });
+}
+
+function renderBaterias(){
+  if(!G.jug){document.getElementById('bat-wrap').style.display='none';return;}
+  document.getElementById('bat-wrap').style.display='block';
+  window._objTipo=_batTipo;
+  window._objPartido=_batSesion;
+  window._objNombre=G.jug.nombre;
+  buildBatSfrow();
+  if(typeof objGetVals==='function'&&typeof renderObjetivosJugador==='function'){
+    var jv=objGetVals(G.jug.nombre);
+    var ev=objGetVals(null);
+    renderObjetivosJugador('objetivos-jugador',G.jug.nombre,jv,ev);
+  }
+}
+
+// ── TIPO + SESION FILTER ──────────────────────────────────────────────
+function renderFilters(){
+  var row=document.getElementById('filter-row');
+  if(!G.jug){row.style.display='none';return;}
+  row.style.display='flex';
+  document.getElementById('tfbtn-p').className='tfbtn on-p';
+  document.getElementById('tfbtn-e').className='tfbtn';
+  buildSfrow();
+}
+
+function setTipo(tipo,btn){
+  G.tipo=tipo; G.sesion='acumulado';
+  document.getElementById('tfbtn-p').className='tfbtn'+(tipo==='partido'?' on-p':'');
+  document.getElementById('tfbtn-e').className='tfbtn'+(tipo==='entrenamiento'?' on-e':'');
+  buildSfrow(); renderContent();
+}
+
+function buildSfrow(){
+  var row=document.getElementById('sfrow');
+  if(!row) return;
+  row.innerHTML='';
+  var meta=G.tipo==='entrenamiento'
+    ?(typeof ENTRENAMIENTOS_META!=='undefined'?ENTRENAMIENTOS_META:[])
+    :(typeof PARTIDOS_META!=='undefined'?PARTIDOS_META:[]);
+  function mkBtn(lbl,nom){
+    var b=document.createElement('button');
+    b.className='sfbtn'+(nom===G.sesion?' on':'');
+    b.textContent=lbl;
+    b.onclick=function(){
+      G.sesion=nom;
+      row.querySelectorAll('.sfbtn').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on'); renderContent();
+    };
+    return b;
+  }
+  row.appendChild(mkBtn('Acumulado','acumulado'));
+  meta.forEach(function(m){
+    var lbl=G.tipo==='entrenamiento'?(m.fecha||m.nombre):(m.rival||m.nombre);
+    if(m.resultado&&G.tipo==='partido') lbl+=' ('+m.resultado+')';
+    row.appendChild(mkBtn(lbl,m.nombre));
+  });
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────
+function setTab(tab,btn){
+  G.tab=tab;
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  renderContent();
+}
+
+// ── CONTENT ROUTER ────────────────────────────────────────────────────
+function renderContent(){
+  var c=document.getElementById('main');
+  if(!G.jug){c.innerHTML='<div class="empty-msg">Seleccioná un jugador</div>';return;}
+  var sesData=getSesData();
+  if(G.tab==='calendario') renderCalendario(c);
+  else if(G.tab==='rendimiento') renderRendimiento(c);
+  else if(G.tab==='ataque') renderAtaque(c,sesData);
+  else if(G.tab==='saque') renderSaque(c,sesData);
+  else if(G.tab==='recepcion') renderRecepcion(c,sesData);
+}
+
+function getSesData(){
+  if(G.sesion==='acumulado') return G.tipo==='entrenamiento'?G.entJug:G.partJug;
+  var INDIV=G.tipo==='entrenamiento'
+    ?(typeof ENTRENAMIENTOS_INDIVIDUAL!=='undefined'?ENTRENAMIENTOS_INDIVIDUAL:null)
+    :(typeof PARTIDOS_INDIVIDUAL!=='undefined'?PARTIDOS_INDIVIDUAL:null);
+  if(!INDIV) return null;
+  var pd=INDIV.find(function(p){return p.nombre===G.sesion;});
+  if(!pd||!pd.jugadores) return null;
+  var nm=G.jug.nombre.replace(/^\d+\s*/,'').toLowerCase();
+  return pd.jugadores.find(function(j){
+    return j.nombre&&j.nombre.replace(/^\d+\s*/,'').toLowerCase().split(' ')[0]===nm.split(' ')[0];
+  })||null;
+}
+
+// ── CALENDARIO ────────────────────────────────────────────────────────
+function renderCalendario(c){
+  var D=window.HISTORIAL_DATA;
+  if(!D||!D.entrenamientos){c.innerHTML='<div class="empty-msg">Sin datos</div>';return;}
+  var ses=D.entrenamientos.filter(function(e){
+    return G.tipo==='partido'?e.tipo==='P':e.tipo==='E';
+  });
+  var html='<div class="sec-title">'+ses.length+' '+
+    (G.tipo==='partido'?'PARTIDOS':'ENTRENAMIENTOS')+'</div>';
+  html+='<div class="cal-list">';
+  ses.forEach(function(s){
+    var jug=(s.jugadores||[]).find(function(j){return j.c===G.num;});
+    var isP=s.tipo==='P';
+    var color=isP?'var(--red)':'var(--green)';
+    var bg=isP?'rgba(232,25,44,.1)':'rgba(34,197,94,.1)';
+    var icon=isP?'🏆':'🏋️';
+    var res=s.resultado||{};
+    var resStr=isP?(res.nafels!==undefined?(res.nafels+'-'+res.rival):''):'';
+    var resColor=isP?(res.nafels>res.rival?'var(--green)':'var(--red)'):'var(--muted)';
+    // Build onclick to filter to this session
+    var sesNom='';
+    var meta=isP?(typeof PARTIDOS_META!=='undefined'?PARTIDOS_META:[])
+                :(typeof ENTRENAMIENTOS_META!=='undefined'?ENTRENAMIENTOS_META:[]);
+    var mObj=meta.find(function(m){return m.rival===s.rival||m.fecha===s.fecha;});
+    if(mObj) sesNom=mObj.nombre;
+
+    html+='<div class="cal-card" onclick="goToSesion(\''+sesNom+'\',\''+s.tipo+'\')">';
+    html+='<div class="cal-ico" style="background:'+bg+';color:'+color+'">'+icon+'</div>';
+    html+='<div class="cal-info">';
+    html+='<div class="cal-rival" style="color:'+color+'">'+(isP?(s.rival||'Rival'):(s.fecha||'Entrenamiento'))+'</div>';
+    html+='<div class="cal-fecha">'+s.fecha+(isP?(' · '+s.rival):'')+'</div>';
+    if(jug){
+      html+='<div class="cal-stats">';
+      if(jug.aT) html+='<div class="cal-stat">ATQ <b>'+jug.aEff+'%</b> ('+jug.aT+')</div>';
+      if(jug.sT) html+='<div class="cal-stat">SQ <b>'+jug.sEff+'%</b> ('+jug.sT+')</div>';
+      if(jug.rT) html+='<div class="cal-stat">REC <b>'+jug.rEff+'%</b> ('+jug.rT+')</div>';
+      if(jug.bT) html+='<div class="cal-stat">BLQ <b>'+jug.bPt+'/'+jug.bT+'</b></div>';
+      html+='</div>';
+    } else {
+      html+='<div class="cal-fecha" style="margin-top:4px;color:var(--muted)">Sin participación registrada</div>';
+    }
+    html+='</div>';
+    if(isP&&resStr) html+='<div class="cal-res" style="color:'+resColor+'">'+resStr+'</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  c.innerHTML=html;
+}
+
+function goToSesion(sesNom, tipo){
+  if(!sesNom) return;
+  // Switch tipo and sesion, go to rendimiento tab
+  G.tipo=tipo==='P'?'partido':'entrenamiento';
+  G.sesion=sesNom;
+  document.getElementById('tfbtn-p').className='tfbtn'+(G.tipo==='partido'?' on-p':'');
+  document.getElementById('tfbtn-e').className='tfbtn'+(G.tipo==='entrenamiento'?' on-e':'');
+  buildSfrow();
+  // Update sfrow selection
+  document.querySelectorAll('#sfrow .sfbtn').forEach(function(b){
+    b.classList.remove('on');
+    if(b.textContent.indexOf(sesNom)>=0||sesNom===b.dataset&&b.dataset.nom===sesNom) b.classList.add('on');
+  });
+  // Switch to ataque tab
+  G.tab='ataque';
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('.tab').forEach(function(b){
+    if(b.textContent.indexOf('ATAQUE')>=0) b.classList.add('on');
+  });
+  renderContent();
+}
+
+// ── RENDIMIENTO ────────────────────────────────────────────────────────
+function renderRendimiento(c){
+  var D=window.HISTORIAL_DATA;
+  if(!D){c.innerHTML='<div class="empty-msg">Sin datos</div>';return;}
+  var ses=D.entrenamientos.filter(function(e){
+    return G.tipo==='partido'?e.tipo==='P':e.tipo==='E';
+  });
+  var metricas=[
+    {key:'aEff',lbl:'EFF Ataque',color:'#F97316',obj:44},
+    {key:'sEff',lbl:'EFF Saque', color:'#F59E0B',obj:3},
+    {key:'rEff',lbl:'EFF Recep.',color:'#22C55E',obj:36},
+    {key:'bEff',lbl:'EFF Bloq.', color:'#818CF8',obj:23},
+  ];
+  var html='<div class="evol-grid">';
+  metricas.forEach(function(m){
+    var data=[];
+    ses.forEach(function(s){
+      var jug=(s.jugadores||[]).find(function(j){return j.c===G.num;});
+      if(jug&&jug[m.key]!==undefined&&jug[m.key]!==null) data.push({v:jug[m.key],lbl:s.rival||s.fecha||''});
+    });
+    if(!data.length) return;
+    var vals=data.map(function(d){return d.v;});
+    var mn=Math.min.apply(null,vals);
+    var mx=Math.max.apply(null,vals);
+    var range=Math.max(Math.abs(mx),Math.abs(mn),1);
+    var avg=Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length);
+
+    html+='<div class="evol-card">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">';
+    html+='<div class="evol-title" style="margin:0">'+m.lbl+'</div>';
+    html+='<div style="font-size:9px;color:var(--muted)">Promedio: <b style="color:'+m.color+'">'+avg+'%</b> · Obj: '+m.obj+'%</div>';
+    html+='</div>';
+    html+='<div class="evol-bars">';
+    data.forEach(function(d){
+      var pct=Math.abs(d.v)/range*100;
+      var barColor=d.v>=m.obj?m.color:'rgba(239,68,68,.7)';
+      html+='<div class="evol-col">';
+      html+='<div class="evol-val" style="color:'+barColor+'">'+d.v+'%</div>';
+      html+='<div class="evol-bar" style="height:'+pct+'%;background:'+barColor+'33;border:1px solid '+barColor+'66;border-bottom:none"></div>';
+      html+='<div class="evol-lbl">'+d.lbl.substring(0,6)+'</div>';
+      html+='</div>';
+    });
+    html+='</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  c.innerHTML=html;
+}
+
+// ── ATAQUE ────────────────────────────────────────────────────────────
+
+function buildCanchitaHTML(item, color){
+  var hasDatos = item.tot > 0;
+  if(!hasDatos) return '<div style="padding:12px;text-align:center;color:#475569;font-size:11px">Sin datos</div>';
+  var destinos = item.destinos || [];
+  // Zone position map for a mini court (zones 1-9)
+  var zonePos = {
+    4:{x:16,y:18}, 3:{x:50,y:18}, 2:{x:84,y:18},
+    7:{x:16,y:50}, 8:{x:50,y:50}, 9:{x:84,y:50},
+    5:{x:16,y:82}, 6:{x:50,y:82}, 1:{x:84,y:82}
+  };
+  var maxPct = Math.max.apply(null, destinos.map(function(d){return d.pct;}).concat([1]));
+  var dots = destinos.map(function(d){
+    var p = zonePos[d.z] || {x:50,y:50};
+    var size = 8 + (d.pct/maxPct)*22;
+    var op = 0.35 + (d.pct/maxPct)*0.65;
+    return '<div style="position:absolute;left:'+p.x+'%;top:'+p.y+'%;transform:translate(-50%,-50%);width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';opacity:'+op+';display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff">'+d.pct+'</div>';
+  }).join('');
+  return '<div style="position:relative;width:100%;aspect-ratio:1;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:6px">'
+    +'<div style="position:absolute;top:0;left:0;right:0;height:1px;background:rgba(255,255,255,.15)"></div>'
+    +'<div style="position:absolute;top:33%;left:0;right:0;height:1px;background:rgba(255,255,255,.06)"></div>'
+    +'<div style="position:absolute;top:66%;left:0;right:0;height:1px;background:rgba(255,255,255,.06)"></div>'
+    +dots+'</div>';
+}
+
+function renderAtaque(c,sesData){
+  var html='';
+  // From PARTIDOS_INDIVIDUAL or acumulado
+  var pj=sesData||(G.tipo==='partido'?G.partJug:G.entJug);
+  if(pj&&pj.ataques&&pj.ataques.length){
+    var atqConDatos=pj.ataques.filter(function(a){return a.tot>0;});
+    if(atqConDatos.length){
+      html+='<div class="sec-title">ATAQUE — '+(G.sesion==='acumulado'?'ACUMULADO':G.sesion)+'</div>';
+      html+='<div class="canchas-grid">';
+      atqConDatos.forEach(function(a){
+        html+='<div class="cancha-wrap">';
+        html+='<div class="cancha-title"><span>'+a.cod+'</span>';
+        html+='<span class="cancha-stat" style="color:#F97316">'+a.eff+'%</span>';
+        html+='<span style="font-size:9px;color:var(--muted)">'+a.tot+' acc · '+a.pts+' pts</span></div>';
+        html+=buildCanchitaHTML(a,'#F97316');
+        html+='</div>';
+      });
+      html+='</div>';
+    }
+  }
+  // From HISTORIAL dv4
+  var D=window.HISTORIAL_DATA;
+  if(D){
+    var ses=D.entrenamientos.filter(function(e){
+      return G.tipo==='partido'?e.tipo==='P':e.tipo==='E';
+    });
+    var combos={};
+    ses.forEach(function(s){
+      if(G.sesion!=='acumulado'){
+        var meta=G.tipo==='partido'
+          ?(typeof PARTIDOS_META!=='undefined'?PARTIDOS_META:[])
+          :(typeof ENTRENAMIENTOS_META!=='undefined'?ENTRENAMIENTOS_META:[]);
+        var mObj=meta.find(function(m){return m.nombre===G.sesion;});
+        if(mObj&&s.rival!==mObj.rival&&s.fecha!==mObj.fecha) return;
+      }
+      var jug=(s.jugadores||[]).find(function(j){return j.c===G.num;});
+      if(!jug||!jug.dv4) return;
+      Object.keys(jug.dv4).forEach(function(cod){
+        if(!combos[cod]) combos[cod]={tot:0,pt:0,dest:{}};
+        var d=jug.dv4[cod];
+        combos[cod].tot+=d.tot||0;
+        combos[cod].pt+=d.pt||0;
+        var z=String(d.dest||'');
+        if(z) combos[cod].dest[z]=(combos[cod].dest[z]||0)+(d.tot||0);
+      });
+    });
+    var codigos=Object.keys(combos).filter(function(k){return combos[k].tot>0;});
+    if(codigos.length&&!pj){
+      html+='<div class="sec-title" style="margin-top:16px">ATAQUE — HISTORIAL DV</div>';
+      html+='<div class="canchas-grid">';
+      codigos.forEach(function(cod){
+        var combo=combos[cod];
+        var eff=combo.tot>0?Math.round(combo.pt/combo.tot*100):0;
+        var destinos=Object.keys(combo.dest).map(function(z){
+          return{z:parseInt(z),pct:Math.round(combo.dest[z]/combo.tot*100)};
+        }).sort(function(a,b){return b.pct-a.pct;});
+        var item={cod:cod,orig:3,tot:combo.tot,eff:eff,pts:combo.pt,pts_pct:eff,destinos:destinos};
+        html+='<div class="cancha-wrap">';
+        html+='<div class="cancha-title"><span>'+cod+'</span>';
+        html+='<span class="cancha-stat" style="color:#F97316">'+eff+'%</span>';
+        html+='<span style="font-size:9px;color:var(--muted)">'+combo.tot+' acc</span></div>';
+        html+=buildCanchita(item,'#F97316');
+        html+='</div>';
+      });
+      html+='</div>';
+    }
+  }
+  c.innerHTML=html||'<div class="empty-msg">Sin datos de ataque</div>';
+}
+
+// ── SAQUE ─────────────────────────────────────────────────────────────
+function renderSaque(c,sesData){
+  var pj=sesData||(G.tipo==='partido'?G.partJug:G.entJug);
+  var html='';
+  if(pj&&pj.saques&&pj.saques.length){
+    var sqConDatos=pj.saques.filter(function(s){return s.tot>0;});
+    if(sqConDatos.length){
+      html+='<div class="sec-title">SAQUE — '+(G.sesion==='acumulado'?'ACUMULADO':G.sesion)+'</div>';
+      html+='<div class="canchas-grid">';
+      sqConDatos.forEach(function(s){
+        html+='<div class="cancha-wrap">';
+        html+='<div class="cancha-title"><span>'+(s.tipo||s.cod)+'</span>';
+        html+='<span class="cancha-stat" style="color:#F59E0B">'+s.eff+'%</span>';
+        html+='<span style="font-size:9px;color:var(--muted)">'+s.tot+' saq · '+s.pts+' pts</span></div>';
+        html+=buildCanchitaHTML(s,'#F59E0B');
+        html+='</div>';
+      });
+      html+='</div>';
+    }
+  }
+  c.innerHTML=html||'<div class="empty-msg">Sin datos de saque</div>';
+}
+
+// ── RECEPCION ─────────────────────────────────────────────────────────
+function renderRecepcion(c,sesData){
+  var pj=sesData||(G.tipo==='partido'?G.partJug:G.entJug);
+  if(!pj||!pj.recepcion||!pj.recepcion.flotado){
+    c.innerHTML='<div class="empty-msg">Sin datos de recepción</div>';return;
+  }
+  // Build totals for each type
+  function recTotals(rec){
+    var tot={t:0,pt:0,pos:0,vend:0,err:0};
+    var f=rec.flotado||{}; var p=rec.potencia||{};
+    ['desde_z1','desde_z6','desde_z5'].forEach(function(z){
+      ['p1','p6','p5'].forEach(function(pos){
+        [f,p].forEach(function(src){
+          var d=src[z]&&src[z][pos];
+          if(d){tot.t+=d.tot||0;tot.pt+=d.eff||0;tot.pos+=d.pos||0;tot.vend+=d.neg||0;tot.err+=d.err||0;}
+        });
+      });
+    });
+    return tot;
+  }
+  if(typeof renderPanelRecepcion==='function'){
+    var panel=document.createElement('div');
+    renderPanelRecepcion(pj,panel);
+    c.innerHTML=''; c.appendChild(panel);
+  } else {
+    c.innerHTML='<div class="empty-msg">Función de recepción no disponible</div>';
+  }
+}
+</script>
+
+<script>
+function pct(a,b){return b>0?Math.round(a*100/b):0;}
+
+function effColor(v){
+  if(v==null||isNaN(v)) return '#475569';
+  if(v>=40) return '#22c55e';
+  if(v>=20) return '#fbbf24';
+  if(v>=0)  return '#f97316';
+  return '#ef4444';
+}
+
+function buildCanchita(item,jIdx,i,prefix,W,H,drawFn,color,j){
+  var card=document.createElement('div');
+  card.className='canchita-card';
+  var effC=effColor(item.eff);
+  var hasDatos=item.tot>0;
+
+  var hdr=document.createElement('div');
+  hdr.className='canchita-hdr';
+  var codWrap=document.createElement('div');
+  codWrap.style.cssText='display:flex;align-items:center;gap:5px';
+  var cod=document.createElement('span');
+  cod.className='canchita-cod';
+  cod.style.color=color;
+  cod.textContent=item.cod;
+  var vbtn=document.createElement('a');
+  vbtn.href=item.video||'#';vbtn.target='_blank';
+  vbtn.title='Ver video';
+  vbtn.style.cssText='font-size:12px;opacity:'+(item.video?'1':'0.2')+';text-decoration:none;line-height:1;cursor:'+(item.video?'pointer':'default');
+  vbtn.textContent='🎬';
+  vbtn.addEventListener('click',function(e){if(!item.video){e.preventDefault();}e.stopPropagation();});
+  codWrap.appendChild(cod);codWrap.appendChild(vbtn);
+  var tipo=document.createElement('span');
+  tipo.className='canchita-tipo';
+  tipo.textContent=item.tipo;
+  hdr.appendChild(codWrap);hdr.appendChild(tipo);
+  card.appendChild(hdr);
+
+  var wrap=document.createElement('div');
+  wrap.className='canchita-canvas-wrap';
+  var cv=document.createElement('canvas');
+  cv.className='mini-court';
+  cv.id=prefix+'-'+jIdx+'-'+i;
+  cv.width=W;cv.height=H;
+  wrap.appendChild(cv);card.appendChild(wrap);
+
+  var stats=document.createElement('div');
+  stats.className='canchita-stats';
+  [{l:'EFF',v:hasDatos&&item.eff!=null?item.eff+'%':'—',c:effC},{l:'TOT',v:item.tot,c:color},{l:'#%',v:hasDatos&&item.pts!=null?item.pts+'%':'—',c:'#22c55e'}].forEach(function(s){
+    var ci=document.createElement('div');ci.className='cs-item';
+    var cv2=document.createElement('div');cv2.className='cs-val';cv2.style.color=s.c;cv2.textContent=s.v;
+    var cl=document.createElement('div');cl.className='cs-lbl';cl.textContent=s.l;
+    ci.appendChild(cv2);ci.appendChild(cl);stats.appendChild(ci);
+  });
+  card.appendChild(stats);
+
+  var tipo2=prefix==='ms'?'saque':'ataque';
+  card.addEventListener('click',function(){openModal(item,j,tipo2);});
+  return card;
+}
+</script>
+<script>
+function renderPanelRecepcion(j, container){
+  container.innerHTML = '';
+  var rec = j.recepcion;
+  if(!rec || (!rec.flotado && !rec.potencia)){
+    container.innerHTML='<div style="color:#475569;padding:28px;text-align:center;font-family:Barlow Condensed,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase">Sin datos de recepción</div>';
+    return;
+  }
+
+  function ec(v){return v>=25?'#22c55e':v>=5?'#86efac':v>=0?'#94a3b8':v>=-15?'#f97316':'#ef4444';}
+  function bgc(v){return v>=25?'rgba(34,197,94,.13)':v>=5?'rgba(134,239,172,.08)':v>=0?'rgba(148,163,184,.05)':v>=-15?'rgba(249,115,22,.15)':'rgba(239,68,68,.18)';}
+  function bdc(v){return v>=25?'rgba(34,197,94,.35)':v>=5?'rgba(134,239,172,.2)':v>=0?'rgba(148,163,184,.12)':v>=-15?'rgba(249,115,22,.35)':'rgba(239,68,68,.35)';}
+
+  function zoneCard(d, label, maxTot, typeColor){
+    var vol = maxTot>0 ? Math.round((d.tot||0)/maxTot*100) : 0;
+    var e = d.eff||0, p = d.pos||0, n = d.neg||0, t = d.tot||0;
+    return '<div class="zone-card" style="background:'+bgc(e)+';border:1px solid '+bdc(e)+';border-radius:8px;padding:7px 5px">'
+      +'<div style="font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-align:center;color:'+ec(e)+';margin-bottom:3px">'+label+'</div>'
+      +'<div style="font-family:Bebas Neue,sans-serif;font-size:18px;font-weight:900;text-align:center;line-height:1;color:'+ec(e)+';margin-bottom:1px">'+e+'%</div>'
+      +'<div style="font-size:8px;text-align:center;color:#475569;margin-bottom:3px">efectividad</div>'
+      +'<div style="height:3px;border-radius:2px;background:rgba(255,255,255,.08);margin:0 2px 4px"><div style="width:'+vol+'%;height:3px;border-radius:2px;background:'+typeColor+'"></div></div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px">'
+      +'<div style="text-align:center"><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px">Total</div><div style="font-size:10px;font-weight:800;line-height:1.3;color:#e2e8f0">'+t+'</div></div>'
+      +'<div style="text-align:center"><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px"># +</div><div style="font-size:10px;font-weight:800;line-height:1.3;color:#22c55e">'+p+'%</div></div>'
+      +'<div style="text-align:center"><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px">/ =</div><div style="font-size:10px;font-weight:800;line-height:1.3;color:#ef4444">'+n+'%</div></div>'
+      +'</div></div>';
+  }
+
+  function makeZonePanel(desdeKey, desdeLabel, td, typeColor){
+    var desde = td[desdeKey];
+    if(!desde) return document.createElement('div');
+    var maxTot = Math.max((desde.p5||{}).tot||0,(desde.p6||{}).tot||0,(desde.p1||{}).tot||0,1);
+    var total = desde.total||{};
+    var el = document.createElement('div');
+    el.style.cssText='border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#0d0e1a';
+    el.innerHTML=
+      '<div style="padding:7px 12px 6px;border-bottom:1px solid '+typeColor+'22">'
+      +'<div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:'+typeColor+'">'+desdeLabel+'</div>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding:7px">'
+      + zoneCard(desde.p1||{},'Pos 1',maxTot,typeColor)
+      + zoneCard(desde.p6||{},'Pos 6',maxTot,typeColor)
+      + zoneCard(desde.p5||{},'Pos 5',maxTot,typeColor)
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(4,1fr);padding:5px 10px 7px;border-top:1px solid rgba(255,255,255,.06)">'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#e2e8f0;font-family:Barlow Condensed,sans-serif">'+( total.tot||0)+'</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">saques</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:'+ec(total.eff||0)+';font-family:Barlow Condensed,sans-serif">'+( total.eff||0)+'%</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">EFF</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#22c55e;font-family:Barlow Condensed,sans-serif">'+( total.pos||0)+'%</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px"># +</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#ef4444;font-family:Barlow Condensed,sans-serif">'+( total.neg||0)+'%</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">/ =</div></div>'
+      +'</div>';
+    return el;
+  }
+
+  var types=[
+    {key:'flotado', label:'SAQUE FLOTADO', color:'#818cf8'},
+    {key:'potencia',label:'SAQUE POTENCIA', color:'#f97316'}
+  ];
+  var zones=[
+    {key:'desde_z1',label:'Desde Zona 1'},
+    {key:'desde_z6',label:'Desde Zona 6'},
+    {key:'desde_z5',label:'Desde Zona 5'}
+  ];
+
+  var wrapper = document.createElement('div');
+  wrapper.style.cssText = 'padding:14px 4px 4px';
+
+  types.forEach(function(t, ti){
+    var secHdr = document.createElement('div');
+    secHdr.style.cssText='display:flex;align-items:center;gap:10px;margin:0 0 10px';
+    secHdr.innerHTML='<div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:4px 14px;border-radius:20px;background:'+t.color+'18;color:'+t.color+';border:0.5px solid '+t.color+'44">'+t.label+' — por zona de origen</div><div style="flex:1;height:.5px;background:rgba(255,255,255,.08)"></div>';
+    wrapper.appendChild(secHdr);
+
+    var row = document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px';
+    zones.forEach(function(z){
+      if(rec[t.key]) row.appendChild(makeZonePanel(z.key, z.label, rec[t.key], t.color));
+    });
+    wrapper.appendChild(row);
+  });
+
+  container.appendChild(wrapper);
+}
+</script>
+<script>
+if(typeof window.OBJETIVOS_CONFIG==='undefined'){
+// objetivos_config.js — Nafels Voley
+// Configuracion compartida de baterias y objetivos
+// Importar en: jugador.html, dashboard.html, historial_voley.html
+
+window.OBJETIVOS_CONFIG={metas:{
+  sq:   {label:'% Saque',   obj:3,  min:-12,max:8,  g2:3,  g1:-3, y:-8},
+  rec:  {label:'% Recep.',  obj:36, min:20, max:44, g2:36, g1:30, y:25},
+  bqpos:{label:'Blq #+',    obj:43, min:25, max:52, g2:43, g1:37, y:30},
+  bqpt: {label:'% Blq #',   obj:23, min:12, max:28, g2:23, g1:20, y:17},
+  atqq: {label:'Atq Central', obj:48, min:35, max:56, g2:48, g1:44, y:40},
+  atqhb:{label:'Atq Alta',    obj:20, min:8,  max:26, g2:20, g1:16, y:12},
+  atqx: {label:'Atq Rápida',     obj:42, min:28, max:50, g2:42, g1:38, y:34},
+  atqrp:{label:'Atq R#+',   obj:50, min:32, max:58, g2:50, g1:44, y:38},
+  atqri:{label:'Atq R!',    obj:36, min:22, max:44, g2:36, g1:32, y:28},
+  atqrm:{label:'Atq R-',    obj:26, min:14, max:34, g2:26, g1:22, y:18},
+  atqtr:{label:'Atq TR',    obj:34, min:22, max:42, g2:34, g1:30, y:26}
+}};
+
+window.currentObjPartido = window.currentObjPartido || 'acumulado';
+window.currentObjTipo = window.currentObjTipo || 'partido'; // 'partido' or 'entrenamiento'
+
+
+
+
+
+
+function objPct(v,mn,mx){return Math.max(0,Math.min(100,(v-mn)/(mx-mn)*100));}
+function fmtEff(v){ return (v<0?'-':'')+Math.abs(v)+'%'; }
+function objSingleBat(id,val,meta,cls,objLine){
+  var fh=val!==null?objPct(val,meta.min,meta.max):0;
+  var oh=objPct(objLine,meta.min,meta.max);
+  var txt=val!==null?fmtEff(val):'—';
+  return '<div style="flex:1;min-width:60px;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 5px 8px;border:0.5px solid '+cls.border+';border-radius:10px;background:'+cls.bg+';position:relative;overflow:hidden;font-family:Barlow Condensed,sans-serif">'
+    +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+cls.color+';border-radius:10px 10px 0 0"></div>'
+    +'<div style="font-size:22px;font-weight:900;line-height:1;color:'+cls.color+'">'+txt+'</div>'
+    +'<div style="width:32px;height:68px;display:flex;flex-direction:column;align-items:center">'
+      +'<div style="width:14px;height:5px;border-radius:2px 2px 0 0;background:'+cls.color+';opacity:.7;flex-shrink:0"></div>'
+      +'<div style="position:relative;width:32px;flex:1;border-radius:3px;overflow:hidden;border:2px solid '+cls.color+'">'
+        +'<div style="position:absolute;inset:0;background:#07080f"></div>'
+        +(val!==null?'<div style="position:absolute;bottom:0;left:0;right:0;height:'+fh+'%;background:'+cls.color+'"></div>':'')
+        +'<div style="position:absolute;bottom:25%;left:0;right:0;height:1px;background:#fff;opacity:.15"></div>'
+        +'<div style="position:absolute;bottom:50%;left:0;right:0;height:1px;background:#fff;opacity:.15"></div>'
+        +'<div style="position:absolute;bottom:75%;left:0;right:0;height:1px;background:#fff;opacity:.15"></div>'
+        +'<div style="position:absolute;bottom:'+oh+'%;left:-2px;right:-2px;display:flex;align-items:center;z-index:3">'
+          +'<div style="width:0;height:0;border-top:3px solid transparent;border-bottom:3px solid transparent;border-right:4px solid rgba(255,255,255,.9)"></div>'
+          +'<div style="flex:1;height:2px;background:rgba(255,255,255,.9);border-radius:1px"></div>'
+          +'<div style="width:0;height:0;border-top:3px solid transparent;border-bottom:3px solid transparent;border-left:4px solid rgba(255,255,255,.9)"></div>'
+        +'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div style="font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 5px;border-radius:20px;background:'+cls.color+'22;color:'+cls.color+'">'+cls.label+'</div>'
+    +'</div>';
+}
+function renderObjetivos(cid,extra){
+  var el=document.getElementById(cid); if(!el) return;
+  var metas=window.OBJETIVOS_CONFIG.metas;
+  var vals=Object.assign({},typeof objGetVals!=="undefined"?objGetVals(null):objCalcVals(null),extra||{});
+  var html='<div style="font-family:Barlow Condensed,sans-serif;padding:4px 0 8px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">'
+    +'<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#64748b">OBJETIVOS DEL EQUIPO · 2026</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
+    +[['#22c55e','Objetivo'],['#86efac','Cerca'],['#fbbf24','Neutro'],['#ef4444','Lejos']].map(function(x){
+      return'<div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#64748b"><div style="width:7px;height:7px;border-radius:50%;background:'+x[0]+'"></div>'+x[1]+'</div>';
+    }).join('')+'</div></div>'
+    +'<div style="display:flex;gap:8px;width:100%;margin-bottom:4px">'
+    +Object.keys(metas).map(function(id){return'<div style="flex:1;min-width:60px;max-width:110px;text-align:center;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#64748b">'+metas[id].label+'</div>';}).join('')
+    +'</div><div style="display:flex;gap:8px;width:100%">'
+    +Object.keys(metas).map(function(id){
+      var m=metas[id],val=vals[id]!==undefined?vals[id]:null;
+      var cls=val!==null?objClassify(id,val):{color:'#334155',bg:'rgba(51,65,85,.08)',border:'rgba(51,65,85,.2)',label:'—'};
+      return objSingleBat(id,val,m,cls,m.obj);
+    }).join('')+'</div></div>';
+  el.innerHTML=html;
+}
+
+
+function buildObjSubfiltro(nombreJugador){
+  var row = document.getElementById('obj-partido-row');
+  if(!row) return;
+  if(typeof PARTIDOS_META === 'undefined'){ row.style.display='none'; return; }
+  row.innerHTML = '';
+  row.style.display = 'flex';
+
+  // Label
+  var lbl = document.createElement('span');
+  lbl.style.cssText = 'font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase;align-self:center;margin-right:4px';
+  lbl.textContent = 'VER:';
+  row.appendChild(lbl);
+
+  // Acumulado button
+  var b = document.createElement('button');
+  b.className = 'obj-sfbtn' + (currentObjPartido==='acumulado'?' on':'');
+  b.textContent = 'Acumulado';
+  b.onclick = function(){
+    window.window.currentObjPartido = 'acumulado';
+    document.querySelectorAll('.obj-sfbtn').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');
+    renderObjetivosJugador('objetivos-jugador', nombreJugador);
+  };
+  row.appendChild(b);
+
+  // Per-partido buttons
+  PARTIDOS_META.forEach(function(m){
+    var btn = document.createElement('button');
+    btn.className = 'obj-sfbtn' + (window.currentObjPartido===m.nombre?' on':'');
+    var label = m.rival||m.nombre;
+    if(m.resultado) label += ' ('+m.resultado+')';
+    btn.textContent = label;
+    btn.onclick = function(){
+      window.currentObjPartido = m.nombre;
+      document.querySelectorAll('.obj-sfbtn').forEach(function(x){x.classList.remove('on');});
+      btn.classList.add('on');
+      renderObjetivosJugador('objetivos-jugador', nombreJugador);
+    };
+    row.appendChild(btn);
+  });
+}
+function setObjTipo(tipo, btn){
+  window.currentObjTipo = tipo;
+  window.window.currentObjPartido = 'acumulado';
+  document.querySelectorAll('.obj-tfbtn').forEach(function(b){
+    b.classList.remove('on','partido','ent');
+  });
+  btn.classList.add('on', tipo==='partido'?'partido':'ent');
+  // Rebuild subfiltro for this tipo
+  var currentJugNombre = null;
+  var titleEl = document.querySelector('.player-name-title');
+  if(titleEl) currentJugNombre = titleEl.dataset.nombre;
+  buildObjSubfiltro(currentJugNombre || '');
+  renderObjetivosJugador('objetivos-jugador', currentJugNombre || '');
+}
+
+}
+</script>
+
+
+<!-- ── HEAT MAPS ──────────────────────────────────── -->
+<style>
+#hm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center}
+#hm-overlay.open{display:flex}
+.hm-box{background:#0D0E1A;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:24px;width:min(380px,92vw);box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.hm-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+.hm-close{background:rgba(255,255,255,.08);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:16px}
+.hm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hm-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px;border-radius:14px;text-decoration:none;color:#fff;transition:all .18s;border:1px solid}
+.hm-card:hover{transform:translateY(-2px);filter:brightness(1.15)}
+.hm-icon{font-size:28px}.hm-lbl{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px}
+.hm-sub{font-size:9px;color:#64748b;text-align:center}
+</style>
+<div id="hm-overlay" onclick="if(event.target===this)closeHeatmapMenu()">
+  <div class="hm-box">
+    <div class="hm-title"><span>🔥 HEAT MAPS</span><button class="hm-close" onclick="closeHeatmapMenu()">✕</button></div>
+    <div class="hm-grid">
+      <a class="hm-card" href="hm_ataque.html?equipo=nafels"    style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.3)"><span class="hm-icon">⚡</span><span class="hm-lbl" style="color:#F97316">ATAQUE</span><span class="hm-sub">EFF · SO/TR · Zonas</span></a>
+      <a class="hm-card" href="hm_saque.html?equipo=nafels"     style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)"><span class="hm-icon">🎯</span><span class="hm-lbl" style="color:#22C55E">SAQUE</span><span class="hm-sub">EFF · Zonas origen/destino</span></a>
+      <a class="hm-card" href="hm_recepcion.html?equipo=nafels" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🛡️</span><span class="hm-lbl" style="color:#818CF8">RECEPCION</span><span class="hm-sub">EFF · Calidad · Zonas</span></a>
+      <a class="hm-card" href="hm_armador.html?equipo=nafels"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
+      <a class="hm-card" href="hm_defensa.html" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🧤</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Por rival</span></a><a class="hm-card" href="hm_bloqueo.html" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🧱</span><span class="hm-lbl" style="color:#818CF8">BLOQUEO</span><span class="hm-sub">EFF · Zona del ataque · Combos</span></a>
+    </div>
+    <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">NLA Suiza 2026/27 · temporada en curso</div>
+  </div>
+</div>
+<script>
+function showHeatmapMenu(){ document.getElementById('hm-overlay').classList.add('open'); }
+function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.remove('open'); }
+</script>
+
+<script src="chat_nafels.js"></script>
+<script src="lang.js"></script>
+<script src="temporadas_menu.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   EL PLANTEL, VENGA DE DONDE VENGA
+   --------------------------------------------------------------------------
+   La lista de jugadores salia de EQUIPO_DATA, que viene cifrado y a veces no
+   llega: sin eso la pagina quedaba en blanco, sin siquiera los nombres.
+
+   Se prueban las fuentes en orden y se usa la primera que tenga gente. El
+   plantel del club guarda el apellido en "ap" y las pantallas lo esperan en
+   "nombre", asi que se normaliza.
+   ══════════════════════════════════════════════════════════════════════════ */
+function _plantelDelClub(){
+  try{
+    if(typeof PARTIDOS_JUGADORES !== 'undefined' && PARTIDOS_JUGADORES.length)
+      return PARTIDOS_JUGADORES;
+  }catch(e){}
+  try{
+    if(window.EQUIPO_DATA && (window.EQUIPO_DATA.jugadores||[]).length)
+      return window.EQUIPO_DATA.jugadores;
+  }catch(e){}
+  try{
+    var P = (window.PLANTEL_NAFELS && window.PLANTEL_NAFELS.jugadores) || [];
+    if(P.length) return P.map(function(j){
+      return {num:j.num, nombre:(j.ap || j.nombre || ''), pos:j.pos, foto:j.foto};
+    });
+  }catch(e){}
+  return [];
+}
+</script>
+</body>
+</html>
+
+<!-- © 2025-2026 Ignacio Verdi · NAFELS VOLEY · Software propietario - Todos los derechos reservados -->

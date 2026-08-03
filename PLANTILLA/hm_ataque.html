@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Analisis de Ataque — {{Club}} 2026</title>
+<title>Analisis de Ataque — {{CLUB}} 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -79,13 +79,20 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 .cc-cell .cn{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1;color:#fff}
 .cc-cell .pc{position:absolute;bottom:3px;right:5px;font-size:9px;opacity:.8;color:#fff}
 </style>
-<script src="liga_data.js"></script>
-<script src="liga_data_entrenamientos.js"></script>
+<!-- Los datos vienen cifrados: este es el que sabe abrirlos. -->
+  <script src="datos_seguros.js"></script>
+<script src="filtro_tipo.js" onerror="void 0"></script>
+  <script src="liga_data.js.enc"></script>
+<script src="liga_data_entrenamientos.js.enc"></script>
+  <script>abrirDatos();</script>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="hdr">
-  <div><div class="hdr-t">{{CLUB_COMPLETO}} — ANALISIS DE ATAQUE 2026</div>
-  <div class="hdr-s">7 partidos DHM Argentina · Selecciona jugador y filtros</div></div>
+  <div><div class="hdr-t">{{CLUB}} — ANALISIS DE ATAQUE 2026</div>
+  <div class="hdr-s">26 partidos NLA · Selecciona jugador y filtros</div></div>
 <div style="display:flex;align-items:center;gap:4px"><button id="lang-es" onclick="setLang('es')" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;padding:3px 9px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:1px;opacity:1">ES</button><button id="lang-en" onclick="setLang('en')" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;padding:3px 9px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:1px;opacity:0.4">EN</button><button id="lang-de" onclick="setLang('de')" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;padding:3px 9px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:1px;opacity:0.4">DE</button></div>
 </div>
 <div class="layout">
@@ -108,7 +115,13 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
   </div></div>
   <div class="acc-group"><div class="acc-header" id="acc-hdr-contexto" onclick="accToggle('contexto')"><span>Contexto</span><div style="display:flex;align-items:center;gap:6px"><div class="acc-dot"></div><span class="acc-arrow">▶</span></div></div>
   <div class="acc-body" id="acc-body-contexto">
-    <div class="flabel" style="margin-top:0" data-i18n="Tipo de ataque">Tipo de ataque</div>
+    <!-- Desde que zona salio el ataque. Con esto se ve, por ejemplo, adonde
+         van los remates cuando se ataca desde la 4. -->
+    <div class="flabel" style="margin-top:0" data-i18n="Zona de origen">Zona de origen</div>
+    <select class="fsel" id="fsel-origin"><option value="all">Todas</option></select>
+    <div class="flabel" data-i18n="Combinacion">Combinación</div>
+    <select class="fsel" id="fsel-combo"><option value="all">Todas</option></select>
+    <div class="flabel" data-i18n="Tipo de ataque">Tipo de ataque</div>
     <select class="fsel" id="fsel-atype"><option value="all">Todos</option></select>
     <div class="flabel" data-i18n="Set">Set</div>
     <select class="fsel" id="fsel-set"><option value="all">Todos</option></select>
@@ -134,7 +147,7 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 
 <script>var RAW=(function(){
   var params=new URLSearchParams(window.location.search);
-  var equipo=(params.get('equipo')||'{{club}}').toLowerCase();
+  var equipo=(params.get('equipo')||'{{CLUB_SLUG}}').toLowerCase();
   window.__MODO=(function(){try{return localStorage.getItem('vb_modo')||'partido';}catch(e){return 'partido';}})();
   var L = window.__MODO==='entrenamiento' ? (window.LIGA_DATA_ENT||window.LIGA_DATA) : window.LIGA_DATA;
   if(window.__MODO==='entrenamiento' && L && L.teams && L.teams['entrenamiento']) equipo='entrenamiento';
@@ -176,7 +189,11 @@ function translatePage(){document.querySelectorAll('[data-i18n]').forEach(functi
 var RIVALS = RAW.rivals;
 var COMBOS = RAW.combos;
 var GAMES  = RAW.games;
-var RES_DECODE  = ['#','+','-','/','=','!'];
+/* El orden tiene que ser EXACTAMENTE el que usa el motor al guardar
+   —RES_IDX en update_db— o los resultados salen cambiados de lugar: los
+   bloqueados aparecian como positivos y por eso la cancha de bloqueos
+   mostraba uno solo en toda la temporada. */
+var RES_DECODE  = ['#','/','+','!','=','-'];
 var MOM_DECODE  = ['early','mid','late'];
 var ATYPE_DECODE= ['SO','TR'];
 
@@ -214,7 +231,7 @@ var POS_COLOR = {2:"#818CF8",3:"#F59E0B",4:"#F97316",8:"#22C55E",5:"#06B6D4",9:"
 var RES_LABEL = {"#":"Kill","+":"Positivo","-":"Negativo","/":"Bloqueado","=":"Error","!":"Exclamativo"};
 var RES_COLOR = {"#":"#22c55e","+":"#86efac","-":"#f59e0b","/":"#ef4444","=":"#dc2626"};
 var MOMENT_LABEL = {early:"0-8 pts",mid:"9-16 pts",late:"17+ pts"};
-var F = {player:"",atype:"all",rival:"all",set:"all",moment:"all",result:"all",combo:"all",rec_quality:"all",rec_player:"all"};
+var F = {player:"",atype:"all",rival:"all",set:"all",moment:"all",result:"all",combo:"all",rec_quality:"all",rec_player:"all",origin:"all"};
 
 // Build player selector
 var pNums = Object.keys(PLAYERS).map(Number).sort(function(a,b){
@@ -243,13 +260,13 @@ function uniq(arr){var s={},r=[];arr.forEach(function(v){if(!s[v]){s[v]=1;r.push
 function setF(key,val){ F[key]=val; if(key!=="player") buildChips(); render(); }
 function onPlayerChange(val){
   F.player=val; F.atype="all"; F.rival="all"; F.set="all";
-  F.moment="all"; F.result="all"; F.combo="all";
+  F.moment="all"; F.result="all"; F.combo="all"; F.origin="all";
   F.rec_quality="all"; F.rec_player="all";
   buildChips(); render();
 }
 function resetFilters(){
   F.atype="all"; F.rival="all"; F.set="all";
-  F.moment="all"; F.result="all"; F.combo="all";
+  F.moment="all"; F.result="all"; F.combo="all"; F.origin="all";
   F.rec_quality="all"; F.rec_player="all";
   buildChips(); render();
 }
@@ -257,7 +274,9 @@ function getFiltered(){
   if(!F.player) return [];
   var p=PLAYERS[F.player]; if(!p) return [];
   return p.actions.filter(function(a){
-    if(F.atype!=="all" && a.atype!==F.atype) return false;
+    if(F.origin!=="all" && String(a.origin)!==String(F.origin)) return false;
+      if(F.combo!=="all" && a.combo!==F.combo) return false;
+      if(F.atype!=="all" && a.atype!==F.atype) return false;
     if(F.rival!=="all" && a.rival!==F.rival) return false;
     if(F.set!=="all" && a.set!==parseInt(F.set)) return false;
     if(F.moment!=="all" && a.moment!==F.moment) return false;
@@ -281,7 +300,40 @@ function buildChips(){
      fecha y su resultado. (Igual que en {{CLUB}}, de donde se copió.) */
   var actsGi=(F.rival&&F.rival!=='all')?acts.filter(function(a){return a.rival===F.rival;}):acts;
   var ug=uniq(actsGi.map(function(a){return a.gi;})).sort(function(a,b){return a-b;});
-  buildSelect('fsel-gi',[['all',t('Todos')]].concat(ug.map(function(gi){var g=GA[gi];if(!g)return[gi,'P'+gi];var rs=g.rival.split(' ').slice(-1)[0].substring(0,9);var dl='';if(g.date){var pts=g.date.split('-');try{dl=' ('+parseInt(pts[2])+' '+MO[parseInt(pts[1])]+')'}catch(e){}}return[gi,rs+dl+(g.r?' · '+g.r:'')];})),'gi',fChange);
+  /* Cada partido de la lista: rival, fecha y resultado. El resultado ayuda a
+     ubicarlo de un vistazo —"Amriswil (12 nov) 2-3"— sin tener que abrirlo.
+
+     Se busca en los campos donde puede venir, porque no siempre llega con el
+     mismo nombre. Si no esta, se muestra rival y fecha como antes. */
+  function _etiquetaPartido(gi){
+    var g = GA[gi];
+    if(!g) return 'P' + gi;
+    var rs = String(g.rival || '').split(' ').slice(-1)[0].substring(0, 9);
+    var dl = '';
+    if(g.date){
+      var pts = String(g.date).split('-');
+      try{ dl = ' (' + parseInt(pts[2]) + ' ' + MO[parseInt(pts[1])] + ')'; }catch(e){}
+    }
+    var rr = g.r || g.res || g.resultado || g.score || g.sets || '';
+    if(!rr && g.sw !== undefined && g.sl !== undefined) rr = g.sw + '-' + g.sl;
+    return rs + dl + (rr ? '  ' + rr : '');
+  }
+  buildSelect('fsel-gi',[['all',t('Todos')]].concat(ug.map(function(gi){
+    return [gi, _etiquetaPartido(gi)];
+  })),'gi',fChange);
+  /* Las zonas desde donde de verdad se ataco, no las nueve fijas: asi no se
+     ofrecen opciones que no tienen ni una accion. */
+  var zonas=uniq(acts.map(function(a){return a.origin;}).filter(Boolean)).sort();
+  buildSelect('fsel-origin',[['all',t('Todas')]].concat(zonas.map(function(z){
+    return [String(z), t('Zona')+' '+z]; })),'origin',fChange);
+
+  /* Las combinaciones que se usaron, ordenadas por cuantas veces. */
+  var cbc={};
+  acts.forEach(function(a){ if(a.combo) cbc[a.combo]=(cbc[a.combo]||0)+1; });
+  var cbs=Object.keys(cbc).sort(function(a,b){ return cbc[b]-cbc[a]; });
+  buildSelect('fsel-combo',[['all',t('Todas')]].concat(cbs.map(function(c){
+    return [c, c+' ('+cbc[c]+')']; })),'combo',fChange);
+
   buildSelect('fsel-atype',[['all',t('Todos')],['SO','Side Out'],['TR',t('Transicion')]],'atype',fChange);
   var sets=['all'].concat(uniq(acts.map(function(a){return a.set;})).sort(function(a,b){return a-b;}));
   buildSelect('fsel-set',sets.map(function(s){return[s,s==='all'?t('Todos'):'S'+s];}),'set',fChange);
@@ -369,11 +421,17 @@ function buildDestZones(acts){
   return z;
 }
 function getMainOrigin(acts){
+  /* La zona desde donde se ataco. Solo se muestra si de verdad hay UNA: antes
+     se ponia la mas frecuente y parecia que los 1052 ataques salieron todos de
+     la zona 2, cuando salieron de varias.
+
+     Si hay mas de una zona, no se muestra ninguna: para eso esta el filtro de
+     "Zona de origen" en la barra de la izquierda. */
   var oc={};
   acts.forEach(function(a){if(a.origin) oc[a.origin]=(oc[a.origin]||0)+1;});
-  var best=null,bestN=0;
-  Object.keys(oc).forEach(function(k){if(oc[k]>bestN){bestN=oc[k];best=parseInt(k);}});
-  return best;
+  var zonas=Object.keys(oc);
+  if(zonas.length!==1) return null;
+  return parseInt(zonas[0]);
 }
 
 
@@ -388,13 +446,22 @@ function getMainOrigin(acts){
 /* === Canchita estilo Plan de Partido (una cancha + linea de origen) === */
 var CC_MIN=2;
 function _ccRGB(c){if(!c)return '129,140,248';c=String(c);if(c.charAt(0)==='#'){var x=c.slice(1);if(x.length===3)x=x.charAt(0)+x.charAt(0)+x.charAt(1)+x.charAt(1)+x.charAt(2)+x.charAt(2);var n=parseInt(x,16);return ((n>>16)&255)+','+((n>>8)&255)+','+(n&255);}var m=c.match(/(\d+)\D+(\d+)\D+(\d+)/);return m?(m[1]+','+m[2]+','+m[3]):'129,140,248';}
-function ccGrid(zones,layout,color,total,opts){opts=opts||{};var minN=opts.minN||0,rgb=_ccRGB(color);var vals=[];layout.forEach(function(r){r.forEach(function(z){vals.push(zones[z]||0);});});var mx=Math.max.apply(null,vals)||1;var h="<div class='cc-grid'>";layout.forEach(function(row){row.forEach(function(z){var cnt=zones[z]||0,low=(minN>0&&cnt>0&&cnt<minN),bg,inner='';if(cnt<=0){bg='rgba(255,255,255,.02)';}else if(low){bg='rgba(255,255,255,.05)';inner="<div class='cn' style='color:#64748b;font-size:20px'>"+cnt+"</div>";}else{var a=0.16+(cnt/mx)*0.72;bg='rgba('+rgb+','+a.toFixed(2)+')';inner="<div class='cn'>"+cnt+"</div>"+((total>0)?"<div class='pc'>"+Math.round(cnt/total*100)+"%</div>":'');}/* Si la zona tiene acciones, se puede tocar para ver esos videos.
+function ccGrid(zones,layout,color,total,opts){opts=opts||{};var minN=opts.minN||0,esOrig=!!opts.origen,rgb=_ccRGB(color);var vals=[];layout.forEach(function(r){r.forEach(function(z){vals.push(zones[z]||0);});});var mx=Math.max.apply(null,vals)||1;var h="<div class='cc-grid'>";layout.forEach(function(row){row.forEach(function(z){var cnt=zones[z]||0,low=(minN>0&&cnt>0&&cnt<minN),bg,inner='';if(cnt<=0){bg='rgba(255,255,255,.02)';}else if(low){bg='rgba(255,255,255,.05)';inner="<div class='cn' style='color:#64748b;font-size:20px'>"+cnt+"</div>";}else{var a=0.16+(cnt/mx)*0.72;bg='rgba('+rgb+','+a.toFixed(2)+')';inner="<div class='cn'>"+cnt+"</div>"+((total>0)?"<div class='pc'>"+Math.round(cnt/total*100)+"%</div>":'');}/* Si la zona tiene acciones, se puede tocar para ver esos videos.
        El heatmap deja de ser un cuadro y pasa a ser una puerta al video. */
     var _clic = (cnt>0 && typeof verVideoDest==='function')
-      ? " onclick=\"verVideoDest("+z+")\" style=\"background:"+bg+";cursor:pointer\" title=\"Ver los videos de esta zona\""
+      ? " onclick=\"verVideoDest("+z+","+(esOrig?"1":"0")+")\" style=\"background:"+bg+";cursor:pointer\" title=\"Ver los videos de esta zona\""
       : " style='background:"+bg+"'";
     h+="<div class='cc-cell'"+_clic+"><div class='zn'>"+z+"</div>"+inner+"</div>";});});return h+"</div>";}
-function ccOriginLine(zones,total){var arr=[];for(var z in zones){if(zones[z]>0)arr.push([z,zones[z]]);}arr.sort(function(a,b){return b[1]-a[1];});if(!arr.length)return "";var top=arr.slice(0,3).map(function(p){return "Z"+p[0]+(total>0?" "+Math.round(p[1]/total*100)+"%":" ("+p[1]+")");}).join(" \u00b7 ");return "<div class='cc-origin'>Zona de origen: <b>"+top+"</b></div>";}
+function ccOriginLine(zones,total){
+  /* El cartel "Zona de origen: Z2" quedaba arriba de cada cancha con la zona
+     mas frecuente, y hacia parecer que TODOS los ataques salieron de ahi
+     cuando salieron de varias.
+
+     Para eso esta el filtro de "Zona de origen" en la barra de la izquierda,
+     que ademas filtra de verdad. Se deja la linea vacia para no desalinear las
+     canchas, que la esperan. */
+  return "<div class='cc-origin' style='visibility:hidden'>&nbsp;</div>";
+}
 
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -404,10 +471,23 @@ function ccOriginLine(zones,total){var arr=[];for(var z in zones){if(zones[z]>0)
    video: hacés clic en la zona donde te bloquean y ves las jugadas.
    ══════════════════════════════════════════════════════════════════════════ */
 function _vfilt(){
+  /* Los filtros que se le pasan al reproductor. Antes iban solo el rival y el
+     set: si estabas mirando los bloqueados de la zona 2, el video traia TODOS
+     los ataques del jugador y no coincidia con lo que se veia en la cancha.
+
+     cortes.html entiende ev (resultado), oz (zona de origen), dz (destino) y
+     ph (la fase), asi que ahora se le mandan todos. */
   var u = '';
   try{
-    if(F.rival && F.rival !== 'all') u += '&rival=' + encodeURIComponent(F.rival);
-    if(F.set   && F.set   !== 'all') u += '&set='   + encodeURIComponent(F.set);
+    if(F.rival  && F.rival  !== 'all') u += '&rival=' + encodeURIComponent(F.rival);
+    if(F.set    && F.set    !== 'all') u += '&set='   + encodeURIComponent(F.set);
+    if(F.result && F.result !== 'all') u += '&ev='    + encodeURIComponent(F.result);
+    if(F.origin && F.origin !== 'all') u += '&oz='    + encodeURIComponent(F.origin);
+    if(F.atype  && F.atype  !== 'all') u += '&ph='    + encodeURIComponent(F.atype);
+    if(F.gi     && F.gi     !== 'all'){
+      var g = GA[F.gi];
+      if(g && g.date) u += '&date=' + encodeURIComponent(g.date);
+    }
   }catch(e){}
   return u;
 }
@@ -417,10 +497,33 @@ function abrirVideo(){
   if(F.combo && F.combo !== 'all') u += '&combo=' + encodeURIComponent(F.combo);
   window.open(u + _vfilt(), '_blank');
 }
-function verVideoDest(zone, extra){
+
+/* Los videos de una zona puntual. Se usa desde la cancha de bloqueados: al
+   elegir una zona se abren solo los ataques bloqueados que salieron de ahi. */
+function verVideosZona(zona, resultado){
   if(!F.player){ alert('Elegí un jugador primero.'); return; }
-  window.open('cortes.html?num=' + encodeURIComponent(F.player) +
-              '&sk=Ataque&dz=' + zone + (extra || '') + _vfilt(), '_blank');
+  var u = 'cortes.html?num=' + encodeURIComponent(F.player) + '&sk=Ataque';
+  if(resultado) u += '&ev=' + encodeURIComponent(resultado);
+  if(zona)      u += '&oz=' + encodeURIComponent(zona);
+  if(F.combo && F.combo !== 'all') u += '&combo=' + encodeURIComponent(F.combo);
+  if(F.rival && F.rival !== 'all') u += '&rival=' + encodeURIComponent(F.rival);
+  window.open(u, '_blank');
+}
+function verVideoDest(zone, esOrigen){
+  /* Los videos de una zona.
+
+     En las canchas de destino la zona es a donde FUE la pelota —dz—; en la de
+     bloqueados es desde donde SALIO el ataque —oz—, porque un ataque bloqueado
+     no tiene destino.
+
+     Cual de las dos es viene escrito en el propio boton. Antes se usaba una
+     marca global que se apagaba al terminar de dibujar: al hacer clic ya valia
+     falso y siempre mandaba el destino. */
+  if(!F.player){ alert('Elegí un jugador primero.'); return; }
+  var u = 'cortes.html?num=' + encodeURIComponent(F.player) + '&sk=Ataque' +
+          (esOrigen ? '&oz=' : '&dz=') + zone;
+  if(esOrigen) u += '&ev=/';
+  window.open(u + _vfilt(), '_blank');
 }
 
 function courtSVG(destZones,originZone,total,color,title){
@@ -429,20 +532,28 @@ function courtSVG(destZones,originZone,total,color,title){
      los números caían en el lugar equivocado de la cancha. */
   var RIVAL=[[4,3,2],[7,8,9],[5,6,1]];
   var h="<div class='cc-wrap'>";
-  if(originZone) h+="<div class='cc-origin'>Zona de origen: <b>Z"+originZone+"</b></div>";
+  /* El cartel "Zona de origen" se saca: hacia parecer que todos los ataques
+     salieron de esa zona. Para eso esta el filtro de la barra izquierda, que
+     ademas filtra de verdad. La linea vacia mantiene las canchas alineadas. */
+  h+="<div class='cc-origin' style='visibility:hidden'>&nbsp;</div>";
   h+="<div class='cc-lbl' style='color:rgba(232,25,44,.6)'>"+title+"</div>";
   h+=ccGrid(destZones,RIVAL,color,total,{minN:CC_MIN});
   return h+"</div>";
 }
 
 function courtSVGOrigin(originZones,total,color,title){
+  /* Esta es la cancha de los bloqueados: sus zonas son de ORIGEN, no de
+     destino. Se marca para que las celdas abran los videos correctos. */
   var OWN=[[4,3,2],[7,8,9],[5,6,1]];
   var h="<div class='cc-wrap'>";
   /* Las otras canchas llevan la línea «Zona de origen»: acá va una vacía
      del mismo alto, si no esta arranca más arriba y queda desalineada. */
   h+="<div class='cc-origin' style='visibility:hidden'>&nbsp;</div>";
   h+="<div class='cc-lbl' style='color:rgba(239,68,68,.6)'>"+title+"</div>";
-  h+=ccGrid(originZones,OWN,color,total,{minN:CC_MIN});
+  /* Sin minimo: los bloqueados son pocos repartidos en nueve zonas, y con el
+     minimo de dos casi ninguna llegaba y la cancha quedaba en blanco. */
+  h+=ccGrid(originZones,OWN,color,total,{minN:0,origen:true});
+  /* se apaga: las demas canchas usan la zona de destino */
   return h+"</div>";
 }
 
@@ -537,11 +648,29 @@ function render(){
   var killWD=acts.filter(function(a){return a.result=="#"&&a.dest;});
   if(killWD.length>0) html+="<div class='court-block'><div class='court-title' style='color:#22c55e'>Kills ("+kills+")</div>"+courtSVG(buildDestZones(killWD),orig,killWD.length,"#22c55e","▲ RIVAL")+"</div>";
   // Blocked attacks - show ORIGIN zones (where they were attacking from when blocked)
-  var bloqO=acts.filter(function(a){return a.result=="/"&&a.origin;});
-  if(bloqO.length>0){
-    var bz={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
-    bloqO.forEach(function(a){if(a.origin) bz[a.origin]=(bz[a.origin]||0)+1;});
-    html+="<div class='court-block'><div class='court-title' style='color:#ef4444'>Bloqueados - Origen ("+bloq+")</div>"+courtSVGOrigin(bz,bloqO.length,"#ef4444","▼ ORIGEN")+"</div>";
+  /* Los ataques bloqueados, por la zona DESDE DONDE se atacaba: en que zona lo
+     bloquean mas. Un ataque bloqueado no tiene destino —la pelota nunca paso—,
+     por eso esta cancha muestra el origen y no el destino como las otras.
+
+     Se arma igual que en el plan de partido: se cuenta cada bloqueo en su zona
+     y se pinta la cancha propia, sin exigir un minimo de acciones. */
+  /* Cada zona de la cancha de bloqueados abre sus propios videos: se hace clic
+     en la zona y se ven solo los ataques bloqueados que salieron de ahi. */
+  var bloqO = acts.filter(function(a){ return a.result === "/"; });
+  if(bloqO.length > 0){
+    var bz = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
+    var conZona = 0;
+    bloqO.forEach(function(a){
+      var z = a.origin;
+      if(z && bz[z] !== undefined){ bz[z]++; conZona++; }
+    });
+    var titulo = conZona
+      ? "Bloqueados - Origen (" + conZona + ")"
+      : "Bloqueados (" + bloqO.length + ") - sin zona";
+    html += "<div class='court-block'><div class='court-title' style='color:#ef4444'>" +
+            titulo + "</div>" +
+            courtSVGOrigin(bz, conZona || bloqO.length, "#ef4444", "\u25bc ORIGEN") +
+            "</div>";
   }
   html+="</div>";
 
@@ -689,6 +818,8 @@ window.onload=function(){
 // ── SELECTOR PARTIDO / ENTRENAMIENTO ──────────────────────────────
 function setModo(modo){
   try{ localStorage.setItem('vb_modo', modo); }catch(e){}
+  /* La eleccion vale para todo el sistema, no solo para esta pantalla. */
+  try{ if(typeof vbSetTipo==='function') vbSetTipo(modo); }catch(e){}
   location.reload();
 }
 function _initModoBtns(){
@@ -704,5 +835,10 @@ function _initModoBtns(){
 document.addEventListener('DOMContentLoaded', _initModoBtns);
 
 </script>
+<!-- lang.js trae el selector de idioma y el escudo del club, que es el
+     boton para volver al inicio. Sin el, no hay como salir de la
+     pantalla sin usar el boton de atras del navegador. -->
+<script src="lang.js" onerror="void 0"></script>
+<script src="temporadas_menu.js" onerror="void 0"></script>
 </body>
 </html>

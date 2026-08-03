@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cámara — Video del partido</title>
+<style>
+  :root{
+    --bg:#0a0b12; --card:#12131f; --card2:#1a1b2b; --b:rgba(255,255,255,.08);
+    --txt:#e8e8f0; --mut:#8a8ba0; --accent:#e6a743; --live:#22d3ee; --ok:#22c55e; --bad:#ef4444;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    min-height:100vh;display:flex;flex-direction:column}
+  .top{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--b);background:rgba(7,8,15,.9)}
+  .top h1{font-family:'Barlow Condensed',sans-serif;font-size:19px;margin:0;letter-spacing:.5px}
+  .top .dot{width:9px;height:9px;border-radius:50%;background:var(--mut);flex-shrink:0}
+  .top .dot.on{background:var(--live);box-shadow:0 0 10px var(--live);animation:pulse 1.4s infinite}
+  @keyframes pulse{50%{opacity:.4}}
+  .wrap{flex:1;display:flex;flex-direction:column;padding:16px;gap:14px;max-width:640px;width:100%;margin:0 auto}
+  .video-box{position:relative;background:#000;border-radius:16px;overflow:hidden;aspect-ratio:16/9;border:1px solid var(--b)}
+  video{width:100%;height:100%;object-fit:cover;display:block}
+  .video-box .badge{position:absolute;top:10px;left:10px;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:800;
+    letter-spacing:1.5px;background:rgba(0,0,0,.6);color:var(--mut);backdrop-filter:blur(6px)}
+  .video-box .badge.live{color:var(--live)}
+  .card{background:var(--card);border:1px solid var(--b);border-radius:14px;padding:16px}
+  label.f{display:block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+  select.f{width:100%;background:var(--card2);border:1px solid var(--b);color:var(--txt);border-radius:10px;padding:12px;
+    font-size:15px;font-family:inherit;outline:none;appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238a8ba0' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center}
+  .btn{width:100%;border:0;border-radius:12px;padding:16px;font-size:16px;font-weight:800;letter-spacing:.5px;
+    cursor:pointer;font-family:inherit;transition:transform .1s,opacity .15s}
+  .btn:active{transform:scale(.98)}
+  .btn.go{background:var(--accent);color:#1a1200}
+  .btn.stop{background:var(--bad);color:#fff}
+  .btn.ghost{background:var(--card2);color:var(--txt);border:1px solid var(--b)}
+  .sala{text-align:center;padding:20px}
+  .sala .lbl{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+  .sala .code{font-family:'Barlow Condensed',monospace;font-size:44px;font-weight:800;letter-spacing:6px;color:var(--accent);line-height:1}
+  .status{font-size:13px;color:var(--mut);text-align:center;min-height:20px;line-height:1.5}
+  .status.ok{color:var(--ok)} .status.err{color:var(--bad)} .status.live{color:var(--live)}
+  .hint{font-size:12px;color:var(--mut);line-height:1.6;background:var(--card);border:1px solid var(--b);border-radius:12px;padding:14px}
+  .hint b{color:var(--txt)}
+  .row{display:flex;gap:10px}
+  .row .btn{flex:1}
+  .hidden{display:none!important}
+  .viewers{font-size:12px;color:var(--live);text-align:center;font-weight:700}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="top">
+    <span class="dot" id="dot"></span>
+    <h1>Cámara del partido</h1>
+  </div>
+
+  <div class="wrap">
+    <div class="video-box">
+      <video id="preview" autoplay muted playsinline></video>
+      <span class="badge" id="badge">SIN TRANSMITIR</span>
+    </div>
+
+    <!-- Paso 1: elegir cámara -->
+    <div class="card" id="setup">
+      <label class="f" for="camsel">Cámara</label>
+      <select class="f" id="camsel"><option>Buscando cámaras…</option></select>
+      <div style="height:12px"></div>
+      <label class="f" for="qualsel">Calidad</label>
+      <select class="f" id="qualsel">
+        <option value="hd">Alta (720p) — recomendada</option>
+        <option value="fhd">Muy alta (1080p)</option>
+        <option value="sd">Media (480p) — WiFi lento</option>
+      </select>
+    </div>
+
+    <!-- Sala -->
+    <div class="card sala hidden" id="salaCard">
+      <div class="lbl">Código de sala</div>
+      <div class="code" id="salaCode">—</div>
+      <div style="height:14px"></div>
+      <div class="viewers hidden" id="viewers">👁 0 viendo</div>
+    </div>
+
+    <div class="status" id="status">Elegí la cámara y tocá Transmitir.</div>
+
+    <button class="btn go" id="startBtn">▶ Transmitir</button>
+    <button class="btn stop hidden" id="stopBtn">■ Detener transmisión</button>
+
+    <div class="hint">
+      <b>Cómo funciona:</b> tocá <b>Transmitir</b> y aparece un código de sala.
+      En la tablet, abrí el panel, tocá <b>Video en vivo</b> y escribí ese código.
+      Dejá esta pantalla abierta y el celular enchufado. Todos tienen que estar en la misma red WiFi.
+    </div>
+  </div>
+
+<script src="datos_seguros.js"></script>
+<script src="firebase.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   CÁMARA — Emisor de video por WebRTC hacia la(s) tablet(s).
+   Señalización por Firebase (los mismos fbSet/fbGet de la app).
+   Un emisor → varios espectadores (la tablet, el banco, etc.).
+   ═══════════════════════════════════════════════════════════════════ */
+
+var localStream = null;
+var salaId = null;
+var peers = {};          /* viewerId -> RTCPeerConnection */
+var pollTimer = null;
+var _seenOffers = {};
+
+var ICE = { iceServers:[ {urls:'stun:stun.l.google.com:19302'}, {urls:'stun:stun1.l.google.com:19302'} ] };
+
+var $ = function(id){ return document.getElementById(id); };
+function setStatus(msg, cls){ var s=$('status'); s.textContent=msg; s.className='status'+(cls?' '+cls:''); }
+
+/* — listar cámaras disponibles — */
+async function listarCamaras(){
+  try{
+    /* pedir permiso primero para que aparezcan los nombres */
+    var tmp = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+    tmp.getTracks().forEach(function(t){ t.stop(); });
+    var devs = await navigator.mediaDevices.enumerateDevices();
+    var cams = devs.filter(function(d){ return d.kind==='videoinput'; });
+    var sel = $('camsel');
+    sel.innerHTML = cams.map(function(c,i){
+      return '<option value="'+c.deviceId+'">'+(c.label||('Cámara '+(i+1)))+'</option>';
+    }).join('');
+    if(!cams.length){ sel.innerHTML='<option>No se encontró ninguna cámara</option>'; setStatus('No hay cámara disponible.', 'err'); }
+  }catch(e){
+    setStatus('No pude acceder a la cámara. Revisá los permisos del navegador.', 'err');
+    $('camsel').innerHTML='<option>Permiso denegado</option>';
+  }
+}
+
+function calidadConstraints(q){
+  if(q==='fhd') return {width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:30}};
+  if(q==='sd')  return {width:{ideal:854},  height:{ideal:480},  frameRate:{ideal:25}};
+  return {width:{ideal:1280}, height:{ideal:720}, frameRate:{ideal:30}};   /* hd por defecto */
+}
+
+/* — arrancar la transmisión — */
+async function transmitir(){
+  var camId = $('camsel').value;
+  var qual = $('qualsel').value;
+  var vc = calidadConstraints(qual);
+  if(camId) vc.deviceId = {exact:camId};
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({ video:vc, audio:false });
+  }catch(e){
+    setStatus('No pude iniciar la cámara: '+e.message, 'err'); return;
+  }
+  $('preview').srcObject = localStream;
+
+  /* sala corta y fácil de tipear */
+  salaId = String(Math.floor(1000 + Math.random()*9000));
+  $('salaCode').textContent = salaId;
+  $('salaCard').classList.remove('hidden');
+  $('setup').classList.add('hidden');
+  $('startBtn').classList.add('hidden');
+  $('stopBtn').classList.remove('hidden');
+  $('badge').textContent = 'TRANSMITIENDO';
+  $('badge').classList.add('live');
+  $('dot').classList.add('on');
+  setStatus('Transmitiendo. En la tablet, entrá a Video en vivo y poné la sala '+salaId+'.', 'live');
+
+  /* anunciar la sala como activa */
+  fbSet('video_salas/'+salaId, { activa:true, ts:Date.now(), calidad:qual });
+
+  /* escuchar ofertas de viewers que quieren conectarse */
+  escucharViewers();
+}
+
+/* — el emisor espera "solicitudes" de viewers y responde con la conexión — */
+function escucharViewers(){
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(function(){
+    if(!salaId) return;
+    fbGet('video_signal/'+salaId+'/requests', function(reqs){
+      if(!reqs) return;
+      Object.keys(reqs).forEach(function(viewerId){
+        if(_seenOffers[viewerId]) return;      /* ya lo atendimos */
+        _seenOffers[viewerId] = true;
+        conectarViewer(viewerId);
+      });
+    });
+    /* contador simple de viewers conectados */
+    var n = Object.keys(peers).length;
+    var vEl=$('viewers');
+    if(n>0){ vEl.classList.remove('hidden'); vEl.textContent='👁 '+n+' viendo'; }
+    else vEl.classList.add('hidden');
+  }, 1500);
+}
+
+/* — crear una conexión WebRTC para un viewer que lo pidió — */
+async function conectarViewer(viewerId){
+  var pc = new RTCPeerConnection(ICE);
+  peers[viewerId] = pc;
+  localStream.getTracks().forEach(function(t){ pc.addTrack(t, localStream); });
+
+  var myCands = [];
+  pc.onicecandidate = function(ev){
+    if(ev.candidate){ myCands.push(ev.candidate.toJSON()); fbSet('video_signal/'+salaId+'/answer_cand/'+viewerId, myCands); }
+  };
+  pc.onconnectionstatechange = function(){
+    if(pc.connectionState==='failed' || pc.connectionState==='disconnected' || pc.connectionState==='closed'){
+      try{ pc.close(); }catch(e){}
+      delete peers[viewerId];
+    }
+  };
+
+  var offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  fbSet('video_signal/'+salaId+'/offer/'+viewerId, { type:offer.type, sdp:offer.sdp });
+
+  /* esperar la respuesta (answer) del viewer */
+  var tries = 0;
+  var wait = setInterval(function(){
+    tries++;
+    if(tries>40){ clearInterval(wait); return; }
+    fbGet('video_signal/'+salaId+'/answer/'+viewerId, function(ans){
+      if(ans && ans.sdp && !pc.currentRemoteDescription){
+        pc.setRemoteDescription(new RTCSessionDescription(ans)).catch(function(){});
+      }
+    });
+    fbGet('video_signal/'+salaId+'/offer_cand/'+viewerId, function(cands){
+      if(cands && Array.isArray(cands)){
+        cands.forEach(function(c){ try{ pc.addIceCandidate(new RTCIceCandidate(c)); }catch(e){} });
+      }
+    });
+    if(pc.connectionState==='connected'){ clearInterval(wait); }
+  }, 800);
+}
+
+/* — detener todo — */
+function detener(){
+  if(pollTimer) clearInterval(pollTimer);
+  Object.keys(peers).forEach(function(k){ try{ peers[k].close(); }catch(e){} });
+  peers = {}; _seenOffers = {};
+  if(localStream){ localStream.getTracks().forEach(function(t){ t.stop(); }); localStream=null; }
+  if(salaId){ fbSet('video_salas/'+salaId, { activa:false, ts:Date.now() }); fbSet('video_signal/'+salaId, null); }
+  salaId = null;
+  $('preview').srcObject = null;
+  $('salaCard').classList.add('hidden');
+  $('setup').classList.remove('hidden');
+  $('startBtn').classList.remove('hidden');
+  $('stopBtn').classList.add('hidden');
+  $('badge').textContent = 'SIN TRANSMITIR';
+  $('badge').classList.remove('live');
+  $('dot').classList.remove('on');
+  setStatus('Transmisión detenida.', '');
+}
+
+/* eventos */
+$('startBtn').addEventListener('click', transmitir);
+$('stopBtn').addEventListener('click', detener);
+window.addEventListener('beforeunload', function(){ if(salaId) detener(); });
+
+/* iniciar */
+if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+  listarCamaras();
+} else {
+  setStatus('Este navegador no soporta cámara. Probá con Chrome o Safari.', 'err');
+}
+</script>
+<script src="lang.js"></script>
+</body>
+</html>

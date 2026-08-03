@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PIZARRÓN — {{CLUB_COMPLETO}}</title>
+<title>PIZARRÓN — {{CLUB}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="utils.js" onerror="void 0"></script>
-<script src="plantel_{{club}}.js" onerror="void 0"></script>
+<script src="plantel_club.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
-  <script src="datos_equipo.js" onerror="void 0"></script>
+  <script src="datos_equipo.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <script src="datos_prep_fisica.js" onerror="void 0"></script>
 <script src="firebase.js" onerror="void 0"></script>
@@ -125,7 +125,7 @@ body.fullscreen{background:#000;}
   <div style="display:flex;align-items:center;gap:14px;">
     <a href="index.html" class="back-btn">← Inicio</a>
     <div class="logo">🏐 Pizarrón</div>
-    <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB_COMPLETO}} · Rutina del día</div>
+    <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB}} VOLEY · Rutina del día</div>
   </div>
   <div class="header-right">
     <div class="live-dot" title="Sincronizado con Firebase"></div>
@@ -178,7 +178,7 @@ var MESES_PZ = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
 function mesLabelFromKey(k){ var p=String(k).split('-'); return (MESES_PZ[(+p[1])-1]||'')+' '+(p[0]||''); }
 
 function armarPrep(mes){
-  var roster = (window.PLANTEL_{{CLUB}} && window.PLANTEL_{{CLUB}}.jugadores) || [];
+  var roster = (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores) || [];
   var jugs = roster.map(function(j){
     var r = RUTINAS_RAW[j.num] && RUTINAS_RAW[j.num][mes];
     return { num:j.num, nombre:(j.ap||j.nombre||('#'+j.num)), pos:j.pos||'', semanas:(r&&r.semanas)?r.semanas:[] };
@@ -239,7 +239,7 @@ function cargarEquipo(){
   } else {
     // sin Firebase: intentar localStorage (rutinas guardadas en este dispositivo)
     RUTINAS_RAW = {};
-    var roster=(window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||[];
+    var roster=(window.PLANTEL_CLUB&&window.PLANTEL_CLUB.jugadores)||[];
     try{
       roster.forEach(function(j){ var pre='prep_rutina_'+j.num+'_';
         for(var i=0;i<localStorage.length;i++){ var key=localStorage.key(i);
@@ -516,4 +516,4 @@ window.addEventListener('load', function(){
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

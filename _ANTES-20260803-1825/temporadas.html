@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temporadas — {{CLUB_COMPLETO}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#07080f; --card:#0d0e1a; --border:rgba(255,255,255,.06); --red:#e8192c; --mut:#475569; --fg:#e2e8f0; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--fg); font-family:'Barlow Condensed',sans-serif; min-height:100vh; }
+  header{ display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid var(--border); }
+  .club-name{ font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:1px;
+    background:linear-gradient(90deg,#e8192c,#fff 45%,#1a2f5e); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .club-sub{ font-size:11px; color:var(--mut); letter-spacing:3px; text-transform:uppercase; margin-top:2px; }
+  #lang-wrap{ display:flex; align-items:center; gap:4px; margin-left:auto; }
+  main{ max-width:760px; margin:0 auto; padding:34px 18px 80px; }
+  .titulo{ font-family:'Bebas Neue',sans-serif; font-size:34px; letter-spacing:1px; }
+  .sub{ color:var(--mut); font-size:14px; letter-spacing:.5px; margin:4px 0 26px; }
+  .lbl{ font-size:11px; color:var(--mut); letter-spacing:3px; text-transform:uppercase; margin:22px 0 10px; }
+  a.temp{ display:flex; align-items:center; gap:16px; text-decoration:none; color:inherit;
+    background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:12px;
+    transition:border-color .15s, transform .1s; }
+  a.temp:hover{ border-color:rgba(232,25,44,.45); transform:translateY(-1px); }
+  a.temp.actual{ border-left:3px solid var(--red); }
+  .ico{ width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    font-size:22px; background:rgba(232,25,44,.10); border:1px solid rgba(232,25,44,.20); flex:0 0 auto; }
+  .temp .nom{ font-size:21px; font-weight:800; letter-spacing:.5px; }
+  .temp .det{ font-size:12px; color:var(--mut); letter-spacing:1px; text-transform:uppercase; margin-top:2px; }
+  .badge{ margin-left:auto; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    padding:5px 11px; border-radius:20px; }
+  .badge.viva{ color:#22c55e; background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.25); }
+  .badge.arch{ color:#94a3b8; background:rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.2); }
+  .vacio{ color:var(--mut); font-size:14px; padding:8px 2px; line-height:1.6; }
+  .arrow{ color:var(--mut); font-size:20px; margin-left:6px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="club-name">{{CLUB_COMPLETO}}</div>
+    <div class="club-sub">Sistema de Análisis · {{LIGA}}</div>
+  </div>
+  <div id="lang-wrap"></div>
+</header>
+
+<main>
+  <div class="titulo" data-t="temp_titulo">Temporadas</div>
+  <div class="sub" data-t="temp_sub">Elegí una temporada para ver sus estadísticas.</div>
+
+  <div class="lbl" data-t="temp_en_curso">Temporada en curso</div>
+  <a class="temp actual" href="index.html">
+    <div class="ico">🏐</div>
+    <div>
+      <div class="nom" data-t="temp_actual">Temporada actual</div>
+      <div class="det" data-t="temp_actual_det">Datos en vivo · se actualiza con cada partido</div>
+    </div>
+    <span class="badge viva" data-t="temp_badge_curso">En curso</span>
+    <span class="arrow">›</span>
+  </a>
+
+  <div class="lbl" data-t="temp_anteriores">Temporadas anteriores</div>
+  <div id="lista-archivadas"></div>
+</main>
+
+<script src="temporadas.js"></script>
+<script src="lang.js"></script>
+<script>
+  (function(){
+    var cont = document.getElementById('lista-archivadas');
+    function L(k){ return (window.tr && window.tr(k, window.getLang())) || null; }
+    function render(){
+      cont.innerHTML = '';
+      var lista = (window.TEMPORADAS || []).slice().sort(function(a,b){
+        return String(b.id).localeCompare(String(a.id));
+      });
+      if (!lista.length){
+        cont.innerHTML = '<div class="vacio">' + (L('temp_vacio') || 'Todavía no hay temporadas archivadas.') + '</div>';
+        return;
+      }
+      var tTemp = L('temp_temporada') || 'Temporada';
+      var tDet  = L('temp_archivo_det') || 'Archivo · solo lectura';
+      var tBadge= L('temp_badge_arch') || 'Archivo';
+      lista.forEach(function(t){
+        var a = document.createElement('a');
+        a.className = 'temp';
+        a.href = 'temporadas/' + t.id + '/index.html';
+        a.innerHTML =
+          '<div class="ico">📅</div>'+
+          '<div><div class="nom">' + tTemp + ' ' + (t.label || t.id) + '</div>'+
+          '<div class="det">' + tDet + '</div></div>'+
+          '<span class="badge arch">' + tBadge + '</span>'+
+          '<span class="arrow">›</span>';
+        cont.appendChild(a);
+      });
+    }
+    render();
+    window.addEventListener('langchange', render); // re-traduce la lista al cambiar idioma
+  })();
+</script>
+</body>
+</html>
+
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->

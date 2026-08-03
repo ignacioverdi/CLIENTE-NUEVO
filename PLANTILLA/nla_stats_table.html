@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>{{LIGA}} {{PAIS}} 2025/26 — Estadísticas Liga</title>
+<title>{{LIGA}} 2026/27 — Estadísticas Liga</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -88,9 +88,9 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
 #teams-table th:nth-child(2),#teams-table td:nth-child(2){text-align:left}
 #teams-table td.active-col,#teams-table th.active-col{background:rgba(59,130,246,.12)}
 #teams-table th.active-col{color:#93c5fd}
-#teams-table tbody tr.is-{{club}}{background:rgba(34,197,94,.09)}
-#teams-table tbody tr.is-{{club}}:hover{background:rgba(34,197,94,.14)}
-#teams-table tbody tr.is-{{club}} td{border-top:1px solid rgba(34,197,94,.25);border-bottom:1px solid rgba(34,197,94,.25)}
+#teams-table tbody tr.is-nafels{background:rgba(34,197,94,.09)}
+#teams-table tbody tr.is-nafels:hover{background:rgba(34,197,94,.14)}
+#teams-table tbody tr.is-nafels td{border-top:1px solid rgba(34,197,94,.25);border-bottom:1px solid rgba(34,197,94,.25)}
 .t-name{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.5px;text-decoration:none}
 .t-rank{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#475569}
 .t-rank.r1{color:#fcd34d}
@@ -106,19 +106,25 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
 #players-table th:nth-child(2),#players-table td:nth-child(2){text-align:left}
 #players-table td.active-col,#players-table th.active-col{background:rgba(99,102,241,.12)}
 #players-table th.active-col{color:#a5b4fc}
-#players-table tbody tr.is-{{club}}{background:rgba(34,197,94,.09)}
-#players-table tbody tr.is-{{club}}:hover{background:rgba(34,197,94,.14)}
-#players-table tbody tr.is-{{club}} td{border-top:1px solid rgba(34,197,94,.22);border-bottom:1px solid rgba(34,197,94,.22)}
+#players-table tbody tr.is-nafels{background:rgba(34,197,94,.09)}
+#players-table tbody tr.is-nafels:hover{background:rgba(34,197,94,.14)}
+#players-table tbody tr.is-nafels td{border-top:1px solid rgba(34,197,94,.22);border-bottom:1px solid rgba(34,197,94,.22)}
 #players-table tbody tr:hover{background:rgba(255,255,255,.025)}
 </style>
+<!-- Puerta de entrada. Esta es la PLANTILLA: la tabla de liga se regenera
+     desde aca en cada HACER_TODO, asi que el candado tiene que estar aqui
+     o se pierde en la proxima corrida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="header">
   <div>
-    <div class="subtitle">{{CLUB_REPO}} — Análisis Liga</div>
-    <h1>{{LIGA}} {{PAIS}} — ESTADÍSTICAS</h1>
+    <div class="subtitle">Volley {{CLUB}} — Análisis Liga</div>
+    <h1>NLA SUIZA — ESTADÍSTICAS</h1>
   </div>
-  <div class="season-badge">TEMPORADA 2025/26</div>
+  <!-- La temporada la escribe el generador: estaba fija en 2025/26 y seguia
+       diciendo eso aunque los datos ya fueran de la 26/27. -->
+  <div class="season-badge">TEMPORADA 2026/27</div>
 </div>
 <div class="tabs">
   <div class="tab active" data-tab="equipos">🏆 Ranking Equipos</div>
@@ -129,14 +135,14 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
     <span class="filter-label">Equipo</span>
     <select id="f-team">
       <option value="">Todos</option>
-      <option>{{RIVAL1}}</option><option>{{RIVAL6}}</option><option>{{RIVAL8}}</option>
-      <option>{{RIVAL12}}</option><option>{{RIVAL5}}</option><option>{{Club}}</option>
-      <option>{{RIVAL2}}</option><option>{{RIVAL9}}</option>
+      <option>Amriswil</option><option>Chenois</option><option>Colombier</option>
+      <option>Jona</option><option>Lausanne</option><option>{{CLUB}}</option>
+      <option>Schonenwerd</option><option>St Gallen</option>
     </select>
   </div>
   <div class="filter-group">
     <span class="filter-label">Temporada</span>
-    <select id="f-temporada"><option value="">Todas</option></select>
+    <select id="f-temporada"><option value="">Todas</option><option>2026/27</option></select>
   </div>
   <div class="filter-group">
     <span class="filter-label">Posición</span>
@@ -166,7 +172,7 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
   <span class="results-count" id="results-count"></span>
 </div>
 <div class="panel active" id="panel-equipos">
-  <div class="section-title">RANKING EQUIPOS {{LIGA}} — ELEGÍ UN FUNDAMENTO PARA ORDENAR</div>
+  <div class="section-title">RANKING EQUIPOS NLA — ELEGÍ UN FUNDAMENTO PARA ORDENAR</div>
   <div class="skill-pills" id="skill-pills"></div>
   <div class="table-wrap">
     <table id="teams-table">
@@ -174,10 +180,10 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
       <tbody id="teams-tbody"></tbody>
     </table>
   </div>
-  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado. <span id="updated-label" style="color:#475569"></span></div>
+  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{CLUB}}</span> resaltado. <span id="updated-label" style="color:#475569"></span></div>
 </div>
 <div class="panel" id="panel-jugadores">
-  <div class="section-title">RANKING JUGADORES {{LIGA}} — ELEGÍ UN FUNDAMENTO</div>
+  <div class="section-title">RANKING JUGADORES NLA — ELEGÍ UN FUNDAMENTO</div>
   <div class="skill-pills" id="player-skills"></div>
   <div class="skill-pills sub-pills" id="player-subs"></div>
   <div class="table-wrap">
@@ -186,19 +192,19 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
       <tbody id="players-tbody"></tbody>
     </table>
   </div>
-  <div class="rank-legend">La columna <b>EFF%</b> manda el ranking <span class="lg-tot">(entre paréntesis: total de acciones del fundamento elegido)</span> · color = ranking en ese corte (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado · filtrá por posición para comparar like-with-like.</div>
+  <div class="rank-legend">La columna <b>EFF%</b> manda el ranking <span class="lg-tot">(entre paréntesis: total de acciones del fundamento elegido)</span> · color = ranking en ese corte (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{CLUB}}</span> resaltado · filtrá por posición para comparar like-with-like.</div>
 </div>
 <script>
 var PLAYERS=[];
-var TEAMS=[{"team": "{{RIVAL1}}", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "{{RIVAL6}}", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "{{RIVAL8}}", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "{{RIVAL12}}", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "{{RIVAL5}}", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "{{Club}}", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "{{RIVAL2}}", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "{{RIVAL9}}", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}];
+var TEAMS=[{"team": "Amriswil", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Chenois", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Colombier", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Jona", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Lausanne", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Nafels", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Schonenwerd", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "St Gallen", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}];
 
 var SEASONS=[];
 
 
 var TEAM_COLORS={
-  '{{Club}}':'#22c55e','{{RIVAL1}}':'#3b82f6','{{RIVAL2}}':'#f97316',
-  '{{RIVAL6}}':'#818cf8','{{RIVAL8}}':'#f59e0b','{{RIVAL12}}':'#06b6d4',
-  '{{RIVAL5}}':'#ec4899','{{RIVAL9}}':'#94a3b8'
+  'Nafels':'#22c55e','Amriswil':'#3b82f6','Schonenwerd':'#f97316',
+  'Chenois':'#818cf8','Colombier':'#f59e0b','Jona':'#06b6d4',
+  'Lausanne':'#ec4899','St Gallen':'#94a3b8'
 };
 var sortState={col:'atk_eff',dir:-1};
 
@@ -329,7 +335,7 @@ function renderTeams(){
   tbody.innerHTML=rows.map(function(t,i){
     var c=TEAM_COLORS[t.team]||'#3b82f6';
     var slug=t.team.toLowerCase().replace(/ /g,'_');
-    var isNaf=t.team==='{{Club}}';
+    var isNaf=t.team==='Nafels';
     var cells=METRICS.map(function(m){
       var v=t[m.eff], tot=t[m.tot]||0;
       var col=v==null?'#475569':rankColor(fracByMetric[m.key][t.team]);
@@ -338,7 +344,7 @@ function renderTeams(){
         +'<span class="tval" style="color:'+col+'">'+val+'</span>'
         +'<span class="ttot">('+tot+')</span></td>';
     }).join('');
-    return '<tr class="'+(isNaf?'is-{{club}}':'')+'">'
+    return '<tr class="'+(isNaf?'is-nafels':'')+'">'
       +'<td><span class="t-rank'+(i===0?' r1':'')+'">'+(i+1)+'</span></td>'
       +'<td><span class="t-name" style="color:'+c+'">'+t.team.toUpperCase()+'</span><a class="gp-btn" href="game_plan.html?rival='+slug+'" title="Abrir game plan de '+t.team+'">📋 Plan</a></td>'
       +cells+'</tr>';
@@ -430,10 +436,10 @@ function renderPlayers(){
     var col=rankColor(frac);
     var ev=p[m.eff];
     var evs=((ev>0&&!m.rec)?'+':'')+ev.toFixed(1)+'%';
-    var isNaf=p.team==='{{Club}}';
+    var isNaf=p.team==='{{CLUB}}';
     var rank=i+1;
     var sec=s.cols.map(function(c){return '<td>'+fmtPct(p[c.k])+'</td>';}).join('');
-    return '<tr class="'+(isNaf?'is-{{club}}':'')+'">'
+    return '<tr class="'+(isNaf?'is-nafels':'')+'">'
       +'<td><span class="t-rank'+(i===0?' r1':'')+'">'+rank+'</span></td>'
       +'<td><span style="font-weight:700;color:#64748b">#'+p.num+'</span> <span style="color:#e2e8f0">'+p.name+'</span></td>'
       +'<td><a href="game_plan.html?rival='+pslug+'" title="Abrir game plan de '+p.team+'" style="text-decoration:none;display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;background:'+tc+'22;color:'+tc+'">'+p.team+'</a><a class="gp-btn" href="game_plan.html?rival='+pslug+'" title="Abrir game plan de '+p.team+'">📋</a></td>'
@@ -467,4 +473,4 @@ loadStats();
 </script><script src="lang.js" onerror="void 0"></script>
 </body></html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

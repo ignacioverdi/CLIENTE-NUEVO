@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tendencias — {{Club}}</title>
+<title>Tendencias — {{CLUB}}</title>
 <style>
   :root{--bg:#07080F;--card:#11162a;--card2:#0d1322;--border:#1e2944;--text:#e8edf7;--mut:#64748b;--mut2:#94a3b8;
         --saque:#F59E0B;--ataque:#F97316;--recep:#22C55E;--bloqueo:#06B6D4;--defensa:#EF4444;--armado:#818CF8}
@@ -31,6 +31,9 @@
   .avg b{color:var(--text)}
   .empty{text-align:center;color:var(--mut);padding:60px 20px}
 </style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
   <div class="hdr">
@@ -61,10 +64,10 @@
         s.aT+=j.aT||0; s.aP+=j.aPunto||0; s.aErr+=j.aErr||0; s.aEffW+=(j.aEff||0)*(j.aT||0);
         s.bPt+=j.bPt||0;
       });
-      var won=m.resultado.{{club}}>m.resultado.rival;
+      var won=m.resultado.nafels>m.resultado.rival;
       return {
         fecha:m.fecha, rival:m.rival, won:won,
-        score:m.resultado.{{club}}+'-'+m.resultado.rival,
+        score:m.resultado.nafels+'-'+m.resultado.rival,
         atk_eff: s.aT? Math.round(s.aEffW/s.aT):0,
         atk_kill: s.aT? Math.round(s.aP/s.aT*100):0,
         srv_ace: s.sT? Math.round(s.sP/s.sT*100):0,
@@ -137,4 +140,4 @@
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

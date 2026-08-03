@@ -58,9 +58,14 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 .reset-btn:hover{background:rgba(232,25,44,.14)}
 @media(max-width:760px){.layout{grid-template-columns:1fr}.sidebar{position:static;height:auto}.g4{grid-template-columns:repeat(2,1fr)}}
 </style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="hdr">
+  <!-- PARTIDO / ENTRENAMIENTO, igual que en las otras pantallas -->
+  <div style="display:flex;gap:6px;margin-left:auto" id="modo-def-wrap"></div>
   <a href="index.html" class="back">← Inicio</a>
   <div><div class="hdr-t" id="hdr-t">ANALISIS DE DEFENSA</div><div class="hdr-s" id="hdr-s">EFF = (1x# + 0.5x+ − 0.5x− − 1x=) / total</div></div>
 </div>
@@ -89,11 +94,47 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
   <div class="content" id="content"><div class="nodata">Elegí un jugador para ver su defensa</div></div>
 </div>
 
-<script src="datos_video.js" onerror="void 0"></script>
+<script src="datos_seguros.js"></script>
+  <!-- Los datos de los entrenamientos. Sin estos las tablas salen vacias
+       aunque el motor ya los haya generado. -->
+  <!-- Los cortes se guardan en un archivo por temporada. Se piden todas:
+     las que no existen las descarta el onerror, sin ruido. Y todas con
+     .enc, que es como se publican los datos del club. -->
+<script src="datos_video_ent_25-26.js.enc" onerror="void 0"></script>
+<script src="datos_video_ent_26-27.js.enc" onerror="void 0"></script>
+<script src="datos_video_ent_27-28.js.enc" onerror="void 0"></script>
+<script src="datos_video_ent_28-29.js.enc" onerror="void 0"></script>
+  
+  <script src="datos_video.js.enc" onerror="void 0"></script>
+  <script>abrirDatos();</script>
 <script>
 (function(){
-  var VD=(window.VIDEO_DATA&&window.VIDEO_DATA.matches)||{};
-  var EQ=(new URLSearchParams(location.search).get('equipo')||'{{club}}').toLowerCase();
+  /* El modo elegido: PARTIDO o ENTRENAMIENTO. Se guarda en la misma clave que
+     usan las demas pantallas, asi el club queda igual en todas. */
+  var MODO = 'todos';
+  try{ MODO = localStorage.getItem('vb_modo_def') || 'todos'; }catch(e){}
+
+  /* Los cortes del modo elegido. Con "todos" van las dos fuentes juntas. */
+  function _cortesDelModo(){
+    var VD = {};
+    try{
+      var P = window.VIDEO_DATA && window.VIDEO_DATA.matches;
+      var E = window.VIDEO_DATA_ENT && window.VIDEO_DATA_ENT.matches;
+      if(MODO !== 'entrenamiento' && P) Object.keys(P).forEach(function(k){ VD[k]=P[k]; });
+      if(MODO !== 'partido' && E) Object.keys(E).forEach(function(k){ VD[k]=E[k]; });
+    }catch(e){}
+    return VD;
+  }
+
+  function setModoDef(m){
+    MODO = m;
+    try{ localStorage.setItem('vb_modo_def', m); }catch(e){}
+    location.reload();
+  }
+  window.setModoDef = setModoDef;
+
+  var VD = _cortesDelModo();
+  var EQ=(new URLSearchParams(location.search).get('equipo')||'{{CLUB_SLUG}}').toLowerCase();
   var RES_ORDER=['#','+','!','-','='];
   var RES_LABEL={'#':'Perfecta','+':'Buena','!':'Regular','-':'Mala','=':'Error'};
   var RES_HEX={'#':'#22C55E','+':'#84CC16','!':'#EAB308','-':'#F97316','=':'#EF4444'};
@@ -172,7 +213,21 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
     /* La cancha del rival, como se ve desde el banco: la red arriba y la
      fila delantera 4-3-2. Antes estaba invertida en los dos ejes, así que
      los números caían en el lugar equivocado de la cancha. */
-  var RIVAL=[[4,3,2],[7,8,9],[5,6,1]], OWN=[[4,3,2],[7,8,9],[5,6,1]];
+  /* La cancha del rival va en ESPEJO: esta del otro lado de la red, asi que se
+     ve al reves. Su fila delantera —2-3-4— queda pegada a la red, que en el
+     dibujo esta abajo:
+
+         1 6 5
+         9 8 7      de donde ataco el rival
+         2 3 4
+       ─────────    la red
+         4 3 2
+         7 8 9      donde defendimos nosotros
+         5 6 1
+
+     Antes las dos estaban iguales y los numeros del ataque rival caian en la
+     zona espejada de la que correspondia. */
+  var RIVAL=[[1,6,5],[9,8,7],[2,3,4]], OWN=[[4,3,2],[7,8,9],[5,6,1]];
     var maxO=Math.max.apply(null,Object.values(origZ).concat([1])), maxD=Math.max.apply(null,Object.values(destZ).concat([1]));
     var s="<svg viewBox='0 0 "+W+" "+H+"' xmlns='http://www.w3.org/2000/svg' style='width:100%;display:block'>";
     s+="<style>text{pointer-events:none}</style>";
@@ -251,10 +306,45 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
     c.innerHTML=html;
   }
   render();
+
+  /* los botones del encabezado, marcando cual esta elegido */
+  (function(){
+    var w = document.getElementById('modo-def-wrap');
+    if(!w) return;
+    var op = [['todos','TODOS'],['partido','PARTIDO'],['entrenamiento','ENTRENAMIENTO']];
+    w.innerHTML = op.map(function(o){
+      var on = (MODO === o[0]);
+      return '<button onclick="setModoDef(\'' + o[0] + '\')" style="' +
+        'padding:5px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:800;' +
+        'letter-spacing:1px;font-family:inherit;' +
+        (on ? 'border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.14);color:#ef4444'
+            : 'border:1px solid rgba(255,255,255,.12);background:transparent;color:#94a3b8') +
+        '">' + o[1] + '</button>';
+    }).join('');
+  })();
+
 })();
 </script>
-<script src="lang.js" onerror="void 0"></script>
+<script src="lang.js" onerror="void 0">
+/* ══════════════════════════════════════════════════════════════════════════
+   LOS CORTES DE VIDEO, DE LAS DOS FUENTES
+   --------------------------------------------------------------------------
+   Los partidos viven en VIDEO_DATA y los entrenamientos en VIDEO_DATA_ENT.
+   Mirando una sola, las acciones de la otra no aparecen nunca.
+   ══════════════════════════════════════════════════════════════════════════ */
+function _videoTodo(){
+  var VD = {};
+  try{
+    [window.VIDEO_DATA, window.VIDEO_DATA_ENT].forEach(function(F){
+      var M = F && F.matches;
+      if(!M) return;
+      Object.keys(M).forEach(function(k){ VD[k] = M[k]; });
+    });
+  }catch(e){}
+  return VD;
+}
+</script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · NAFELS · Software propietario - Todos los derechos reservados -->

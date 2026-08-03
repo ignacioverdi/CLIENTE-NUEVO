@@ -3,23 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PERFIL — CASL VOLEY</title>
+<title>PERFIL — {{CLUB}} VOLEY</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
 <!-- Datos (cada uno se carga si existe; si no, el onerror lo deja en null) -->
 <script src="game_plans.js" onerror="void 0"></script>
-<script src="datos_{{club}}.js" onerror="void 0"></script>
 <script src="objetivos_config.js" onerror="void 0"></script>
-<script src="datos_partidos.js" onerror="void 0"></script>
-<script src="datos_entrenamientos.js" onerror="void 0"></script>
+<script src="datos_seguros.js"></script>
+<script src="filtro_tipo.js" onerror="void 0"></script>
+  <!-- Los cortes se guardan en un archivo por temporada. Se piden todas:
+     las que no existen las descarta el onerror, sin ruido. Y todas con
+     .enc, que es como se publican los datos del club. -->
+<script src="datos_video_ent_25-26.js.enc" onerror="void 0"></script>
+<script src="datos_video_ent_26-27.js.enc" onerror="void 0"></script>
+<script src="datos_video_ent_27-28.js.enc" onerror="void 0"></script>
+<script src="datos_video_ent_28-29.js.enc" onerror="void 0"></script>
+  <script src="datos_partidos.js.enc" onerror="void 0"></script>
+<script src="datos_entrenamientos.js.enc" onerror="void 0"></script>
 <script src="firebase.js" onerror="void 0"></script>
 <script src="lang.js" onerror="void 0"></script>
 <script src="datos_historial.js" onerror="window.HISTORIAL_DATA=null"></script>
-<script src="datos_gameplan.js" onerror="window.GAMEPLAN_DATA=null"></script>
-<script src="datos_baterias.js" onerror="void 0"></script>
-<script src="plan_partido_data.js" onerror="void 0"></script>
-<script src="datos_bloqueo.js" onerror="void 0"></script>
-<script src="datos_prep_fisica.js" onerror="window.PREP_DATA=null"></script>
+<script src="datos_gameplan.js.enc" onerror="window.GAMEPLAN_DATA=null"></script>
+<script src="datos_baterias.js.enc" onerror="void 0"></script>
+<script src="plan_partido_data.js.enc" onerror="void 0"></script>
+<script src="datos_bloqueo.js.enc" onerror="void 0"></script>
+<script src="datos_prep_fisica.js.enc" onerror="window.PREP_DATA=null"></script>
+  <!-- El plantel real de la temporada. Sin esto, window.EQUIPO_DATA nunca existe
+     y la pagina cae en su lista de respaldo, que trae el plantel de otro anio.
+     Va DESPUES de datos_seguros.js y ANTES de abrirDatos(), como en equipo.html. -->
+  <script src="datos_equipo.js.enc" onerror="window.EQUIPO_DATA=null"></script>
+  <script>abrirDatos();</script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -208,6 +221,24 @@ function _batMatchName(nombre, keys){
 }
 function batGet(nombre, partido){
   var B=window.BAT_PARTIDOS; if(!B) return null;
+  /* Con el filtro en Partidos o en Entrenamientos, el acumulado NO puede ser el
+     de todo: sale de porTipo, que el generador arma por separado. Sin esto, con
+     "Partidos" y cero partidos jugados se mostraban igual los numeros de los
+     entrenamientos.
+
+     Si el archivo de datos todavia es el viejo —sin porTipo— no pasa nada: se
+     sigue de largo y queda el comportamiento de antes. */
+  if(!partido || partido==='acumulado'){
+    var _tp = (typeof batTipoActual==='function') ? batTipoActual() : null;
+    if(_tp && B.porTipo && B.porTipo[_tp]){
+      var _pt = B.porTipo[_tp];
+      if(nombre){
+        var _kt=_batMatchName(nombre, Object.keys(_pt.jug||{}));
+        return (_kt && _pt.jug[_kt]) ? _pt.jug[_kt] : _OBJ_NULOS;
+      }
+      return _pt.eq || _OBJ_NULOS;
+    }
+  }
   if(partido && partido!=='acumulado'){
     var m=(B.ind||[]).find(function(x){return String(x.id)===String(partido);});
     if(!m) return _OBJ_NULOS;
@@ -349,8 +380,29 @@ function objBuildSubfiltro(){
   var row = document.getElementById('obj-partido-row');
   if(!row) return;
   var ent = (window._objTipo==='entrenamiento');
-  var META = ent ? (typeof ENTRENAMIENTOS_META!=='undefined'?ENTRENAMIENTOS_META:null)
-                 : (window.BAT_PARTIDOS ? window.BAT_PARTIDOS.meta : (typeof PARTIDOS_META!=='undefined'?PARTIDOS_META:null));
+  /* ══ La lista de sesiones sale del archivo de baterias, filtrada por tipo ══
+     Antes cada modo miraba una fuente distinta, y eso rompia las dos puntas:
+
+       · En PARTIDO se listaba BAT_PARTIDOS.meta entero, sin filtrar, asi que
+         un entrenamiento aparecia como si fuera un partido.
+       · En ENTRENAMIENTO se listaba ENTRENAMIENTOS_META, que es otra fuente con
+         otros identificadores. Al elegir una sesion, batGet la buscaba en el
+         archivo de baterias y no la encontraba nunca: todas las baterias
+         quedaban en cero.
+
+     Ahora las dos salen del mismo lado y se distinguen por el campo tipo, que
+     ya trae el generador. Si los datos todavia son los viejos —sin tipo— se
+     usa el camino de antes, para no romper nada. */
+  var _B = window.BAT_PARTIDOS;
+  var _conTipo = !!(_B && _B.meta && _B.meta.length && _B.meta.some(function(m){ return m.tipo; }));
+  var META;
+  if(_conTipo){
+    var _q = ent ? 'entrenamiento' : 'partido';
+    META = _B.meta.filter(function(m){ return (m.tipo||'partido') === _q; });
+  }else{
+    META = ent ? (typeof ENTRENAMIENTOS_META!=='undefined'?ENTRENAMIENTOS_META:null)
+               : (_B ? _B.meta : (typeof PARTIDOS_META!=='undefined'?PARTIDOS_META:null));
+  }
   if(!META){ row.style.display='none'; return; }
   row.innerHTML=''; row.style.display='flex'; row.style.alignItems='center';
   var lbl=document.createElement('span');
@@ -377,6 +429,10 @@ function objBuildSubfiltro(){
 function objSetTipo(tipo, btn){
   window._objTipo=tipo;
   window._objPartido='acumulado';
+  /* El perfil tiene sus propios botones, pero la eleccion es la misma que la
+     del resto del sistema: se avisa al filtro compartido para que al salir de
+     aca —al analisis, a los cortes, a la pagina de saque— llegue igual. */
+  try{ if(typeof vbSetTipo==='function') vbSetTipo(tipo); }catch(e){}
   document.querySelectorAll('.obj-tfbtn').forEach(function(b){ b.classList.remove('on','partido','ent'); });
   if(btn) btn.classList.add('on', tipo==='partido'?'partido':'ent');
   objBuildSubfiltro();
@@ -489,27 +545,75 @@ var numJug = parseInt(params.get('num')) || 0;
 
 var POS_COLOR = {'ARMADOR':'#f59e0b','CENTRAL':'#f97316','PUNTA':'#22c55e','OPUESTO':'#818cf8','LIBERO':'#06b6d4'};
 
-var EQUIPO_DEMO = { jugadores: [
-  {num:2,nombre:"OJUEZ",pos:"CENTRAL",pais:"🇦🇷"},
-  {num:3,nombre:"ROMEO WINER",pos:"LIBERO",pais:"🇦🇷"},
-  {num:4,nombre:"JUGADOR",pos:"ARMADOR",pais:"🇦🇷"},
-  {num:5,nombre:"RAMOS",pos:"OPUESTO",pais:"🇦🇷"},
-  {num:6,nombre:"VILLARRUEL",pos:"PUNTA",pais:"🇦🇷"},
-  {num:9,nombre:"GODOY",pos:"ARMADOR",pais:"🇦🇷"},
-  {num:10,nombre:"VIERA",pos:"CENTRAL",pais:"🇦🇷"},
-  {num:11,nombre:"JUGADOR",pos:"PUNTA",pais:"🇦🇷"},
-  {num:12,nombre:"ZANOTTI",pos:"LIBERO",pais:"🇦🇷"},
-  {num:13,nombre:"ROJAS CARUSO",pos:"PUNTA",pais:"🇦🇷"},
-  {num:14,nombre:"NIELSON",pos:"PUNTA",pais:"🇦🇷"},
-  {num:15,nombre:"ROTEZZI",pos:"CENTRAL",pais:"🇦🇷"},
-  {num:17,nombre:"HERBSOMMER",pos:"CENTRAL",pais:"🇩🇪"},
-  {num:18,nombre:"ACOSTA",pos:"OPUESTO",pais:"🇦🇷"},
-  {num:19,nombre:"DIAZ BOLLI",pos:"ARMADOR",pais:"🇦🇷"},
-  {num:20,nombre:"FREDDIE",pos:"PUNTA",pais:"🇦🇷"}
-]};
-var eqData = window.EQUIPO_DATA || EQUIPO_DEMO;
+/* Respaldo, solo si no se pudo abrir datos_equipo.js.enc. Las fotos van en
+   null a proposito: se llaman por el numero de camiseta (fotos/01.jpg), y el
+   numero se reasigna cada temporada. Armar la ruta desde el numero mostraba
+   la cara del jugador del anio pasado en el perfil del que llego nuevo.
+   Sin foto se ve el numero, que es correcto; una cara equivocada, no. */
+var EQUIPO_DEMO = {
+  /* El plantel de la temporada en curso. */
+  jugadores: [
+    {num:1, nombre:"DURDOS", pos:"PUNTA", foto:null, pais:"", altura:"", edad:0},
+    {num:2, nombre:"BRUDERER", pos:"LIBERO", foto:null, pais:"", altura:"", edad:0},
+    {num:3, nombre:"SCHWITTER", pos:"OPUESTO", foto:null, pais:"", altura:"", edad:0},
+    {num:4, nombre:"VAZQUEZ", pos:"ARMADOR", foto:null, pais:"", altura:"", edad:0},
+    {num:5, nombre:"CLEMENT", pos:"CENTRAL", foto:null, pais:"", altura:"", edad:0},
+    {num:7, nombre:"SCHMID R", pos:"CENTRAL", foto:null, pais:"", altura:"", edad:0},
+    {num:9, nombre:"NORRIS", pos:"OPUESTO", foto:null, pais:"", altura:"", edad:0},
+    {num:10, nombre:"BOGDANOVSKI", pos:"PUNTA", foto:null, pais:"", altura:"", edad:0},
+    {num:11, nombre:"BARTHOLET", pos:"PUNTA", foto:null, pais:"", altura:"", edad:0},
+    {num:12, nombre:"JOHANSSON", pos:"CENTRAL", foto:null, pais:"", altura:"", edad:0},
+    {num:13, nombre:"STEIMANN", pos:"ARMADOR", foto:null, pais:"", altura:"", edad:0},
+    {num:17, nombre:"ROFFLER", pos:"PUNTA", foto:null, pais:"", altura:"", edad:0},
+    {num:20, nombre:"SCHMID J", pos:"LIBERO", foto:null, pais:"", altura:"", edad:0}
+  ],
+  staff: [
+    {nombre:"IGNACIO VERDI", rol:"Head Coach", icon:"\uD83D\uDCCB"}
+  ]
+};
+/* En una temporada archivada manda la lista de abajo, verificada sobre los
+   partidos que se jugaron. El archivo cifrado quedo congelado con el
+   plantel de la temporada siguiente. */
+/* En la temporada en curso mandan los datos del club; la lista de abajo es
+   la red de emergencia mientras no haya partidos cargados. */
+var eqData = (window.EQUIPO_DATA && (window.EQUIPO_DATA.jugadores||[]).length)
+             ? window.EQUIPO_DATA : EQUIPO_DEMO;
 var jugador = eqData.jugadores.find(function(j){ return j.num === numJug; });
 if(!jugador && eqData.jugadores.length>0) jugador = eqData.jugadores[0];
+
+
+/* ── LA TEMPORADA EN EL ENCABEZADO ────────────────────────────────────────
+   El encabezado muestra a que temporada corresponde lo que se esta viendo.
+   Antes iba escrita a mano —"Temporada 2026"— y en una capsula archivada
+   quedaba mal. Estas funciones la calculan. */
+function _ssStart(y,m){ return (m<=4)?y-1:y; }
+
+function _seasonOf(ds){ if(!ds) return null; var y,m;
+  if(String(ds).indexOf('-')>0){ var p=ds.split('-'); y=+p[0]; m=+p[1]; }    // ISO  2025-10-11
+  else if(String(ds).indexOf('/')>0){ var q=ds.split('/'); y=+q[2]; m=+q[1]; } // DMY  19/10/2025
+  else return null;
+  return _ssStart(y,m); }
+
+function _curSeason(){
+  var am=location.pathname.match(/\/temporadas\/(\d{4})-\d{2}\//);            // si estás viendo una temporada archivada
+  if(am) return +am[1];                                                      // → usar el año de esa temporada
+  var d=new Date(); return _ssStart(d.getFullYear(), d.getMonth()+1);        // si no, la temporada actual por fecha
+}
+
+function addOpt(texto, valor){
+    var o=document.createElement('option');o.value=valor;o.textContent=texto;o.style.color='#111';o.style.background='#fff';
+    if(window._objPartido===valor) o.selected=true;
+    sel.appendChild(o);
+  }
+
+function _filtrarTemporada(){ var cs=_curSeason();
+  if(!_filtHist && window.HISTORIAL_DATA && window.HISTORIAL_DATA.entrenamientos){
+    window.HISTORIAL_DATA.entrenamientos=window.HISTORIAL_DATA.entrenamientos.filter(function(e){ return _seasonOf(e.fecha)===cs; });
+    _filtHist=true; }
+  if(!_filtVid && _videoTodo()){
+    var M=_videoTodo(),F={}; Object.keys(M).forEach(function(c){ if(_seasonOf(M[c].date)===cs) F[c]=M[c]; });
+    _videoTodo()=F; _filtVid=true; }
+}
 
 function renderHero(j){
   var color=POS_COLOR[j.pos]||'#64748b';
@@ -519,12 +623,13 @@ function renderHero(j){
     '<div class="hero-info">'+
       '<div class="pos-tag" style="background:'+color+'12;color:'+color+';border-color:'+color+'33">'+j.pos+'</div>'+
       '<div class="hero-nombre">'+j.nombre+'</div>'+
-      '<div class="hero-sub">'+(j.pais||'🇦🇷')+' {{CLUB}} VOLEY · Temporada 2026'+(j.altura?' · 📏 '+j.altura:'')+'</div>'+
+      '<div class="hero-sub">'+(j.pais||'🇦🇷')+' {{CLUB}} VOLEY · Temporada '+_curSeason()+'/'+String(_curSeason()+1).slice(2)+(j.altura?' · 📏 '+j.altura:'')+'</div>'+
       '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">'+
         '<a href="historial_voley.html" style="padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;font-family:Bebas Neue,sans-serif;font-size:12px;letter-spacing:1.5px;text-decoration:none;">📈 STATS</a>'+
         '<a href="prep_fisica.html" style="padding:6px 14px;border-radius:8px;background:rgba(232,25,44,.12);border:1px solid rgba(232,25,44,.25);color:#e8192c;font-family:Bebas Neue,sans-serif;font-size:12px;letter-spacing:1.5px;text-decoration:none;">💪 RUTINA</a>'+
       '</div>'+
-    '</div>';
+    '</div>'+
+    (j.foto?'<img src="'+j.foto+'" alt="'+j.nombre+'" onerror="this.style.display=\'none\'" style="width:72px;height:94px;object-fit:cover;object-position:top;border-radius:12px;flex-shrink:0;border:2px solid '+color+'40;box-shadow:0 4px 14px rgba(0,0,0,.45)">':'');
 }
 
 function renderNextMatch(){
@@ -532,26 +637,51 @@ function renderNextMatch(){
 }
 
 // PILLS — leen totales de PARTIDOS_JUGADORES (datos actuales con baterías)
+/* Un recuadro por fundamento, con el detalle completo: igual que el
+   dashboard. Antes eran cinco numeros sueltos. Los datos salen del
+   historial de la temporada y de los cortes de video. */
 function renderQuickStats(j){
-  var qs=document.getElementById('quick-stats');
-  var num=parseInt(j.num);
-  var PP=(window.PP_DATA&&window.PP_DATA['{{club}}'])||{players:[]};
-  var BLK=(window.PP_BLOCK&&window.PP_BLOCK['{{club}}'])||[];
-  function card(roles){return (PP.players||[]).filter(function(p){return parseInt(p.num)===num && roles.indexOf(p.role)>=0;})[0];}
-  function eff(data,ei,kind){ if(!data||!data.length)return null; var n=data.length,k=0,e=0,b=0,pos=0;
-    data.forEach(function(a){var ev=a[ei]; if(ev==='#'){k++;pos++;} else if(ev==='+')pos++; else if(ev==='=')e++; else if(ev==='/')b++;});
-    var v; if(kind==='atk')v=(k-e-b)/n; else if(kind==='srv')v=(k-e)/n; else v=(pos-e-b)/n; return Math.round(v*100); }
-  var sC=card(['saque']),rC=card(['reception']),aC=card(['punta','central','opuesto']),dC=card(['defense']);
-  var bC=BLK.filter(function(p){return parseInt(p.num)===num;})[0];
-  var pills=[
-    {lbl:'Saque',    v:sC?eff(sC.data,3,'srv'):null, c:'#f97316'},
-    {lbl:'Recepción',v:rC?eff(rC.data,3,'rec'):null, c:'#818cf8'},
-    {lbl:'Ataque',   v:aC?eff(aC.data,5,'atk'):null, c:'#ef4444'},
-    {lbl:'Bloqueo',  v:bC?eff(bC.data,2,'blk'):null, c:'#2dd4bf'},
-    {lbl:'Defensa',  v:dC?eff(dC.data,3,'def'):null, c:'#22c55e'}
-  ];
-  qs.style.display='grid';
-  qs.innerHTML=pills.map(function(s){ return '<div class="qs-item"><div class="qs-val" style="color:'+s.c+'">'+(s.v!==null?s.v+'%':'\u2014')+'</div><div class="qs-lbl">'+s.lbl+'</div></div>'; }).join('');
+  var qs=document.getElementById('quick-stats'); if(!qs||!j) return;
+  window._curJug=j;
+  function nm1(x){return (x||'').replace(/^\d+\s*/,'').toLowerCase().split(' ')[0];}
+  function fmtE(v){ return v===null?'—':(v<0?'-':'')+Math.abs(v)+'%'; }
+  function effC(v){ if(v===null) return '#64748b'; if(v>=40) return '#22c55e'; if(v>=20) return '#86efac'; if(v>=0) return '#e2e8f0'; if(v>=-15) return '#f97316'; return '#ef4444'; }
+  function mkRect(color,title,stats){
+    var h='<div style="background:#0d0e1a;border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden">'
+      +'<div style="padding:7px 14px;background:'+color+'14;border-bottom:1px solid '+color+'2a;display:flex;align-items:center;gap:6px">'
+      +'<div style="width:5px;height:5px;border-radius:50%;background:'+color+'"></div>'
+      +'<span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+color+'">'+title+'</span></div>'
+      +'<div style="padding:11px 10px;display:flex;gap:14px;align-items:center;justify-content:center">';
+    stats.forEach(function(s){ h+='<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+      +'<div style="font-family:Bebas Neue,sans-serif;font-size:23px;line-height:1;color:'+(s.c||'#e2e8f0')+'">'+s.v+'</div>'
+      +'<div style="font-size:9px;color:#64748b;letter-spacing:.5px;white-space:nowrap">'+s.l+'</div></div>'; });
+    return h+'</div></div>';
+  }
+  if(!window.HISTORIAL_DATA||!window.HISTORIAL_DATA.entrenamientos||!window.HISTORIAL_DATA.entrenamientos.length){ qs.style.display='none'; return; }
+  var nmC=nm1(j.nombre), found=false;
+  var t={sT:0,sPunto:0,sVend:0,sPos:0,sErr:0,rT:0,rPunto:0,rPos:0,rVend:0,rErr:0,aT:0,aPunto:0,aVend:0,aErr:0,bT:0,bPt:0,bPtPos:0};
+  var KS=['sT','sPunto','sVend','sPos','sErr','rT','rPunto','rPos','rVend','rErr','aT','aPunto','aVend','aErr','bT','bPt','bPtPos'];
+  window.HISTORIAL_DATA.entrenamientos.forEach(function(e){ (e.jugadores||[]).forEach(function(jh){ if(nm1(jh.n)!==nmC) return; found=true; KS.forEach(function(k){ t[k]+=jh[k]||0; }); }); });
+  if(!found){ qs.style.display='none'; return; }
+  // Defensa desde VIDEO_DATA (si está cargada), filtrando por número de jugador
+  var dT=0,dPerf=0,dBuena=0,dMala=0,dErr=0,hasD=false;
+  if(_videoTodo()){ var M=_videoTodo(); Object.keys(M).forEach(function(c){ (M[c].actions||[]).forEach(function(a){ if(a.sk!=='Defensa') return; if(a.tm!=='{{CLUB_SLUG}}') return; if(parseInt(a.num,10)!==parseInt(j.num,10)) return; hasD=true; dT++; if(a.ev==='#')dPerf++; else if(a.ev==='+')dBuena++; else if(a.ev==='-')dMala++; else if(a.ev==='=')dErr++; }); }); }
+  var sEff=t.sT>0?Math.round((t.sPunto+0.5*t.sVend+0.25*t.sPos-t.sErr)/t.sT*100):null;
+  var rEff=t.rT>0?Math.round((t.rPunto+0.5*t.rPos-0.5*t.rVend-t.rErr)/t.rT*100):null;
+  var aEff=t.aT>0?Math.round((t.aPunto-t.aVend-t.aErr)/t.aT*100):null;
+  var bEff=t.bT>0?Math.round((t.bPt+t.bPtPos)/t.bT*100):null;
+  var rPos=t.rT>0?Math.round((t.rPunto+t.rPos)/t.rT*100):null;
+  var rNeg=t.rT>0?Math.round((t.rVend+t.rErr)/t.rT*100):null;
+  var dEff=dT>0?Math.round((dPerf+0.5*dBuena-0.5*dMala-dErr)/dT*100):null;
+  var html='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">';
+  html+=mkRect('#F59E0B','Saque',[{v:fmtE(sEff),l:'EFF',c:effC(sEff)},{v:t.sT,l:'Total'},{v:t.sPunto,l:'Puntos'},{v:t.sErr,l:'Errores'}]);
+  html+=mkRect('#F97316','Ataque',[{v:fmtE(aEff),l:'EFF',c:effC(aEff)},{v:t.aPunto,l:'Puntos'},{v:t.aVend,l:'Bloqueados'},{v:t.aErr,l:'Errores'}]);
+  html+=mkRect('#22C55E','Recepción',[{v:fmtE(rEff),l:'EFF',c:effC(rEff)},{v:t.rT,l:'Total'},{v:fmtE(rPos),l:'Rec. #+'},{v:fmtE(rNeg),l:'Rec. /='}]);
+  html+=mkRect('#06B6D4','Bloqueo',[{v:fmtE(bEff),l:'EFF #+',c:effC(bEff)},{v:t.bT,l:'Total'}]);
+  if(hasD) html+=mkRect('#EF4444','Defensa',[{v:fmtE(dEff),l:'EFF',c:effC(dEff)},{v:dT,l:'Total'},{v:dPerf,l:'Perfectas',c:'#22c55e'},{v:dErr,l:'Errores',c:'#ef4444'}]);
+  html+='</div>';
+  qs.className=''; qs.style.cssText='display:block;padding:12px 12px 2px;background:transparent;border:0';
+  qs.innerHTML=html;
 }
 
 function renderAccesos(j){
@@ -567,14 +697,14 @@ function renderAccesos(j){
     {icon:'🏠',title:'Hub',desc:'Todo el sistema',url:'index.html',color:'#64748b',full:true}
   ];
   var SETTER_NUMS=[4,9,19];
-  if(SETTER_NUMS.indexOf(parseInt(j.num))>=0) items.splice(items.length-1,0,{icon:'🎯',title:'Distribución',desc:'Mi armado de juego',url:'plan_partido.html?equipo={{club}}&jug='+j.num+'#armador',color:'#f59e0b'});
-  var _ppRec=(window.PP_DATA&&window.PP_DATA['{{club}}']&&(window.PP_DATA['{{club}}'].players||[]))||[];
-  if(_ppRec.some(function(p){return parseInt(p.num)===parseInt(j.num)&&p.role==='reception';})) items.splice(items.length-1,0,{icon:'🛡',title:'Recepción',desc:'Mi recepción por zona',url:'plan_partido.html?equipo={{club}}&jug='+j.num+'#recepcion',color:'#22c55e'});
-  items.splice(items.length-1,0,{icon:'⚡',title:'Saque',desc:'Mis saques por zona',url:'plan_partido.html?equipo={{club}}&jug='+j.num+'#saque',color:'#f97316'});
+  if(SETTER_NUMS.indexOf(parseInt(j.num))>=0) items.splice(items.length-1,0,{icon:'🎯',title:'Distribución',desc:'Mi armado de juego',url:'plan_partido.html?equipo=nafels&jug='+j.num+'#armador',color:'#f59e0b'});
+  var _ppRec=(window.PP_DATA&&window.PP_DATA['{{CLUB_SLUG}}']&&(window.PP_DATA['{{CLUB_SLUG}}'].players||[]))||[];
+  if(_ppRec.some(function(p){return parseInt(p.num)===parseInt(j.num)&&p.role==='reception';})) items.splice(items.length-1,0,{icon:'🛡',title:'Recepción',desc:'Mi recepción por zona',url:'plan_partido.html?equipo=nafels&jug='+j.num+'#recepcion',color:'#22c55e'});
+  items.splice(items.length-1,0,{icon:'⚡',title:'Saque',desc:'Mis saques por zona',url:'plan_partido.html?equipo=nafels&jug='+j.num+'#saque',color:'#f97316'});
   var ATK_POS=['PUNTA','OPUESTO','CENTRAL'];
-  if(ATK_POS.indexOf((j.pos||'').toUpperCase())>=0 || SETTER_NUMS.indexOf(parseInt(j.num))>=0) items.splice(items.length-1,0,{icon:'💥',title:'Ataque',desc:'Mis ataques por zona',url:'plan_partido.html?equipo={{club}}&jug='+j.num+'#ataque',color:'#818cf8'});
-  items.splice(items.length-1,0,{icon:'🤲',title:'Defensa',desc:'Mi mapa de defensa',url:'plan_partido.html?equipo={{club}}&jug='+j.num+'#defensa',color:'#ef4444'});
-  if((j.pos||'').toUpperCase()!=='LIBERO') items.splice(items.length-1,0,{icon:'🧱',title:'Bloqueo',desc:'Dónde bloqueo',url:'plan_partido.html?equipo={{club}}&jug='+j.num+'#bloqueo',color:'#2dd4bf'});
+  if(ATK_POS.indexOf((j.pos||'').toUpperCase())>=0 || SETTER_NUMS.indexOf(parseInt(j.num))>=0) items.splice(items.length-1,0,{icon:'💥',title:'Ataque',desc:'Mis ataques por zona',url:'plan_partido.html?equipo=nafels&jug='+j.num+'#ataque',color:'#818cf8'});
+  items.splice(items.length-1,0,{icon:'🤲',title:'Defensa',desc:'Mi mapa de defensa',url:'plan_partido.html?equipo=nafels&jug='+j.num+'#defensa',color:'#ef4444'});
+  if((j.pos||'').toUpperCase()!=='LIBERO') items.splice(items.length-1,0,{icon:'🧱',title:'Bloqueo',desc:'Dónde bloqueo',url:'plan_partido.html?equipo=nafels&jug='+j.num+'#bloqueo',color:'#2dd4bf'});
   if(typeof PARTIDOS_VIDEOS!=='undefined'){
     var myVideos=PARTIDOS_VIDEOS.filter(function(v){ return v.jugador && v.jugador.toUpperCase()===(j.nombre||'').replace(/^\d+\s*/,'').split(' ')[0].toUpperCase(); });
     if(myVideos.length>0) items.splice(1,0,{icon:'🎬',title:'Mis Videos',desc:myVideos.length+' acciones grabadas',url:'videos.html?num='+j.num,color:'#EF4444'});
@@ -645,8 +775,8 @@ function showHeatmapMenu(){
 function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.remove('open'); }
 
 function cambiarJugador(){
-  sessionStorage.removeItem("{{club}}_pin_skip");
-  localStorage.removeItem("{{club}}_player_num");
+  sessionStorage.removeItem("casla_pin_skip");
+  localStorage.removeItem("casla_player_num");
   window.location.href="index.html";
 }
 
@@ -663,24 +793,56 @@ if(jugador){
   renderStats(jugador);
   renderRutina(jugador);
   document.getElementById('main-content').style.display='block';
-  document.title=jugador.nombre+' — CASL VOLEY';
+  document.title=jugador.nombre+' — {{CLUB}} VOLEY';
 } else {
   document.getElementById('hero-content').innerHTML='<div class="estado-msg"><div class="estado-msg-icon">❌</div><div class="estado-msg-txt">Jugador no encontrado</div></div>';
+}
+
+/* Los cortes de video de las DOS fuentes: los partidos viven en VIDEO_DATA y
+   los entrenamientos en VIDEO_DATA_ENT. Mirando una sola, las acciones de la
+   otra no aparecen nunca. */
+function _videoTodo(){
+  var VD = {};
+  try{
+    [window.VIDEO_DATA, window.VIDEO_DATA_ENT].forEach(function(F){
+      var M = F && F.matches;
+      if(!M) return;
+      Object.keys(M).forEach(function(k){ VD[k] = M[k]; });
+    });
+  }catch(e){}
+  return VD;
 }
 </script>
 <div id="hm-overlay" onclick="if(event.target===this)closeHeatmapMenu()">
   <div class="hm-box">
     <div class="hm-title"><span>🔥 HEAT MAPS</span><button class="hm-close" onclick="closeHeatmapMenu()">✕</button></div>
     <div class="hm-grid">
-      <a class="hm-card" href="plan_partido.html?equipo={{club}}#ataque"    style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.3)"><span class="hm-icon">⚡</span><span class="hm-lbl" style="color:#F97316">ATAQUE</span><span class="hm-sub">EFF · SO/TR · Zonas<br>Combos · Calidad rec.</span></a>
-      <a class="hm-card" href="plan_partido.html?equipo={{club}}#saque"     style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)"><span class="hm-icon">🎯</span><span class="hm-lbl" style="color:#22C55E">SAQUE</span><span class="hm-sub">EFF · Flotado/Potencia<br>Zonas origen/destino</span></a>
-      <a class="hm-card" href="plan_partido.html?equipo={{club}}#recepcion" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🛡️</span><span class="hm-lbl" style="color:#818CF8">RECEPCION</span><span class="hm-sub">EFF · Calidad · Zonas</span></a>
-      <a class="hm-card" href="plan_partido.html?equipo={{club}}#armador"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
-      <a class="hm-card" href="plan_partido.html?equipo={{club}}#defensa"  style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🤲</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Origen/Destino</span></a>
-      <a class="hm-card" href="plan_partido.html?equipo={{club}}#bloqueo"  style="background:rgba(45,212,191,.08);border-color:rgba(45,212,191,.3)"><span class="hm-icon">🧱</span><span class="hm-lbl" style="color:#2DD4BF">BLOQUEO</span><span class="hm-sub">Dónde bloquea · Zona origen ataque</span></a>
+      <a class="hm-card" href="plan_partido.html?equipo=nafels#ataque"    style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.3)"><span class="hm-icon">⚡</span><span class="hm-lbl" style="color:#F97316">ATAQUE</span><span class="hm-sub">EFF · SO/TR · Zonas<br>Combos · Calidad rec.</span></a>
+      <a class="hm-card" href="plan_partido.html?equipo=nafels#saque"     style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)"><span class="hm-icon">🎯</span><span class="hm-lbl" style="color:#22C55E">SAQUE</span><span class="hm-sub">EFF · Flotado/Potencia<br>Zonas origen/destino</span></a>
+      <a class="hm-card" href="plan_partido.html?equipo=nafels#recepcion" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🛡️</span><span class="hm-lbl" style="color:#818CF8">RECEPCION</span><span class="hm-sub">EFF · Calidad · Zonas</span></a>
+      <a class="hm-card" href="plan_partido.html?equipo=nafels#armador"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
+      <a class="hm-card" href="plan_partido.html?equipo=nafels#defensa"  style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🤲</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Origen/Destino</span></a>
+      <a class="hm-card" href="plan_partido.html?equipo=nafels#bloqueo"  style="background:rgba(45,212,191,.08);border-color:rgba(45,212,191,.3)"><span class="hm-icon">🧱</span><span class="hm-lbl" style="color:#2DD4BF">BLOQUEO</span><span class="hm-sub">Dónde bloquea · Zona origen ataque</span></a>
     </div>
     <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">División de Honor 2026</div>
   </div>
 </div>
+<script>
+/* ── El perfil se pone en el tipo que ya venia elegido ──────────────────────
+   Los botones de aca (PARTIDO / ENTRENAMIENTO) y el filtro compartido tienen
+   que decir lo mismo, o el jugador ve una cosa y el resto del sistema otra.
+
+   El perfil no tiene "Todos": si el filtro compartido esta en Todos se deja el
+   que ya traia la pagina, que es Partido. Solo se cambia cuando afuera hay una
+   eleccion concreta. */
+try{
+  var _vt = (typeof vbTipo==='function') ? vbTipo() : 'todos';
+  if(_vt==='P' || _vt==='E'){
+    var _nom = (_vt==='E') ? 'entrenamiento' : 'partido';
+    if(window._objTipo !== _nom && typeof objSetTipo==='function')
+      objSetTipo(_nom, document.getElementById('obj-tbtn-'+_nom));
+  }
+}catch(e){}
+</script>
 </body>
 </html>

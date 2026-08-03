@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PREPARACIÓN FÍSICA — {{CLUB_COMPLETO}}</title>
+<title>PREPARACIÓN FÍSICA — {{CLUB}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="plantel_{{club}}.js" onerror="void 0"></script>
+<script src="plantel_club.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
-  <script src="datos_equipo.js" onerror="void 0"></script>
+  <script src="datos_equipo.js.enc" onerror="void 0"></script>
 <script src="datos_prep_fisica.js" onerror="void 0"></script>
-<script src="datos_ejercicios.js" onerror="void 0"></script>
+<script src="datos_ejercicios.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <script src="lang.js" onerror="void 0"></script>
 <script src="firebase.js" onerror="void 0"></script>
@@ -194,7 +194,7 @@ select,select option{color:#111!important;background-color:#fff!important}
     <a href="index.html" class="back-btn">← Inicio</a>
     <div>
       <div class="page-title">💪 <span data-t="prep_fisica">Preparación Física</span></div>
-      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB_COMPLETO}} · {{LIGA}} {{PAIS}} 2026/27</div>
+      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB}} · {{LIGA}} 2026/27</div>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:12px;">
@@ -281,73 +281,73 @@ var PREP_DEMO = {
   "jugadores": [
     {
       "num": 1,
-      "nombre": "JUGADOR",
+      "nombre": "DURDOS",
       "pos": "PUNTA",
       "semanas": []
     },
     {
       "num": 3,
-      "nombre": "JUGADOR",
+      "nombre": "SCHWITTER",
       "pos": "OPUESTO",
       "semanas": []
     },
     {
       "num": 4,
-      "nombre": "JUGADOR",
+      "nombre": "VAZQUEZ",
       "pos": "ARMADOR",
       "semanas": []
     },
     {
       "num": 5,
-      "nombre": "JUGADOR",
+      "nombre": "CLEMENT",
       "pos": "CENTRAL",
       "semanas": []
     },
     {
       "num": 7,
-      "nombre": "JUGADOR R",
+      "nombre": "SCHMID R",
       "pos": "CENTRAL",
       "semanas": []
     },
     {
       "num": 9,
-      "nombre": "JUGADOR",
+      "nombre": "NORRIS",
       "pos": "OPUESTO",
       "semanas": []
     },
     {
       "num": 10,
-      "nombre": "JUGADOR",
+      "nombre": "BOGDANOVSKI",
       "pos": "PUNTA",
       "semanas": []
     },
     {
       "num": 11,
-      "nombre": "JUGADOR",
+      "nombre": "BARTHOLET",
       "pos": "PUNTA",
       "semanas": []
     },
     {
       "num": 12,
-      "nombre": "JUGADOR",
+      "nombre": "JOHANSSON",
       "pos": "CENTRAL",
       "semanas": []
     },
     {
       "num": 13,
-      "nombre": "JUGADOR",
+      "nombre": "STEIMANN",
       "pos": "ARMADOR",
       "semanas": []
     },
     {
       "num": 17,
-      "nombre": "JUGADOR",
+      "nombre": "ROFFLER",
       "pos": "PUNTA",
       "semanas": []
     },
     {
       "num": 20,
-      "nombre": "JUGADOR J",
+      "nombre": "SCHMID J",
       "pos": "LIBERO",
       "semanas": []
     }
@@ -426,10 +426,10 @@ function setTxtPF(id,s){ var el=document.getElementById(id); if(el) el.textConte
 var DATA = {jugadores:[]};
 
 function construirData(){
-  // Plantel: fuente maestra PLANTEL_{{CLUB}} (apellido) → fallback EQUIPO_DATA → demo
+  // Plantel: fuente maestra PLANTEL_CLUB (apellido) → fallback EQUIPO_DATA → demo
   var plantel;
-  if(window.PLANTEL_{{CLUB}} && window.PLANTEL_{{CLUB}}.jugadores && window.PLANTEL_{{CLUB}}.jugadores.length){
-    plantel = window.PLANTEL_{{CLUB}}.jugadores.map(function(j){
+  if(window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores && window.PLANTEL_CLUB.jugadores.length){
+    plantel = window.PLANTEL_CLUB.jugadores.map(function(j){
       return { num:j.num, nombre:j.ap||j.nombre, pos:j.pos||'', foto:j.foto||null };
     });
   } else if(window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores && window.EQUIPO_DATA.jugadores.length){
@@ -658,7 +658,7 @@ function selectJugador(j, btn){
   document.getElementById('jug-content').style.display = 'block';
   document.getElementById('jug-avatar').textContent = j.num;
   document.getElementById('jug-name-display').textContent = j.nombre;
-  document.getElementById('jug-meta-display').textContent = j.pos + ' · {{CLUB_COMPLETO}}';
+  document.getElementById('jug-meta-display').textContent = j.pos + ' · {{CLUB}}';
   var totalEj = 0;
   (j.semanas||[]).forEach(function(s){
     (s.bloques||[]).forEach(function(b){ totalEj += (b.ejercicios||[]).length; });
@@ -1053,4 +1053,4 @@ window.addEventListener('langchange', function(e){
 <script src="temporadas_menu.js"></script>
 </body>
 </html>
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Temporadas — {{CLUB_COMPLETO}}</title>
+<title>Temporadas — Axpo Volley {{CLUB}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{ --bg:#07080f; --card:#0d0e1a; --border:rgba(255,255,255,.06); --red:#e8192c; --mut:#475569; --fg:#e2e8f0; }
@@ -34,12 +34,15 @@
   .vacio{ color:var(--mut); font-size:14px; padding:8px 2px; line-height:1.6; }
   .arrow{ color:var(--mut); font-size:20px; margin-left:6px; }
 </style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 <header>
   <div>
-    <div class="club-name">{{CLUB_COMPLETO}}</div>
-    <div class="club-sub">Sistema de Análisis · {{LIGA}}</div>
+    <div class="club-name">{{CLUB}}</div>
+    <div class="club-sub">Sistema de Análisis · NLA</div>
   </div>
   <div id="lang-wrap"></div>
 </header>
@@ -101,4 +104,4 @@
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

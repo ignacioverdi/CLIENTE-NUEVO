@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Videos — {{CLUB_COMPLETO}}</title>
+<title>Videos — {{CLUB}} VOLEY</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="datos_videos.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
-  <script src="datos_equipo.js" onerror="void 0"></script>
+  <script src="datos_equipo.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <script src="lang.js" onerror="void 0"></script>
 <style>
@@ -117,6 +117,9 @@ body{background:var(--bg);font-family:'Barlow Condensed',sans-serif;color:var(--
 }
 </style>
 <script src="utils.js" onerror="void 0"></script>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
 </head>
 <body>
 
@@ -125,7 +128,7 @@ body{background:var(--bg);font-family:'Barlow Condensed',sans-serif;color:var(--
     <a href="index.html" class="back-btn">← <span data-tv="vinicio">Inicio</span></a>
     <div>
       <div class="title">🎬 <span data-tv="vvideos">Videos</span></div>
-      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase">{{CLUB_COMPLETO}} · {{LIGA}} {{PAIS}} 2026/27</div>
+      <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase">{{CLUB}} VOLEY · {{LIGA}} 2026/27</div>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:14px">
@@ -473,4 +476,4 @@ function escHtml(s){ return String(s||'').replace(/'/g,"&#39;"); }
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

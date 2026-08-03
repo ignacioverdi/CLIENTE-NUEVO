@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{LIGA}} {{PAIS}} 2025/26 — Estadísticas Liga</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0f1a;--surface:#111827;--border:rgba(255,255,255,.08);--text:#e2e8f0;--muted:#64748b;--accent:#3b82f6;--green:#22c55e;--orange:#f97316;--red:#ef4444;--purple:#818cf8;--yellow:#fbbf24}
+body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;min-height:100vh}
+.header{background:linear-gradient(135deg,#0f172a,#1e293b);border-bottom:1px solid var(--border);padding:20px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.header h1{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px}
+.header .subtitle{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.season-badge{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);color:#93c5fd;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;margin-left:auto}
+.tabs{display:flex;gap:0;background:rgba(0,0,0,.2);border-bottom:1px solid var(--border);padding:0 24px}
+.tab{padding:12px 20px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:hover:not(.active){color:var(--text)}
+.filters{display:flex;gap:12px;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.filter-label{font-size:10px;color:#cbd5e1;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+select,input[type=text]{background:#1e293b;border:1px solid var(--border);color:#f1f5f9;padding:6px 10px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:13px;outline:none;cursor:pointer;min-width:120px}
+select option{background:#1e293b;color:#f1f5f9}
+input[type=text]::placeholder{color:#94a3b8}
+select:focus,input:focus{border-color:var(--accent)}
+.gp-btn{display:inline-flex;align-items:center;gap:3px;margin-left:8px;padding:2px 8px;border-radius:5px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);color:#f87171;text-decoration:none;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;vertical-align:middle;white-space:nowrap;transition:all .15s}
+.gp-btn:hover{background:rgba(239,68,68,.22);border-color:rgba(239,68,68,.6);color:#fca5a5}
+.filter-group{display:flex;align-items:center;gap:6px}
+.reset-btn{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif}
+.reset-btn:hover{background:rgba(239,68,68,.2)}
+.results-count{font-size:11px;color:var(--muted);margin-left:auto}
+.panel{display:none;padding:24px}
+.panel.active{display:block}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+/* TEAM CARDS */
+.ranking-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.team-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;transition:border-color .2s}
+.team-card:hover{border-color:rgba(255,255,255,.15)}
+.team-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--tc,#3b82f6)}
+.team-rank{position:absolute;top:10px;right:14px;font-family:'Bebas Neue',sans-serif;font-size:42px;color:rgba(255,255,255,.04);line-height:1}
+.team-name{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:14px}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.metric{background:rgba(255,255,255,.03);border-radius:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.05)}
+.metric-label{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.metric-val{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1}
+.metric-sub{font-size:10px;color:var(--muted);margin-top:2px}
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:#0c1526;padding:10px 12px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:1px solid var(--border);user-select:none;position:sticky;top:0}
+thead th:hover{color:var(--text)}
+thead th.sort-asc::after{content:' ▲';color:var(--accent)}
+thead th.sort-desc::after{content:' ▼';color:var(--accent)}
+thead th.col-group-atk{border-left:1px solid rgba(249,115,22,.2)}
+thead th.col-group-srv{border-left:1px solid rgba(34,197,94,.2)}
+thead th.col-group-rec{border-left:1px solid rgba(129,140,248,.2)}
+thead th.col-group-blk{border-left:1px solid rgba(250,204,21,.2)}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .1s}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+tbody td{padding:8px 12px;white-space:nowrap}
+tbody td.col-group-atk{border-left:1px solid rgba(249,115,22,.08)}
+tbody td.col-group-srv{border-left:1px solid rgba(34,197,94,.08)}
+tbody td.col-group-rec{border-left:1px solid rgba(129,140,248,.08)}
+tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
+.pos-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:1px}
+.pos-PUNTA{background:rgba(249,115,22,.15);color:#fb923c}
+.pos-OPUESTO{background:rgba(34,197,94,.15);color:#4ade80}
+.pos-CENTRAL{background:rgba(129,140,248,.15);color:#a5b4fc}
+.pos-ARMADOR{background:rgba(245,158,11,.15);color:#fcd34d}
+.pos-LIBERO{background:rgba(6,182,212,.15);color:#22d3ee}
+.pos-OTRO{background:rgba(100,116,139,.15);color:#94a3b8}
+.pos-OUTSIDE{background:rgba(249,115,22,.15);color:#fb923c}
+.pos-OPPOSITE{background:rgba(34,197,94,.15);color:#4ade80}
+.pos-MIDDLE{background:rgba(129,140,248,.15);color:#a5b4fc}
+.pos-SETTER{background:rgba(245,158,11,.15);color:#fcd34d}
+.eff-val{font-family:'Bebas Neue',sans-serif;font-size:14px}
+.pos-eff{color:#22c55e}.neg-eff{color:#ef4444}.neu-eff{color:#64748b}
+.no-data{text-align:center;padding:48px;color:var(--muted);font-size:13px;letter-spacing:1px}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,.02)}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+/* SKILL RANKING TABLE */
+.skill-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.skill-pill{padding:8px 15px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap}
+.skill-pill:hover{color:var(--text);border-color:rgba(255,255,255,.22)}
+.skill-pill.active{background:#3b82f6;color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(59,130,246,.35)}
+#teams-table th,#teams-table td{text-align:center}
+#teams-table th:nth-child(2),#teams-table td:nth-child(2){text-align:left}
+#teams-table td.active-col,#teams-table th.active-col{background:rgba(59,130,246,.12)}
+#teams-table th.active-col{color:#93c5fd}
+#teams-table tbody tr.is-{{club}}{background:rgba(34,197,94,.09)}
+#teams-table tbody tr.is-{{club}}:hover{background:rgba(34,197,94,.14)}
+#teams-table tbody tr.is-{{club}} td{border-top:1px solid rgba(34,197,94,.25);border-bottom:1px solid rgba(34,197,94,.25)}
+.t-name{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.5px;text-decoration:none}
+.t-rank{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#475569}
+.t-rank.r1{color:#fcd34d}
+.tval{font-family:'Bebas Neue',sans-serif;font-size:21px;line-height:1}
+.ttot{font-size:10px;color:#64748b;margin-left:4px}
+.rank-legend{margin-top:12px;font-size:11px;color:#64748b;letter-spacing:.3px}
+.rank-legend .lg-tot{color:#475569}
+/* PLAYERS RANKING (sección 8) */
+.sub-pills{margin-top:-6px;margin-bottom:18px}
+.sub-pills .skill-pill{padding:5px 12px;font-size:11px;border-radius:7px}
+.sub-pills .skill-pill.active{background:#6366f1;box-shadow:0 3px 10px rgba(99,102,241,.35)}
+#players-table th,#players-table td{text-align:center;white-space:nowrap}
+#players-table th:nth-child(2),#players-table td:nth-child(2){text-align:left}
+#players-table td.active-col,#players-table th.active-col{background:rgba(99,102,241,.12)}
+#players-table th.active-col{color:#a5b4fc}
+#players-table tbody tr.is-{{club}}{background:rgba(34,197,94,.09)}
+#players-table tbody tr.is-{{club}}:hover{background:rgba(34,197,94,.14)}
+#players-table tbody tr.is-{{club}} td{border-top:1px solid rgba(34,197,94,.22);border-bottom:1px solid rgba(34,197,94,.22)}
+#players-table tbody tr:hover{background:rgba(255,255,255,.025)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="subtitle">{{CLUB_REPO}} — Análisis Liga</div>
+    <h1>{{LIGA}} {{PAIS}} — ESTADÍSTICAS</h1>
+  </div>
+  <div class="season-badge">TEMPORADA 2025/26</div>
+</div>
+<div class="tabs">
+  <div class="tab active" data-tab="equipos">🏆 Ranking Equipos</div>
+  <div class="tab" data-tab="jugadores">👤 Jugadores</div>
+</div>
+<div class="filters">
+  <div class="filter-group">
+    <span class="filter-label">Equipo</span>
+    <select id="f-team">
+      <option value="">Todos</option>
+      <option>{{RIVAL1}}</option><option>{{RIVAL6}}</option><option>{{RIVAL8}}</option>
+      <option>{{RIVAL12}}</option><option>{{RIVAL5}}</option><option>{{Club}}</option>
+      <option>{{RIVAL2}}</option><option>{{RIVAL9}}</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Temporada</span>
+    <select id="f-temporada"><option value="">Todas</option><!--__TEMPORADAS__--></select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Posición</span>
+    <select id="f-pos">
+      <option value="">Todas</option>
+      <option value="OUTSIDE">Punta</option>
+      <option value="OPPOSITE">Opuesto</option>
+      <option value="MIDDLE">Central</option>
+      <option value="SETTER">Armador</option>
+      <option value="LIBERO">Líbero</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Buscar</span>
+    <input type="text" id="f-search" placeholder="Nombre..." style="min-width:140px">
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Mín. acciones</span>
+    <select id="f-min-atk">
+      <option value="20">20+</option>
+      <option value="0">Sin mínimo</option>
+      <option value="50">50+</option><option value="100">100+</option>
+      <option value="200">200+</option><option value="300">300+</option>
+    </select>
+  </div>
+  <button class="reset-btn" id="reset-btn">✕ Limpiar</button>
+  <span class="results-count" id="results-count"></span>
+</div>
+<div class="panel active" id="panel-equipos">
+  <div class="section-title">RANKING EQUIPOS {{LIGA}} — ELEGÍ UN FUNDAMENTO PARA ORDENAR</div>
+  <div class="skill-pills" id="skill-pills"></div>
+  <div class="table-wrap">
+    <table id="teams-table">
+      <thead id="teams-thead"></thead>
+      <tbody id="teams-tbody"></tbody>
+    </table>
+  </div>
+  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado. <span id="updated-label" style="color:#475569"></span></div>
+</div>
+<div class="panel" id="panel-jugadores">
+  <div class="section-title">RANKING JUGADORES {{LIGA}} — ELEGÍ UN FUNDAMENTO</div>
+  <div class="skill-pills" id="player-skills"></div>
+  <div class="skill-pills sub-pills" id="player-subs"></div>
+  <div class="table-wrap">
+    <table id="players-table">
+      <thead id="players-thead"></thead>
+      <tbody id="players-tbody"></tbody>
+    </table>
+  </div>
+  <div class="rank-legend">La columna <b>EFF%</b> manda el ranking <span class="lg-tot">(entre paréntesis: total de acciones del fundamento elegido)</span> · color = ranking en ese corte (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado · filtrá por posición para comparar like-with-like.</div>
+</div>
+<script>
+/*__DATA_PLACEHOLDER__*/
+var SEASONS=[];
+
+
+var TEAM_COLORS={
+  '{{Club}}':'#22c55e','{{RIVAL1}}':'#3b82f6','{{RIVAL2}}':'#f97316',
+  '{{RIVAL6}}':'#818cf8','{{RIVAL8}}':'#f59e0b','{{RIVAL12}}':'#06b6d4',
+  '{{RIVAL5}}':'#ec4899','{{RIVAL9}}':'#94a3b8'
+};
+var sortState={col:'atk_eff',dir:-1};
+
+// TABS
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')});
+    document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('active')});
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+  });
+});
+
+// FILTERS
+function getF(){
+  return{
+    team:document.getElementById('f-team').value,
+    temporada:document.getElementById('f-temporada')?document.getElementById('f-temporada').value:'',
+    pos:document.getElementById('f-pos').value,
+    search:document.getElementById('f-search').value.toLowerCase().trim(),
+    minAtk:parseInt(document.getElementById('f-min-atk').value)||0
+  };
+}
+['f-team','f-temporada','f-pos','f-search','f-min-atk'].forEach(function(id){
+  var el=document.getElementById(id);
+  el.addEventListener('input',render);el.addEventListener('change',render);
+});
+document.getElementById('reset-btn').addEventListener('click',function(){
+  document.getElementById('f-team').value='';
+  document.getElementById('f-pos').value='';
+  document.getElementById('f-min-atk').value='20';
+  document.getElementById('f-search').value='';
+  render();
+});
+
+function filterP(data){
+  var f=getF();
+  return data.filter(function(p){
+    if(f.team&&p.team!==f.team)return false;
+    if(f.temporada&&p.temporada!==f.temporada&&p.temporada!=='all')return false;
+    if(f.pos&&p.pos_label!==f.pos)return false;
+    if(f.search&&!p.name.toLowerCase().includes(f.search)&&!p.team.toLowerCase().includes(f.search))return false;
+    return true;
+  });
+}
+
+function effC(v,rec){
+  if(v==null)return '#475569';
+  if(rec)return v>=40?'#22c55e':v>=25?'#fbbf24':v>=10?'#f97316':'#ef4444';
+  return v>=40?'#22c55e':v>=20?'#fbbf24':v>=0?'#f97316':'#ef4444';
+}
+function effCls(v){return v==null?'neu-eff':v>0?'pos-eff':v<0?'neg-eff':'neu-eff';}
+
+function fmtEff(v,rec){
+  if(v==null)return '<span style="color:#334155">—</span>';
+  var s=(v>=0?'+':'')+v.toFixed(1)+'%';
+  return '<span class="eff-val" style="color:'+effC(v,rec)+'">'+s+'</span>';
+}
+function fmtPct(v){
+  if(v==null)return '<span style="color:#334155">—</span>';
+  return '<span style="color:#94a3b8">'+v.toFixed(1)+'%</span>';
+}
+function fmtN(v){
+  if(!v)return '<span style="color:#334155">0</span>';
+  return '<span style="color:#cbd5e1;font-weight:600">'+v+'</span>';
+}
+
+// TEAM RANKING (tabla rankeada por fundamento)
+var METRICS=[
+  {key:'srv',  eff:'srv_eff', tot:'srv_tot', label:'Saque'},
+  {key:'rec',  eff:'rec_eff', tot:'rec_tot', label:'Recepción'},
+  {key:'blk',  eff:'blk_pt',  tot:'blk_tot', label:'Bloqueo #'},
+  {key:'alta', eff:'atk_alta',tot:'alta_tot',label:'Atq Alta'},
+  {key:'cent', eff:'atk_cent',tot:'cent_tot',label:'Atq Central'},
+  {key:'rap',  eff:'atk_rap', tot:'rap_tot', label:'Atq Rápida'},
+  {key:'so',   eff:'atk_so',  tot:'so_tot',  label:'Side-out #+'},
+  {key:'tr',   eff:'atk_tr',  tot:'tr_tot',  label:'Transición'}
+];
+var activeMetric='so';
+function _hexc(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+function _lerpc(a,b,t){var A=_hexc(a),B=_hexc(b);return 'rgb('+A.map(function(x,i){return Math.round(x+(B[i]-x)*t);}).join(',')+')';}
+function rankColor(frac){return frac<=0.5?_lerpc('#22c55e','#fbbf24',frac*2):_lerpc('#fbbf24','#ef4444',(frac-0.5)*2);}
+
+function buildSkillPills(){
+  var cont=document.getElementById('skill-pills'); if(!cont) return;
+  cont.innerHTML='';
+  METRICS.forEach(function(m){
+    var b=document.createElement('div');
+    b.className='skill-pill'+(m.key===activeMetric?' active':'');
+    b.textContent=m.label;
+    b.addEventListener('click',function(){activeMetric=m.key;buildSkillPills();renderTeams();});
+    cont.appendChild(b);
+  });
+}
+
+function teamSeason(){var el=document.getElementById('f-temporada');var v=el?el.value:'';return v||SEASONS[SEASONS.length-1]||'';}
+function renderTeams(){
+  var f=getF();
+  var season=teamSeason();
+  var seasonTeams=TEAMS.filter(function(t){return t.temporada===season;});
+  var rows=seasonTeams.filter(function(t){return !f.team||t.team===f.team;});
+  // ranking-frac por columna (dentro de la temporada)
+  var fracByMetric={};
+  METRICS.forEach(function(m){
+    var vals=seasonTeams.map(function(t){return t[m.eff];}).filter(function(v){return v!=null;}).slice().sort(function(a,b){return b-a;});
+    var fr={};
+    seasonTeams.forEach(function(t){
+      var v=t[m.eff];
+      if(v==null){fr[t.team]=null;return;}
+      var idx=vals.indexOf(v);
+      fr[t.team]=vals.length>1?idx/(vals.length-1):0;
+    });
+    fracByMetric[m.key]=fr;
+  });
+  var am=METRICS.filter(function(m){return m.key===activeMetric;})[0]||METRICS[0];
+  rows.sort(function(a,b){var av=a[am.eff],bv=b[am.eff];if(av==null)return 1;if(bv==null)return -1;return bv-av;});
+
+  var thead=document.getElementById('teams-thead');
+  thead.innerHTML='<tr><th>#</th><th>Equipo</th>'+METRICS.map(function(m){
+    return '<th class="'+(m.key===activeMetric?'active-col':'')+'">'+m.label+'</th>';
+  }).join('')+'</tr>';
+
+  var tbody=document.getElementById('teams-tbody');
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="10" class="no-data">Todavía no hay partidos cargados en la temporada '+season+'. Apenas se cargue el primer DVW, aparece acá automáticamente.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=rows.map(function(t,i){
+    var c=TEAM_COLORS[t.team]||'#3b82f6';
+    var slug=t.team.toLowerCase().replace(/ /g,'_');
+    var isNaf=t.team==='{{Club}}';
+    var cells=METRICS.map(function(m){
+      var v=t[m.eff], tot=t[m.tot]||0;
+      var col=v==null?'#475569':rankColor(fracByMetric[m.key][t.team]);
+      var val=v==null?'—':((v>0&&m.key==='srv')?'+':'')+v+'%';
+      return '<td class="'+(m.key===activeMetric?'active-col':'')+'">'
+        +'<span class="tval" style="color:'+col+'">'+val+'</span>'
+        +'<span class="ttot">('+tot+')</span></td>';
+    }).join('');
+    return '<tr class="'+(isNaf?'is-{{club}}':'')+'">'
+      +'<td><span class="t-rank'+(i===0?' r1':'')+'">'+(i+1)+'</span></td>'
+      +'<td><span class="t-name" style="color:'+c+'">'+t.team.toUpperCase()+'</span><a class="gp-btn" href="game_plan.html?rival='+slug+'" title="Abrir game plan de '+t.team+'">📋 Plan</a></td>'
+      +cells+'</tr>';
+  }).join('');
+}
+
+// PLAYER SKILL RANKING (sección 8)
+var PSKILLS=[
+  {key:'srv',label:'Saque',rec:false,subs:[
+    {key:'m',  label:'Flotado', eff:'srv_m_eff',tot:'srv_m_tot'},
+    {key:'q',  label:'Potencia',eff:'srv_q_eff',tot:'srv_q_tot'},
+    {key:'all',label:'Total',   eff:'srv_eff',  tot:'srv_tot'}
+  ],cols:[{h:'Ace%',k:'srv_ace'},{h:'Err%',k:'srv_e'}]},
+  {key:'rec',label:'Recepción',rec:true,subs:[
+    {key:'m',  label:'Flotado', eff:'rec_m_eff',tot:'rec_m_tot'},
+    {key:'q',  label:'Potencia',eff:'rec_q_eff',tot:'rec_q_tot'},
+    {key:'all',label:'Total',   eff:'rec_eff',  tot:'rec_tot'}
+  ],cols:[{h:'Perf%',k:'rec_perf'},{h:'Pos%',k:'rec_pos'},{h:'Err%',k:'rec_e'}]},
+  {key:'atk',label:'Ataque',rec:false,subs:[
+    {key:'so', label:'Side-out',  eff:'atk_so_eff',tot:'atk_so_tot'},
+    {key:'tr', label:'Transición',eff:'atk_tr_eff',tot:'atk_tr_tot'},
+    {key:'all',label:'Total',     eff:'atk_eff',   tot:'atk_tot'}
+  ],cols:[{h:'Kill%',k:'atk_k'},{h:'Err%',k:'atk_e'},{h:'Bloq%',k:'atk_bl'}]},
+  {key:'blk',label:'Bloqueo',rec:true,subs:null,eff:'blk_eff',tot:'blk_tot',
+   cols:[{h:'Punto%',k:'blk_k'},{h:'Pos%',k:'blk_pos'}]},
+  {key:'def',label:'Defensa',rec:true,subs:null,eff:'def_eff',tot:'def_tot',
+   cols:[{h:'Perf%',k:'def_perf'},{h:'Pos%',k:'def_pos'},{h:'Err%',k:'def_e'}]}
+];
+var pSkill='atk', pSub={srv:'all',rec:'all',atk:'all'};
+function curSkill(){return PSKILLS.filter(function(s){return s.key===pSkill;})[0];}
+function curMetric(){
+  var s=curSkill();
+  if(!s.subs) return {eff:s.eff,tot:s.tot,rec:s.rec};
+  var sub=s.subs.filter(function(x){return x.key===(pSub[s.key]||'all');})[0]||s.subs[s.subs.length-1];
+  return {eff:sub.eff,tot:sub.tot,rec:s.rec};
+}
+
+function buildPlayerPills(){
+  var sc=document.getElementById('player-skills'); if(!sc)return;
+  sc.innerHTML='';
+  PSKILLS.forEach(function(s){
+    var b=document.createElement('div');
+    b.className='skill-pill'+(s.key===pSkill?' active':'');
+    b.textContent=s.label;
+    b.addEventListener('click',function(){pSkill=s.key;buildPlayerPills();renderPlayers();});
+    sc.appendChild(b);
+  });
+  var sub=document.getElementById('player-subs'); sub.innerHTML='';
+  var cs=curSkill();
+  if(cs.subs){
+    sub.style.display='flex';
+    cs.subs.forEach(function(x){
+      var b=document.createElement('div');
+      b.className='skill-pill'+((pSub[cs.key]||'all')===x.key?' active':'');
+      b.textContent=x.label;
+      b.addEventListener('click',function(){pSub[cs.key]=x.key;buildPlayerPills();renderPlayers();});
+      sub.appendChild(b);
+    });
+  } else { sub.style.display='none'; }
+}
+
+// PLAYER TABLE — rankeada por el fundamento activo
+function renderPlayers(){
+  var s=curSkill(), m=curMetric(), f=getF();
+  var minA=parseInt(document.getElementById('f-min-atk').value)||0;
+  // solo jugadores con datos en este fundamento (compara like-with-like)
+  var data=filterP(PLAYERS).filter(function(p){
+    return p[m.eff]!=null && (p[m.tot]||0)>=Math.max(minA,1);
+  });
+  data.sort(function(a,b){return (b[m.eff]) - (a[m.eff]);});
+  document.getElementById('results-count').textContent=data.length+' jugadores · '+s.label+(s.subs?' ('+(curSkill().subs.filter(function(x){return x.key===(pSub[s.key]||'all');})[0].label)+')':'');
+
+  // header dinámico
+  var thead=document.getElementById('players-thead');
+  thead.innerHTML='<tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Pos</th>'
+    +'<th class="active-col">EFF%</th><th>Acc.</th>'
+    +s.cols.map(function(c){return '<th>'+c.h+'</th>';}).join('')+'</tr>';
+
+  var tbody=document.getElementById('players-tbody');
+  if(!data.length){
+    tbody.innerHTML='<tr><td colspan="'+(6+s.cols.length)+'" class="no-data">Sin jugadores con datos de '+s.label.toLowerCase()+' para estos filtros. Probá bajar el mínimo de acciones o cambiar la posición.</td></tr>';
+    return;
+  }
+  var n=data.length;
+  tbody.innerHTML=data.map(function(p,i){
+    var tc=TEAM_COLORS[p.team]||'#64748b';
+    var pslug=p.team.toLowerCase().replace(/ /g,'_');
+    var frac=n>1?i/(n-1):0;
+    var col=rankColor(frac);
+    var ev=p[m.eff];
+    var evs=((ev>0&&!m.rec)?'+':'')+ev.toFixed(1)+'%';
+    var isNaf=p.team==='{{Club}}';
+    var rank=i+1;
+    var sec=s.cols.map(function(c){return '<td>'+fmtPct(p[c.k])+'</td>';}).join('');
+    return '<tr class="'+(isNaf?'is-{{club}}':'')+'">'
+      +'<td><span class="t-rank'+(i===0?' r1':'')+'">'+rank+'</span></td>'
+      +'<td><span style="font-weight:700;color:#64748b">#'+p.num+'</span> <span style="color:#e2e8f0">'+p.name+'</span></td>'
+      +'<td><a href="game_plan.html?rival='+pslug+'" title="Abrir game plan de '+p.team+'" style="text-decoration:none;display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;background:'+tc+'22;color:'+tc+'">'+p.team+'</a><a class="gp-btn" href="game_plan.html?rival='+pslug+'" title="Abrir game plan de '+p.team+'">📋</a></td>'
+      +'<td><span class="pos-badge pos-'+p.pos_label+'">'+p.pos_label+'</span></td>'
+      +'<td class="active-col"><span class="tval" style="color:'+col+'">'+evs+'</span></td>'
+      +'<td><span class="ttot">'+(p[m.tot]||0)+'</span></td>'
+      +sec+'</tr>';
+  }).join('');
+}
+
+function render(){renderTeams();renderPlayers();}
+function populateSeasons(){
+  var sel=document.getElementById('f-temporada'); if(!sel) return;
+  sel.innerHTML='<option value="">Todas</option>'+SEASONS.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
+  if(SEASONS.length) sel.value=SEASONS[SEASONS.length-1]; // default: temporada más reciente
+}
+function loadStats(){
+  fetch('nla_stats.json?v='+Date.now()).then(function(r){return r.json();}).then(function(d){
+    TEAMS=d.teams||[]; SEASONS=d.seasons||[];
+    if(d.players&&d.players.length) PLAYERS=d.players;   // sección 8: PLAYERS desacoplados al JSON
+    var lbl=document.getElementById('updated-label');
+    if(lbl&&d.updated) lbl.textContent='· datos actualizados: '+d.updated.replace('T',' ');
+    populateSeasons(); buildSkillPills(); buildPlayerPills(); render();
+  }).catch(function(e){
+    var tb=document.getElementById('teams-tbody');
+    if(tb) tb.innerHTML='<tr><td colspan="10" class="no-data">No se pudo cargar nla_stats.json — verificá que esté publicado en la raíz del sitio.</td></tr>';
+    buildSkillPills(); buildPlayerPills(); renderPlayers();
+  });
+}
+loadStats();
+</script><script src="lang.js" onerror="void 0"></script>
+</body></html>
+
+<!-- © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados -->

@@ -3,15 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cortes de Video · {{CLUB_COMPLETO}}</title>
+<title>Cortes de Video · {{CLUB}} VOLEY</title>
 <script src="datos_seguros.js"></script>
-  <script src="datos_video_25-26.js.enc?v=3" onerror="void 0"></script>
-<script src="datos_video_26-27.js?v=3" onerror="void 0"></script>
-<script src="datos_video_27-28.js?v=3" onerror="void 0"></script>
-<script src="datos_video_28-29.js?v=3" onerror="void 0"></script>
-<script src="datos_video_ent_25-26.js?v=3" onerror="void 0"></script>
-<script src="datos_video_ent_26-27.js?v=3" onerror="void 0"></script>
-<script src="datos_video_ent_27-28.js?v=3" onerror="void 0"></script>
+<script src="filtro_tipo.js" onerror="void 0"></script>
+  <!-- datos_video_25-26 sacado: es el video de la CAPSULA. Esta pantalla es
+       de la 26-27, y cargarlo mezclaba jugadores nuevos con cortes de la
+       temporada pasada. -->
+<!-- Los cortes se guardan en un archivo por temporada. Se piden todas:
+     las que no existen las descarta el onerror, sin ruido. Y todas con
+     .enc, que es como se publican los datos del club. -->
+<script src="datos_video_25-26.js.enc?v=3" onerror="void 0"></script>
+<script src="datos_video_26-27.js.enc?v=3" onerror="void 0"></script>
+<script src="datos_video_27-28.js.enc?v=3" onerror="void 0"></script>
+<script src="datos_video_28-29.js.enc?v=3" onerror="void 0"></script>
+<!-- Los cortes se guardan en un archivo por temporada. Se piden todas:
+     las que no existen las descarta el onerror, sin ruido. Y todas con
+     .enc, que es como se publican los datos del club. -->
+<script src="datos_video_ent_25-26.js.enc?v=3" onerror="void 0"></script>
+<script src="datos_video_ent_26-27.js.enc?v=3" onerror="void 0"></script>
+<script src="datos_video_ent_27-28.js.enc?v=3" onerror="void 0"></script>
+<script src="datos_video_ent_28-29.js.enc?v=3" onerror="void 0"></script>
 <script src="mapa_videos.js.enc?v=3" onerror="void 0"></script>
 <script src="mapa_videos_ent.js.enc?v=3" onerror="void 0"></script>
   <script>abrirDatos();</script>
@@ -255,22 +266,37 @@
 <script>
 (function(){
   "use strict";
-  var MODO=(localStorage.getItem('cortes_modo')==='ent')?'ent':'partido';
+  /* El modo sale del filtro compartido cuando hay uno elegido, para que la
+     eleccion hecha en otra pantalla valga tambien aca. Con "Todos" se respeta
+     lo que tenia guardado esta pagina: los cortes leen una sola fuente de
+     video por vez y no pueden mostrar las dos juntas. */
+  var MODO=(function(){
+    try{ var t=(typeof vbTipo==='function') ? vbTipo() : 'todos';
+         if(t==='E') return 'ent';
+         if(t==='P') return 'partido'; }catch(e){}
+    return (localStorage.getItem('cortes_modo')==='ent') ? 'ent' : 'partido';
+  })();
   var VD=(MODO==='ent'?window.VIDEO_DATA_ENT:window.VIDEO_DATA)||{combos:{},matches:{}}, COMBOS=VD.combos||{};
   var MAP=Object.assign({}, VD.links||{}); (function(){var _mv=(MODO==='ent'?window.MAPA_VIDEOS_ENT:window.MAPA_VIDEOS)||{};for(var _k in _mv){if(_mv[_k])MAP[_k]=_mv[_k];}})();
   // --------- temporada (oct→abr): 25-26 = oct2025→abr2026 ---------
   function seasonOf(d){if(!d)return '';var p=(''+d).split('-');var y=parseInt(p[0],10),mo=parseInt(p[1],10);if(isNaN(y)||isNaN(mo))return '';var s=(mo>=8)?y:y-1;return String(s%100).padStart(2,'0')+'-'+String((s+1)%100).padStart(2,'0');}
   var selSeason='';
-  function allSeasons(){var s={};Object.keys(VD.matches).forEach(function(c){if(!teamPlayed(c))return;var se=seasonOf(VD.matches[c].date);if(se)s[se]=true;});return Object.keys(s).sort();}
-  function seasonCodes(){return Object.keys(VD.matches).filter(function(c){if(!teamPlayed(c))return false;var se=seasonOf(VD.matches[c].date);return !selSeason||!se||se===selSeason;});}
+  /* La temporada sale de la sesion, que ya la trae escrita. Se sigue
+     calculando desde la fecha SOLO como respaldo, para los archivos viejos
+     que todavia no la tienen. Con la cuenta por fecha, una practica de julio
+     aparecia rotulada en la temporada anterior aunque el resto del sistema la
+     contara en la que arranca. */
+  function seasonDe(c){var m=VD.matches[c]||{};return m.season||seasonOf(m.date);}
+  function allSeasons(){var s={};Object.keys(VD.matches).forEach(function(c){if(!teamPlayed(c))return;var se=seasonDe(c);if(se)s[se]=true;});return Object.keys(s).sort();}
+  function seasonCodes(){return Object.keys(VD.matches).filter(function(c){if(!teamPlayed(c))return false;var se=seasonDe(c);return !selSeason||!se||se===selSeason;});}
   function initSeasonSel(){var ss=allSeasons();var el=$('seasonSel');if(!el)return;if(ss.length<=0){el.style.display='none';return;}if(!selSeason||ss.indexOf(selSeason)<0)selSeason=ss[ss.length-1];el.innerHTML=ss.map(function(se){return '<option value="'+se+'"'+(se===selSeason?' selected':'')+'>Temporada '+se+'</option>';}).join('');}
   function applySeason(){selMatch={};seasonCodes().forEach(function(c){selMatch[c]=true;});renderMatches();rebuildAll();}
   // --------- abanico de equipos ---------
-  var selTeam='{{club}}';
+  var selTeam='{{CLUB_SLUG}}';
   function teamsAvailable(){
     var t={};Object.keys(VD.matches).forEach(function(c){var tm=VD.matches[c].teams||{};for(var s in tm)t[s]=tm[s];});
     var arr=Object.keys(t);
-    arr.sort(function(a,b){if(a==='{{club}}')return -1;if(b==='{{club}}')return 1;return (t[a]||a).localeCompare(t[b]||b);});
+    arr.sort(function(a,b){if(a==='{{CLUB_SLUG}}')return -1;if(b==='{{CLUB_SLUG}}')return 1;return (t[a]||a).localeCompare(t[b]||b);});
     return arr.map(function(s){return {slug:s,name:t[s]};});
   }
   function initTeamSel(){
@@ -436,6 +462,9 @@
       if(fDz.length&&(a.sk!==(fSk||"Ataque")||fDz.indexOf(a.dz)<0)) return false;
       if(fOz.length&&(a.sk!==(fSk||"Ataque")||fOz.indexOf(a.oz)<0)) return false;
       if(fPh&&(a.sk!=="Ataque"||a.ph!==fPh)) return false;
+      /* El filtro de valoracion. Los botones estaban en pantalla pero nunca se
+         aplicaban: al pedir los ataques bloqueados venian todos mezclados. */
+      if(evK.length && !selEval[a.ev]) return false;
       if(fDate && (VD.matches[a.mc]||{}).date!==fDate) return false;
       if(fRival && _rnorm(oppName(a.mc))!==_rnorm(fRival)) return false;
       if(fApos.length&&(a.sk!=="Armado"||fApos.indexOf(a.apos)<0)) return false;
@@ -676,8 +705,27 @@
     if((pCall||pApos)&&!pSk) pSk='Armado';
     if(pSk) fSk=pSk;
     if(pNum){ pNum.split(',').forEach(function(x){x=(''+x).replace(/[^0-9]/g,'');if(x)selPlayers[x.padStart(2,'0')]=true;}); }
-    if(pEv){ pEv.split(',').forEach(function(e){if(e)selEval[e]=1;}); }
     bind(); rebuildAll();
+    /* La valoracion va DESPUES de rebuildAll: esa funcion vacia selEval y lo
+       vuelve a llenar con todas las que existen, asi que puesta antes se
+       perdia y venian los cortes de todos los resultados mezclados. */
+    if(pEv){
+      selEval = {};
+      /* Se acepta la barra codificada tambien: algunos enlaces la mandan como
+         %2F y comparando el texto tal cual nunca coincide. */
+      pEv.split(',').forEach(function(e){
+        if(!e) return;
+        try{ e = decodeURIComponent(e); }catch(_){}
+        selEval[e] = 1;
+      });
+      /* que los botones de arriba muestren cual quedo elegido */
+      try{
+        document.querySelectorAll('#fEval [data-ev]').forEach(function(c){
+          c.classList.toggle('on', !!selEval[c.dataset.ev]);
+        });
+      }catch(e){}
+      try{ apply(); }catch(e){}
+    }
     var pClips=Q.get('clips');
     if(pClips){
       var want=pClips.split(';').map(function(str){var x=str.split('-');return {mc:x[0],t:parseFloat(x[1]),num:x[2]};});

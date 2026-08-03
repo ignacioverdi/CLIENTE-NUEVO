@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sesiones y dispositivos</title>
+<style>
+:root{--bg:#0d1017;--sur:#141922;--card:#1a2029;--card2:#212936;--b:#2a3441;--b2:#38445a;
+      --txt:#e8edf5;--mut:#8b97ab;--dim:#5f6b7f;--ok:#3ddc84;--bad:#ff5f6d;--warn:#e6a743}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+.top{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--sur);border-bottom:1px solid var(--b)}
+.top h1{margin:0;font-size:17px;letter-spacing:1px;text-transform:uppercase}
+.wrap{max-width:960px;margin:0 auto;padding:22px 18px 60px}
+.aviso{background:var(--card);border:1px solid var(--b);border-left:3px solid var(--warn);
+       border-radius:10px;padding:14px 16px;margin-bottom:22px;font-size:14px;line-height:1.55;color:var(--mut)}
+.aviso b{color:var(--txt)}
+.usuario{background:var(--card);border:1px solid var(--b);border-radius:12px;margin-bottom:14px;overflow:hidden}
+.ucab{display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:12px 16px;background:var(--card2);border-bottom:1px solid var(--b)}
+.umail{font-weight:700;font-size:14px}
+.urol{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+      border:1px solid var(--b2);border-radius:5px;padding:2px 7px;margin-left:8px}
+.disp{display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:11px 16px;border-top:1px solid var(--b);font-size:13px}
+.disp:first-child{border-top:none}
+.dtxt{color:var(--mut)}
+.dtipo{color:var(--txt);font-weight:600}
+.yo{font-size:10px;color:var(--ok);border:1px solid var(--ok);border-radius:5px;padding:1px 6px;margin-left:6px}
+button{background:var(--card2);border:1px solid var(--b2);color:var(--txt);border-radius:8px;
+       padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+button:hover{border-color:var(--ok)}
+button.peligro{border-color:var(--bad);color:var(--bad)}
+button.peligro:hover{background:var(--bad);color:#fff}
+.grande{padding:11px 18px;font-size:13px}
+.vacio{color:var(--dim);text-align:center;padding:40px;font-size:14px}
+.pie{margin-top:26px;padding-top:18px;border-top:1px solid var(--b);color:var(--dim);font-size:12.5px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>Sesiones y dispositivos</h1>
+  <div style="flex:1"></div>
+  <button onclick="cargar()">Actualizar</button>
+  <button class="peligro grande" onclick="cerrarTodas()">Cerrar TODAS las sesiones</button>
+</div>
+
+<div class="wrap">
+  <div class="aviso">
+    Cada persona entra <b>una sola vez por dispositivo</b> y después no se le vuelve a pedir la clave.
+    Desde acá podés cortar ese acceso sin tocarle la computadora.<br><br>
+    Al cerrar una sesión, ese dispositivo vuelve a pedir usuario y clave la próxima vez que abra la app,
+    y además <b>se le borra la llave de los datos</b>, así no puede seguir leyendo lo cifrado.
+    <br><br><b>Puede tardar hasta una hora</b> en hacerse efectivo: es el tiempo que dura el permiso
+    que ya tiene en la mano. Después no lo puede renovar más.
+  </div>
+
+  <div id="lista"><div class="vacio">Cargando…</div></div>
+
+  <h2 style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);margin:30px 0 12px">Últimos ingresos</h2>
+  <div id="accesos"><div class="vacio">—</div></div>
+
+  <div class="pie" style="margin-top:20px">
+    <b>Tu identificador de usuario (UID):</b>
+    <code id="miuid" style="color:var(--ok);user-select:all;font-size:12px">—</code><br>
+    Copialo y pegalo en Firebase, en el nodo <code>admins</code>, para poder cerrar sesiones.
+  </div>
+
+  <div class="pie">
+    <b>Cerrar TODAS</b> echa a todo el mundo, incluido vos: todos vuelven a entrar con su usuario y clave.
+    Usalo cuando no sepas bien dónde quedó abierta una sesión.<br>
+    <b>Cerrar este dispositivo</b> corta solo esa máquina y no molesta a nadie más.
+  </div>
+</div>
+
+<script src="datos_seguros.js" onerror="void 0"></script>
+<script src="firebase.js"></script>
+<script>
+var USUARIOS = {}, ROLES = {};
+
+function fecha(ms){
+  if(!ms) return '—';
+  var d = new Date(Number(ms));
+  var hoy = new Date();
+  var mismo = d.toDateString() === hoy.toDateString();
+  var hh = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  if(mismo) return 'hoy ' + hh;
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + ' ' + hh;
+}
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function leer(ruta){
+  return _fbSufijo().then(function(q){
+    return fetch(FB_URL + '/' + ruta + '.json' + q).then(function(r){ return r.json(); });
+  });
+}
+function escribir(ruta, valor){
+  return _fbSufijo().then(function(q){
+    return fetch(FB_URL + '/' + ruta + '.json' + q,
+      {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(valor)});
+  });
+}
+
+function borrar(ruta){
+  return _fbSufijo().then(function(q){
+    return fetch(FB_URL + '/' + ruta + '.json' + q, {method:'DELETE'});
+  });
+}
+
+function cargar(){
+  document.getElementById('lista').innerHTML = '<div class="vacio">Cargando…</div>';
+  Promise.all([leer('sesiones'), leer('roles')]).then(function(res){
+    var ses = res[0] || {}, roles = res[1] || {};
+    ROLES = roles;
+    pintar(ses.dispositivos || {}, ses);
+    pintarAccesos();
+    mostrarUid();
+  }).catch(function(){
+    document.getElementById('lista').innerHTML =
+      '<div class="vacio">No pude leer la base. ¿Estás con tu sesión iniciada?</div>';
+  });
+}
+
+function pintar(disp, ses){
+  var uids = Object.keys(disp);
+  if(!uids.length){
+    document.getElementById('lista').innerHTML =
+      '<div class="vacio">Todavía no hay dispositivos registrados.<br>'
+      + 'Van a aparecer a medida que cada uno abra la app con la versión nueva.</div>';
+    return;
+  }
+  var yoUid = '', yoDisp = '';
+  try{ yoUid = (FB_SES && FB_SES.uid) || ''; yoDisp = _fbDispId(); }catch(e){}
+
+  var html = '';
+  uids.forEach(function(uid){
+    var equipos = disp[uid] || {}, ids = Object.keys(equipos);
+    if(!ids.length) return;
+    var mail = (equipos[ids[0]] && equipos[ids[0]].mail) || uid;
+    var rol  = ROLES[uid] || '';
+    html += '<div class="usuario"><div class="ucab"><div><span class="umail">' + esc(mail) + '</span>'
+          + (rol ? '<span class="urol">' + esc(rol) + '</span>' : '') + '</div>'
+          + '<button class="peligro" onclick="cerrarUsuario(\'' + uid + '\',\'' + esc(mail) + '\')">'
+          + 'Cerrar sus ' + ids.length + ' sesión(es)</button></div>';
+
+    ids.sort(function(a,b){ return (equipos[b].ultimo||0) - (equipos[a].ultimo||0); });
+    ids.forEach(function(id){
+      var d = equipos[id] || {};
+      var soyYo = (uid === yoUid && id === yoDisp);
+      html += '<div class="disp"><div>'
+            + '<span class="dtipo">' + esc(d.tipo || 'Dispositivo') + '</span>'
+            + (soyYo ? '<span class="yo">este</span>' : '')
+            + '<div class="dtxt">Entró ' + fecha(d.desde) + ' · última vez ' + fecha(d.ultimo) + '</div>'
+            + '</div>'
+            + '<button onclick="cerrarDisp(\'' + uid + '\',\'' + id + '\')">Cerrar este dispositivo</button>'
+            + '</div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('lista').innerHTML = html;
+}
+
+
+/* Historial de ingresos: cada vez que alguien pone mail y clave queda anotado. */
+
+/* Mostramos el UID propio: hace falta para cargarse en 'admins' de Firebase. */
+function mostrarUid(){
+  try{
+    var e = document.getElementById('miuid');
+    if(e && typeof FB_SES !== 'undefined' && FB_SES && FB_SES.uid) e.textContent = FB_SES.uid;
+  }catch(e){}
+}
+
+function pintarAccesos(){
+  leer('sesiones/accesos').then(function(a){
+    var cont = document.getElementById('accesos');
+    if(!a){ cont.innerHTML = '<div class="vacio">Todavía no hay ingresos registrados.<br>'
+          + 'Se van a anotar a partir de ahora, cada vez que alguien entre con su mail y clave.</div>'; return; }
+    var filas = Object.keys(a).map(function(k){ return a[k]; })
+                  .filter(function(x){ return x && x.cuando; })
+                  .sort(function(x,y){ return y.cuando - x.cuando; })
+                  .slice(0, 60);
+    var h = '<div class="usuario">';
+    filas.forEach(function(f){
+      h += '<div class="disp"><div><span class="dtipo">' + esc(f.mail || f.uid) + '</span>'
+         + '<div class="dtxt">' + esc(f.tipo || '') + ' · ' + fecha(f.cuando) + '</div></div></div>';
+    });
+    h += '</div>';
+    cont.innerHTML = h;
+  }).catch(function(){});
+}
+
+function cerrarTodas(){
+  if(!confirm('Esto cierra la sesión de TODOS, vos incluido.\n\n'
+            + 'Cada uno va a tener que volver a entrar con su usuario y su clave.\n\n¿Seguimos?')) return;
+  escribir('sesiones/corte', Date.now())
+    .then(function(){ return borrar('sesiones/dispositivos'); })
+    .then(function(){
+    alert('Listo. Todas las sesiones quedaron cerradas.\n\n'
+        + 'Puede tardar hasta una hora en hacerse efectivo en cada dispositivo.');
+    cargar();
+  }).catch(function(){ alert('No pude guardar el corte. ¿Tenés permiso de cuerpo técnico?'); });
+}
+
+function cerrarUsuario(uid, mail){
+  if(!confirm('Cerrar todas las sesiones de ' + mail + '?')) return;
+  escribir('sesiones/corte_uid/' + uid, Date.now())
+    .then(function(){ return borrar('sesiones/dispositivos/' + uid); })
+    .then(function(){
+      alert('Listo. ' + mail + ' va a tener que volver a ingresar.');
+      cargar();
+    }).catch(function(){ alert('No pude guardar el corte.'); });
+}
+
+function cerrarDisp(uid, id){
+  if(!confirm('Cerrar la sesión de ese dispositivo?')) return;
+  /* Dos cosas: marcamos el corte (para que quede afuera) y borramos el
+     registro, para que desaparezca de la lista. Si sólo marcáramos el corte,
+     el dispositivo seguiría figurando y parecería que no pasó nada. */
+  escribir('sesiones/corte_disp/' + uid + '/' + id, Date.now())
+    .then(function(){ return borrar('sesiones/dispositivos/' + uid + '/' + id); })
+    .then(function(){
+      alert('Listo. Ese dispositivo va a pedir usuario y clave la próxima vez.');
+      cargar();
+    }).catch(function(){ alert('No pude guardar el corte.'); });
+}
+
+/* Sólo cuerpo técnico */
+function arrancar(){
+  try{
+    if(typeof vbEsJugador === 'function' && vbEsJugador()){
+      document.querySelector('.wrap').innerHTML =
+        '<div class="vacio">Esta pantalla es sólo para el cuerpo técnico.</div>';
+      document.querySelector('.top').innerHTML = '<h1>Sesiones y dispositivos</h1>';
+      return;
+    }
+  }catch(e){}
+  cargar();
+}
+/* firebase.js arranca solo con _fbArrancar() y deja la promesa en _fbListo.
+   Esperamos a que resuelva (sesión lista o modo sin conexión) y recién ahí
+   dibujamos, si no leeríamos la base sin permiso todavía. */
+function esperarSesion(){
+  if(typeof _fbListo !== 'undefined' && _fbListo && typeof _fbListo.then === 'function'){
+    _fbListo.then(arrancar).catch(arrancar);
+  } else {
+    setTimeout(esperarSesion, 120);
+  }
+}
+esperarSesion();
+</script>
+</body>
+</html>
