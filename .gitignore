@@ -42,3 +42,8 @@ desktop.ini
 #    · PLANTILLA/         (el molde que se lleva cada cliente)
 #    · EXTRAS/            (las pantallas propias del producto)
 # ============================================================================
+
+# ── carpetas de trabajo: no forman parte de lo que se vende ──
+NAFELS_AL_DIA/       # la carpeta de origen, con las pantallas de NAFELS
+_ANTES-*/            # los respaldos de cada actualizacion
+*.antes-*            # las copias sueltas
