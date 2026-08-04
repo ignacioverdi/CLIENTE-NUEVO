@@ -47,3 +47,7 @@ desktop.ini
 NAFELS_AL_DIA/       # la carpeta de origen, con las pantallas de NAFELS
 _ANTES-*/            # los respaldos de cada actualizacion
 *.antes-*            # las copias sueltas
+
+# Carpetas de trabajo del actualizador
+NAFELS_AL_DIA/
+_ANTES-*/
