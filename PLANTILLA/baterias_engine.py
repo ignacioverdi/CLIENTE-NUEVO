@@ -1,5 +1,5 @@
 # ════════════════════════════════════════════════════════════════════
-# MOTOR DE BATERÍAS — validado al 100% contra DataVolley oficial ({{Club}}-Velez)
+# MOTOR DE BATERÍAS — validado al 100% contra DataVolley oficial (Casla-Velez)
 # Calcula las 11 baterías desde DVW, por jugador y por equipo.
 # ════════════════════════════════════════════════════════════════════
 #
@@ -294,4 +294,4 @@ def to_canchitas(P):
 
 print("✓ Motor de baterías grabado en baterias_engine.py")
 
-# © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados
+# © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados

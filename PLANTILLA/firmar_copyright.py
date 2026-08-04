@@ -4,7 +4,7 @@
 # si un archivo ya tiene el sello, lo saltea (no duplica).
 import os, glob
 
-SELLO = '\u00a9 2025-2026 Ignacio Verdi \u00b7 {{CLUB_COMPLETO}} \u00b7 Software propietario - Todos los derechos reservados'
+SELLO = '\u00a9 2025-2026 Ignacio Verdi \u00b7 {{CLUB}} VOLEY \u00b7 Software propietario - Todos los derechos reservados'
 MARKER = 'Software propietario - Todos los derechos reservados'  # unico, para no duplicar
 
 WRAP = {

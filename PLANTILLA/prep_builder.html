@@ -175,11 +175,20 @@ function setDirty(d){ DIRTY=d; document.getElementById('savest').textContent = d
   sj.innerHTML = roster().length ? roster().map(function(j){return '<option value="'+j.num+'">'+pname(j)+'</option>';}).join('')
                                  : '<option value="">(no se cargó el plantel)</option>';
   var sm=document.getElementById('selMes'), now=new Date(), opts='';
-  for(var d=-11; d<=4; d++){                          // hasta 11 meses atras + actual + 4 siguientes
+  /* Antes la lista iba 11 meses HACIA ATRAS. Eso hacia que, por ejemplo en
+     julio, el ultimo de la lista fuera "Agosto" del ano anterior — y es muy
+     facil elegirlo creyendo que es el agosto que viene. Asi terminaron
+     cargandose rutinas con un ano de atraso.
+
+     Ahora van 2 meses atras (para completar algo que quedo pendiente) y 6
+     adelante (para planificar la temporada). Y el ano se marca cuando NO es el
+     actual, para que salte a la vista. */
+  for(var d=-2; d<=6; d++){
     var dt=new Date(now.getFullYear(), now.getMonth()+d, 1);
     var key=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0');
     var lbl=MESES[dt.getMonth()]+' '+dt.getFullYear();
-    opts+='<option value="'+key+'" data-lbl="'+lbl+'"'+(d===0?' selected':'')+'>'+lbl+'</option>';
+    var marca=(dt.getFullYear()!==now.getFullYear()) ? '  \u26a0' : '';
+    opts+='<option value="'+key+'" data-lbl="'+lbl+'"'+(d===0?' selected':'')+'>'+lbl+marca+'</option>';
   }
   sm.innerHTML=opts;
   cargar();

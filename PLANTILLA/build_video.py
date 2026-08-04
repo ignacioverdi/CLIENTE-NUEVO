@@ -4,7 +4,7 @@ build_video.py - Lee los .dvw de una carpeta y arma el archivo de VIDEO (cortes)
 Saca el SEGUNDO de video de cada accion del DVW.
 
 ABANICO (v2): extrae las acciones de LOS DOS equipos de cada partido (no solo Nafels),
-etiquetando cada accion con su equipo (campo 'tm' = slug, ej. 'nafels','amriswil').
+etiquetando cada accion con su equipo (campo 'tm' = slug, ej. '{{CLUB_SLUG}}','amriswil').
 Asi el editor de cortes permite elegir CUALQUIER equipo de la liga.
 
 MERGE SEGURO: preserva las entradas existentes y solo agrega los partidos nuevos.
@@ -31,7 +31,7 @@ SK={'S':'Saque','R':'Recepción','A':'Ataque','B':'Bloqueo','D':'Defensa','E':'A
 
 # Mapeo de nombres de equipo del DVW -> nombre canonico (igual que update_db_nafels_FULL.py)
 TEAM_NORM = {
-    'Biogas Volley Näfels (NLA Men)': 'Nafels',
+    '{{CLUB}} (NLA Men)': 'Nafels',
     'Volley NFELS': 'Nafels', 'Volley Nfels': 'Nafels',
     'Volley Amriswil (NLA Men)': 'Amriswil',
     'Volley Schönenwerd (NLA Men)': 'Schonenwerd',
@@ -58,26 +58,42 @@ def norm_team(name):
     n=re.sub(r'\s+',' ',n).split('(')[0].strip()
     return n or 'Equipo'
 
+# Los clubes conocidos. El nombre en los .dvw cambia todos los anos con el
+# patrocinador —"Biogas Volley Nafels" un ano, "AXPO VOLLEY NAFELS" el otro—
+# pero la etiqueta corta tiene que ser siempre la misma, porque es la que
+# usan las pantallas para saber que acciones son del club.
+CLUBES_CONOCIDOS = [
+    '{{CLUB_SLUG}}', 'amriswil', 'chenois', 'colombier', 'jona', 'lausanne',
+    'schonenwerd', 'st_gallen', 'sursee', 'lucerne', 'volero',
+    '{{CLUB_SLUG}}', 'sanlorenzo', 'boca', 'river', 'untref', 'ferro', 'uba',
+    'velez', 'lomas', 'ciudad', 'defensores', 'hacoaj', 'campana',
+]
+
+
 def slugify(name):
-    """El nombre corto del equipo, el mismo que usa el resto de la app.
+    """La etiqueta corta y estable del equipo.
 
-       Antes se armaba pasando el nombre largo a minúsculas y con guiones bajos:
-       'Club Atlético San Lorenzo de Almagro' quedaba como
-       'club_atletico_san_lorenzo_de_almagro'. Pero el plan de partido y las
-       demás pantallas lo llaman 'casla', así que no coincidían y las acciones
-       de video quedaban sin equipo: el mapa de bloqueo salía vacío.
+    Antes se armaba con el nombre completo: "AXPO VOLLEY NAFELS" daba
+    "axpo_volley_nafels", y las pantallas —que buscan "{{CLUB_SLUG}}"— no encontraban
+    ninguna accion. Al cambiar el sponsor, todas las tablas quedaban vacias.
 
-       Ahora sale de config_club.json, que es donde vive esa tabla."""
-    try:
-        import config_club
-        corto = config_club.normalizar(name)
-        if corto and corto != name:
-            n = unicodedata.normalize('NFKD', corto).encode('ascii', 'ignore').decode('ascii')
-            return re.sub(r'[^a-z0-9]', '', n.lower().strip())
-    except Exception:
-        pass
+    Ahora, si adentro del nombre aparece un club conocido, se usa ese.
+    """
     n = unicodedata.normalize('NFKD', name or '').encode('ascii', 'ignore').decode('ascii')
-    return re.sub(r'\s+', '_', n.lower().strip())
+    entero = re.sub(r'\s+', '_', n.lower().strip())
+
+    # el club conocido mas largo que aparezca adentro
+    for club in sorted(CLUBES_CONOCIDOS, key=len, reverse=True):
+        if club in entero:
+            return club
+
+    # tambien sin los guiones bajos: "san_lorenzo_de_almagro" trae "sanlorenzo"
+    pegado = entero.replace('_', '')
+    for club in sorted(CLUBES_CONOCIDOS, key=len, reverse=True):
+        if club.replace('_', '') in pegado:
+            return club
+
+    return entero
 
 def parse_set_result(txt):
     """Devuelve (sets_local, sets_visitante) leyendo [3SET]."""
@@ -106,13 +122,7 @@ def parse_dvw(path, ent=False):
     home_slug=slugify(home_name); away_slug=slugify(away_name)
 
     base=os.path.basename(path)
-    # El código del partido: NÄFELS usa 6 dígitos (636587) y la liga argentina
-    # 5 (10100). Antes se exigían 6 y todos los partidos argentinos se
-    # descartaban en silencio: el video nunca se generaba.
-    # Se busca al principio del nombre, después del "&", para no confundirlo
-    # con la fecha ni con el resultado.
-    mcode=re.search(r'^&?\s*(\d{5,6})\b', base) or re.search(r'(\d{6})', base)
-    mdate=re.search(r'(\d{4}-\d{2}-\d{2})',base)
+    mcode=re.search(r'(\d{6})',base); mdate=re.search(r'(\d{4}-\d{2}-\d{2})',base)
     date=mdate.group(1) if mdate else ''
     if mcode: code=mcode.group(1)
     elif ent and date: code='ENT'+date.replace('-','')
@@ -192,39 +202,13 @@ def parse_dvw(path, ent=False):
     return code,{'home':home_slug,'away':away_slug,'homeName':home_name,'awayName':away_name,
                  'date':date,'result':_res,'teams':teams_meta,'players':players,'actions':actions}
 
-def _mes_de_arranque():
-    """En qué mes arranca la temporada de este club.
-
-       Antes estaba fijo en agosto, el calendario europeo. En Argentina la
-       División de Honor va de mayo a agosto, así que con ese corte los partidos
-       quedaban repartidos en dos temporadas y la app aparecía vacía.
-
-       Ahora sale de config_temporada.js, que es el único lugar donde se define.
-       Si el archivo no está, se asume agosto y todo sigue como antes."""
-    try:
-        ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config_temporada.js')
-        if os.path.exists(ruta):
-            t = open(ruta, encoding='utf-8', errors='replace').read()
-            m = re.search(r'inicio\s*:\s*(\d{1,2})', t)
-            if m:
-                v = int(m.group(1))
-                if 1 <= v <= 12: return v
-    except Exception:
-        pass
-    return 8
-
-
-_INICIO = _mes_de_arranque()
-
-
 def season_of(date):
-    """De qué temporada es una fecha. Devuelve la etiqueta que va en el nombre
-       del archivo: con arranque en agosto, 2025-10 -> "25-26"."""
-    if not date or len(date) < 7: return 'sin-fecha'
-    try: y = int(date[:4]); mo = int(date[5:7])
-    except Exception: return 'sin-fecha'
-    s = y if mo >= _INICIO else y - 1
-    return '%02d-%02d' % (s % 100, (s + 1) % 100)
+    # Temporada oct->abr. 2025-10 -> "25-26"; 2026-04 -> "25-26"; 2026-10 -> "26-27".
+    if not date or len(date)<7: return 'sin-fecha'
+    try: y=int(date[:4]); mo=int(date[5:7])
+    except: return 'sin-fecha'
+    s = y if mo>=8 else y-1
+    return '%02d-%02d'%(s%100,(s+1)%100)
 
 def load_existing_season(path):
     # Lee un archivo por-temporada (formato auto-fusion: var D = {...};)
@@ -277,10 +261,24 @@ if __name__=='__main__':
         print('  (no existe la carpeta '+folder+', no genero los archivos de '+prefix+')'); sys.exit(0)
 
     nuevos=build(folder, ent=ent)
+    # ── La temporada de un ENTRENAMIENTO la da la CARPETA ──────────────
+    # Por fecha, una practica del 30 de julio cae en la temporada anterior
+    # (la regla arranca en agosto). Pero el resto del sistema —el historial,
+    # las baterias, el plan de partido— la cuenta en la temporada que arranca,
+    # porque es pretemporada. Al no hacerlo aca, el archivo de video quedaba
+    # etiquetado 25-26 y los cortes se abrian con ese rotulo mientras todo lo
+    # demas decia 26/27.
+    _forzar=None
+    if ent:
+        _m=re.search(r'(20\d{2})', os.path.basename(os.path.normpath(folder)))
+        if _m:
+            _y=int(_m.group(1)); _forzar='%02d-%02d'%(_y%100,(_y+1)%100)
+            print('  (entrenamientos: temporada %s, tomada de la carpeta)'%_forzar)
+
     # agrupar por temporada (calculada desde la fecha)
     por_temp={}
     for code,m in nuevos.items():
-        s=season_of(m.get('date',''))
+        s=_forzar or season_of(m.get('date',''))
         por_temp.setdefault(s,{})[code]=m
 
     all_links=read_mapa_links(ent=ent)
@@ -291,6 +289,11 @@ if __name__=='__main__':
         agregados=0
         for code,m in por_temp[season].items():
             if code not in existentes:
+                # La temporada se guarda EN la sesion. Antes cada pantalla la
+                # recalculaba desde la fecha, y con esa cuenta una practica de
+                # julio caia en la temporada anterior. Escrita aca, todos leen
+                # lo mismo y no hay dos criterios dando vueltas.
+                m['season']=season
                 existentes[code]=m; agregados+=1
         # hornear SOLO los links de los partidos de esta temporada
         links={k:all_links[k] for k in existentes if k in all_links}
@@ -308,4 +311,4 @@ if __name__=='__main__':
         tot=sum(len(m['actions']) for m in existentes.values())
         print('  '+season_out+': '+str(len(existentes))+' partidos ('+str(agregados)+' nuevos), '+str(tot)+' acciones')
 
-# © 2025-2026 Ignacio Verdi · NAFELS VOLEY · Software propietario - Todos los derechos reservados
+# © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados

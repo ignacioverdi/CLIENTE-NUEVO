@@ -1,0 +1,33 @@
+# ============================================================================
+#  .vercelignore — qué NO se publica en la web
+#  ----------------------------------------------------------------------------
+#  Todo lo que está acá SIGUE en tu repo y en tu PC. Solo deja de estar
+#  disponible para descarga desde el sitio publicado.
+#  Verificado: ninguna página del sitio carga estos archivos.
+# ============================================================================
+
+# ── Tus motores y la automatización ─────────────────────────────────────────
+# Corren en tu computadora. La web no los necesita para nada.
+*.py
+*.bat
+*.ps1
+__pycache__/
+
+# ── Datos crudos de scouting ────────────────────────────────────────────────
+# Los .dvw son la materia prima. El sitio usa los .js/.json ya procesados.
+*.dvw
+DVW*
+
+# ── Llave y respaldos que dejan los scripts ─────────────────────────────────
+LLAVE.txt
+*.antes
+_RESPALDO
+
+# ── Documentos internos (no son parte de la app) ────────────────────────────
+*.pptx
+RESUMEN SISTEMA COMPLETO.pdf
+
+# ── Temporales ──────────────────────────────────────────────────────────────
+*.log
+diagnostico.txt
+_gen_nafels.b64

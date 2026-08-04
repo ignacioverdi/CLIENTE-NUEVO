@@ -3,8 +3,8 @@
 build_videos.py — Convierte el Excel en videos.js + proximo_rival.js
 
 Uso:
-    python3 build_videos.py videos_{{club}}.xlsx
-    python3 build_videos.py videos_{{club}}.xlsx
+    python3 build_videos.py videos_casla.xlsx
+    python3 build_videos.py videos_nafels.xlsx
 
 Genera:
   - videos.js         (todos los videos cargados)
@@ -86,8 +86,8 @@ def build(xlsx_path):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("Uso: python3 build_videos.py videos_{{club}}.xlsx")
+        print("Uso: python3 build_videos.py videos_casla.xlsx")
         sys.exit(1)
     build(sys.argv[1])
 
-# © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados
+# © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados

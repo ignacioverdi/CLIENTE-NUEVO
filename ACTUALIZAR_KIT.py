@@ -10,6 +10,11 @@
   club puntual por la marca {{CLUB}}, que el generador reemplaza en cada
   cliente nuevo.
 
+  Hasta ahora copiaba SOLO los .html, y por eso el kit quedaba a medias: las
+  pantallas al dia pero los motores viejos. Se noto feo: filtro_tipo.js —un
+  archivo nuevo— nunca llegaba, y 14 pantallas lo cargaban sin que existiera.
+  Ahora tambien van los .js de programa y los .py de los motores.
+
   Sin esto, cada cliente arranca con pantallas viejas. Hoy hay 17 atrasadas,
   entre ellas armadores (46 KB contra 192), el dashboard, el analisis y el
   panel en vivo.
@@ -17,7 +22,8 @@
   ── COMO SE USA ────────────────────────────────────────────────────────────
   1. Poner este script en la carpeta del kit (donde esta SUBIR_KIT.bat).
   2. Al lado, una carpeta "NAFELS_AL_DIA" con las pantallas de VOLLEY_NAFELS.
-     Alcanza con copiar los .html; no hacen falta los datos ni los .dvw.
+     Copiar los .html, los .js y los .py. NO hacen falta los .dvw ni los
+     datos: el script los descarta solo.
   3. Doble clic aca.
   4. Revisar lo que dice y publicar con SUBIR_KIT.bat
 
@@ -192,9 +198,71 @@ def generico(s):
 sello = datetime.now().strftime('%Y%m%d-%H%M')
 respaldo = os.path.join(aca, '_ANTES-' + sello)
 
-pantallas = sorted(f for f in os.listdir(origen) if f.lower().endswith('.html'))
+# ── Que se copia y que no ────────────────────────────────────────────────────
+# Van las PANTALLAS (.html), los PROGRAMAS (.js que hacen funcionar la app) y
+# los MOTORES (.py que procesan los .dvw).
+#
+# NO van los DATOS: son de cada club y el generador los arma vacios al dar de
+# alta un cliente. Copiarlos meteria los partidos de Nafels en la app de otro.
+DATOS = re.compile(
+    r'^(datos_|liga_data|mapa_videos|plantel_|scouting_rival|videos\.js$|'
+    r'proximo_rival|game_plans\.js$|nla_stats_table|nla_full_stats|'
+    r'nla_players_db|chat_)', re.I)
+
+# Estos EMPIEZAN como un dato pero son programa: van igual.
+PROGRAMA = {'datos_seguros.js', 'nla_stats_template.html'}
+
+# ── Lo que el KIT tiene mejor que NAFELS ─────────────────────────────────────
+# No todo lo del club esta mas al dia que el producto. Hay archivos que en el
+# kit son a proposito distintos y MAS completos:
+#
+#   sw.js        En Nafels no cachea nada, para ver siempre la ultima version
+#                mientras se desarrolla. El del kit SI cachea: es lo que hace
+#                que el panel funcione en el gimnasio sin señal, que es una de
+#                las cosas que se venden. Copiar el de Nafels lo rompe.
+#
+#   procesar.py  El del kit corre en cualquier lado sin rutas fijas de Windows.
+#                El de Nafels es la version corta, atada a esa PC.
+#
+# Si alguna vez hay que actualizarlos, se hace a mano y con cuidado.
+DEL_KIT = {'sw.js', 'procesar.py'}
+
+def es_dato(n):
+    if n in DEL_KIT:
+        return True          # se deja el del kit, que es el bueno
+    if n in PROGRAMA:
+        return False
+    return bool(DATOS.match(n)) or n.lower().endswith(('.enc', '.dvw', '.json', '.sq'))
+
+def nombre_generico(n, destino=None):
+    """El nombre del archivo tambien lleva el club adentro.
+
+    La plantilla no usa siempre la misma marca: hay MANUAL_{{CLUB}}_VOLEY.html
+    y Team_Playbook_{{Club}}.html. Si se genera una sola forma se crea un
+    archivo nuevo al lado del que ya existe, en vez de actualizarlo. Por eso se
+    prueban las tres y se usa la que ya este en la plantilla."""
+    base = n
+    for viejo in ('nafels', 'casla', 'NAFELS', 'CASLA', 'Nafels', 'Casla'):
+        base = base.replace('_' + viejo, '_@@')
+    if base == n:
+        return n
+    for marca in ('{{club}}', '{{CLUB}}', '{{Club}}'):
+        cand = base.replace('@@', marca)
+        if destino and os.path.exists(os.path.join(destino, cand)):
+            return cand
+    return base.replace('@@', '{{club}}')
+
+# Archivos de configuracion que tambien tienen que viajar. No son pantallas
+# pero definen COMO se publica: .vercelignore dice que no se sube a la web, y
+# si queda viejo el cliente publica sus estadisticas sin cifrar y la
+# documentacion interna.
+CONFIG = {'.vercelignore', '.gitignore'}
+
+pantallas = sorted(f for f in os.listdir(origen)
+                   if (f in CONFIG or
+                       (f.lower().endswith(('.html', '.js', '.py')) and not es_dato(f))))
 if not pantallas:
-    print('  La carpeta NAFELS_AL_DIA no tiene ningun .html.')
+    print('  La carpeta NAFELS_AL_DIA no tiene ningun .html, .js ni .py.')
     print()
     input('  Enter para cerrar...')
     raise SystemExit
@@ -208,7 +276,7 @@ nuevas = []
 
 for nombre in pantallas:
     fo = os.path.join(origen, nombre)
-    fd = os.path.join(destino, nombre)
+    fd = os.path.join(destino, nombre_generico(nombre, destino))
 
     try:
         s = open(fo, encoding='utf-8', errors='replace').read()
@@ -231,7 +299,7 @@ for nombre in pantallas:
 
     # respaldo antes de pisar
     os.makedirs(respaldo, exist_ok=True)
-    shutil.copy2(fd, os.path.join(respaldo, nombre))
+    shutil.copy2(fd, os.path.join(respaldo, nombre_generico(nombre, destino)))
 
     open(fd, 'w', encoding='utf-8').write(s)
     puestas.append((nombre, len(viejo), len(s), cambios))
@@ -265,7 +333,7 @@ print('     REVISION FINAL')
 print('  ' + '-' * 70)
 quedan = {}
 for nombre in os.listdir(destino):
-    if not nombre.lower().endswith('.html'):
+    if not nombre.lower().endswith(('.html', '.js', '.py')) or es_dato(nombre):
         continue
     try:
         s = open(os.path.join(destino, nombre), encoding='utf-8', errors='replace').read()

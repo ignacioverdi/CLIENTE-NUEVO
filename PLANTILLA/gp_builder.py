@@ -8,7 +8,7 @@ USO:
 ESTRUCTURA DVW:
   - Los archivos DVW deben estar en el directorio indicado
   - El script detecta automáticamente cuál es el equipo rival
-  - El equipo base (BIO/{{Club}}) se detecta por el nombre en [3TEAMS]
+  - El equipo base (BIO/Nafels) se detecta por el nombre en [3TEAMS]
 
 SALIDA:
   - game_plan_RIVAL.html listo para subir al repo
@@ -42,8 +42,8 @@ COMBO_ORIG = {
     "XB":8,"XP":8,"XR":8,"PP":3,"X9":4,"XT":4,"X3":3,"X4":2,
 }
 
-def is_{{club}}(name):
-    return "{{Club}}" in name or "N\xe4fels" in name or "{{Club}}" in name or "Biogas" in name
+def is_nafels(name):
+    return "Nafels" in name or "N\xe4fels" in name or "Naefels" in name or "Biogas" in name
 
 def get_teams(lines):
     in_t=False; tl=[]
@@ -241,13 +241,13 @@ def build_game_plan(dvw_dir, rival_name, output_path, template_path,
     
     Args:
         dvw_dir:        Directory with DVW files for this rival
-        rival_name:     Display name (e.g. "{{RIVAL1}}")
+        rival_name:     Display name (e.g. "AMRISWIL")
         output_path:    Output HTML file
         template_path:  Path to gp_template.html (gp_lomas.html)
         rival_fn:       Function(home, away) → True if rival team detected
                         Default: detects by team name containing rival_name
         known_positions: Dict {player_num: "OH"/"OPP"/"MB"/"S"/"L"} to override DVW positions
-        n_games_label:  Label like "{{LIGA}} {{PAIS}} 2025/26 · 6 partidos"
+        n_games_label:  Label like "{{LIGA}} 2025/26 · 6 partidos"
     """
     if rival_fn is None:
         rival_fn = lambda home, away: rival_name.lower() in home.lower() or rival_name.lower() in away.lower()
@@ -354,7 +354,7 @@ def build_game_plan(dvw_dir, rival_name, output_path, template_path,
     html=ref_html.replace(old_js,new_js,1)
     html=html.replace("<title>PLAN DE JUEGO — CASL VOLEY</title>",
                       f"<title>GAME PLAN — {rival_name} · {{CLUB}}</title>")
-    html=html.replace("CASL VOLEY","{{CLUB_COMPLETO}}").replace("{{CLUB}} VOLEY","{{CLUB_COMPLETO}}")
+    html=html.replace("CASL VOLEY","{{CLUB}} VOLEY").replace("{{CLUB}} VOLEY","{{CLUB}} VOLEY")
     html=re.sub(r'id="rival-nombre">[^<]*<',f'id="rival-nombre">{rival_name}<',html)
     html=re.sub(r'id="match-info">[^<]*<',f'id="match-info">{label}<',html)
     
@@ -365,10 +365,10 @@ def build_game_plan(dvw_dir, rival_name, output_path, template_path,
 if __name__ == "__main__":
     parser=argparse.ArgumentParser(description="Build game plan from DVW files")
     parser.add_argument("--dvw_dir",    required=True, help="Directory with DVW files")
-    parser.add_argument("--rival",      required=True, help="Rival team name (e.g. {{RIVAL1}})")
+    parser.add_argument("--rival",      required=True, help="Rival team name (e.g. AMRISWIL)")
     parser.add_argument("--output",     default="game_plan.html", help="Output HTML file")
     parser.add_argument("--template",   default="gp_template.html", help="Template HTML")
-    parser.add_argument("--label",      default=None, help="Info label (e.g. {{LIGA}} 2025/26 · 6 partidos)")
+    parser.add_argument("--label",      default=None, help="Info label (e.g. NLA 2025/26 · 6 partidos)")
     args=parser.parse_args()
     
     build_game_plan(
@@ -379,4 +379,4 @@ if __name__ == "__main__":
         n_games_label=args.label,
     )
 
-# © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados
+# © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados

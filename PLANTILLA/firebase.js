@@ -1,6 +1,6 @@
 // ============================================================================
-//  {{CLUB_COMPLETO}} — Sincronización con Firebase + Login
-//  Base de datos propia de {{CLUB}} (creada 14/06/2026)
+//  NÄFELS VOLEY — Sincronización con Firebase + Login
+//  Base de datos propia de NÄFELS (creada 14/06/2026)
 //
 //  Mantiene la MISMA interfaz de siempre (fbSet, fbGet, fbPush, fbKey) y TODA
 //  la capa de permisos por rol que ya existía, así que ninguna página cambia.
@@ -11,40 +11,13 @@
 //  Sin internet, la app sigue andando con lo último que quedó guardado.
 // ============================================================================
 
-var FB_URL  = '{{FIREBASE_URL}}';
-var FB_KEY  = '{{FIREBASE_KEY}}';   // clave pública del proyecto
-var FB_DOM  = '{{club}}.app';       // dominio interno de las cuentas de jugadores
-var FB_CLUB = '{{CLUB}}';
+var FB_URL  = 'https://nafels-voley-default-rtdb.firebaseio.com';
+var FB_KEY  = 'AIzaSyDsl7RZkk0vuPUP0IADZcf6cgrv5_Wp5Fg';   // clave pública del proyecto
+var FB_DOM  = 'nafels.app';       // dominio interno de las cuentas de jugadores
+var FB_CLUB = 'NÄFELS';
 
 function fbKey(path){
   return 'fb_' + path.replace(/[^a-zA-Z0-9]/g, '_');
-}
-
-/* ══════════════════════════════════════════════════════════════════════════
-   DÓNDE VIVEN LOS DATOS DE ESTE CLUB
-   --------------------------------------------------------------------------
-   Todos los clubes comparten una misma base, cada uno en su propia rama:
-
-       clubes/<club>/roles/...      clubes/<club>/sesiones/...
-
-   Las reglas sólo dejan leer y escribir adentro de la rama propia: nadie ve
-   los datos de otro club. Por eso TODA ruta tiene que pasar por acá.
-
-   Antes se leía de la raíz —"/roles", "/sesiones"— y la base respondía 401 a
-   cada pedido. Sin rol y sin sesión la app no mostraba nada: el dashboard, el
-   plantel y las estadísticas aparecían vacíos aunque los datos estuvieran. */
-var FB_RAMA = '{{club}}';   /* el nombre corto del club, en minúscula */
-
-function fbRuta(camino){
-  var c = String(camino || '').replace(/^\/+/, '');
-  if (!FB_RAMA || FB_RAMA.charAt(0) === '{') return c;   /* sin club: raíz */
-  if (c.indexOf('clubes/') === 0) return c;              /* ya viene armada */
-  return 'clubes/' + FB_RAMA + '/' + c;
-}
-
-/* Arma la dirección completa de un pedido a la base. */
-function fbURL(camino, sufijo){
-  return FB_URL + '/' + fbRuta(camino) + '.json' + (sufijo || '');
 }
 
 // ── PERMISOS DE EDICIÓN POR ROL ───────────────────────────────
@@ -103,7 +76,7 @@ function _fbTraerLlave(){
   if(typeof guardarLlave !== 'function') return Promise.resolve();
   try{ if(localStorage.getItem('club_llave')) return Promise.resolve(); }catch(e){}
   return _fbSufijo().then(function(q){
-    return fetch(fbURL('llave', q))
+    return fetch(FB_URL + '/' + (typeof fbRuta === 'function' ? fbRuta('llave') : 'llave') + '.json' + q)
       .then(function(r){ return r.json(); })
       .then(function(k){ if(typeof k === 'string' && k.length >= 32) guardarLlave(k); })
       .catch(function(){});
@@ -148,13 +121,13 @@ function _fbDispId(){
 /* Cierra la sesión en ESTE dispositivo y borra todo lo sensible. */
 function fbCerrarSesionLocal(motivo){
   /* Cada app guarda la sesión con SU propio nombre (nla_sesion en {{CLUB}},
-     {{club}}_sesion en {{CLUB}}). Por eso no borramos la clave a mano: usamos la
+     casla_sesion en {{CLUB}}). Por eso no borramos la clave a mano: usamos la
      función de la propia app, que sabe cuál es. Si se borra la equivocada,
      la sesión sobrevive y el aviso vuelve a salir en bucle. */
   try{ _fbGuardarSes(null); }catch(e){}
   try{
     localStorage.removeItem('nla_sesion');      /* por las dudas, las dos variantes */
-    localStorage.removeItem('{{club}}_sesion');
+    localStorage.removeItem('casla_sesion');
     localStorage.removeItem('club_llave');      /* la llave de los datos también */
     localStorage.removeItem('vb_role');
     localStorage.removeItem('vb_player_num');
@@ -172,7 +145,7 @@ function _fbRegistrarDisp(){
   var tipo = /iPad|Tablet/i.test(ua) ? 'Tablet'
            : /Android|iPhone|Mobile/i.test(ua) ? 'Celular' : 'Computadora';
   return _fbSufijo().then(function(q){
-    return fetch(fbURL('sesiones/dispositivos/' + FB_SES.uid + '/' + _fbDispId(), q), {
+    return fetch(FB_URL + '/sesiones/dispositivos/' + FB_SES.uid + '/' + _fbDispId() + '.json' + q, {
       method:'PATCH', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ tipo:tipo, mail:FB_SES.email||'',
                              desde:(FB_SES.emitido||Date.now()), ultimo:Date.now() })
@@ -192,7 +165,7 @@ function _fbRegistrarAcceso(){
            : /Android|iPhone|Mobile/i.test(ua) ? 'Celular' : 'Computadora';
   var id = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
   _fbSufijo().then(function(q){
-    return fetch(fbURL('sesiones/accesos/' + id, q), {
+    return fetch(FB_URL + '/sesiones/accesos/' + id + '.json' + q, {
       method:'PUT', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ uid:FB_SES.uid, mail:FB_SES.email||'',
                              cuando:Date.now(), tipo:tipo, disp:_fbDispId() })
@@ -203,7 +176,7 @@ function _fbRegistrarAcceso(){
 function _fbControlSesion(){
   if(!FB_SES || !FB_SES.uid) return Promise.resolve();
   return _fbSufijo().then(function(q){
-    return fetch(fbURL('sesiones', q)).then(function(r){ return r.json(); });
+    return fetch(FB_URL + '/sesiones.json' + q).then(function(r){ return r.json(); });
   }).then(function(d){
     if(!d || d.error) return _fbRegistrarDisp();
     var emitido = FB_SES.emitido || 0;
@@ -227,8 +200,8 @@ function _fbCargarRol(){
   return _fbSufijo().then(function(q){
     /* Rol (coach/at/pf/player) y numero de camiseta, los dos atados al UID.
        El numero lo necesitan la vista por jugador y los avisos personales. */
-    var pRol = fetch(fbURL('roles/' + FB_SES.uid, q)).then(function(r){ return r.json(); });
-    var pNum = fetch(fbURL('jugador_num/' + FB_SES.uid, q)).then(function(r){ return r.json(); });
+    var pRol = fetch(FB_URL + '/roles/' + FB_SES.uid + '.json' + q).then(function(r){ return r.json(); });
+    var pNum = fetch(FB_URL + '/jugador_num/' + FB_SES.uid + '.json' + q).then(function(r){ return r.json(); });
     return Promise.all([pRol, pNum]).then(function(res){
       var rol = res[0], num = res[1];
       try{
@@ -369,6 +342,11 @@ function _fbPantalla(){
 }
 
 /* ── arranque: recupera la sesion guardada o pide ingresar ──────────────── */
+/* Este dispositivo, alguna vez, entro con usuario y clave. */
+function _fbHayLlaveGuardada(){
+  try{ return !!localStorage.getItem('club_llave'); }catch(e){ return false; }
+}
+
 function _fbArrancar(){
   if(_fbListo) return _fbListo;
   FB_SES = _fbLeerSes();
@@ -389,10 +367,19 @@ function _fbArrancar(){
         .then(function(){ return _fbTraerLlave(); })
         .then(function(){ resolve(true); })
         .catch(function(){
-          if(!navigator.onLine){ FB_OFF = true; resolve(true); }   /* sin internet: seguimos con lo guardado */
+          if(!navigator.onLine && _fbHayLlaveGuardada()){ FB_OFF = true; resolve(true); }   /* sin internet, pero este equipo ya habia entrado */
           else { _fbGuardarSes(null); pedir(); }                   /* sesion vencida: pedimos ingresar */
         });
-    } else if(!navigator.onLine){
+    } else if(!navigator.onLine && _fbHayLlaveGuardada()){
+      /* Sin internet SOLO se sigue de largo si este dispositivo ya habia
+         entrado antes: la llave de los datos quedo guardada de una sesion
+         valida. Es lo que permite scoutear en un club sin senal.
+
+         Antes alcanzaba con estar sin conexion, sin importar si el dispositivo
+         habia entrado alguna vez. Cualquiera podia apagar el wifi, abrir la
+         direccion y saltearse la pantalla de ingreso. No veia datos —sin llave
+         los archivos son ilegibles— pero entraba al sistema, y eso no puede
+         pasar en algo que se vende. */
       FB_OFF = true; resolve(true);
     } else {
       pedir();
@@ -452,7 +439,7 @@ function fbPush(path, value){
   });
 }
 
-/* © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados */
+/* © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados */
 
 // ── CAPA VISUAL DE PERMISOS (jugador = solo lectura) ──────────
 // Se ejecuta en todas las páginas que cargan firebase.js.

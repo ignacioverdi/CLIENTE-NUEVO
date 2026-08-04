@@ -13,10 +13,10 @@ from baterias_engine import calc_baterias, merge_acum, to_pcts
 
 # ── Config de temporadas: (etiqueta, carpeta de DVW) ──────────────────
 SEASONS = [
-    ("25-26", "DVW {{CLUB}} 2026"),
-    ("26-27", "DVW {{CLUB}} 2027"),   # se llena durante la temporada en curso
+    ("25-26", "DVW NAFELS 2026"),
+    ("26-27", "DVW NAFELS 2027"),   # se llena durante la temporada en curso
 ]
-NLA_TEAMS = ['{{RIVAL1}}','{{RIVAL6}}','{{RIVAL8}}','{{RIVAL12}}','{{RIVAL5}}','{{Club}}','{{RIVAL2}}','{{RIVAL9}}']
+NLA_TEAMS = ['Amriswil','Chenois','Colombier','Jona','Lausanne','Nafels','Schonenwerd','St Gallen']
 
 # ── Normalización robusta de nombres (anti-mojibake + sin acentos) ────
 def _fix_mojibake(s):
@@ -26,17 +26,17 @@ def _fix_mojibake(s):
     return s
 def _deaccent(s):
     return ''.join(c for c in unicodedata.normalize('NFKD', s) if not unicodedata.combining(c))
-_CANON = {'{{club}}':'{{Club}}','{{RIVAL6}}':'{{RIVAL6}}','{{RIVAL2}}':'{{RIVAL2}}','{{RIVAL1}}':'{{RIVAL1}}',
-          '{{RIVAL8}}':'{{RIVAL8}}','{{RIVAL12}}':'{{RIVAL12}}','{{RIVAL5}}':'{{RIVAL5}}','gallen':'{{RIVAL9}}'}
-_VARIANTS = [('{{club}}',['{{club}}','nfels']), ('{{RIVAL6}}',['{{RIVAL6}}','chnois']),
-             ('{{RIVAL2}}',['{{RIVAL2}}','schnenwerd','{{RIVAL4}}']), ('{{RIVAL1}}',['{{RIVAL1}}']),
-             ('{{RIVAL8}}',['{{RIVAL8}}']), ('{{RIVAL12}}',['{{RIVAL12}}']), ('{{RIVAL5}}',['{{RIVAL5}}']),
+_CANON = {'{{CLUB_SLUG}}':'Nafels','chenois':'Chenois','schonenwerd':'Schonenwerd','amriswil':'Amriswil',
+          'colombier':'Colombier','jona':'Jona','lausanne':'Lausanne','gallen':'St Gallen'}
+_VARIANTS = [('{{CLUB_SLUG}}',['{{CLUB_SLUG}}','nfels']), ('chenois',['chenois','chnois']),
+             ('schonenwerd',['schonenwerd','schnenwerd','schoenenwerd']), ('amriswil',['amriswil']),
+             ('colombier',['colombier']), ('jona',['jona']), ('lausanne',['lausanne']),
              ('gallen',['gallen'])]
 def norm(name):
     s=''.join(ch for ch in _deaccent(_fix_mojibake(name)).lower() if ch.isalnum() or ch==' ')
     for ckey,variants in _VARIANTS:
         if any(v in s for v in variants): return _CANON[ckey]
-    return None  # equipo no-{{LIGA}} (Champions/cup) → se descarta
+    return None  # equipo no-NLA (Champions/cup) → se descarta
 
 # ── Lectura de DVW ────────────────────────────────────────────────────
 def read_lines(fn):
@@ -119,11 +119,11 @@ def main():
             all_teams.extend(filas)
 
     # ── Sección 8: PLAYERS por temporada (recepción flot/pot + defensa) ──
-    # Reúsa el pipeline validado de update_db_{{club}} (mismo motor que generó los
+    # Reúsa el pipeline validado de update_db_nafels (mismo motor que generó los
     # 99 jugadores horneados → 0 drift) + los campos nuevos.
     all_players = []
     try:
-        from update_db_{{club}} import build_teams_data_fresh, calculate_stats
+        from update_db_nafels import build_teams_data_fresh, calculate_stats
         print("Generando PLAYERS por temporada...")
         for label in seasons_con_datos:
             carpeta = dict(SEASONS)[label]

@@ -9,8 +9,16 @@
 <script src="plantel_club.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
   <script src="datos_equipo.js.enc" onerror="void 0"></script>
-  <script>abrirDatos();</script>
 <script src="datos_prep_fisica.js" onerror="void 0"></script>
+<!-- El catalogo de ejercicios. Cada ejercicio ya trae su nombre en es, en y
+     de: el pizarron no lo cargaba y por eso mostraba siempre el castellano,
+     mientras que prep_fisica.html si lo traducia.
+
+     OJO CON EL ORDEN: todos los .enc van ANTES de abrirDatos(). Puesto
+     despues, el archivo se carga pero nadie lo descifra y queda como si no
+     existiera. Es el mismo orden que usa prep_fisica.html. -->
+<script src="datos_ejercicios.js.enc" onerror="void 0"></script>
+  <script>abrirDatos();</script>
 <script src="firebase.js" onerror="void 0"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -118,7 +126,12 @@ body.fullscreen{background:#000;}
 </style>
 </head>
 <body>
-<div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
+<!-- El selector de idiomas estaba en un contenedor FIJO arriba a la derecha,
+     encima de la cabecera. Y temporadas_menu.js busca ".header-right" y
+     engancha su boton en el PRIMERO que encuentra: caia justo ahi. Resultado:
+     idiomas, Temporadas, Pantalla completa e Individual apilados en el mismo
+     rincon. Ahora el selector va dentro de la cabecera de verdad, en linea
+     con el resto, y el boton de Temporadas se suma al final sin pisar nada. -->
 
 
 <div class="header">
@@ -127,11 +140,12 @@ body.fullscreen{background:#000;}
     <div class="logo">🏐 Pizarrón</div>
     <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB}} VOLEY · Rutina del día</div>
   </div>
-  <div class="header-right">
+  <div class="header-right" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
     <div class="live-dot" title="Sincronizado con Firebase"></div>
     <span style="font-size:10px;color:var(--green);letter-spacing:1px;">LIVE</span>
     <button class="btn-fullscreen" onclick="toggleFullscreen()">⛶ Pantalla completa</button>
     <a href="prep_fisica.html" class="back-btn">💪 Individual</a>
+    <div id="lang-wrap" style="display:flex;gap:4px"></div>
   </div>
 </div>
 
@@ -147,13 +161,30 @@ body.fullscreen{background:#000;}
       <option value="">— Elegí el día —</option>
     </select>
   </div>
-  <div style="flex:1;min-width:200px">
-    <div class="ctrl-label" style="display:flex;align-items:center;gap:10px">
-      <span>Jugadores a mostrar</span>
-      <span onclick="jugTodos(true)" style="cursor:pointer;color:#4ade80;font-size:10px;text-transform:none;letter-spacing:0">todos</span>
-      <span onclick="jugTodos(false)" style="cursor:pointer;color:var(--mut);font-size:10px;text-transform:none;letter-spacing:0">ninguno</span>
+  <!-- Antes eran 13 fichas una al lado de la otra: con el plantel completo la
+       fila ocupaba media pantalla. Ahora es un boton que abre un panel con las
+       tildes, y muestra cuantos hay elegidos sin necesidad de abrirlo. -->
+  <div style="position:relative">
+    <div class="ctrl-label">Jugadores a mostrar</div>
+    <!-- Fondo blanco y texto oscuro, igual que los dos <select> de al lado. La
+         hoja de estilos les pone fondo oscuro, pero el navegador dibuja los
+         desplegables nativos en blanco: si el boton seguia la hoja, quedaba
+         negro al lado de dos blancos. Se iguala a lo que se ve, no a lo que
+         dice el CSS. -->
+    <button class="ctrl-sel" id="jug-boton" onclick="abrirJugs(event)"
+            style="cursor:pointer;text-align:left;min-width:190px;display:flex;align-items:center;gap:10px;
+                   justify-content:space-between;background:#fff;color:#111;border-color:rgba(0,0,0,.15)">
+      <span id="jug-resumen">Todos</span><span style="color:#555;font-size:11px">▾</span>
+    </button>
+    <div id="jug-panel" style="display:none;position:absolute;top:100%;left:0;margin-top:6px;z-index:500;
+         background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:10px;
+         box-shadow:0 12px 34px rgba(0,0,0,.6);min-width:250px;max-height:340px;overflow:auto">
+      <div style="display:flex;gap:8px;padding-bottom:8px;margin-bottom:6px;border-bottom:1px solid var(--border)">
+        <button onclick="jugTodos(true)" style="flex:1;cursor:pointer;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#4ade80;border-radius:7px;padding:5px;font-family:inherit;font-size:11px;font-weight:700">Todos</button>
+        <button onclick="jugTodos(false)" style="flex:1;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--mut);border-radius:7px;padding:5px;font-family:inherit;font-size:11px;font-weight:700">Ninguno</button>
+      </div>
+      <div id="jug-chips"></div>
     </div>
-    <div id="jug-chips" style="display:flex;flex-wrap:wrap;gap:6px;padding-top:2px"></div>
   </div>
   <div style="font-size:10px;color:var(--mut);margin-left:auto;letter-spacing:.5px;" id="last-update"></div>
 </div>
@@ -177,6 +208,98 @@ var MES_ACTUAL = null;
 var MESES_PZ = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 function mesLabelFromKey(k){ var p=String(k).split('-'); return (MESES_PZ[(+p[1])-1]||'')+' '+(p[0]||''); }
 
+/* ══ El nombre del BLOQUE en el idioma elegido ═════════════════════════════
+   Los bloques (FUERZA SUPERIOR, CORE, MOVILIDAD) los escribe el preparador en
+   la rutina. prep_fisica.html ya tenia esta tabla y el pizarron no: por eso el
+   perfil individual mostraba "UPPER BODY STRENGTH" y la tele seguia en
+   castellano. Es la misma tabla, para que las dos pantallas digan lo mismo. */
+var PF_BLOQUES = {
+  en:{'FUERZA SUPERIOR':'UPPER BODY STRENGTH','FUERZA INFERIOR':'LOWER BODY STRENGTH','TREN SUPERIOR':'UPPER BODY','TREN INFERIOR':'LOWER BODY',
+      'CORE':'CORE','ABDOMINALES':'ABS','ABDOMINAL':'ABS','MOVILIDAD':'MOBILITY','POTENCIA':'POWER','PLIOMETRIA':'PLYOMETRICS','PLIOMETRÍA':'PLYOMETRICS',
+      'RESISTENCIA':'ENDURANCE','VELOCIDAD':'SPEED','SALTO':'JUMP','CALENTAMIENTO':'WARM-UP','ENTRADA EN CALOR':'WARM-UP','ESTIRAMIENTO':'STRETCHING',
+      'ELONGACION':'STRETCHING','ELONGACIÓN':'STRETCHING','PECHO':'CHEST','ESPALDA':'BACK','PIERNAS':'LEGS','BRAZOS':'ARMS','HOMBROS':'SHOULDERS',
+      'GLUTEOS':'GLUTES','GLÚTEOS':'GLUTES','BICEPS':'BICEPS','BÍCEPS':'BICEPS','TRICEPS':'TRICEPS','TRÍCEPS':'TRICEPS','FUERZA':'STRENGTH',
+      'PREVENCION':'PREHAB','PREVENCIÓN':'PREHAB','ACTIVACION':'ACTIVATION','ACTIVACIÓN':'ACTIVATION','CIRCUITO':'CIRCUIT','GIMNASIO':'GYM',
+      'FISICO':'PHYSICAL','FÍSICO':'PHYSICAL','TECNICA':'TECHNIQUE','TÉCNICA':'TECHNIQUE'},
+  de:{'FUERZA SUPERIOR':'OBERKÖRPERKRAFT','FUERZA INFERIOR':'UNTERKÖRPERKRAFT','TREN SUPERIOR':'OBERKÖRPER','TREN INFERIOR':'UNTERKÖRPER',
+      'CORE':'CORE','ABDOMINALES':'BAUCH','ABDOMINAL':'BAUCH','MOVILIDAD':'MOBILITÄT','POTENCIA':'KRAFT','PLIOMETRIA':'PLYOMETRIE','PLIOMETRÍA':'PLYOMETRIE',
+      'RESISTENCIA':'AUSDAUER','VELOCIDAD':'SCHNELLIGKEIT','SALTO':'SPRUNG','CALENTAMIENTO':'AUFWÄRMEN','ENTRADA EN CALOR':'AUFWÄRMEN','ESTIRAMIENTO':'DEHNEN',
+      'ELONGACION':'DEHNEN','ELONGACIÓN':'DEHNEN','PECHO':'BRUST','ESPALDA':'RÜCKEN','PIERNAS':'BEINE','BRAZOS':'ARME','HOMBROS':'SCHULTERN',
+      'GLUTEOS':'GESÄSS','GLÚTEOS':'GESÄSS','BICEPS':'BIZEPS','BÍCEPS':'BIZEPS','TRICEPS':'TRIZEPS','TRÍCEPS':'TRIZEPS','FUERZA':'KRAFT',
+      'PREVENCION':'PRÄVENTION','PREVENCIÓN':'PRÄVENTION','ACTIVACION':'AKTIVIERUNG','ACTIVACIÓN':'AKTIVIERUNG','CIRCUITO':'ZIRKEL','GIMNASIO':'FITNESSSTUDIO',
+      'FISICO':'KÖRPERLICH','FÍSICO':'KÖRPERLICH','TECNICA':'TECHNIK','TÉCNICA':'TECHNIK'}
+};
+function bloqueNombre(nombre){
+  var l = (typeof getLang==='function') ? getLang() : 'es';
+  if(l==='es' || !nombre) return nombre;
+  var d = PF_BLOQUES[l] || {};
+  return d[(''+nombre).trim().toUpperCase()] || nombre;
+}
+
+/* ══ Los dias de la rutina ═════════════════════════════════════════════════
+   Las etiquetas las escribe el preparador y son libres: "lunes, miercoles,
+   viernes", "martes y jueves", "miercoles". No hay forma de tenerlas todas en
+   un diccionario, porque las combinaciones son infinitas.
+
+   Por eso se traducen las PALABRAS dentro del texto —los dias y el "y" que los
+   une— y se respeta el resto tal cual. Asi funciona con cualquier combinacion
+   que se le ocurra escribir, hoy y en el futuro.
+
+   Se traduce solo al PINTAR: la etiqueta original es la que identifica al dia
+   dentro de la rutina, y si se tocara ahi se perderia la correspondencia. */
+var PZ_DIAS = {
+  en:{'lunes':'Monday','martes':'Tuesday','miercoles':'Wednesday','miércoles':'Wednesday',
+      'jueves':'Thursday','viernes':'Friday','sabado':'Saturday','sábado':'Saturday','domingo':'Sunday',
+      'lun':'Mon','mar':'Tue','mie':'Wed','mié':'Wed','jue':'Thu','vie':'Fri','sab':'Sat','sáb':'Sat','dom':'Sun',
+      'y':'and','dia':'day','día':'day','semana':'week'},
+  de:{'lunes':'Montag','martes':'Dienstag','miercoles':'Mittwoch','miércoles':'Mittwoch',
+      'jueves':'Donnerstag','viernes':'Freitag','sabado':'Samstag','sábado':'Samstag','domingo':'Sonntag',
+      'lun':'Mo','mar':'Di','mie':'Mi','mié':'Mi','jue':'Do','vie':'Fr','sab':'Sa','sáb':'Sa','dom':'So',
+      'y':'und','dia':'Tag','día':'Tag','semana':'Woche'}
+};
+function diaTexto(txt){
+  var l = (typeof getLang==='function') ? getLang() : 'es';
+  if(l==='es' || !txt) return txt;
+  var d = PZ_DIAS[l] || {};
+  return String(txt).replace(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+/g, function(p){
+    var t = d[p.toLowerCase()];
+    if(!t) return p;                                  /* palabra que no es un dia: se deja */
+    if(p === p.toUpperCase() && p.length > 1) return t.toUpperCase();
+    if(p[0] === p[0].toUpperCase()) return t.charAt(0).toUpperCase() + t.slice(1);
+    return t;
+  });
+}
+
+/* ══ El nombre del ejercicio en el idioma elegido ═══════════════════════════
+   Los ejercicios NO se traducen con el diccionario general: cada uno ya trae
+   sus nombres en el catalogo (campos es / en / de), cargados por el preparador.
+   Es la misma resolucion que usa prep_fisica.html, para que las dos pantallas
+   muestren exactamente lo mismo.
+
+   Se busca primero por id —que es lo que guardan las rutinas nuevas— y si no,
+   por el nombre en castellano, para las rutinas viejas que se cargaron antes
+   de que existieran los ids. Si no aparece, queda el nombre original. */
+function ejNombre(id, fallback){
+  var lang = (typeof getLang==='function') ? getLang() : 'es';
+  if(!window.EJERCICIOS_DATA || !window.EJERCICIOS_DATA.grupos) return fallback || '';
+  var found = null;
+  if(id){
+    window.EJERCICIOS_DATA.grupos.forEach(function(g){
+      (g.ejercicios||[]).forEach(function(e){ if(e.id===id) found=e; });
+    });
+  }
+  if(!found && fallback){
+    var fl = (''+fallback).trim().toLowerCase();
+    window.EJERCICIOS_DATA.grupos.forEach(function(g){
+      (g.ejercicios||[]).forEach(function(e){
+        if(!found && e.es && (''+e.es).trim().toLowerCase()===fl) found=e;
+      });
+    });
+  }
+  if(found) return found[lang] || found.en || found.es || fallback || '';
+  return fallback || '';
+}
+
 function armarPrep(mes){
   var roster = (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores) || [];
   var jugs = roster.map(function(j){
@@ -193,13 +316,31 @@ function pintarJugSelector(){
   var cont = document.getElementById('jug-chips');
   if(!cont) return;
   var jugs = (PREP_DATA_LOCAL && PREP_DATA_LOCAL.jugadores) || [];
-  if(!jugs.length){ cont.innerHTML = '<span style="font-size:11px;color:var(--mut)">— sin jugadores con rutina este mes —</span>'; return; }
+  var resumen = document.getElementById('jug-resumen');
+  if(!jugs.length){
+    cont.innerHTML = '<span style="font-size:11px;color:var(--mut)">— sin jugadores con rutina este mes —</span>';
+    if(resumen) resumen.textContent = 'Sin jugadores';
+    return;
+  }
   if(!JUG_SEL){ JUG_SEL = {}; jugs.forEach(function(j){ JUG_SEL[j.num] = true; }); }
   jugs.forEach(function(j){ if(!(j.num in JUG_SEL)) JUG_SEL[j.num] = true; });
+
   cont.innerHTML = jugs.map(function(j){
     var on = JUG_SEL[j.num] !== false;
-    return '<button class="jchip'+(on?' on':'')+'" onclick="toggleJug('+j.num+')">#'+j.num+' '+j.nombre+'</button>';
+    return '<label style="display:flex;align-items:center;gap:8px;padding:6px 7px;border-radius:8px;cursor:pointer;font-size:13px">'+
+           '<input type="checkbox"'+(on?' checked':'')+' onchange="toggleJug('+j.num+')" style="cursor:pointer">'+
+           '<span style="color:var(--mut);font-size:11px;min-width:26px">#'+j.num+'</span>'+
+           '<span style="'+(on?'color:#4ade80;font-weight:700':'color:var(--mut)')+'">'+j.nombre+'</span></label>';
   }).join('');
+
+  /* El boton dice cuantos hay elegidos, para no tener que abrirlo. */
+  if(resumen){
+    var n = jugs.filter(function(j){ return JUG_SEL[j.num] !== false; }).length;
+    resumen.textContent = (n === jugs.length) ? 'Todos'
+                        : (n === 0) ? 'Ninguno'
+                        : (n === 1) ? (jugs.filter(function(j){ return JUG_SEL[j.num] !== false; })[0].nombre)
+                        : (n + ' de ' + jugs.length);
+  }
 }
 function toggleJug(num){ JUG_SEL[num] = (JUG_SEL[num] === false); pintarJugSelector(); renderPizarron(); }
 function jugTodos(v){
@@ -207,6 +348,17 @@ function jugTodos(v){
   JUG_SEL = {}; jugs.forEach(function(j){ JUG_SEL[j.num] = v; });
   pintarJugSelector(); renderPizarron();
 }
+/* El panel se abre con el boton y se cierra al tocar afuera. */
+function abrirJugs(ev){
+  if(ev) ev.stopPropagation();
+  var p = document.getElementById('jug-panel');
+  if(p) p.style.display = (p.style.display === 'none' || !p.style.display) ? 'block' : 'none';
+}
+document.addEventListener('click', function(ev){
+  var p = document.getElementById('jug-panel'), b = document.getElementById('jug-boton');
+  if(!p || p.style.display === 'none') return;
+  if(!p.contains(ev.target) && ev.target !== b && !(b && b.contains(ev.target))) p.style.display = 'none';
+});
 function poblarMeses(){
   var set={};
   Object.keys(RUTINAS_RAW).forEach(function(num){
@@ -223,6 +375,12 @@ function poblarMeses(){
   MES_ACTUAL=meses[0]; sel.value=MES_ACTUAL;
   armarPrep(MES_ACTUAL); pintarJugSelector(); poblarDias();
 }
+/* Al cambiar de idioma hay que volver a dibujar: los nombres de ejercicio no
+   son texto de la pagina, se resuelven contra el catalogo al pintarlos. */
+window.addEventListener('langchange', function(){
+  try{ if(typeof renderPizarron==='function') renderPizarron(); }catch(e){}
+});
+
 function onMesChange(){ MES_ACTUAL=document.getElementById('sel-mes').value; armarPrep(MES_ACTUAL); pintarJugSelector(); poblarDias(); }
 function usarFallback(){
   document.getElementById('mes-wrap').style.display='none';
@@ -283,8 +441,8 @@ function poblarDias(){
   sel.innerHTML = '<option value="">— Elegí el día —</option>';
   dias.forEach(function(d){
     var o = document.createElement('option');
-    o.value = d.label;
-    o.textContent = d.label;
+    o.value = d.label;              /* el valor queda en castellano: identifica al dia */
+    o.textContent = diaTexto(d.label);  /* lo que se ve, traducido */
     sel.appendChild(o);
   });
   // Auto-seleccionar primero
@@ -338,7 +496,7 @@ function renderPizarron(){
   // Título del día
   var titulo = document.createElement('div');
   titulo.className = 'dia-titulo';
-  titulo.textContent = '📅 ' + diaLabel;
+  titulo.textContent = '📅 ' + diaTexto(diaLabel);
   cont.appendChild(titulo);
 
   // Render por bloque
@@ -349,7 +507,7 @@ function renderPizarron(){
     var bHdr = document.createElement('div');
     bHdr.className = 'bloque-header';
     bHdr.innerHTML = '<span class="bloque-icon">' + (bloque.icon||'💪') + '</span>' +
-      '<span class="bloque-nombre" style="color:' + (bloque.color||'#fff') + '">' + bloque.nombre + '</span>';
+      '<span class="bloque-nombre" style="color:' + (bloque.color||'#fff') + '">' + bloqueNombre(bloque.nombre) + '</span>';
     bDiv.appendChild(bHdr);
 
     // Render por ejercicio
@@ -363,7 +521,7 @@ function renderPizarron(){
       ejTit.className = 'ejercicio-titulo';
       ejTit.innerHTML =
         '<div class="ej-num">' + (ei+1) + '</div>' +
-        '<div class="ej-nombre">' + ej.nombre + '</div>' +
+        '<div class="ej-nombre">' + ejNombre(ej.id, ej.nombre) + '</div>' +
         '<div class="ej-badges">' +
           '<span class="ej-badge badge-s">' + ej.series + ' SERIES</span>' +
           '<span class="ej-badge badge-r">' + ej.reps + ' REPS</span>' +

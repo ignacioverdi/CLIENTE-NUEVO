@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-update_db.py — Sistema automático de actualización de base de datos {{LIGA}}
+update_db.py — Sistema automático de actualización de base de datos NLA
 =======================================================================
 USO:
   python3 update_db.py --dvw_dir /ruta/nuevos_dvw/ --temporada 2026/27
@@ -24,27 +24,6 @@ ESTRUCTURA DE ARCHIVOS:
 import os, re, json, argparse, shutil
 from collections import defaultdict, Counter
 
-# ── LA CONFIGURACION DEL CLUB ───────────────────────────────────────────────
-#    Las tablas ya no van escritas aca adentro: viven en config_club.json, que
-#    se arma al dar de alta leyendo los propios partidos del club.
-#
-#    Antes iban aca, con marcadores, y al reemplazar el nombre del club se
-#    rompian: el motor terminaba sin reconocer un solo equipo y la app aparecia
-#    vacia. Leyendolas de afuera, no hay nada que romper.
-try:
-    import config_club as _cfg
-    MAIN_TEAM = _cfg.equipo_propio()
-    TEAM_NORM = _cfg.tabla_de_equipos()
-    NLA_TEAMS = _cfg.equipos()
-except Exception as _e:
-    print('  [aviso] no pude leer config_club.json (%s)' % _e)
-    print('          corre crear_config.py una vez en la carpeta del club.')
-    MAIN_TEAM = ''
-    TEAM_NORM = {}
-    NLA_TEAMS = []
-# ────────────────────────────────────────────────────────────────────────────
-
-
 # ── NORMALIZACIÓN DE COMBOS AL CANÓNICO MUNDIAL ──────────────────────
 # Equivalencias argentino → canónico (mismo ataque, distinto idioma de scout)
 COMBO_EQUIV = {
@@ -58,22 +37,42 @@ def normalize_combo(combo):
 
 # ── CONFIGURACIÓN ─────────────────────────────────────────────────
 # ═══════════════════════════════════════════════════════════════════
-# CONFIGURACIÓN {{CLUB}} (Liga Argentina División de Honor)
+# CONFIGURACIÓN CASLA (Liga Argentina División de Honor)
 # ═══════════════════════════════════════════════════════════════════
-# (NLA_TEAMS sale de config_club.json)
-# (TEAM_NORM sale de config_club.json)
-# (MAIN_TEAM sale de config_club.json)
-# Posiciones oficiales del plantel {{CLUB}} (por número de camiseta).
+NLA_TEAMS = ['Amriswil','Chenois','Colombier','Jona','Lausanne','Nafels','Schonenwerd','St Gallen']
+
+TEAM_NORM = {
+    '{{CLUB}} (NLA Men)': 'Nafels',
+    'Volley NFELS': 'Nafels', 'Volley Nfels': 'Nafels',
+    'Volley Amriswil (NLA Men)': 'Amriswil',
+    'Volley Schönenwerd (NLA Men)': 'Schonenwerd',
+    'Chênois Genève Volleyball (NLA Men)': 'Chenois',
+    'Chnois Genve Volleyball': 'Chenois',
+    'Colombier Volley (NLA Men)': 'Colombier',
+    'STV St Gallen (NLA Men)': 'St Gallen',
+    'TSV Jona Volleyball (NLA Men)': 'Jona',
+    'TSV Jona Volleyball': 'Jona',
+    'Lausanne UC (NLA Men)': 'Lausanne',
+    'VBC Sursee (NLB Men)': 'Sursee',
+    'Orion Stars': 'Orion', 'CSU Corona Brasov': 'Brasov',
+    'Neftohimic 2010 BURGAS': 'Burgas',
+    'SCM ZALAU': 'Zalau', 'SCM Zalau': 'Zalau',
+}
+MAIN_TEAM = 'Nafels'
+
+# Posiciones oficiales del plantel CASLA (por número de camiseta).
 # Fuente única de verdad — coincide con EQUIPO_DEMO de jugador.html.
-{{CLUB}}_POS_OFICIAL = {}   # el puesto sale de lo que hace cada uno en la cancha
-# (antes iban aca los numeros del club de origen, que en otro club
-#  le asignan a cada jugador el puesto de otra persona)
+CASLA_POS_OFICIAL = {
+    1:'ARMADOR', 2:'CENTRAL', 3:'OPUESTO', 4:'ARMADOR', 5:'CENTRAL',
+    6:'OPUESTO', 7:'CENTRAL', 8:'LIBERO', 9:'PUNTA', 10:'PUNTA',
+    11:'PUNTA', 14:'PUNTA', 15:'CENTRAL'
+}
 
 
 TEAM_COLORS = {
-    '{{Club}}':'#22c55e','{{RIVAL1}}':'#3b82f6','{{RIVAL2}}':'#f97316',
-    '{{RIVAL6}}':'#818cf8','{{RIVAL8}}':'#f59e0b','{{RIVAL12}}':'#06b6d4',
-    '{{RIVAL5}}':'#ec4899','{{RIVAL9}}':'#94a3b8'
+    'Nafels':'#22c55e','Amriswil':'#3b82f6','Schonenwerd':'#f97316',
+    'Chenois':'#818cf8','Colombier':'#f59e0b','Jona':'#06b6d4',
+    'Lausanne':'#ec4899','St Gallen':'#94a3b8'
 }
 
 ATK_COMBOS = ['X5','V5','X6','V6','X8','V8','X1','X7','XM','X2','XB','XP','XR',
@@ -84,7 +83,37 @@ REC_D  = ['#','+','!','-','/','=','?']; REC_IDX = {r:i for i,r in enumerate(REC_
 
 # ── HELPERS ───────────────────────────────────────────────────────
 def norm(name):
-    return TEAM_NORM.get(name, name.split('(')[0].strip())
+    """El nombre del equipo, siempre igual aunque cambie el patrocinador.
+
+    Los clubes cambian de sponsor todos los anos y el nombre en los .dvw cambia
+    con ellos: "Biogas Volley Nafels" un ano, "AXPO VOLLEY NAFELS" el otro.
+    Buscando el nombre exacto, cada cambio deja al equipo afuera y la app
+    aparece vacia sin decir por que.
+
+    Primero se prueba la tabla de siempre. Si no esta, se busca si alguno de
+    los nombres conocidos aparece adentro del que vino.
+    """
+    if name in TEAM_NORM:
+        return TEAM_NORM[name]
+
+    limpio = name.split('(')[0].strip()
+    if limpio in TEAM_NORM:
+        return TEAM_NORM[limpio]
+
+    # sin acentos, en mayusculas, para comparar
+    def _plano(x):
+        import unicodedata
+        x = unicodedata.normalize('NFD', str(x))
+        x = ''.join(c for c in x if unicodedata.category(c) != 'Mn')
+        return x.upper().strip()
+
+    entro = _plano(limpio)
+    conocidos = set(TEAM_NORM.values())
+    for corto in sorted(conocidos, key=len, reverse=True):
+        if _plano(corto) in entro:
+            return corto
+
+    return limpio
 
 def get_teams(lines):
     in_t=False; tl=[]
@@ -438,7 +467,7 @@ def apply_heatmap_safety_fixes(html):
 
 
 
-# Funciones a integrar en update_db_{{club}}.py para los armadores
+# Funciones a integrar en update_db_casla.py para los armadores
 
 def _get_positions(content, players_section):
     """Lee la posición codificada (campo 13) de cada jugador.
@@ -717,7 +746,7 @@ def _build_armador_page(team, slug, display, rivals_list, SUBS, template_dir, ou
     if not rallies: return
     src_path = os.path.join(template_dir, '_tpl_armador.html')
     if not os.path.exists(src_path):
-        for cand in ['armador_{{club}}.html','armador_amriswil.html']:
+        for cand in ['armador_nafels.html','armador_amriswil.html']:
             cp = os.path.join(output_dir, cand)
             if os.path.exists(cp): src_path = cp; break
         else: return
@@ -768,7 +797,7 @@ _ARM_RALLIES_BY_TEAM = {}
 _ARM_NAMES_BY_TEAM = {}
 
 def build_heatmaps(teams_data, template_dir='.', output_dir='.', temporada_filter=None):
-    """Build ataque/saque/recepcion/armador heatmaps for each {{LIGA}} team."""
+    """Build ataque/saque/recepcion/armador heatmaps for each NLA team."""
     # Procesar el equipo principal primero: sus páginas sirven de plantilla (fallback) para los demás
     _orden = [MAIN_TEAM] + [t for t in NLA_TEAMS if t != MAIN_TEAM]
     for team in _orden:
@@ -819,25 +848,25 @@ def build_heatmaps(teams_data, template_dir='.', output_dir='.', temporada_filte
                 rec_players[num_str]={'name':name,'num':num,'rtypes':rt_list,'r':rows}
 
         display = team.upper()
-        cap = team  # nombre tal cual (ej. '{{RIVAL6}}', '{{RIVAL9}}')
+        cap = team  # nombre tal cual (ej. 'Chenois', 'St Gallen')
         SUBS=[('{{CLUB}} VOLEY',f'{display} VOLEY'),('{{CLUB}} Voley',f'{display} Voley'),
-              ('{{CLUB_COMPLETO}}',display),('{{CLUB_COMPLETO}}',display),
-              # La plantilla es de {{Club}}: reemplazar también esas menciones por el club destino
+              ('San Lorenzo',display),('SAN LORENZO',display),
+              # La plantilla es de {{CLUB}}: reemplazar también esas menciones por el club destino
               ('{{CLUB}} — ANALISIS', f'{display} — ANALISIS'),
               ('{{CLUB}} — ANALISIS', f'{display} — ANALISIS'),
-              ('— {{Club}} 2026', f'— {cap} 2026'),('— {{Club}} 2026', f'— {cap} 2026'),
-              ('{{CLUB_COMPLETO}}', f'{display} VOLEY'),
-              ('División de Honor 2026','{{LIGA}} {{PAIS}}'),('División de Honor','{{LIGA}} {{PAIS}}'),
-              ('DHM 2026','{{LIGA}} 2025/26'),('<script src="chat.js"></script>',''),
-              ('ataque_{{club}}.html',f'ataque_{slug}.html'),
-              ('saque_{{club}}.html',f'saque_{slug}.html'),
-              ('recepcion_{{club}}.html',f'recepcion_{slug}.html'),
-              ('armador_{{club}}.html',f'armador_{slug}.html'),
-              ('ataque_{{club}}.html',f'ataque_{slug}.html'),
-              ('saque_{{club}}.html',f'saque_{slug}.html'),
-              ('recepcion_{{club}}.html',f'recepcion_{slug}.html'),
-              ('armador_{{club}}.html',f'armador_{slug}.html'),
-              ("'{{club}}_role'","'liga_role'"),("'{{club}}_pin_skip'","'liga_pin_skip'")]
+              ('— {{CLUB}} 2026', f'— {cap} 2026'),('— {{CLUB}} 2026', f'— {cap} 2026'),
+              ('{{CLUB}} VOLEY', f'{display} VOLEY'),
+              ('División de Honor 2026','{{LIGA}}'),('División de Honor','{{LIGA}}'),
+              ('DHM 2026','NLA 2025/26'),('<script src="chat.js"></script>',''),
+              ('ataque_casla.html',f'ataque_{slug}.html'),
+              ('saque_casla.html',f'saque_{slug}.html'),
+              ('recepcion_casla.html',f'recepcion_{slug}.html'),
+              ('armador_casla.html',f'armador_{slug}.html'),
+              ('ataque_nafels.html',f'ataque_{slug}.html'),
+              ('saque_nafels.html',f'saque_{slug}.html'),
+              ('recepcion_nafels.html',f'recepcion_{slug}.html'),
+              ('armador_nafels.html',f'armador_{slug}.html'),
+              ("'casla_role'","'liga_role'"),("'casla_pin_skip'","'liga_pin_skip'")]
 
         for skill, src, raw_data, out in [
             ('ataque',    '_tpl_ataque.html',    {**BASE,'players':atk_players}, f'ataque_{slug}.html'),
@@ -847,7 +876,7 @@ def build_heatmaps(teams_data, template_dir='.', output_dir='.', temporada_filte
             src_path = os.path.join(template_dir, src)
             if not os.path.exists(src_path):
                 # fallback: usar una página ya existente del mismo tipo como plantilla
-                for cand in ([f'{skill}_{{club}}.html', f'{skill}_amriswil.html']):
+                for cand in ([f'{skill}_nafels.html', f'{skill}_amriswil.html']):
                     cp = os.path.join(output_dir, cand)
                     if os.path.exists(cp): src_path = cp; break
                 else: continue
@@ -877,7 +906,30 @@ def build_stats_table(players, teams, output_path='nla_stats_table.html'):
     temporadas = sorted(set(p.get('temporada','') for p in players if p.get('temporada') and p.get('temporada')!='all'))
 
     html = template.replace('/*__DATA_PLACEHOLDER__*/', js_data)
-    opts = ''.join(f'<option>{t}</option>' for t in temporadas)
+
+    # La temporada del encabezado sale de los DATOS, no escrita a mano. Antes
+    # estaba fija en 2025/26 en la plantilla, asi que al arrancar la 26/27 la
+    # tabla mostraba los datos nuevos con el titulo de la temporada anterior.
+    # Se toma la de los equipos si los jugadores todavia no cargaron: al
+    # empezar una temporada hay equipos con 0 partidos y ningun jugador aun.
+    temps_eq = sorted(set(t.get('temporada','') for t in teams
+                          if t.get('temporada') and t.get('temporada') != 'all'))
+    # El cartel tiene que decir lo que la pagina CONTIENE, no lo que tiene
+    # jugadores. Antes se quedaba con las temporadas de los jugadores y solo
+    # miraba los equipos si esa lista estaba vacia: al sumar la 25/26 —que si
+    # tiene jugadores— el cartel pasaba a decir "2025/26" y desaparecia la
+    # temporada nueva, que estaba en la tabla pero todavia sin jugadores.
+    todas = sorted(set(list(temporadas) + list(temps_eq)))
+    if len(todas) == 1:      titulo = todas[0]
+    elif len(todas) > 1:     titulo = '%s – %s' % (todas[0], todas[-1])
+    else:                    titulo = ''
+    html = html.replace('<!--__TEMP_TITULO__-->', titulo)
+    html = html.replace('<!--__TEMP_BADGE__-->', titulo or '—')
+
+    # El desplegable tiene que ofrecer la temporada en curso desde el primer
+    # dia, aunque todavia no haya ni un jugador cargado.
+    opciones = sorted(set(list(temporadas) + list(temps_eq)))
+    opts = ''.join(f'<option>{t}</option>' for t in opciones)
     html = html.replace('<!--__TEMPORADAS__-->', opts)
 
     with open(output_path, 'w', encoding='utf-8') as f:
@@ -918,13 +970,13 @@ def calc_match_skill(acts, skill_type):
 
 # Rosters opcionales (si están vacíos, usa los nombres del DVW)
 try:
-    {{CLUB}}_ROSTER
+    NAFELS_ROSTER
 except NameError:
-    {{CLUB}}_ROSTER = {}
+    NAFELS_ROSTER = {}
 try:
-    {{CLUB}}_NAMES
+    NAFELS_NAMES
 except NameError:
-    {{CLUB}}_NAMES = {}
+    NAFELS_NAMES = {}
 try:
     POS_COLOR
 except NameError:
@@ -932,7 +984,7 @@ except NameError:
 
 # ═══ MOTOR DE BATERÍAS (validado 100% vs DataVolley oficial) ═══
 # ════════════════════════════════════════════════════════════════════
-# MOTOR DE BATERÍAS — validado al 100% contra DataVolley oficial ({{Club}}-Velez)
+# MOTOR DE BATERÍAS — validado al 100% contra DataVolley oficial (Casla-Velez)
 # Calcula las 11 baterías desde DVW, por jugador y por equipo.
 # ════════════════════════════════════════════════════════════════════
 #
@@ -1514,7 +1566,7 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
             bT=len(acts['b']); bEff=round((bk+bp)/bT*100) if bT else 0
             if s['T']+r['T']+a['T']+bT<1: continue
             _p = players.get(pn,{})
-            nm = {{CLUB}}_NAMES.get(pn, _p.get('apellido') or (_p.get('name','').split()[0] if _p.get('name') else str(pn)))
+            nm = NAFELS_NAMES.get(pn, _p.get('apellido') or (_p.get('name','').split()[0] if _p.get('name') else str(pn)))
             def _blk(x): return {'T':x['T'],'Punto':x['Punto'],'Pos':x['Pos'],'Adm':x['Adm'],'Neg':x['Neg'],'Vend':x['Vend'],'Err':x['Err'],'Eff':x['Eff']}
             jugs.append({'c':pn,'n':nm,
                 's'+'T':s['T'],'sEff':s['Eff'],'sPunto':s['Punto'],'sPos':s['Pos'],'sNeg':s['Neg'],'sErr':s['Err'],'sAdm':s['Adm'],'sVend':s['Vend'],
@@ -1525,7 +1577,7 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
                 'aSo':_blk(aso),'aTr':_blk(atr),
                 'bT':bT,'bPt':bk,'bPtPos':bp,'bEff':bEff,'bAdm':bExc,'bVend':bSl,'bNeg':bNeg,'bErr':bErr})
         historial.append({'fecha':'/'.join(reversed(g['date'].split('-'))),'tipo':'P','rival':g['rival'],
-            'resultado':{'{{club}}':g['tsets'],'rival':g['rsets'],'sets':g['set_strings']},'jugadores':jugs})
+            'resultado':{'{{CLUB_SLUG}}':g['tsets'],'rival':g['rsets'],'sets':g['set_strings']},'jugadores':jugs})
 
     now = datetime.now().strftime('%d/%m/%Y, %H:%M:%S')
     hist_js = 'window.HISTORIAL_DATA = ' + json.dumps({'generado':now,'entrenamientos':historial}, ensure_ascii=False, indent=2) + ';\n'
@@ -1553,7 +1605,7 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
         if kind=='r': return round((k+0.5*pp-0.5*sl-e)/t*100)
         return 0
 
-    partidos_meta=[{'id':g['rival']+'__'+g['date'],'nombre':g['rival'],'rival':g['rival'],'fecha':'/'.join(reversed(g['date'].split('-'))),'torneo':f'{{LIGA}} {{PAIS}} {temporada}','resultado':g['result'],'sets_{{club}}':str(g['tsets']),'sets_rival':str(g['rsets'])} for g in sorted(games,key=lambda x:x['date']) if g['date']]
+    partidos_meta=[{'id':g['rival']+'__'+g['date'],'nombre':g['rival'],'rival':g['rival'],'fecha':'/'.join(reversed(g['date'].split('-'))),'torneo':f'{{LIGA}} {temporada}','resultado':g['result'],'sets_club':str(g['tsets']),'sets_rival':str(g['rsets'])} for g in sorted(games,key=lambda x:x['date']) if g['date']]
 
     # ═══ BATERÍAS (objetivos) por partido, jugador y acumulado ═══
     def _bat_name_map(content, side):
@@ -1610,7 +1662,7 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
         except Exception as _e:
             _arm_pd={}
         partidos_individual.append({'id':g['rival']+'__'+g['date'],'nombre':g['rival'],'rival':g['rival'],'fecha':'/'.join(reversed(g['date'].split('-'))),
-            'resultado':g['result'],'equipo_obj':to_pcts(bpl['__EQUIPO__']),'jugadores':jug_obj,'armadores':_arm_pd,'transicion':_trans_pd})
+            'resultado':g['result'],'equipo_obj':(to_pcts(bpl['__EQUIPO__']) if '__EQUIPO__' in bpl else {}),'jugadores':jug_obj,'armadores':_arm_pd,'transicion':_trans_pd})
 
     # Acumulado
     bat_acum=merge_acum(bat_all_pl)
@@ -1650,7 +1702,7 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
             sT=P.get('S',{}).get('T',0)
             rT=P.get('R',{}).get('T',0)
             aT=sum(P.get(g,{}).get('T',0) for g in ['cent','rap','alta'])
-            pos_det={{CLUB}}_POS_OFICIAL.get(num) or _detectar_pos(num)
+            pos_det=CASLA_POS_OFICIAL.get(num) or _detectar_pos(num)
             _canch=to_canchitas(P) if P else {'saques':[],'ataques':[],'recepcion':{}}
             partidos_jug.append({'num':num,'nombre':nm,'pos':pos_det,
                 'color':POS_COLOR.get(pos_det,'#64748b'),'info':{},
@@ -1702,17 +1754,17 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Update {{CLUB}} volleyball database from DVW files')
+    parser = argparse.ArgumentParser(description='Update NAFELS volleyball database from DVW files')
     parser.add_argument('--dvw_dir',    required=True,  help='Directory with new DVW files')
     parser.add_argument('--temporada',  default='2026', help='Season label (e.g. 2026)')
     parser.add_argument('--db_path',    default='nla_players_db.json', help='Database file path')
     parser.add_argument('--output_dir', default='.',    help='Output directory for HTML files')
-    parser.add_argument('--template_dir', default='.', help='Directory with {{CLUB}} template HTML files')
+    parser.add_argument('--template_dir', default='.', help='Directory with NAFELS template HTML files')
     parser.add_argument('--filter_temporada', default=None, help='Show only this season in stats (default: all)')
     args = parser.parse_args()
 
     print(f"\n{'='*60}")
-    print(f"{{CLUB}} DATABASE UPDATE — {args.temporada}")
+    print(f"NAFELS DATABASE UPDATE — {args.temporada}")
     print(f"{'='*60}\n")
 
     # Step 1: Update DB
@@ -1723,6 +1775,38 @@ if __name__ == '__main__':
     # Se aplica una sola vez aca, asi liga_data.js, datos_partidos.js, heatmaps y
     # stats salen TODOS filtrados a la temporada actual (lo demas queda en la base).
     t_filter = args.filter_temporada  # None = mostrar todo lo que hay en la base
+
+    # ── La tabla de la liga es la EXCEPCION: lleva todas las temporadas ──
+    # El resto del sitio muestra solo la temporada en curso, pero esta tabla
+    # tiene su propio selector de temporada, asi que conviene que las tenga
+    # todas: se comparan 25-26 y 26-27 sin salir de la pagina.
+    #
+    # OJO: calculate_stats(datos, None) NO sirve para esto. Sin filtro mezcla
+    # todas las temporadas en una sola fila y la etiqueta 'all', asi que el
+    # selector se queda con una sola opcion. Hay que llamarlo UNA VEZ POR
+    # TEMPORADA y juntar los resultados: asi cada equipo y cada jugador tienen
+    # una fila por temporada, que es lo que el selector necesita.
+    # Se hace ANTES del filtro, que es destructivo.
+    _temps = set()
+    for _t in NLA_TEAMS:
+        for _pd in teams_data.get(_t, {}).values():
+            for _k in ('atk','srv','rec','blk'):
+                for _a in _pd.get(_k, []) or []:
+                    _tt = _a.get('temporada')
+                    if _tt: _temps.add(str(_tt))
+    # La temporada en curso va SIEMPRE, aunque todavia no tenga un solo partido.
+    # Si no, al empezar la temporada el selector solo ofrece la anterior y
+    # parece que la nueva no existe. Vacia se ve en ceros, que es la verdad.
+    if t_filter: _temps.add(str(t_filter))
+    _temps = sorted(_temps)
+    players_todas = []; teams_todas = []
+    for _tt in _temps:
+        _p, _q = calculate_stats(teams_data, _tt)
+        players_todas.extend(_p); teams_todas.extend(_q)
+    print('   (tabla de liga: %d temporadas -> %s)' % (len(_temps), ', '.join(_temps) or 'ninguna'))
+    if not _temps:
+        players_todas, teams_todas = calculate_stats(teams_data, None)
+
     if t_filter:
         teams_data = filter_teams_data(teams_data, t_filter)
         games_log  = [g for g in games_log if str(g.get('temporada')) == str(t_filter)]
@@ -1786,7 +1870,8 @@ if __name__ == '__main__':
     # Step 5: Build stats table (protegido: si falta template, no tumba el proceso)
     print("\n5. Building stats table...")
     try:
-        build_stats_table(players, teams, os.path.join(args.output_dir,'nla_stats_table.html'))
+        # con TODAS las temporadas: el selector de la pagina las separa
+        build_stats_table(players_todas, teams_todas, os.path.join(args.output_dir,'nla_stats_table.html'))
         print("   \u2713 nla_stats_table.html")
     except Exception as e:
         print(f"   (stats table omitida: {e})")
@@ -1811,4 +1896,4 @@ if __name__ == '__main__':
     print(f"  Subir a GitHub: liga_data.js, nla_stats_table.html, datos_partidos.js")
     print(f"{'='*60}\n")
 
-# © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados
+# © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados

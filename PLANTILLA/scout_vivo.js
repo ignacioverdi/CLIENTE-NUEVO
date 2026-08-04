@@ -21,16 +21,16 @@
   'use strict';
 
   // ── Roster por defecto (hoja EQUIPO del Excel). Editable. ────────────────
-  // ── Plantel {{CLUB_COMPLETO}} — lee de plantel_{{club}}.js (fuente única) ──
+  // ── Plantel {{CLUB}} — lee de plantel_club.js (fuente única) ──
   //    Si ese archivo no está, usa esta lista como respaldo.
-  var ROSTER = (typeof window !== 'undefined' && window.PLANTEL_{{CLUB}} && window.PLANTEL_{{CLUB}}.lista)
-    ? window.PLANTEL_{{CLUB}}.lista.map(function (j) { return { c: j.num, n: j.nombre, a: true }; })
+  var ROSTER = (typeof window !== 'undefined' && window.PLANTEL_CLUB && window.PLANTEL_CLUB.lista)
+    ? window.PLANTEL_CLUB.lista.map(function (j) { return { c: j.num, n: j.nombre, a: true }; })
     : [
-    {c:4,n:'JUGADOR',a:true},{c:13,n:'JUGADOR',a:true},
-    {c:9,n:'JUGADOR',a:true},{c:3,n:'JUGADOR',a:true},
-    {c:12,n:'JUGADOR',a:true},{c:7,n:'JUGADOR R',a:true},{c:5,n:'JUGADOR',a:true},
-    {c:1,n:'JUGADOR',a:true},{c:11,n:'JUGADOR',a:true},{c:17,n:'JUGADOR',a:true},
-    {c:10,n:'JUGADOR',a:true},{c:20,n:'JUGADOR J',a:true}
+    {c:4,n:'VAZQUEZ',a:true},{c:13,n:'STEIMANN',a:true},
+    {c:9,n:'NORRIS',a:true},{c:3,n:'SCHWITTER',a:true},
+    {c:12,n:'JOHANSSON',a:true},{c:7,n:'SCHMID R',a:true},{c:5,n:'CLEMENT',a:true},
+    {c:1,n:'DURDOS',a:true},{c:11,n:'BARTHOLET',a:true},{c:17,n:'ROFFLER',a:true},
+    {c:10,n:'BOGDANOVSKI',a:true},{c:20,n:'SCHMID J',a:true}
   ];
 
   // ── Mapas DV4 (port de MapearDV4 / ZonaOrigenDV4) ────────────────────────
@@ -500,4 +500,4 @@
   else iniciar();
 })();
 
-/* © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados */
+/* © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados */

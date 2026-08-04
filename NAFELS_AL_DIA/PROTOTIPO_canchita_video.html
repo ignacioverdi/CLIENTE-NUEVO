@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prototipo · Canchita → Video · Amriswil</title>
+<style>
+:root{--bg:#0b1017;--card:#111a27;--line:#1f2c3d;--txt:#e2e8f0;--muted:#7689a1;
+--z4:#f59e0b;--z3:#a855f7;--z2:#3b82f6;--z8:#06b6d4;--z9:#ec4899;--green:#22c55e;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(160deg,#0b1017,#0f172a);color:var(--txt);padding:16px;font-size:14px}
+.wrap{max-width:1240px;margin:0 auto}
+h1{font-size:19px;font-weight:800;margin-bottom:3px}.sub{color:var(--muted);font-size:12px;margin-bottom:16px}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.rots{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.rots button{border:1px solid var(--line);background:transparent;color:var(--muted);font-weight:800;font-size:13px;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit}
+.rots button.on{background:var(--green);color:#04210f;border-color:var(--green)}
+.court{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.net{grid-column:1/4;text-align:center;color:var(--z4);font-weight:800;letter-spacing:6px;font-size:12px;padding:4px;border-top:2px dashed var(--z4);border-bottom:2px dashed var(--z4);margin-bottom:2px}
+.zone{border-radius:12px;padding:14px 10px;cursor:pointer;border:2px solid transparent;transition:.15s;text-align:center;min-height:96px;display:flex;flex-direction:column;justify-content:center}
+.zone:hover{transform:translateY(-2px);filter:brightness(1.15)}
+.zone .zl{font-size:12px;font-weight:800;opacity:.9;margin-bottom:2px}
+.zone .zn{font-size:30px;font-weight:900;line-height:1}
+.zone .zp{font-size:11px;color:var(--green);font-weight:700;margin-top:3px}
+.zone.empty{opacity:.25;cursor:default}
+.pl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pl-head b{font-size:15px}
+#ytwrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;margin-bottom:10px}
+#ytwrap.empty::after{content:"Tocá una zona para ver los ataques";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+#player{width:100%;height:100%}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{border:1px solid var(--line);background:transparent;color:var(--muted);font-weight:800;font-size:13px;padding:5px 12px;border-radius:7px;cursor:pointer;font-family:inherit}
+.chip.on{background:#1f2c3d;color:#fff;border-color:#3b82f6}
+.ctrls{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.ctrls button{border:1px solid var(--line);background:#16212f;color:var(--txt);font-weight:700;padding:7px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px}
+.ctrls button.play{background:var(--green);color:#04210f;border-color:var(--green)}
+.list{max-height:230px;overflow:auto;border-top:1px solid var(--line);margin-top:4px}
+.item{display:flex;gap:9px;align-items:center;padding:8px 4px;border-bottom:1px solid #16212f;cursor:pointer;font-size:13px}
+.item.live{background:rgba(34,197,94,.10)}
+.item input{width:16px;height:16px;accent-color:var(--green)}
+.item .t{color:var(--muted);font-variant-numeric:tabular-nums;font-size:12px;min-width:74px}
+.item .ev{font-weight:900;width:16px;text-align:center}
+.save{margin-top:10px;width:100%;background:var(--green);color:#04210f;border:none;padding:11px;border-radius:9px;font-weight:800;cursor:pointer;font-family:inherit;font-size:14px}
+.note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+</style></head><body>
+<div class="wrap">
+<h1>Prototipo · Canchita del armador → Video</h1>
+<div class="sub">Amriswil · armador #11 Jovanovic · partido vs Biogas 12/04 · 110 ataques con video sincronizado</div>
+<div class="layout">
+  <div class="panel">
+    <div class="rots" id="rots"></div>
+    <div class="court" id="court"></div>
+    <div class="note">Tocá una zona (el número) para abrir el reproductor con esos ataques. Después filtrás por valoración y tildás los que querés dejar en el video.</div>
+  </div>
+  <div class="panel">
+    <div class="pl-head"><b id="plTitle">Reproductor</b><button class="chip" onclick="maximize()">⛶ Maximizar</button></div>
+    <div id="ytwrap" class="empty"><div id="player"></div></div>
+    <div class="chips" id="evChips"></div>
+    <div class="ctrls">
+      <button class="play" id="btnPlay" onclick="togglePlay()">▶ Reproducir selección</button>
+      <button onclick="navClip(-1)">◀</button><button onclick="navClip(1)">▶</button>
+      <span id="now" style="color:var(--muted);font-size:12px"></span>
+    </div>
+    <div class="list" id="list"></div>
+    <button class="save" onclick="saveSeq()">💾 Guardar esta secuencia (simulado)</button>
+    <div class="note">Prototipo: el "guardar" todavía no escribe en Firebase — es para validar el flujo. Si funciona, lo integramos al game plan real.</div>
+  </div>
+</div>
+</div>
+
+<script>
+var GP_FRONT_POS=[4,3,2];
+function gpGetZone(combo,orig,sp){var c=combo;
+ if(c==='X6'||c==='V6')return 2;
+ if(c==='X8'||c==='V8'||c==='X0'||c==='V0')return(orig===9||orig===8)?9:2;
+ if(c==='X5'||c==='V5')return 4;
+ if(c==='X1'||c==='XM'||c==='X2'||c==='XG'||c==='XC'||c==='XD')return 3;
+ if(c==='XB')return orig>0?orig:8;
+ if(c==='X7')return 3;
+ if(c==='X3'||c==='X4')return 2;
+ if(c==='XP'||c==='XR'||c==='X9'||c==='XT')return orig>0?orig:8;
+ if(c==='PP'||c==='CB'||c==='CF'||c==='CD')return(GP_FRONT_POS.indexOf(sp)>=0)?2:0;
+ return orig;}
+
+var CLIPS=[{"setter_pos": 1, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X1", "eval": "-", "dest": 8, "orig": 3, "t_start": 214, "t_set": 216, "t_attack": 216, "atk_num": 9}, {"setter_pos": 6, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X5", "eval": "#", "dest": 9, "orig": 4, "t_start": 299, "t_set": 301, "t_attack": 302, "atk_num": 14}, {"setter_pos": 5, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X5", "eval": "=", "dest": 7, "orig": 4, "t_start": 365, "t_set": 368, "t_attack": 369, "atk_num": 14}, {"setter_pos": 5, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X1", "eval": "#", "dest": 9, "orig": 3, "t_start": 387, "t_set": 390, "t_attack": 390, "atk_num": 10}, {"setter_pos": 4, "set_num": 1, "rec_q": "?", "atype": 1, "call": "K7", "combo": "X8", "eval": "#", "dest": 7, "orig": 9, "t_start": 415, "t_set": 428, "t_attack": 429, "atk_num": 8}, {"setter_pos": 4, "set_num": 1, "rec_q": "!", "atype": 0, "call": "K7", "combo": "XM", "eval": "#", "dest": 8, "orig": 3, "t_start": 505, "t_set": 508, "t_attack": 508, "atk_num": 10}, {"setter_pos": 3, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K2", "combo": "X5", "eval": "#", "dest": 9, "orig": 4, "t_start": 552, "t_set": 555, "t_attack": 556, "atk_num": 7}, {"setter_pos": 2, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K1", "combo": "XR", "eval": "=", "dest": 7, "orig": 8, "t_start": 600, "t_set": 602, "t_attack": 603, "atk_num": 14}, {"setter_pos": 2, "set_num": 1, "rec_q": "-", "atype": 0, "call": "K1", "combo": "X8", "eval": "#", "dest": 7, "orig": 9, "t_start": 622, "t_set": 625, "t_attack": 626, "atk_num": 8}, {"setter_pos": 1, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X7", "eval": "=", "dest": 9, "orig": 4, "t_start": 691, "t_set": 693, "t_attack": 694, "atk_num": 9}, {"setter_pos": 6, "set_num": 1, "rec_q": "?", "atype": 1, "call": "", "combo": "V5", "eval": "+", "dest": 9, "orig": 4, "t_start": 733, "t_set": 739, "t_attack": 741, "atk_num": 14}, {"setter_pos": 6, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X6", "eval": "+", "dest": 9, "orig": 2, "t_start": 792, "t_set": 794, "t_attack": 795, "atk_num": 8}, {"setter_pos": 5, "set_num": 1, "rec_q": "!", "atype": 0, "call": "KM", "combo": "XM", "eval": "#", "dest": 3, "orig": 3, "t_start": 942, "t_set": 945, "t_attack": 945, "atk_num": 10}, {"setter_pos": 4, "set_num": 1, "rec_q": "-", "atype": 0, "call": "K7", "combo": "X5", "eval": "#", "dest": 1, "orig": 4, "t_start": 995, "t_set": 998, "t_attack": 999, "atk_num": 14}, {"setter_pos": 3, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K7", "combo": "XP", "eval": "-", "dest": 4, "orig": 8, "t_start": 1041, "t_set": 1044, "t_attack": 1045, "atk_num": 14}, {"setter_pos": 3, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X7", "eval": "/", "dest": 9, "orig": 4, "t_start": 1075, "t_set": 1078, "t_attack": 1078, "atk_num": 10}, {"setter_pos": 3, "set_num": 1, "rec_q": "!", "atype": 0, "call": "K7", "combo": "V8", "eval": "/", "dest": 7, "orig": 9, "t_start": 1142, "t_set": 1144, "t_attack": 1145, "atk_num": 8}, {"setter_pos": 3, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K1", "combo": "XM", "eval": "#", "dest": 8, "orig": 3, "t_start": 1164, "t_set": 1167, "t_attack": 1168, "atk_num": 10}, {"setter_pos": 2, "set_num": 1, "rec_q": "+", "atype": 0, "call": "K1", "combo": "XM", "eval": "/", "dest": 8, "orig": 3, "t_start": 1262, "t_set": 1264, "t_attack": 1265, "atk_num": 9}, {"setter_pos": 2, "set_num": 1, "rec_q": "?", "atype": 0, "call": "", "combo": "X5", "eval": "#", "dest": 2, "orig": 4, "t_start": 1287, "t_set": 1295, "t_attack": 1296, "atk_num": 7}, {"setter_pos": 1, "set_num": 1, "rec_q": "-", "atype": 0, "call": "K1", "combo": "X6", "eval": "#", "dest": 5, "orig": 2, "t_start": 1383, "t_set": 1386, "t_attack": 1387, "atk_num": 8}, {"setter_pos": 6, "set_num": 1, "rec_q": "?", "atype": 1, "call": "K1", "combo": "X6", "eval": "#", "dest": 9, "orig": 2, "t_start": 1432, "t_set": 1438, "t_attack": 1439, "atk_num": 8}, {"setter_pos": 6, "set_num": 1, "rec_q": "?", "atype": 1, "call": "K7", "combo": "X6", "eval": "#", "dest": 5, "orig": 2, "t_start": 1500, "t_set": 1506, "t_attack": 1507, "atk_num": 8}, {"setter_pos": 6, "set_num": 1, "rec_q": "-", "atype": 0, "call": "K1", "combo": "X6", "eval": "=", "dest": 9, "orig": 2, "t_start": 1569, "t_set": 1572, "t_attack": 1573, "atk_num": 8}, {"setter_pos": 3, "set_num": 2, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X8", "eval": "#", "dest": 5, "orig": 9, "t_start": 1850, "t_set": 1852, "t_attack": 1854, "atk_num": 8}, {"setter_pos": 2, "set_num": 2, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X5", "eval": "#", "dest": 1, "orig": 4, "t_start": 1904, "t_set": 1906, "t_attack": 1907, "atk_num": 7}, {"setter_pos": 1, "set_num": 2, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X5", "eval": "-", "dest": 1, "orig": 4, "t_start": 1980, "t_set": 1982, "t_attack": 1983, "atk_num": 7}, {"setter_pos": 1, "set_num": 2, "rec_q": "?", "atype": 0, "call": "K7", "combo": "X6", "eval": "#", "dest": 5, "orig": 2, "t_start": 1980, "t_set": 1990, "t_attack": 1991, "atk_num": 8}, {"setter_pos": 6, "set_num": 2, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X5", "eval": "=", "dest": 7, "orig": 4, "t_start": 2034, "t_set": 2036, "t_attack": 2037, "atk_num": 6}, {"setter_pos": 6, "set_num": 2, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X1", "eval": "#", "dest": 8, "orig": 3, "t_start": 2059, "t_set": 2061, "t_attack": 2062, "atk_num": 2}, {"setter_pos": 5, "set_num": 2, "rec_q": "#", "atype": 0, "call": "K7", "combo": "X6", "eval": "#", "dest": 9, "orig": 2, "t_start": 2140, "t_set": 2143, "t_attack": 2144, "atk_num": 8}, {"setter_pos": 4, "set_num": 2, "rec_q": "+", "atype": 0, "call": "KM", "combo": "X8", "eval": "#", "dest": 5, "orig": 9, "t_start": 2317, "t_set": 2319, "t_attack": 2320, "atk_num": 8}, {"setter_pos": 3, "set_num": 2, "rec_q": "?", "atype": 1, "call": "K7", "combo": "X7", "eval": "-", "dest": 5, "orig": 4, "t_start": 2379, "t_set": 2388, "t_attack": 2389, "atk_num": 10}, {"setter_pos": 3, "set_num": 2, "rec_q": "-", "atype": 0, "call": "", "combo": "V5", "eval": "-", "dest": 5, "orig": 4, "t_start": 2421, "t_set": 2424, "t_attack": 2425, "atk_num": 7}, {"setter_pos": 3, "set_num": 2, "rec_q": "-", "atype": 0, "call": "", "combo": "V8", "eval": "#", "dest": 6, "orig": 9, "t_start": 2450, "t_set": 2453, "t_attack": 2454, "atk_num": 8}, {"setter_pos": 2, "set_num": 2, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X5", "eval": "-", "dest": 1, "orig": 4, "t_start": 2525, "t_set": 2527, "t_attack": 2528, "atk_num": 7}, {"setter_pos": 2, "set_num": 2, "rec_q": "?", "atype": 0, "call": "K7", "combo": "X8", "eval": "-", "dest": 5, "orig": 9, "t_start": 2525, "t_set": 2534, "t_attack": 2535, "atk_num": 8}, {"setter_pos": 6, "set_num": 2, "rec_q": "?", "atype": 1, "call": "K7", "combo": "X6", "eval": "#", "dest": 5, "orig": 2, "t_start": 2784, "t_set": 2790, "t_attack": 2791, "atk_num": 8}, {"setter_pos": 5, "set_num": 2, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X7", "eval": "#", "dest": 7, "orig": 4, "t_start": 2983, "t_set": 2986, "t_attack": 2986, "atk_num": 10}, {"setter_pos": 4, "set_num": 2, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X7", "eval": "#", "dest": 5, "orig": 4, "t_start": 3039, "t_set": 3042, "t_attack": 3042, "atk_num": 10}, {"setter_pos": 3, "set_num": 2, "rec_q": "+", "atype": 0, "call": "K1", "combo": "PP", "eval": "+", "dest": 6, "orig": 3, "t_start": 3116, "t_set": 3119, "t_attack": 3119, "atk_num": 11}, {"setter_pos": 3, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X5", "eval": "+", "dest": 7, "orig": 4, "t_start": 3326, "t_set": 3329, "t_attack": 3329, "atk_num": 7}, {"setter_pos": 3, "set_num": 3, "rec_q": "?", "atype": 0, "call": "K7", "combo": "X7", "eval": "#", "dest": 9, "orig": 4, "t_start": 3326, "t_set": 3336, "t_attack": 3336, "atk_num": 10}, {"setter_pos": 2, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X5", "eval": "#", "dest": 8, "orig": 4, "t_start": 3399, "t_set": 3401, "t_attack": 3402, "atk_num": 7}, {"setter_pos": 1, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X1", "eval": "-", "dest": 3, "orig": 3, "t_start": 3485, "t_set": 3487, "t_attack": 3487, "atk_num": 2}, {"setter_pos": 1, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X6", "eval": "#", "dest": 6, "orig": 2, "t_start": 3513, "t_set": 3515, "t_attack": 3516, "atk_num": 8}, {"setter_pos": 6, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X6", "eval": "-", "dest": 5, "orig": 2, "t_start": 3565, "t_set": 3567, "t_attack": 3568, "atk_num": 8}, {"setter_pos": 6, "set_num": 3, "rec_q": "-", "atype": 0, "call": "K7", "combo": "X5", "eval": "#", "dest": 7, "orig": 4, "t_start": 3614, "t_set": 3617, "t_attack": 3618, "atk_num": 6}, {"setter_pos": 5, "set_num": 3, "rec_q": "!", "atype": 0, "call": "KM", "combo": "X5", "eval": "#", "dest": 8, "orig": 4, "t_start": 3694, "t_set": 3697, "t_attack": 3698, "atk_num": 6}, {"setter_pos": 4, "set_num": 3, "rec_q": "?", "atype": 1, "call": "", "combo": "X5", "eval": "+", "dest": 1, "orig": 4, "t_start": 3768, "t_set": 3775, "t_attack": 3776, "atk_num": 6}, {"setter_pos": 4, "set_num": 3, "rec_q": "?", "atype": 1, "call": "KM", "combo": "X8", "eval": "#", "dest": 7, "orig": 9, "t_start": 3768, "t_set": 3782, "t_attack": 3783, "atk_num": 8}, {"setter_pos": 4, "set_num": 3, "rec_q": "-", "atype": 0, "call": "", "combo": "X9", "eval": "#", "dest": 8, "orig": 4, "t_start": 3854, "t_set": 3856, "t_attack": 3857, "atk_num": 6}, {"setter_pos": 3, "set_num": 3, "rec_q": "!", "atype": 0, "call": "KM", "combo": "X5", "eval": "-", "dest": 2, "orig": 4, "t_start": 3911, "t_set": 3913, "t_attack": 3914, "atk_num": 7}, {"setter_pos": 3, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X7", "eval": "/", "dest": 8, "orig": 4, "t_start": 3939, "t_set": 3942, "t_attack": 3943, "atk_num": 10}, {"setter_pos": 3, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X8", "eval": "+", "dest": 7, "orig": 9, "t_start": 3964, "t_set": 3966, "t_attack": 3967, "atk_num": 8}, {"setter_pos": 3, "set_num": 3, "rec_q": "?", "atype": 0, "call": "K7", "combo": "X8", "eval": "#", "dest": 7, "orig": 9, "t_start": 3964, "t_set": 3977, "t_attack": 3979, "atk_num": 8}, {"setter_pos": 2, "set_num": 3, "rec_q": "?", "atype": 1, "call": "K1", "combo": "X5", "eval": "-", "dest": 8, "orig": 4, "t_start": 4006, "t_set": 4013, "t_attack": 4014, "atk_num": 7}, {"setter_pos": 2, "set_num": 3, "rec_q": "?", "atype": 1, "call": "K1", "combo": "X8", "eval": "+", "dest": 7, "orig": 9, "t_start": 4006, "t_set": 4020, "t_attack": 4022, "atk_num": 8}, {"setter_pos": 2, "set_num": 3, "rec_q": "?", "atype": 1, "call": "K1", "combo": "X5", "eval": "#", "dest": 8, "orig": 4, "t_start": 4006, "t_set": 4028, "t_attack": 4029, "atk_num": 7}, {"setter_pos": 1, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X6", "eval": "-", "dest": 5, "orig": 2, "t_start": 4273, "t_set": 4275, "t_attack": 4276, "atk_num": 8}, {"setter_pos": 1, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X5", "eval": "#", "dest": 1, "orig": 4, "t_start": 4301, "t_set": 4303, "t_attack": 4304, "atk_num": 7}, {"setter_pos": 6, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X1", "eval": "#", "dest": 8, "orig": 3, "t_start": 4388, "t_set": 4390, "t_attack": 4390, "atk_num": 2}, {"setter_pos": 5, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K7", "combo": "XM", "eval": "#", "dest": 8, "orig": 3, "t_start": 4584, "t_set": 4587, "t_attack": 4587, "atk_num": 10}, {"setter_pos": 4, "set_num": 3, "rec_q": "+", "atype": 0, "call": "K7", "combo": "PP", "eval": "#", "dest": 3, "orig": 3, "t_start": 4811, "t_set": 4813, "t_attack": 4813, "atk_num": 11}, {"setter_pos": 3, "set_num": 4, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X5", "eval": "-", "dest": 9, "orig": 4, "t_start": 5049, "t_set": 5051, "t_attack": 5053, "atk_num": 7}, {"setter_pos": 3, "set_num": 4, "rec_q": "+", "atype": 0, "call": "", "combo": "X5", "eval": "#", "dest": 8, "orig": 4, "t_start": 5085, "t_set": 5087, "t_attack": 5089, "atk_num": 7}, {"setter_pos": 1, "set_num": 4, "rec_q": "?", "atype": 1, "call": "", "combo": "X5", "eval": "-", "dest": 3, "orig": 4, "t_start": 5149, "t_set": 5161, "t_attack": 5162, "atk_num": 7}, {"setter_pos": 1, "set_num": 4, "rec_q": "-", "atype": 0, "call": "K7", "combo": "V6", "eval": "-", "dest": 5, "orig": 2, "t_start": 5190, "t_set": 5192, "t_attack": 5194, "atk_num": 8}, {"setter_pos": 6, "set_num": 4, "rec_q": "+", "atype": 0, "call": "K1", "combo": "XR", "eval": "-", "dest": 1, "orig": 8, "t_start": 5254, "t_set": 5256, "t_attack": 5257, "atk_num": 7}, {"setter_pos": 6, "set_num": 4, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X5", "eval": "#", "dest": 6, "orig": 4, "t_start": 5342, "t_set": 5344, "t_attack": 5345, "atk_num": 6}, {"setter_pos": 5, "set_num": 4, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X5", "eval": "+", "dest": 9, "orig": 4, "t_start": 5445, "t_set": 5447, "t_attack": 5448, "atk_num": 6}, {"setter_pos": 5, "set_num": 4, "rec_q": "?", "atype": 0, "call": "K7", "combo": "X7", "eval": "-", "dest": 1, "orig": 4, "t_start": 5445, "t_set": 5451, "t_attack": 5451, "atk_num": 10}, {"setter_pos": 5, "set_num": 4, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X6", "eval": "-", "dest": 8, "orig": 2, "t_start": 5488, "t_set": 5491, "t_attack": 5492, "atk_num": 8}, {"setter_pos": 5, "set_num": 4, "rec_q": "?", "atype": 0, "call": "K7", "combo": "X5", "eval": "#", "dest": 9, "orig": 4, "t_start": 5488, "t_set": 5499, "t_attack": 5500, "atk_num": 6}, {"setter_pos": 3, "set_num": 4, "rec_q": "-", "atype": 0, "call": "", "combo": "V8", "eval": "+", "dest": 8, "orig": 9, "t_start": 5607, "t_set": 5610, "t_attack": 5611, "atk_num": 8}, {"setter_pos": 1, "set_num": 4, "rec_q": "-", "atype": 0, "call": "", "combo": "V5", "eval": "#", "dest": 6, "orig": 4, "t_start": 5805, "t_set": 5808, "t_attack": 5810, "atk_num": 7}, {"setter_pos": 6, "set_num": 4, "rec_q": "?", "atype": 1, "call": "", "combo": "X5", "eval": "-", "dest": 2, "orig": 4, "t_start": 5833, "t_set": 5839, "t_attack": 5840, "atk_num": 6}, {"setter_pos": 6, "set_num": 4, "rec_q": "?", "atype": 1, "call": "K7", "combo": "X5", "eval": "#", "dest": 1, "orig": 4, "t_start": 5833, "t_set": 5847, "t_attack": 5848, "atk_num": 6}, {"setter_pos": 4, "set_num": 4, "rec_q": "?", "atype": 1, "call": "K7", "combo": "X5", "eval": "#", "dest": 8, "orig": 4, "t_start": 6070, "t_set": 6082, "t_attack": 6083, "atk_num": 6}, {"setter_pos": 4, "set_num": 4, "rec_q": "#", "atype": 0, "call": "K7", "combo": "X7", "eval": "#", "dest": 9, "orig": 4, "t_start": 6146, "t_set": 6149, "t_attack": 6149, "atk_num": 10}, {"setter_pos": 3, "set_num": 4, "rec_q": "-", "atype": 0, "call": "K7", "combo": "X8", "eval": "#", "dest": 7, "orig": 9, "t_start": 6337, "t_set": 6339, "t_attack": 6341, "atk_num": 8}, {"setter_pos": 2, "set_num": 4, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X5", "eval": "+", "dest": 1, "orig": 4, "t_start": 6388, "t_set": 6390, "t_attack": 6391, "atk_num": 7}, {"setter_pos": 2, "set_num": 4, "rec_q": "?", "atype": 0, "call": "K7", "combo": "X8", "eval": "-", "dest": 7, "orig": 9, "t_start": 6388, "t_set": 6394, "t_attack": 6395, "atk_num": 8}, {"setter_pos": 2, "set_num": 4, "rec_q": "+", "atype": 0, "call": "KM", "combo": "X8", "eval": "=", "dest": 5, "orig": 9, "t_start": 6431, "t_set": 6433, "t_attack": 6435, "atk_num": 8}, {"setter_pos": 2, "set_num": 4, "rec_q": "#", "atype": 0, "call": "K7", "combo": "X8", "eval": "#", "dest": 8, "orig": 9, "t_start": 6507, "t_set": 6510, "t_attack": 6511, "atk_num": 8}, {"setter_pos": 1, "set_num": 4, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X6", "eval": "-", "dest": 1, "orig": 2, "t_start": 6561, "t_set": 6563, "t_attack": 6564, "atk_num": 8}, {"setter_pos": 6, "set_num": 4, "rec_q": "?", "atype": 1, "call": "", "combo": "X6", "eval": "-", "dest": 6, "orig": 2, "t_start": 6592, "t_set": 6597, "t_attack": 6598, "atk_num": 8}, {"setter_pos": 6, "set_num": 4, "rec_q": "!", "atype": 0, "call": "K2", "combo": "X6", "eval": "#", "dest": 9, "orig": 2, "t_start": 6628, "t_set": 6631, "t_attack": 6632, "atk_num": 8}, {"setter_pos": 5, "set_num": 4, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X7", "eval": "#", "dest": 9, "orig": 4, "t_start": 6744, "t_set": 6747, "t_attack": 6747, "atk_num": 10}, {"setter_pos": 4, "set_num": 4, "rec_q": "?", "atype": 1, "call": "K7", "combo": "X5", "eval": "#", "dest": 7, "orig": 4, "t_start": 6803, "t_set": 6807, "t_attack": 6808, "atk_num": 6}, {"setter_pos": 4, "set_num": 4, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X7", "eval": "/", "dest": 8, "orig": 4, "t_start": 6867, "t_set": 6869, "t_attack": 6870, "atk_num": 10}, {"setter_pos": 4, "set_num": 4, "rec_q": "-", "atype": 0, "call": "K7", "combo": "X8", "eval": "+", "dest": 7, "orig": 9, "t_start": 6899, "t_set": 6901, "t_attack": 6903, "atk_num": 8}, {"setter_pos": 4, "set_num": 4, "rec_q": "?", "atype": 0, "call": "", "combo": "X5", "eval": "#", "dest": 1, "orig": 4, "t_start": 6899, "t_set": 6905, "t_attack": 6906, "atk_num": 6}, {"setter_pos": 3, "set_num": 4, "rec_q": "-", "atype": 0, "call": "", "combo": "V8", "eval": "#", "dest": 8, "orig": 9, "t_start": 7267, "t_set": 7269, "t_attack": 7271, "atk_num": 8}, {"setter_pos": 2, "set_num": 4, "rec_q": "+", "atype": 0, "call": "KM", "combo": "X8", "eval": "#", "dest": 8, "orig": 9, "t_start": 7314, "t_set": 7316, "t_attack": 7318, "atk_num": 8}, {"setter_pos": 1, "set_num": 4, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X6", "eval": "#", "dest": 1, "orig": 2, "t_start": 7367, "t_set": 7370, "t_attack": 7371, "atk_num": 8}, {"setter_pos": 5, "set_num": 4, "rec_q": "?", "atype": 1, "call": "K7", "combo": "X6", "eval": "#", "dest": 1, "orig": 2, "t_start": 7488, "t_set": 7494, "t_attack": 7495, "atk_num": 8}, {"setter_pos": 1, "set_num": 5, "rec_q": "#", "atype": 0, "call": "K1", "combo": "X6", "eval": "#", "dest": 6, "orig": 2, "t_start": 7838, "t_set": 7841, "t_attack": 7842, "atk_num": 8}, {"setter_pos": 6, "set_num": 5, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X6", "eval": "-", "dest": 5, "orig": 2, "t_start": 7908, "t_set": 7910, "t_attack": 7911, "atk_num": 8}, {"setter_pos": 6, "set_num": 5, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X6", "eval": "#", "dest": 6, "orig": 2, "t_start": 7941, "t_set": 7944, "t_attack": 7945, "atk_num": 8}, {"setter_pos": 5, "set_num": 5, "rec_q": "+", "atype": 0, "call": "KM", "combo": "XM", "eval": "#", "dest": 5, "orig": 3, "t_start": 8005, "t_set": 8007, "t_attack": 8008, "atk_num": 10}, {"setter_pos": 4, "set_num": 5, "rec_q": "+", "atype": 0, "call": "K1", "combo": "XM", "eval": "-", "dest": 8, "orig": 3, "t_start": 8058, "t_set": 8060, "t_attack": 8061, "atk_num": 10}, {"setter_pos": 4, "set_num": 5, "rec_q": "!", "atype": 0, "call": "", "combo": "X5", "eval": "+", "dest": 1, "orig": 4, "t_start": 8099, "t_set": 8101, "t_attack": 8102, "atk_num": 6}, {"setter_pos": 4, "set_num": 5, "rec_q": "?", "atype": 0, "call": "K1", "combo": "X5", "eval": "#", "dest": 1, "orig": 4, "t_start": 8099, "t_set": 8105, "t_attack": 8106, "atk_num": 6}, {"setter_pos": 3, "set_num": 5, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X5", "eval": "-", "dest": 1, "orig": 4, "t_start": 8169, "t_set": 8171, "t_attack": 8172, "atk_num": 7}, {"setter_pos": 2, "set_num": 5, "rec_q": "?", "atype": 1, "call": "K7", "combo": "X5", "eval": "#", "dest": 6, "orig": 4, "t_start": 8221, "t_set": 8230, "t_attack": 8231, "atk_num": 7}, {"setter_pos": 1, "set_num": 5, "rec_q": "+", "atype": 0, "call": "K1", "combo": "X6", "eval": "#", "dest": 6, "orig": 2, "t_start": 8415, "t_set": 8418, "t_attack": 8419, "atk_num": 8}, {"setter_pos": 6, "set_num": 5, "rec_q": "-", "atype": 0, "call": "K2", "combo": "X4", "eval": "#", "dest": 7, "orig": 2, "t_start": 8466, "t_set": 8469, "t_attack": 8470, "atk_num": 6}, {"setter_pos": 5, "set_num": 5, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X6", "eval": "#", "dest": 9, "orig": 2, "t_start": 8562, "t_set": 8564, "t_attack": 8565, "atk_num": 8}, {"setter_pos": 4, "set_num": 5, "rec_q": "+", "atype": 0, "call": "K7", "combo": "X7", "eval": "#", "dest": 4, "orig": 4, "t_start": 8677, "t_set": 8680, "t_attack": 8680, "atk_num": 10}];
+CLIPS.forEach(function(c){c.zone=gpGetZone(c.combo,c.orig,c.setter_pos);});
+var YT_ID="1hi9AA9sHKs";
+var ZCOL={4:'var(--z4)',3:'var(--z3)',2:'var(--z2)',8:'var(--z8)',9:'var(--z9)'};
+var ZONES=[4,3,2,8,9];
+var PRE=2,POST=4;
+var curRot=1,curZone=null,evFilter=null;
+var player=null,ready=false,timer=null,playIdx=-1,playing=false,filtered=[];
+
+function $(id){return document.getElementById(id);}
+function mmss(s){var m=Math.floor(s/60),x=s%60;return m+':'+(x<10?'0':'')+x;}
+
+// rotaciones
+var rotsEl=$('rots');[1,2,3,4,5,6].forEach(function(r){var b=document.createElement('button');b.textContent='P'+r;b.onclick=function(){curRot=r;paintRots();paintCourt();};rotsEl.appendChild(b);});
+function paintRots(){[].forEach.call(rotsEl.children,function(b,i){b.classList.toggle('on',(i+1)===curRot);});}
+
+function rotClips(){return CLIPS.filter(function(c){return c.setter_pos===curRot;});}
+function paintCourt(){
+  var court=$('court');court.innerHTML='<div class="net">RED</div>';
+  var byZone={};rotClips().forEach(function(c){(byZone[c.zone]=byZone[c.zone]||[]).push(c);});
+  var total=rotClips().length;
+  // orden visual: fila1 4-3-2, fila2 8-9 (centradas)
+  var layout=[4,3,2,null,8,9];
+  layout.forEach(function(z){
+    if(z===null){var sp=document.createElement('div');court.appendChild(sp);return;}
+    var arr=byZone[z]||[];var d=document.createElement('div');d.className='zone'+(arr.length?'':' empty');
+    d.style.background=arr.length?ZCOL[z].replace('var(--z'+z+')',getC(z))+'22':'#0e131c';
+    d.style.borderColor=arr.length?getC(z):'transparent';
+    var pct=total?Math.round(arr.length/total*100):0;
+    var kills=arr.filter(function(c){return c.eval==='#';}).length;
+    var kpct=arr.length?Math.round(kills/arr.length*100):0;
+    d.innerHTML='<div class="zl" style="color:'+getC(z)+'">Z'+z+'</div><div class="zn">'+arr.length+'</div>'+(arr.length?'<div style="font-size:11px;color:var(--muted)">'+pct+'%</div><div class="zp"># '+kpct+'%</div>':'');
+    if(arr.length)d.onclick=function(){openZone(z);};
+    court.appendChild(d);
+  });
+}
+function getC(z){return {4:'#f59e0b',3:'#a855f7',2:'#3b82f6',8:'#06b6d4',9:'#ec4899'}[z];}
+
+function openZone(z){curZone=z;evFilter=null;$('plTitle').textContent='P'+curRot+' · Zona '+z+' — '+rotClips().filter(function(c){return c.zone===z;}).length+' ataques';paintEv();applyFilter();$('ytwrap').classList.remove('empty');}
+
+function zoneClips(){return rotClips().filter(function(c){return c.zone===curZone;});}
+function paintEv(){
+  var box=$('evChips');box.innerHTML='';
+  var order=['#','+','!','-','=','/'];var lbl={'#':'# punto','+':'+ bueno','!':'! neutro','-':'- malo','=':'= error','/':'/ bloq'};
+  var counts={};zoneClips().forEach(function(c){counts[c.eval]=(counts[c.eval]||0)+1;});
+  order.forEach(function(ev){if(!counts[ev])return;var b=document.createElement('button');b.className='chip'+(evFilter===ev?' on':'');b.textContent=lbl[ev]+' ('+counts[ev]+')';b.onclick=function(){evFilter=(evFilter===ev?null:ev);paintEv();applyFilter();};box.appendChild(b);});
+}
+function applyFilter(){
+  filtered=zoneClips().filter(function(c){return !evFilter||c.eval===evFilter;}).slice().sort(function(a,b){return a.t_attack-b.t_attack;});
+  filtered.forEach(function(c){c._sel=true;});
+  paintList();
+}
+function paintList(){
+  var L=$('list');L.innerHTML='';
+  filtered.forEach(function(c,i){
+    var row=document.createElement('div');row.className='item'+(i===playIdx?' live':'');
+    var col=getC(c.zone);
+    row.innerHTML='<input type="checkbox" '+(c._sel?'checked':'')+'><span class="ev" style="color:'+evColor(c.eval)+'">'+c.eval+'</span><span style="flex:1">'+c.combo+' · '+c.orig+'→'+c.dest+'</span><span class="t">'+mmss(c.t_start)+'→'+mmss(c.t_attack)+'</span>';
+    row.querySelector('input').onclick=function(e){e.stopPropagation();c._sel=this.checked;};
+    row.onclick=function(){playAt(i);};
+    L.appendChild(row);
+  });
+  $('now').textContent=filtered.length+' clips';
+}
+function evColor(e){return {'#':'#22c55e','+':'#84cc16','!':'#eab308','-':'#f97316','=':'#ef4444','/':'#f59e0b'}[e]||'#888';}
+
+function selList(){return filtered.filter(function(c){return c._sel;});}
+function togglePlay(){if(playing){stop();}else{var s=selList();if(!s.length){alert('No hay clips seleccionados');return;}playAt(filtered.indexOf(s[0]));}}
+function playAt(i){
+  if(i<0||i>=filtered.length)return;playIdx=i;var c=filtered[i];
+  var start=Math.max(0,c.t_start-PRE);
+  if(!player){return;}
+  player.loadVideoById({videoId:YT_ID,startSeconds:start});
+  playing=true;$('btnPlay').textContent='⏸ Pausar';paintList();
+  clearInterval(timer);var end=c.t_attack+POST;
+  timer=setInterval(function(){if(player&&player.getCurrentTime&&player.getCurrentTime()>=end){nextSel();}},150);
+}
+function nextSel(){
+  // siguiente seleccionado
+  var sel=selList();var cur=filtered[playIdx];var k=sel.indexOf(cur);
+  if(k>=0&&k+1<sel.length){playAt(filtered.indexOf(sel[k+1]));}else{stop(true);}
+}
+function navClip(d){if(!filtered.length)return;var n=playIdx+d;if(n<0||n>=filtered.length)return;playAt(n);}
+function stop(done){clearInterval(timer);playing=false;$('btnPlay').textContent='▶ Reproducir selección';if(player&&player.pauseVideo)player.pauseVideo();if(done){$('now').textContent='Fin de la secuencia';}}
+function maximize(){var w=$('ytwrap');if(!document.fullscreenElement){w.requestFullscreen&&w.requestFullscreen();}else{document.exitFullscreen();}}
+function saveSeq(){var s=selList();alert('Secuencia guardada (simulado): '+s.length+' clips de P'+curRot+' Zona '+curZone+'.\nEn el game plan real esto queda en Firebase y el jugador ve exactamente estos '+s.length+' clips.');}
+
+// YouTube API
+var tag=document.createElement('script');tag.src="https://www.youtube.com/iframe_api";document.head.appendChild(tag);
+window.onYouTubeIframeAPIReady=function(){player=new YT.Player('player',{videoId:YT_ID,playerVars:{rel:0,modestbranding:1,playsinline:1,controls:0,disablekb:1,fs:0,iv_load_policy:3},events:{onReady:function(){ready=true;},onError:function(e){showPlayerErr(e.data);}}});};
+function showPlayerErr(code){
+  var local=(location.protocol==='file:');
+  var msg=local?'<b style="color:#f59e0b">Estás abriendo esto como archivo local.</b><br>YouTube no reproduce desde archivos locales (file://). Subilo a tu sitio y abrilo desde la URL en vivo (https).':'Error de YouTube ('+code+'). Si el video tiene el embebido bloqueado, probamos con otro link.';
+  var w=$('ytwrap');w.classList.remove('empty');w.innerHTML='<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#e2e8f0;font-size:14px;line-height:1.6">'+msg+'</div>';
+}
+
+paintRots();paintCourt();
+if(location.protocol==='file:'){var b=document.createElement('div');b.style.cssText='background:#7c2d12;color:#fed7aa;padding:10px 14px;border-radius:9px;margin-bottom:14px;font-size:13px;line-height:1.5';b.innerHTML='⚠️ Lo abriste como <b>archivo local</b>. La canchita y los filtros andan, pero <b>el video de YouTube NO reproduce desde archivos locales</b>. Subilo a tu sitio y abrilo desde la URL en vivo (https) para ver los clips.';document.querySelector('.wrap').insertBefore(b,document.querySelector('.layout'));}
+</script>
+</body></html>

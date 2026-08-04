@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ANALISIS DE BLOQUEO — AXPO VOLLEY NAFELS</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#07080F;--card:#0D0E1A;--card2:#111220;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--red:#E8192C;--amber:#F59E0B;--green:#22C55E;--lime:#84CC16;--orange:#F97316;--indigo:#818CF8;--text:#E2E8F0;--muted:#64748B;--subtle:#475569;--h0:#0F1120}
+html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",sans-serif;min-height:100vh}
+.hdr{background:rgba(7,8,15,.97);border-bottom:1px solid var(--border);padding:11px 20px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:14px}
+.hdr a.back{color:var(--muted);font-size:11px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-weight:800;white-space:nowrap}
+.hdr a.back:hover{color:var(--text)}
+.hdr-t{font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:3px}
+.hdr-s{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.mbtn{cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.mbtn.on{background:var(--indigo);border-color:var(--indigo);color:#0b1020}
+.layout{display:flex;gap:18px;padding:18px;align-items:flex-start;flex-wrap:wrap}
+.sidebar{width:290px;flex-shrink:0}
+.main{flex:1;min-width:340px}
+.flabel{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--subtle);font-weight:800;margin:14px 0 5px}
+select,input{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 9px;font-family:inherit;font-weight:700;font-size:13px}
+.vbtn{width:100%;margin-top:12px;background:rgba(129,140,248,.12);border:1px solid rgba(129,140,248,.35);color:#c7d2fe;border-radius:9px;padding:10px;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:1px;cursor:pointer}
+.vbtn:hover{background:rgba(129,140,248,.22)}
+.sec{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--subtle);font-weight:800;margin:22px 0 9px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px 10px;text-align:center}
+.kpi .v{font-family:"Bebas Neue",sans-serif;font-size:27px;line-height:1}
+.kpi .l{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.court{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;max-width:430px}
+.z{background:var(--h0);border:1px solid var(--border);border-radius:10px;padding:14px 8px;text-align:center;cursor:pointer;position:relative;min-height:84px;display:flex;flex-direction:column;justify-content:center}
+.z .zn{position:absolute;top:5px;left:8px;font-size:10px;color:var(--subtle);font-weight:800}
+.z .zv{font-family:"Bebas Neue",sans-serif;font-size:25px;line-height:1}
+.z .zc{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:1px}
+.z.vacia{cursor:default}
+.rednote{font-size:11px;color:var(--red);letter-spacing:2px;text-transform:uppercase;font-weight:800;text-align:center;margin-bottom:6px}
+.combos{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px}
+.combo{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 9px;text-align:center;cursor:pointer}
+.combo .cn{font-weight:800;font-size:13px;letter-spacing:1px;color:var(--indigo)}
+.combo .cz{font-size:9px;color:var(--subtle);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+.combo .cv{font-family:"Bebas Neue",sans-serif;font-size:21px;margin-top:5px}
+.combo .cc{font-size:10px;color:var(--muted)}
+.vacio{color:var(--muted);font-size:14px;padding:26px 4px;text-align:center}
+.pie{color:var(--subtle);font-size:11px;padding:8px 20px 26px;line-height:1.6}
+</style>
+<!-- Motor de idiomas (ES / EN / DE). Traduce por data-t y ademas por texto,
+     asi que alcanza con cargarlo. -->
+<script src="lang.js"></script>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
+     la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="firebase.js" onerror="void 0"></script>
+</head>
+<body>
+<div class="hdr">
+  <a href="index.html" class="back">← Inicio</a>
+  <div>
+    <div class="hdr-t">ANALISIS DE BLOQUEO</div>
+    <div class="hdr-s" id="hdr-s">Cómo bloqueamos según de dónde ataca el rival</div>
+  </div>
+  <!-- PARTIDO / ENTRENAMIENTO, igual que en las otras pantallas. Va atado al
+       filtro compartido, asi la eleccion viaja desde y hacia el resto. -->
+  <div style="display:flex;gap:6px;margin-left:auto" id="modo-wrap"></div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="flabel" style="margin-top:0">Jugador</div>
+    <select id="psel" onchange="pintar()"></select>
+
+    <div class="flabel">Combinación bloqueada</div>
+    <select id="fcombo" onchange="pintar()"><option value="all">Todas</option></select>
+
+    <div class="flabel">Fase</div>
+    <select id="ffase" onchange="pintar()">
+      <option value="all">Todas</option>
+      <option value="g">Side out</option>
+      <option value="o">Transición</option>
+    </select>
+
+    <div class="flabel">Resultado</div>
+    <select id="fev" onchange="pintar()">
+      <option value="all">Todos</option>
+      <option value="#">Punto de bloqueo (#)</option>
+      <option value="+">Positivo (+)</option>
+      <option value="!">Toque (!)</option>
+      <option value="/">Tocado y sigue (/)</option>
+      <option value="-">Malo (−)</option>
+      <option value="=">Error (=)</option>
+    </select>
+
+    <button class="vbtn" onclick="verVideo()">🎬 VER VIDEO DE ESTOS BLOQUEOS</button>
+    <div class="flabel" id="cuenta" style="text-align:center;color:var(--muted)"></div>
+  </div>
+
+  <div class="main">
+    <div class="sec">Resumen</div>
+    <div class="kpis" id="kpis"></div>
+
+    <div class="sec">Zona de origen del ataque rival</div>
+    <div class="rednote">▲ Rival</div>
+    <div class="court" id="court"></div>
+
+    <div class="sec">Combinaciones que enfrentamos</div>
+    <div class="combos" id="combos"></div>
+  </div>
+</div>
+
+<div class="pie">
+  EFF = (positivos − errores − tocados) / total. La cancha es la del <b>rival</b>: cada casillero es la zona
+  desde donde salió el ataque que bloqueamos, igual que en la solapa de bloqueo del plan de partido.
+  Doble clic en un casillero o en una combinación para ver esos bloqueos en video.
+</div>
+
+<script src="datos_seguros.js"></script>
+<script src="filtro_tipo.js" onerror="void 0"></script>
+<script src="datos_bloqueo.js.enc" onerror="window.PP_BLOCK=window.PP_BLOCK||{}"></script>
+<script>abrirDatos();</script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   MAPA DE CALOR DE BLOQUEO
+   --------------------------------------------------------------------------
+   Un bloqueo no tiene zona propia: en DataVolley se codifica en la red, sin
+   trayectoria. Por eso este mapa no se dibuja con la zona de la accion, como
+   el de ataque o el de defensa.
+
+   Lo que se usa es la zona del ATAQUE que se bloqueo. gen_bloqueo.py ya la
+   resuelve: cruza cada bloqueo con el ataque mas cercano en el tiempo y le
+   hereda la combinacion y la zona de origen. Asi el mapa contesta la pregunta
+   util: contra que posicion bloqueamos bien y contra cual no.
+
+   Cada bloqueo llega como:
+       [combo, zona, evaluacion, momento, sesion, fase, tipo]
+   ══════════════════════════════════════════════════════════════════════════ */
+var I_COMBO=0, I_ZONA=1, I_EV=2, I_T=3, I_MID=4, I_FASE=5, I_TIPO=6;
+
+/* La cancha del rival, con la red arriba. Mismo orden que el resto del
+   sistema para que la lectura sea la misma en todas las pantallas. */
+var ORDEN=["4","3","2","7","8","9","5","6","1"];
+var NOMBRE={"4":"punta","3":"central","2":"opuesto","8":"pipe","9":"zaguero","7":"","5":"","6":"","1":""};
+
+function equipoActual(){
+  var B=window.PP_BLOCK||{};
+  var k=Object.keys(B);
+  if(!k.length) return null;
+  /* el club propio primero; si no se reconoce, el que mas bloqueos tenga */
+  var propio=k.filter(function(x){return /nafels|naefels/i.test(x);})[0];
+  if(propio) return propio;
+  return k.sort(function(a,b){
+    var sa=(B[a]||[]).reduce(function(t,p){return t+(p.total||0);},0);
+    var sb=(B[b]||[]).reduce(function(t,p){return t+(p.total||0);},0);
+    return sb-sa;
+  })[0];
+}
+var EQ=equipoActual();
+var JUGADORES=(window.PP_BLOCK&&EQ&&window.PP_BLOCK[EQ])||[];
+
+/* ── El tipo: partido o entrenamiento ────────────────────────────────────
+   Los bloqueos traen su tipo desde el generador. Si los datos son viejos y no
+   lo tienen, se los considera de partido, que es lo unico que habia antes. */
+function tipoActual(){
+  try{ if(typeof vbTipo==='function'){ var t=vbTipo(); if(t==='P') return 'partido'; if(t==='E') return 'entrenamiento'; } }catch(e){}
+  return null;   /* null = todos */
+}
+function hayTipos(){
+  for(var i=0;i<JUGADORES.length;i++){
+    var d=JUGADORES[i].data||[];
+    for(var j=0;j<d.length;j++) if(d[j][I_TIPO]) return true;
+  }
+  return false;
+}
+function pintarModo(){
+  var w=document.getElementById('modo-wrap');
+  if(!w) return;
+  if(!hayTipos()){ w.innerHTML=''; return; }
+  var t=(typeof vbTipo==='function')?vbTipo():'todos';
+  w.innerHTML=[['todos','Todos'],['P','Partidos'],['E','Entrenamientos']].map(function(o){
+    return '<button class="mbtn'+(o[0]===t?' on':'')+'" onclick="setModoBlq(\''+o[0]+'\')">'+o[1]+'</button>';
+  }).join('');
+}
+window.setModoBlq=function(t){
+  try{ if(typeof vbSetTipo==='function') vbSetTipo(t); }catch(e){}
+  pintarModo(); rellenarCombos(); pintar();
+};
+
+/* ── Las acciones que se estan mirando ──────────────────────────────────── */
+function jugadorSel(){ var v=document.getElementById('psel').value; return v; }
+function accionesDe(num, aplicarFiltros){
+  var out=[];
+  JUGADORES.forEach(function(p){
+    if(num!=='__all__' && String(p.num)!==String(num)) return;
+    (p.data||[]).forEach(function(a){ out.push(a); });
+  });
+  var tp=tipoActual();
+  if(tp) out=out.filter(function(a){ return (a[I_TIPO]||'partido')===tp; });
+  if(aplicarFiltros){
+    var fc=document.getElementById('fcombo').value;
+    var ff=document.getElementById('ffase').value;
+    var fe=document.getElementById('fev').value;
+    if(fc!=='all') out=out.filter(function(a){ return String(a[I_COMBO])===fc; });
+    if(ff!=='all') out=out.filter(function(a){ return String(a[I_FASE])===ff; });
+    if(fe!=='all') out=out.filter(function(a){ return String(a[I_EV])===fe; });
+  }
+  return out;
+}
+
+/* EFF con la misma cuenta que el plan de partido, para que los numeros
+   coincidan entre pantallas: (positivos − errores − tocados) / total. */
+function resumen(acc){
+  var n=acc.length, kill=0, pos=0, toque=0, tocado=0, malo=0, err=0;
+  acc.forEach(function(a){
+    var ev=a[I_EV];
+    if(ev==='#'){ kill++; pos++; }
+    else if(ev==='+') pos++;
+    else if(ev==='!') toque++;
+    else if(ev==='/') tocado++;
+    else if(ev==='-') malo++;
+    else if(ev==='=') err++;
+  });
+  return {n:n, kill:kill, pos:pos, toque:toque, tocado:tocado, malo:malo, err:err,
+          eff: n ? Math.round((pos-err-tocado)/n*100) : null};
+}
+function colorEff(e){ return e===null?'var(--muted)':(e>=40?'var(--green)':(e>=15?'var(--lime)':(e>=0?'var(--amber)':'var(--red)'))); }
+
+function pintar(){
+  var num=jugadorSel();
+  var acc=accionesDe(num,true);
+  var R=resumen(acc);
+
+  document.getElementById('cuenta').textContent = R.n+' bloqueo'+(R.n===1?'':'s')+' en pantalla';
+
+  document.getElementById('kpis').innerHTML=[
+    ['EFF', R.eff===null?'–':R.eff+'%', colorEff(R.eff)],
+    ['Bloqueos', R.n, 'var(--text)'],
+    ['Punto', R.kill, 'var(--green)'],
+    ['Positivos', R.pos, 'var(--lime)'],
+    ['Toques', R.toque, 'var(--text)'],
+    ['Tocado', R.tocado, 'var(--amber)'],
+    ['Errores', R.err, 'var(--red)']
+  ].map(function(k){
+    return '<div class="kpi"><div class="v" style="color:'+k[2]+'">'+k[1]+'</div><div class="l">'+k[0]+'</div></div>';
+  }).join('');
+
+  /* la cancha */
+  var porZona={};
+  acc.forEach(function(a){ var z=String(a[I_ZONA]||''); if(!z) return; (porZona[z]=porZona[z]||[]).push(a); });
+  var maxN=1;
+  ORDEN.forEach(function(z){ if(porZona[z] && porZona[z].length>maxN) maxN=porZona[z].length; });
+  document.getElementById('court').innerHTML=ORDEN.map(function(z){
+    var lista=porZona[z]||[];
+    if(!lista.length){
+      return '<div class="z vacia"><div class="zn">'+z+(NOMBRE[z]?' · '+NOMBRE[z]:'')+'</div>'+
+             '<div class="zv" style="color:var(--subtle)">–</div></div>';
+    }
+    var r=resumen(lista);
+    var int=Math.min(1, lista.length/maxN);
+    var fondo='rgba(129,140,248,'+(0.10+int*0.42).toFixed(2)+')';
+    return '<div class="z" style="background:'+fondo+';border-color:rgba(129,140,248,.35)" ondblclick="verZona(\''+z+'\')" title="Doble clic para ver estos bloqueos en video">'+
+           '<div class="zn">'+z+(NOMBRE[z]?' · '+NOMBRE[z]:'')+'</div>'+
+           '<div class="zv" style="color:'+colorEff(r.eff)+'">'+(r.eff===null?'–':r.eff+'%')+'</div>'+
+           '<div class="zc">'+r.n+' blq · '+r.kill+' pto</div></div>';
+  }).join('');
+
+  /* las combinaciones */
+  var porCombo={};
+  acc.forEach(function(a){ var c=a[I_COMBO]||'—'; (porCombo[c]=porCombo[c]||[]).push(a); });
+  var claves=Object.keys(porCombo).sort(function(x,y){ return porCombo[y].length-porCombo[x].length; });
+  document.getElementById('combos').innerHTML = claves.length ? claves.map(function(c){
+    var r=resumen(porCombo[c]);
+    var z=porCombo[c][0][I_ZONA]||'';
+    return '<div class="combo" ondblclick="verCombo(\''+c+'\')" title="Doble clic para ver estos bloqueos en video">'+
+           '<div class="cn">'+c+'</div><div class="cz">'+(z?'zona '+z:'&nbsp;')+'</div>'+
+           '<div class="cv" style="color:'+colorEff(r.eff)+'">'+(r.eff===null?'–':r.eff+'%')+'</div>'+
+           '<div class="cc">'+r.n+' blq · '+r.kill+' pto</div></div>';
+  }).join('') : '<div class="vacio">Sin bloqueos con estos filtros.</div>';
+
+  if(!R.n && !JUGADORES.length)
+    document.getElementById('combos').innerHTML='<div class="vacio">Todavía no hay bloqueos cargados en esta temporada.</div>';
+}
+
+/* ── Video ───────────────────────────────────────────────────────────────
+   Los cortes filtran por jugador y fundamento. La zona no se puede pasar:
+   la accion de bloqueo no la lleva, la hereda del ataque. Se abre entonces
+   con el jugador y el fundamento, que es lo que cortes entiende. */
+function abrirCortes(){
+  var num=jugadorSel();
+  if(num==='__all__'){ alert('Elegí un jugador para ver sus bloqueos en video.'); return; }
+  window.open('cortes.html?num='+encodeURIComponent(num)+'&sk=Bloqueo&equipo='+encodeURIComponent(EQ||''),'_blank');
+}
+window.verVideo=abrirCortes;
+window.verZona=function(){ abrirCortes(); };
+window.verCombo=function(){ abrirCortes(); };
+
+/* ── Arranque ───────────────────────────────────────────────────────────── */
+function rellenarCombos(){
+  var acc=accionesDe(jugadorSel()||'__all__',false);
+  var cc={};
+  acc.forEach(function(a){ var c=a[I_COMBO]; if(c) cc[c]=(cc[c]||0)+1; });
+  var sel=document.getElementById('fcombo'), prev=sel.value;
+  var op=['<option value="all">Todas</option>'].concat(
+    Object.keys(cc).sort(function(x,y){return cc[y]-cc[x];}).map(function(c){
+      return '<option value="'+c+'">'+c+' ('+cc[c]+')</option>'; }));
+  sel.innerHTML=op.join('');
+  sel.value=(prev && sel.querySelector('option[value="'+prev+'"]')) ? prev : 'all';
+}
+function rellenarJugadores(){
+  var sel=document.getElementById('psel');
+  var tp=tipoActual();
+  var lista=JUGADORES.map(function(p){
+    var d=(p.data||[]).filter(function(a){ return !tp || (a[I_TIPO]||'partido')===tp; });
+    return {num:p.num, name:p.name, n:d.length};
+  }).filter(function(p){ return p.n>0; }).sort(function(a,b){ return b.n-a.n; });
+  sel.innerHTML='<option value="__all__">TODO EL EQUIPO</option>'+lista.map(function(p){
+    return '<option value="'+p.num+'">#'+p.num+' '+(p.name||'')+' ('+p.n+')</option>'; }).join('');
+}
+document.getElementById('psel').addEventListener('change', function(){ rellenarCombos(); pintar(); });
+pintarModo(); rellenarJugadores(); rellenarCombos(); pintar();
+</script>
+</body>
+</html>

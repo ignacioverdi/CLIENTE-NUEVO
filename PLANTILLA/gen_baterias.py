@@ -3,7 +3,7 @@
 gen_baterias.py — Genera las baterías de los 13 partidos leyendo los DVW crudos,
 usando EXACTAMENTE el mismo motor que objetivos.js (panel/scout en vivo).
 
-Uso:  python gen_baterias.py "CARPETA DVW {{CLUB}} 2026" [salida.js]
+Uso:  python gen_baterias.py "CARPETA DVW CASLA 2026" [salida.js]
 Salida: datos_baterias.js  ->  window.BAT_PARTIDOS = {total, meta, jug, ind, eq}
 """
 import os, re, sys, json, glob, unicodedata
@@ -50,11 +50,11 @@ def _cargar_equipos(carpeta):
 NUESTRO = ['']          # se completa al arrancar, con el nombre del club
 
 
-def is_{{club}}(n):
+def is_casla(n):
     """Si este equipo es el nuestro.
 
        El nombre del club sale de la carpeta de partidos —"DVW {{CLUB}} 2026" da
-       "{{club}}"— y se compara sin acentos. Antes estaba escrito adentro y el
+       "{{CLUB_SLUG}}"— y se compara sin acentos. Antes estaba escrito adentro y el
        motor sólo servía para un club."""
     import unicodedata
     if not n: return False
@@ -65,7 +65,7 @@ def is_{{club}}(n):
 def norm_team(name):
     n=(name or '').strip()
     if n in TEAM_NORM: return TEAM_NORM[n]
-    base=re.sub(r'\({{LIGA}}[^)]*\)','',n)
+    base=re.sub(r'\(NLA[^)]*\)','',n)
     base=re.sub(r'\b(Club|Atl[eé]tico|Ciudad de|Nautico|Universidad( Nacional)?( de)?|Municipio de|Ferro Carril|S\. y D\.|de|Volley|Volleyball)\b','',base,flags=re.I)
     return re.sub(r'\s+',' ',base).strip() or 'Rival'
 
@@ -164,20 +164,24 @@ def parse_dvw(path):
     teamlines=[l.split(';')[1] for l in sec('3TEAMS','3MORE').strip().splitlines()[:2] if ';' in l]
     if len(teamlines)<2: return None
     home_name=norm_team(teamlines[0]); away_name=norm_team(teamlines[1])
-    {{club}}_home=is_{{club}}(teamlines[0]); {{club}}_away=is_{{club}}(teamlines[1])
-    if not ({{club}}_home or {{club}}_away): return None  # solo partidos de {{CLUB}}
-    side='*' if {{club}}_home else 'a'
-    rival=away_name if {{club}}_home else home_name
+    casla_home=is_casla(teamlines[0]); casla_away=is_casla(teamlines[1])
+    if not (casla_home or casla_away): return None  # solo partidos de CASLA
+    side='*' if casla_home else 'a'
+    rival=away_name if casla_home else home_name
 
     base=os.path.basename(path)
-    mcode=re.search(r'&?\s*(\d{5,6})\b', base) or re.search(r'(\d{4,6})',base) or re.search(r'(\d{6})',base)
+    # El codigo oficial del partido tiene 5 o 6 digitos. Antes, si no aparecia,
+    # se aceptaba cualquier numero de 4 a 6 y terminaba agarrando el ANIO de la
+    # fecha: los entrenamientos quedaban todos con el id "2026". Y como abajo se
+    # descartan los ids repetidos, el segundo entrenamiento de la temporada
+    # desaparecia sin aviso. Ahora, sin codigo, el id se arma con fecha+rival.
+    mcode=re.search(r'&?\s*(\d{5,6})\b', base)
     mdate=re.search(r'(\d{4}-\d{2}-\d{2})',base)
     date=mdate.group(1) if mdate else ''
-    if not mcode: return None
-    code=mcode.group(1)
+    code=mcode.group(1) if mcode else ''
 
-    # roster {{CLUB}}: num -> nombre (para keyear por nombre como el perfil)
-    psec = sec('3PLAYERS-H','3PLAYERS-V') if {{club}}_home else sec('3PLAYERS-V','3ATTACKCOMBINATION')
+    # roster CASLA: num -> nombre (para keyear por nombre como el perfil)
+    psec = sec('3PLAYERS-H','3PLAYERS-V') if casla_home else sec('3PLAYERS-V','3ATTACKCOMBINATION')
     names={}
     for l in psec.strip().splitlines():
         c=l.split(';')
@@ -190,71 +194,186 @@ def parse_dvw(path):
     # resultado (sets) — simple: contar de la meta si está
     return {'code':code,'rival':rival,'date':date,'side':side,'names':names,'scout':scout}
 
-def build(folder, out='datos_baterias.js'):
-    files=sorted(glob.glob(os.path.join(folder,'*.dvw')))
-    matches=[]
-    seen=set()
-    for f in files:
-        r=parse_dvw(f)
-        if not r or r['code'] in seen: continue
-        seen.add(r['code'])
-        pl=_calc_baterias(r['scout'], r['side'])
-        # por jugador (keyed por nombre) + equipo
-        jug={}
-        for num,P in pl.items():
-            if num=='__EQUIPO__': continue
-            nom=r['names'].get(num)
-            if not nom: continue
-            jug[nom]=_bat_to_pcts(P)
-        eq=_bat_to_pcts(pl['__EQUIPO__']) if '__EQUIPO__' in pl else {}
-        matches.append({'id':r['code'],'rival':r['rival'],'fecha':r['date'],
-                        'jug':jug,'eq':eq,'_acum':pl,'names':r['names']})
+def season_from_date(date):
+    """Temporada 'YYYY/YY' desde la fecha. Arranca en agosto, igual que en
+    gen_plan_partido.py: una practica del 30 de julio cae en la anterior."""
+    try:
+        p=date.split('-'); y=int(p[0]); m=int(p[1]); st=y if m>=8 else y-1
+        return "%d/%02d"%(st,(st+1)%100)
+    except Exception: return None
 
-    matches.sort(key=lambda m:m['fecha'])
-    # ── ACUMULADO (suma de acumuladores de los 13 partidos, luego %) ──
-    acc={}
-    for m in matches:
-        for num,P in m['_acum'].items():
-            if num=='__EQUIPO__': continue
-            nom=m['names'].get(num)
-            if not nom: continue
-            if nom not in acc: acc[nom]=_bat_nuevo()
-            for sec2 in P:
-                for k in P[sec2]: acc[nom][sec2][k]+=P[sec2][k]
-    jug_acum={nom:_bat_to_pcts(acc[nom]) for nom in acc}
-    eq_acc=_bat_nuevo()
-    for nom in acc:
-        for sec2 in acc[nom]:
-            for k in acc[nom][sec2]: eq_acc[sec2][k]+=acc[nom][sec2][k]
-    eq_acum=_bat_to_pcts(eq_acc)
+def _norm_temp(t):
+    """Acepta '2026/27' o '2026' y devuelve siempre 'YYYY/YY'."""
+    if not t: return None
+    t=str(t).strip()
+    if re.fullmatch(r'\d{4}', t):
+        y=int(t); return "%d/%02d"%(y,(y+1)%100)
+    return t
 
-    meta=[{'id':m['id'],'rival':m['rival'],'nombre':m['rival'],'fecha':m['fecha']} for m in matches]
-    ind=[{'id':m['id'],'jug':m['jug'],'eq':m['eq']} for m in matches]
-    OUT={'total':len(matches),'meta':meta,'jug':jug_acum,'ind':ind,'eq':eq_acum}
+def _temp_de_carpeta(folder):
+    """El ano que lleva el nombre de la carpeta -> temporada que arranca ese ano."""
+    m=re.search(r'(20\d{2})', os.path.basename(os.path.normpath(folder)))
+    if not m: return None
+    y=int(m.group(1)); return "%d/%02d"%(y,(y+1)%100)
+
+def _slug(t):
+    t=unicodedata.normalize('NFKD', t or '').encode('ascii','ignore').decode()
+    return re.sub(r'[^A-Za-z0-9]+','', t).upper()[:12] or 'SIN'
+
+def _mk_id(code, tipo, date, rival, usados):
+    """Un id estable y unico por sesion. Con codigo oficial se usa ese; si no
+    —el caso de los entrenamientos— se arma con el tipo, la fecha y el rival."""
+    base = code if code else ('%s%s-%s' % ('E' if tipo=='entrenamiento' else 'P',
+                                           date or 'sinfecha', _slug(rival)))
+    i, k = base, 2
+    while i in usados:
+        i = '%s-%d' % (base, k); k += 1
+    usados.add(i)
+    return i
+
+def build(fuentes, out='datos_baterias.js', filtro_temp=None):
+    """fuentes: lista de (carpeta, tipo) con tipo 'partido' o 'entrenamiento'.
+
+    Salida COMPATIBLE HACIA ATRAS: total, meta, jug, ind y eq siguen siendo el
+    acumulado de TODO, que es el criterio de "Todos". Se agregan:
+        · meta[i].tipo e ind[i].tipo  -> de que carpeta salio cada sesion
+        · porTipo.<tipo>.{total,jug,eq} -> el acumulado de cada tipo por separado
+    Una pagina que todavia no sepa de tipos sigue leyendo lo de siempre."""
+    filtro_temp = _norm_temp(filtro_temp)
+    matches=[]; usados=set()
+    for folder, tipo in fuentes:
+        if not folder or not os.path.isdir(folder):
+            print('[baterias] aviso: no existe la carpeta "%s", la salteo' % folder); continue
+        # La temporada de un ENTRENAMIENTO sale de la CARPETA, no de la fecha.
+        # Es lo que hace update_db_entrenamientos_nafels.py, que le estampa a
+        # cada practica la temporada que recibe por linea de comandos. Y tiene
+        # sentido: la pretemporada de julio pertenece al ano que arranca, aunque
+        # por fecha caiga en la temporada anterior. Los PARTIDOS, en cambio, van
+        # por fecha, como en gen_plan_partido.py.
+        temp_carpeta = _temp_de_carpeta(folder) if tipo=='entrenamiento' else None
+        if filtro_temp and temp_carpeta and temp_carpeta != filtro_temp:
+            print('[baterias] "%s" es de la %s, no de la %s: la salteo' % (folder, temp_carpeta, filtro_temp))
+            continue
+        for f in sorted(glob.glob(os.path.join(folder,'*.dvw'))):
+            r=parse_dvw(f)
+            if not r: continue
+            if filtro_temp and not temp_carpeta and season_from_date(r['date']) != filtro_temp: continue
+            sid=_mk_id(r['code'], tipo, r['date'], r['rival'], usados)
+            pl=_calc_baterias(r['scout'], r['side'])
+            jug={}
+            for num,P in pl.items():
+                if num=='__EQUIPO__': continue
+                nom=r['names'].get(num)
+                if not nom: continue
+                jug[nom]=_bat_to_pcts(P)
+            eq=_bat_to_pcts(pl['__EQUIPO__']) if '__EQUIPO__' in pl else {}
+            matches.append({'id':sid,'tipo':tipo,'rival':r['rival'],'fecha':r['date'],
+                            'jug':jug,'eq':eq,'_acum':pl,'names':r['names']})
+
+    matches.sort(key=lambda m:(m['fecha'], m['id']))
+
+    def acumular(lista):
+        """Suma los contadores crudos y recien al final saca los porcentajes.
+        Promediar porcentajes daria mal: un partido de 3 saques pesaria igual
+        que uno de 40."""
+        acc={}
+        for m in lista:
+            for num,P in m['_acum'].items():
+                if num=='__EQUIPO__': continue
+                nom=m['names'].get(num)
+                if not nom: continue
+                if nom not in acc: acc[nom]=_bat_nuevo()
+                for sec2 in P:
+                    for k in P[sec2]: acc[nom][sec2][k]+=P[sec2][k]
+        jug_a={nom:_bat_to_pcts(acc[nom]) for nom in acc}
+        eq_acc=_bat_nuevo()
+        for nom in acc:
+            for sec2 in acc[nom]:
+                for k in acc[nom][sec2]: eq_acc[sec2][k]+=acc[nom][sec2][k]
+        return jug_a, _bat_to_pcts(eq_acc)
+
+    jug_acum, eq_acum = acumular(matches)
+    porTipo={}
+    for tipo in ('partido','entrenamiento'):
+        sub=[m for m in matches if m['tipo']==tipo]
+        j_t, e_t = acumular(sub)
+        porTipo[tipo]={'total':len(sub),'jug':j_t,'eq':e_t,
+                       'ids':[m['id'] for m in sub]}
+
+    meta=[{'id':m['id'],'tipo':m['tipo'],'rival':m['rival'],'nombre':m['rival'],'fecha':m['fecha']} for m in matches]
+    ind=[{'id':m['id'],'tipo':m['tipo'],'jug':m['jug'],'eq':m['eq']} for m in matches]
+    OUT={'total':len(matches),'meta':meta,'jug':jug_acum,'ind':ind,'eq':eq_acum,
+         'porTipo':porTipo,'temporada':filtro_temp or ''}
     open(out,'w',encoding='utf-8').write('window.BAT_PARTIDOS='+json.dumps(OUT,ensure_ascii=False,separators=(',',':'))+';')
-    print('[baterias] %d partidos -> %s' % (len(matches), out))
-    for m in matches: print('   %s  %s  (%d jugadores)' % (m['fecha'], m['rival'], len(m['jug'])))
+    print('[baterias] %d sesiones -> %s   (partidos: %d · entrenamientos: %d)' % (
+        len(matches), out, porTipo['partido']['total'], porTipo['entrenamiento']['total']))
+    for m in matches:
+        print('   %-11s %-14s %-9s (%d jugadores)' % (m['fecha'], m['rival'], m['tipo'], len(m['jug'])))
 
 def autodetect_dvw():
     dirs=[d for d in glob.glob('DVW*') if os.path.isdir(d) and glob.glob(os.path.join(d,'*.dvw'))]
     return max(dirs,key=lambda d:len(glob.glob(os.path.join(d,'*.dvw')))) if dirs else None
 
+def _autodetect(patron):
+    d=[x for x in glob.glob(patron) if os.path.isdir(x) and glob.glob(os.path.join(x,'*.dvw'))]
+    return max(d,key=lambda x:len(glob.glob(os.path.join(x,'*.dvw')))) if d else None
+
 if __name__=='__main__':
-    folder = sys.argv[1] if len(sys.argv)>1 else autodetect_dvw()
-    if not folder or not os.path.isdir(folder):
-        print('[baterias] ERROR: no encontre la carpeta de DVW (DVW {{CLUB}} 20XX).'); sys.exit(1)
-    # El club sale del nombre de la carpeta: "DVW {{CLUB}} 2026" -> "{{club}}".
-    # Es lo mismo que hace el resto de los motores.
+    args=sys.argv[1:]
+    partidos=[]; entrenamientos=[]; out=None; temp=None
+
+    if any(a.startswith('--') for a in args):
+        # ── forma nueva: las dos carpetas en una sola corrida ──
+        i=0
+        while i < len(args):
+            a=args[i]
+            if   a=='--partidos'        and i+1<len(args): partidos.append(args[i+1]); i+=2
+            elif a=='--entrenamientos'  and i+1<len(args): entrenamientos.append(args[i+1]); i+=2
+            elif a in ('--out','-o')    and i+1<len(args): out=args[i+1]; i+=2
+            elif a=='--temporada'       and i+1<len(args): temp=args[i+1] or None; i+=2
+            else:
+                print('[baterias] ERROR: no entiendo el argumento "%s"' % a); sys.exit(1)
+        if not partidos and not entrenamientos:
+            partidos      = [x for x in [_autodetect('DVW *')] if x and 'ENTREN' not in x.upper()]
+            entrenamientos= [x for x in [_autodetect('DVW *ENTREN*')] if x]
+    else:
+        # ── forma vieja: gen_baterias.py CARPETA [SALIDA] ──
+        #    Se mantiene para los .bat que llaman a una carpeta sola (la capsula).
+        #    El tipo se deduce del nombre: si dice ENTRENAMIENTOS, es practica.
+        folder = args[0] if len(args)>0 else (autodetect_dvw() or '')
+        out    = args[1] if len(args)>1 else None
+        if not folder or not os.path.isdir(folder):
+            print('[baterias] ERROR: no encontre la carpeta de DVW.'); sys.exit(1)
+        if 'ENTREN' in os.path.basename(folder).upper(): entrenamientos=[folder]
+        else:                                            partidos=[folder]
+
+    fuentes=[(f,'partido') for f in partidos]+[(f,'entrenamiento') for f in entrenamientos]
+    fuentes=[(f,t) for f,t in fuentes if f]
+    if not fuentes:
+        print('[baterias] ERROR: no hay ninguna carpeta de DVW para procesar.'); sys.exit(1)
+
+    # El club sale del nombre de la carpeta: "DVW NAFELS 2026" -> "{{CLUB_SLUG}}".
+    # Es lo mismo que hace el resto de los motores. Se deduce UNA vez, con la
+    # primera carpeta que exista: las dos son del mismo club, y la palabra
+    # ENTRENAMIENTOS se descarta para que las dos den el mismo nombre.
     import unicodedata as _u
-    _b = os.path.basename(os.path.normpath(folder))
+    _ref = next((f for f,t in fuentes if os.path.isdir(f)), None)
+    if not _ref:
+        print('[baterias] ERROR: ninguna de las carpetas indicadas existe.'); sys.exit(1)
+    _b = os.path.basename(os.path.normpath(_ref))
     _b = _u.normalize('NFKD', _b).encode('ascii', 'ignore').decode()
     _pal = [w for w in re.split(r'[^A-Za-z]+', _b)
             if w and w.upper() not in ('DVW', 'ENTRENAMIENTOS', 'SEASON')]
     NUESTRO[0] = (_pal[0].lower() if _pal else '')
-    print('[baterias] Carpeta DVW: %s' % folder)
     print('[baterias] Club: %s' % (NUESTRO[0] or '(no lo pude deducir)'))
-    _cargar_equipos(folder)
+
+    # La tabla de equipos se arma con TODAS las carpetas: los rivales de los
+    # partidos y los de las practicas no son los mismos.
+    for f,t in fuentes:
+        if os.path.isdir(f):
+            print('[baterias] %-14s %s' % (t, f))
+            _cargar_equipos(f)
     print('[baterias] Equipos: %d' % len(TEAM_NORM))
-    out = sys.argv[2] if len(sys.argv)>2 else 'datos_baterias.js'
-    build(folder, out)
-    print('\nLISTO. Ahora publica datos_baterias.js y jugador.html con PUBLICAR_EN_GITHUB.bat')
+
+    build(fuentes, out or 'datos_baterias.js', temp)
+    print('\nLISTO. Ahora publica datos_baterias.js con PUBLICAR_EN_GITHUB.bat')

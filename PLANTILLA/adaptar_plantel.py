@@ -9,7 +9,7 @@
   usa ESE club:
 
       CASLA_JUGADORES        ← el nombre en la app de CASLA
-      window.PLANTEL_NAFELS  ← el nombre acá
+      window.PLANTEL_CLUB  ← el nombre acá
 
   Como no coinciden, la pantalla no encuentra a nadie y aparece vacía. Le pasó
   al ranking, al dashboard y a la de recepción.
@@ -60,7 +60,7 @@ print('  Tu plantel:  %s  (en %s)' % (propio, archivo))
 print()
 
 # ── las formas en que otras apps nombran su plantel ─────────────────────────
-AJENOS = ['CASLA_JUGADORES', 'NAFELS_JUGADORES', 'PLANTEL_CASLA', 'PLANTEL_NAFELS']
+AJENOS = ['CASLA_JUGADORES', 'NAFELS_JUGADORES', 'PLANTEL_CLUB', 'PLANTEL_CLUB']
 AJENOS = [x for x in AJENOS if x != propio]
 
 paginas = sorted(glob.glob(os.path.join(AQUI, '*.html')))

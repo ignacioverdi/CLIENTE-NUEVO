@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 gen_scouting.py — Genera scouting_rival.js (dossier de TODOS los rivales de la liga)
-desde los .dvw acumulados. Reusa el parser del motor grande (update_db_{{club}}_FULL.py),
+desde los .dvw acumulados. Reusa el parser del motor grande (update_db_nafels_FULL.py),
 asi el scouting siempre queda consistente y se actualiza con cada fecha nueva.
 
 USO:
-  python gen_scouting.py --dvw_dir "DVW {{CLUB}} 2026"
+  python gen_scouting.py --dvw_dir "DVW NAFELS 2026"
   (si no se pasa --dvw_dir, busca .dvw en la carpeta actual)
 
 Salida: scouting_rival.js  (window.SCOUTING_RIVAL = {...})
@@ -15,7 +15,7 @@ import sys, os, re, json, glob, argparse
 from collections import defaultdict, Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import update_db_{{club}}_FULL as eng
+import update_db_nafels_FULL as eng
 
 MIN_MATCHES = 5            # equipos con menos partidos no se muestran
 MIN_ATK_PLAYER = 15        # ataques minimos para listar a un rematador
@@ -33,7 +33,7 @@ def hit(acts):
     return round((k-e)/len(acts)*100)
 
 def display_name(raw):
-    """Quita el sufijo de liga: 'Volley {{RIVAL1}} ({{LIGA}} Men)' -> 'Volley {{RIVAL1}}'."""
+    """Quita el sufijo de liga: 'Volley Amriswil (NLA Men)' -> 'Volley Amriswil'."""
     return re.sub(r'\s*\([^)]*\)\s*$', '', raw).strip()
 
 def top_zones(actions, key, n=4):
@@ -633,4 +633,4 @@ if __name__ == '__main__':
     print('Generando scouting desde %s ...' % DVW_DIR)
     main()
 
-# © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados
+# © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados

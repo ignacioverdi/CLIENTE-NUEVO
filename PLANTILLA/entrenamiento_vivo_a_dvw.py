@@ -5,7 +5,7 @@ entrenamiento_vivo_a_dvw.py
 ============================
 Convierte una sesión de SCOUTEO EN VIVO (el archivo entrenamiento_vivo_<fecha>.json
 que descarga el botón GUARDAR del panel) en un archivo .dvw que el motor de
-entrenamientos (update_db_entrenamientos_{{club}}.py) procesa EXACTAMENTE igual que
+entrenamientos (update_db_entrenamientos_nafels.py) procesa EXACTAMENTE igual que
 un DataVolley real: eficiencias por jugador, heatmaps por zona, historial, etc.
 
 Usa la lista "acciones" que el panel ya dejó interpretada en el JSON, así hay
@@ -20,13 +20,13 @@ Uso:
   python entrenamiento_vivo_a_dvw.py entrenamiento_vivo_2026-09-15.json
   (auto-detecta la carpeta "DVW ENTRENAMIENTOS {{CLUB}} <año más alto>")
   o forzando carpeta:
-  python entrenamiento_vivo_a_dvw.py sesion.json --carpeta "DVW ENTRENAMIENTOS {{CLUB}} 2026"
+  python entrenamiento_vivo_a_dvw.py sesion.json --carpeta "DVW ENTRENAMIENTOS NAFELS 2026"
 """
 import sys, os, re, json, argparse
 
 CRLF = '\r\n'
 SYM = {1: '#', 2: '+', 3: '!', 4: '-', 5: '/', 6: '='}   # valoración -> símbolo DataVolley
-HOME = '{{Club}}'           # norm('{{Club}}') == '{{Club}}' en el motor
+HOME = '{{CLUB}}'           # norm('{{CLUB}}') == '{{CLUB}}' en el motor
 AWAY = 'Entrenamiento'
 
 # Campos seguros tras el código: set=1, posiciones de armador=0 (el armado en vivo
@@ -132,7 +132,7 @@ def build_dvw(sesion):
         code = code_for(a)
         if not code:
             continue
-        L.append('*' + code + TAIL)    # '*' = equipo local ({{Club}})
+        L.append('*' + code + TAIL)    # '*' = equipo local ({{CLUB}})
         n_ok += 1
 
     return CRLF.join(L) + CRLF, fecha, n_ok
@@ -142,7 +142,7 @@ def detectar_carpeta():
     """Busca la carpeta 'DVW ENTRENAMIENTOS {{CLUB}} <año>' con el año más alto."""
     best, best_year = None, -1
     for d in os.listdir('.'):
-        m = re.match(r'^DVW ENTRENAMIENTOS {{CLUB}} (\d{4})$', d)
+        m = re.match(r'^DVW ENTRENAMIENTOS NAFELS (\d{4})$', d)
         if m and os.path.isdir(d):
             y = int(m.group(1))
             if y > best_year:
@@ -173,12 +173,12 @@ def main():
 
     carpeta = args.carpeta or detectar_carpeta()
     if not carpeta:
-        print('[ERROR] No encontré ninguna carpeta "DVW ENTRENAMIENTOS {{CLUB}} 20XX".')
-        print('        Creá una (ej: DVW ENTRENAMIENTOS {{CLUB}} 2026) o pasá --carpeta.')
+        print('[ERROR] No encontré ninguna carpeta "DVW ENTRENAMIENTOS NAFELS 20XX".')
+        print('        Creá una (ej: DVW ENTRENAMIENTOS NAFELS 2026) o pasá --carpeta.')
         sys.exit(1)
     os.makedirs(carpeta, exist_ok=True)
 
-    destino = os.path.join(carpeta, f'{{CLUB}} ENTRENAMIENTO {fecha} (VIVO).dvw')
+    destino = os.path.join(carpeta, f'NAFELS ENTRENAMIENTO {fecha} (VIVO).dvw')
 
     def apartar(path):
         bak = path + '.bak'; i = 1
@@ -232,11 +232,11 @@ def main():
     print()
     print(f"  ✓ Listo: {os.path.basename(destino)}  ({n_ok} acciones)")
     print(f"    Carpeta: {carpeta}")
-    print(f"    Ahora corré 'correr_entrenamientos_{{club}}.bat' para actualizar el sistema.")
+    print(f"    Ahora corré 'correr_entrenamientos_nafels.bat' para actualizar el sistema.")
     print()
 
 
 if __name__ == '__main__':
     main()
 
-# © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados
+# © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados

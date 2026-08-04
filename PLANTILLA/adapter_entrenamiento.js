@@ -30,4 +30,4 @@
   } catch (e) {}
 })();
 
-/* © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario - Todos los derechos reservados */
+/* © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados */

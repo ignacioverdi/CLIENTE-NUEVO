@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════
-   {{CLUB_COMPLETO}} · Notificaciones Push (OneSignal Web SDK v16)
+   NÄFELS VOLEY · Notificaciones Push (OneSignal Web SDK v16)
    ----------------------------------------------------------------
    - Carga el SDK de OneSignal y lo inicializa.
    - Usa el NÚMERO DE CAMISETA del jugador (que la app ya guarda en
@@ -7,7 +7,7 @@
      -> Permite mandar aviso a UN jugador puntual o a TODO el equipo.
    - Worker en /onesignal/ (scope propio) para NO pisar el sw.js de la PWA.
    - Dibuja un botón flotante "Activar avisos" (se oculta solo al activarse).
-   © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario
+   © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario
    ════════════════════════════════════════════════════════════════ */
 (function(){
   "use strict";
@@ -40,7 +40,7 @@
       var id = identity();
       if(!id) return;
       OneSignal.login(id.extId);
-      var tags = { equipo: '{{club}}', rol: id.rol };
+      var tags = { equipo: '{{CLUB_SLUG}}', rol: id.rol };
       if(id.dorsal) tags.dorsal = id.dorsal;
       OneSignal.User.addTags(tags);
     } catch(e){ /* silencioso */ }

@@ -1,12 +1,12 @@
 // ════════════════════════════════════════════════════════════════
-// {{CLUB_COMPLETO}} · Service Worker ÚNICO (raíz)
+// NÄFELS VOLEY · Service Worker ÚNICO (raíz)
 // ----------------------------------------------------------------
 // OneSignal (integración "Typical Site") registra el worker en la RAÍZ
 // con scope "/". Para no tener dos workers peleando por el mismo scope,
 // este archivo hace LAS DOS cosas:
 //   1) Notificaciones push (importa el SDK de OneSignal).
 //   2) La lógica PWA original (sin cachear contenido = siempre fresco).
-// © 2025-2026 Ignacio Verdi · {{CLUB_COMPLETO}} · Software propietario
+// © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario
 // ════════════════════════════════════════════════════════════════
 
 // 1) Push (OneSignal)
