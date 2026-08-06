@@ -47,33 +47,39 @@ if exist "DVW {{CLUB}} 2027\*.dvw" set "DVW_DIR=DVW {{CLUB}} 2027"
 if exist "DVW {{CLUB}} 2027\*.dvw" set "ANIO=2027"
 
 REM ===================================================================
-REM   ETIQUETA DE TEMPORADA  (formato AAAA/AA, con barra)
+REM   ETIQUETA DE TEMPORADA
 REM
-REM   La carpeta se llama con el ano en que ARRANCA la temporada.
-REM   "DVW {{CLUB}} 2026"  ->  temporada  "2026/27"
+REM   La carpeta se llama con el ano en que ARRANCA la temporada:
+REM       "DVW CLUB 2026"  ->  "2026/27"
 REM
-REM   OJO: antes esto restaba un ano y etiquetaba "2025/26". Los partidos
-REM   quedaban guardados con una etiqueta y la web buscaba la otra, asi que
-REM   la app aparecia vacia aunque los .dvw se hubieran procesado bien.
-REM   El sintoma era ese: "96 partidos procesados" y "0 partidos" en pantalla.
-REM
-REM   TEMP_TAG  = etiqueta de la carpeta que se esta procesando.
-REM   2026 -> "2026/27"   |   2027 -> "2027/28"
+REM   Antes esto restaba un ano y daba "2025/26". Los partidos quedaban
+REM   guardados con una etiqueta y la web buscaba otra, asi que la app
+REM   aparecia vacia aunque los .dvw se hubieran procesado bien.
 REM ===================================================================
 set /a SIG=ANIO+1
 set "YY=!SIG:~2!"
 set "TEMP_TAG=!ANIO!/!YY!"
 
 REM ===================================================================
+REM   Si el club configuro sus torneos en config_club.json, la etiqueta
+REM   sale DE AHI. Es la unica forma de que coincida con la que el motor
+REM   le pone a cada partido: un club que juega dos torneos con
+REM   calendarios distintos -uno que cruza de ano y otro que no- no se
+REM   puede resolver con una cuenta sobre el nombre de la carpeta.
+REM   Sin configuracion no pasa nada: queda la cuenta de arriba.
+REM ===================================================================
+set "TEMP_CFG="
+for /f "usebackq delims=" %%T in (`python -c "import config_club as c;print(c.etiqueta_temporada(r'!DVW_DIR!') or '')" 2^>nul`) do set "TEMP_CFG=%%T"
+if not "!TEMP_CFG!"=="" set "TEMP_TAG=!TEMP_CFG!"
+
+REM ===================================================================
 REM   TEMPORADA QUE SE MUESTRA EN LA WEB
-REM   Tiene que ser LA MISMA que TEMP_TAG, o la web no encuentra los datos.
-REM   Por eso se toma de ahi en vez de escribirla a mano: escritas por
-REM   separado, tarde o temprano una queda vieja.
-REM
-REM   Si algun dia hace falta mostrar una temporada distinta de la que se
-REM   esta procesando, se cambia aca.
+REM   Tiene que ser LA MISMA que TEMP_TAG, o la web no encuentra los
+REM   datos. Por eso se toma de ahi en vez de escribirla aparte:
+REM   escritas por separado, tarde o temprano una queda vieja.
 REM ===================================================================
 set "TEMPORADA_ACTUAL=!TEMP_TAG!"
+echo  Temporada: !TEMP_TAG!
 
 if not exist "!DVW_DIR!\*.dvw" (
     echo  [ATENCION] No hay .dvw en "!DVW_DIR!".  SALTEO partidos.

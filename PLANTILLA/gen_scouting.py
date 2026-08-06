@@ -19,19 +19,29 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # El archivo del motor lleva el nombre del club: update_db_nafels_FULL.py,
 # update_db_casla_FULL.py... Escribirlo aca fijo hacia que en cualquier otro
 # club el import fallara con "No module named". Se busca por patron.
-import glob as _glob, os as _os, sys as _sys, importlib as _imp
 
 def _motor(sufijo='_FULL'):
-    aqui = _os.path.dirname(_os.path.abspath(__file__))
-    if aqui not in _sys.path:
-        _sys.path.insert(0, aqui)
-    cand = sorted(_glob.glob(_os.path.join(aqui, 'update_db_*%s.py' % sufijo)))
+    """Encuentra el motor sin saber como se llama.
+
+    El archivo lleva el nombre del club: update_db_nafels_FULL.py,
+    update_db_casla_FULL.py... Escribirlo fijo hacia que en cualquier otro club
+    el import fallara con "No module named".
+
+    Los import van ADENTRO a proposito: asi la funcion no depende de que arriba
+    del archivo esten hechos ni de como se llamen, y se puede pegar en
+    cualquier script sin mirar el resto.
+    """
+    import os, sys, glob, importlib
+    aqui = os.path.dirname(os.path.abspath(__file__))
+    if aqui not in sys.path:
+        sys.path.insert(0, aqui)
+    cand = sorted(glob.glob(os.path.join(aqui, 'update_db_*%s.py' % sufijo)))
     if not cand:
-        cand = sorted(_glob.glob(_os.path.join(aqui, 'update_db_*.py')))
-        cand = [c for c in cand if 'entrenamientos' not in _os.path.basename(c)]
+        cand = sorted(glob.glob(os.path.join(aqui, 'update_db_*.py')))
+        cand = [c for c in cand if 'entrenamientos' not in os.path.basename(c)]
     if not cand:
         raise ImportError('No encuentro el motor update_db_*%s.py en %s' % (sufijo, aqui))
-    return _imp.import_module(_os.path.basename(cand[0])[:-3])
+    return importlib.import_module(os.path.basename(cand[0])[:-3])
 
 eng = _motor("_FULL")
 

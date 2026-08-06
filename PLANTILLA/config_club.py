@@ -321,3 +321,31 @@ if __name__ == '__main__':
         for e in equipos():
             print('                    ' + e)
         print()
+
+def etiqueta_temporada(carpeta='', fecha=None):
+    """La etiqueta de temporada que le corresponde a una carpeta HOY.
+
+    La usa HACER_TODO.bat para saber que temporada mostrar en la web. Tiene
+    que dar LO MISMO que la que el motor le pone a cada partido, o la app
+    queda vacia: los datos se guardan con una etiqueta y la pantalla busca
+    otra. Ese fue el sintoma exacto que aparecio con el primer club argentino
+    —"96 partidos procesados", "0 partidos" en pantalla—.
+
+    Devuelve "2026" si el torneo empieza y termina el mismo ano, y "2026/27"
+    si cruza. Sin torneos configurados devuelve vacio y el .bat sigue con su
+    cuenta de siempre.
+    """
+    import datetime as _dt
+    if not torneos():
+        return ''
+    if fecha is None:
+        hoy = _dt.date.today()
+        fecha = '%04d-%02d-%02d' % (hoy.year, hoy.month, hoy.day)
+    t = temporada_de(fecha, '', carpeta)
+    if not t:
+        return ''
+    tor = resolver_torneo('', carpeta)
+    cfg = torneos().get(tor) or {}
+    if cfg.get('cruza'):
+        return '%d/%02d' % (int(t), (int(t) + 1) % 100)
+    return str(t)
