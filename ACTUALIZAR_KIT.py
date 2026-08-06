@@ -37,6 +37,7 @@
 """
 import os
 import re
+import re as _re
 import shutil
 from datetime import datetime
 
@@ -76,6 +77,32 @@ def generico(s):
     Devuelve el texto y la lista de lo que cambio.
     """
     cambios = []
+
+    # ── Direcciones y claves ────────────────────────────────────────────────
+    # Van PRIMERO, antes que el nombre del club: si se reemplaza "nafels" antes,
+    # la direccion de Firebase ya no se reconoce y queda a medias.
+    #
+    # Esto faltaba y era grave: firebase.js y api/calendario.js llegaban al
+    # cliente con la base de datos de Nafels adentro. Un club nuevo hubiera
+    # leido —y escrito— sobre los datos de otro. generar_plantilla.py ya tenia
+    # estas reglas; el actualizador no, asi que cada vez que se actualizaba una
+    # pantalla se volvia a colar la direccion real.
+    DIRECCIONES = [
+        (_re.compile(r'https://[a-z0-9\-]*nafels[a-z0-9\-]*\.firebaseio\.com', _re.I), '{{FIREBASE_URL}}', 'direccion de Firebase'),
+        (_re.compile(r'https://[a-z0-9\-]*casla[a-z0-9\-]*\.firebaseio\.com', _re.I),  '{{FIREBASE_URL}}', 'direccion de Firebase'),
+        (_re.compile(r'AIzaSy[0-9A-Za-z_\-]{30,}'),                                     '{{FIREBASE_KEY}}', 'clave de Firebase'),
+        (_re.compile(r'[a-z0-9\-]*nafels[a-z0-9\-]*\.vercel\.app', _re.I),            '{{DOMINIO}}',      'direccion del sitio'),
+        (_re.compile(r'[a-z0-9\-]*voley-stats[a-z0-9\-]*\.vercel\.app', _re.I),       '{{DOMINIO}}',      'direccion del sitio'),
+    ]
+    for rx, marca, que in DIRECCIONES:
+        s, n = rx.subn(marca, s)
+        if n: cambios.append('%s (%d)' % (que, n))
+
+    # El nombre suelto del club, tal como lo escribe la funcion del calendario.
+    for viejo in ('N\u00e4fels', 'N\u00e4FELS', 'Naefels'):
+        if viejo in s:
+            n = s.count(viejo); s = s.replace(viejo, '{{Club}}')
+            cambios.append('nombre del club (%d)' % n)
 
     # ── el nombre del club en titulos y textos visibles ──────────────────
     VISIBLE = [
@@ -227,7 +254,15 @@ PROGRAMA = {'datos_seguros.js', 'nla_stats_template.html'}
 # Si alguna vez hay que actualizarlos, se hace a mano y con cuidado.
 DEL_KIT = {'sw.js', 'procesar.py'}
 
+# ── Lo que NO va al producto ─────────────────────────────────────────────────
+# Paginas que quedaron de pruebas: no las enlaza nadie, no aportan nada y son
+# superficie expuesta de mas. Se borraron de los dos repos; esta lista evita
+# que vuelvan a entrar solas desde la carpeta de origen.
+FUERA = {'diagnostico.html', 'PROTOTIPO_canchita_video.html'}
+
 def es_dato(n):
+    if n in FUERA:
+        return True          # no forma parte del producto
     if n in DEL_KIT:
         return True          # se deja el del kit, que es el bueno
     if n in PROGRAMA:
@@ -258,9 +293,26 @@ def nombre_generico(n, destino=None):
 # documentacion interna.
 CONFIG = {'.vercelignore', '.gitignore'}
 
-pantallas = sorted(f for f in os.listdir(origen)
-                   if (f in CONFIG or
-                       (f.lower().endswith(('.html', '.js', '.py')) and not es_dato(f))))
+# ── Subcarpetas que tambien viajan ───────────────────────────────────────────
+# api/ tiene las funciones que corren en el servidor de Vercel (el calendario
+# suscribible). No estan en la raiz, asi que el listado de siempre no las veia
+# y el cliente se quedaba sin esa parte.
+SUBCARPETAS = ['api']
+
+def _listar(carpeta, prefijo=''):
+    salida = []
+    for f in sorted(os.listdir(carpeta)):
+        ruta = os.path.join(carpeta, f)
+        rel  = prefijo + f
+        if os.path.isdir(ruta):
+            if f in SUBCARPETAS:
+                salida.extend(_listar(ruta, rel + '/'))
+            continue
+        if f in CONFIG or (f.lower().endswith(('.html', '.js', '.py', '.css')) and not es_dato(f)):
+            salida.append(rel)
+    return salida
+
+pantallas = _listar(origen)
 if not pantallas:
     print('  La carpeta NAFELS_AL_DIA no tiene ningun .html, .js ni .py.')
     print()
@@ -277,6 +329,8 @@ nuevas = []
 for nombre in pantallas:
     fo = os.path.join(origen, nombre)
     fd = os.path.join(destino, nombre_generico(nombre, destino))
+    _dir = os.path.dirname(fd)
+    if _dir and not os.path.isdir(_dir): os.makedirs(_dir, exist_ok=True)
 
     try:
         s = open(fo, encoding='utf-8', errors='replace').read()
@@ -299,7 +353,10 @@ for nombre in pantallas:
 
     # respaldo antes de pisar
     os.makedirs(respaldo, exist_ok=True)
-    shutil.copy2(fd, os.path.join(respaldo, nombre_generico(nombre, destino)))
+    _fr = os.path.join(respaldo, nombre_generico(nombre, destino))
+    _dr = os.path.dirname(_fr)
+    if _dr and not os.path.isdir(_dr): os.makedirs(_dr, exist_ok=True)
+    shutil.copy2(fd, _fr)
 
     open(fd, 'w', encoding='utf-8').write(s)
     puestas.append((nombre, len(viejo), len(s), cambios))
@@ -333,7 +390,7 @@ print('     REVISION FINAL')
 print('  ' + '-' * 70)
 quedan = {}
 for nombre in os.listdir(destino):
-    if not nombre.lower().endswith(('.html', '.js', '.py')) or es_dato(nombre):
+    if not nombre.lower().endswith(('.html', '.js', '.py', '.css')) or es_dato(nombre):
         continue
     try:
         s = open(os.path.join(destino, nombre), encoding='utf-8', errors='replace').read()

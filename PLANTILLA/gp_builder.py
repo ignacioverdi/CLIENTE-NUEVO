@@ -43,7 +43,7 @@ COMBO_ORIG = {
 }
 
 def is_nafels(name):
-    return "Nafels" in name or "N\xe4fels" in name or "Naefels" in name or "Biogas" in name
+    return "Nafels" in name or "N\xe4fels" in name or "{{Club}}" in name or "Biogas" in name
 
 def get_teams(lines):
     in_t=False; tl=[]

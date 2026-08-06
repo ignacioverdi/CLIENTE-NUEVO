@@ -122,7 +122,7 @@ def normalize_combo(combo):
 NLA_TEAMS = ['Amriswil','Chenois','Colombier','Jona','Lausanne','Nafels','Schonenwerd','St Gallen']
 
 TEAM_NORM = {
-    '{{CLUB}} (NLA Men)': 'Nafels',
+    'Biogas Volley {{Club}} (NLA Men)': 'Nafels',
     'Volley NFELS': 'Nafels', 'Volley Nfels': 'Nafels',
     'Volley Amriswil (NLA Men)': 'Amriswil',
     'Volley Schönenwerd (NLA Men)': 'Schonenwerd',
@@ -855,7 +855,7 @@ def build_heatmaps(teams_data, template_dir='.', output_dir='.', temporada_filte
               # La plantilla es de {{CLUB}}: reemplazar también esas menciones por el club destino
               ('{{CLUB}} — ANALISIS', f'{display} — ANALISIS'),
               ('{{CLUB}} — ANALISIS', f'{display} — ANALISIS'),
-              ('— {{CLUB}} 2026', f'— {cap} 2026'),('— {{CLUB}} 2026', f'— {cap} 2026'),
+              ('— {{CLUB}} 2026', f'— {cap} 2026'),('— {{Club}} 2026', f'— {cap} 2026'),
               ('{{CLUB}} VOLEY', f'{display} VOLEY'),
               ('División de Honor 2026','{{LIGA}}'),('División de Honor','{{LIGA}}'),
               ('DHM 2026','NLA 2025/26'),('<script src="chat.js"></script>',''),

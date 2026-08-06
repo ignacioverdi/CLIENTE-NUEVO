@@ -277,6 +277,10 @@ select, select option {
 <script src="firebase.js" onerror="void 0"></script>
 <script src="mapa_videos.js.enc" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
 <script src="videos.js" onerror="window.VIDEOS_DATA=window.VIDEOS_DATA||{}"></script>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
 </head>
 <body>
 
@@ -285,7 +289,7 @@ select, select option {
   <button onclick="descargarPDF()" class="pdf-btn" id="pdf-btn">📄 Descargar PDF</button>
   <div>
     <div class="page-title"><span data-t="game_plan">Plan de Juego</span></div>
-    <div style="font-size:10px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-top:1px">Análisis táctico de rivales — {{CLUB}}</div>
+    <div style="font-size:10px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-top:1px">Análisis táctico de rivales — Volley {{Club}}</div>
   </div>
   <div>
     <div class="rival-name" id="rival-nombre">AMRISWIL</div>

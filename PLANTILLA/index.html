@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="{{CLUB}}">
+<meta name="apple-mobile-web-app-title" content="{{Club}} Volley">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <title>{{CLUB}} VOLEY — Sistema de Análisis</title>
@@ -300,6 +300,55 @@ select, select option {
   .card-arrow{color:#e6a743!important;opacity:.55}
   .section-lbl{display:none!important}
 </style>
+<style id="celular-encabezado">
+/* ══ EL ENCABEZADO EN EL CELULAR ═══════════════════════════════════════════
+   La pagina solo tenia una regla para pantallas chicas, y era para las
+   tarjetas: el encabezado no tenia ninguna. En el escritorio sobra espacio y
+   se ve bien, pero en un celular de 390 px no entran el escudo de 72 px, el
+   titulo con 6 px de espaciado entre letras y los 40 px de margen. Como el
+   header tiene overflow:hidden, lo que sobraba quedaba cortado: los botones de
+   idioma, "Sistema activo", la fecha y el boton de Temporadas.
+
+   Ahora, en pantallas chicas, esa columna baja a su propio renglon y se
+   acomoda en fila. Nada de esto cambia como se ve en la computadora.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media(max-width:768px){
+  header{
+    padding:14px 14px 12px !important;
+    gap:12px !important;
+    flex-wrap:wrap !important;
+    overflow:visible !important;      /* si no, sigue cortando lo que sobresale */
+  }
+  .logo-wrap{width:50px !important;height:50px !important}
+  .header-text{flex:1 1 auto;min-width:0}
+  .club-name{font-size:21px !important;letter-spacing:2.5px !important;line-height:1.05}
+  .club-sub{font-size:11px !important;line-height:1.3}
+
+  /* La columna de la derecha pasa a ser un renglon propio, debajo del titulo */
+  .header-right{
+    margin-left:0 !important;
+    width:100% !important;
+    flex-direction:row !important;
+    flex-wrap:wrap !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:8px !important;
+  }
+  #lang-wrap{margin-left:0 !important}
+  .live-badge{font-size:9px !important;padding:4px 10px !important;letter-spacing:1px !important}
+  .fecha-txt{font-size:10px !important;margin-left:auto !important;text-align:right}
+}
+
+/* Telefonos angostos: la fecha completa no entra al lado del resto */
+@media(max-width:400px){
+  .club-name{font-size:19px !important;letter-spacing:2px !important}
+  .fecha-txt{width:100%;margin-left:0 !important;text-align:left}
+}
+</style>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
 </head>
 <body>
 <div id="fx"><div class="grid"></div><div class="sweep"></div><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="vig"></div></div>
@@ -308,7 +357,7 @@ select, select option {
 
 <header>
   <div class="logo-wrap">
-    <img src="escudo.png" alt="{{CLUB}}" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'font-family:Bebas Neue,sans-serif;font-size:20px;color:#e8192c;letter-spacing:1px\'>CA<br>SL</div>'">
+    <img src="escudo.png" alt="Volley {{Club}}" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'font-family:Bebas Neue,sans-serif;font-size:20px;color:#e8192c;letter-spacing:1px\'>CA<br>SL</div>'">
   </div>
   <div class="header-text">
     <div class="club-name">{{CLUB}} VOLEY</div>
@@ -494,7 +543,7 @@ select, select option {
         </div>
         <div class="card-body">
           <div class="card-title" style="color:#06b6d4">Comparador</div>
-          <div class="card-desc">{{CLUB}} vs cualquier rival, lado a lado: saque, ataque y recepción con barras que marcan quién está mejor en cada métrica.</div>
+          <div class="card-desc">{{Club}} vs cualquier rival, lado a lado: saque, ataque y recepción con barras que marcan quién está mejor en cada métrica.</div>
         </div>
         <div class="card-arrow">→</div>
       </a><a href="subir_partido.html" class="card" style="--card-color:#3ddc84">

@@ -11,7 +11,7 @@
       No se reconocio ningun jugador de este club.
 
   La tabla de equipos tiene el nombre de la temporada pasada —"Biogas Volley
-  Näfels"— y el archivo trae el de esta, con el patrocinador nuevo. Como la
+  {{Club}}"— y el archivo trae el de esta, con el patrocinador nuevo. Como la
   búsqueda era por nombre exacto, no coincidía y el motor descartaba a todos
   los jugadores.
 
@@ -30,7 +30,7 @@
       "AXPO VOLLEY NAFELS"  contiene  "NAFELS"   ->  Nafels
       "VBC Jona U23"        contiene  "JONA"     ->  Jona
 
-  Se compara sin acentos y sin mayúsculas, así "Näfels" y "NAFELS" son lo
+  Se compara sin acentos y sin mayúsculas, así "{{Club}}" y "NAFELS" son lo
   mismo. Si aun así no aparece ninguno, se devuelve el nombre limpio como
   antes: nunca se pierde información.
 
@@ -56,7 +56,7 @@ VIEJO = """def norm(name):
 
 NUEVO = '''def _plano(t):
     """El nombre sin acentos, sin mayusculas y sin nada que no sea letra o
-       numero. Sirve para comparar 'Näfels' con 'NAFELS'."""
+       numero. Sirve para comparar '{{Club}}' con 'NAFELS'."""
     import unicodedata
     t = unicodedata.normalize('NFKD', t or '').encode('ascii', 'ignore').decode()
     return re.sub(r'[^a-z0-9]', '', t.lower())

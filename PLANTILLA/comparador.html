@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comparador — {{CLUB}} vs Rival</title>
+<title>Comparador — {{Club}} vs Rival</title>
 <style>
   :root{--bg:#07080F;--card:#11162a;--card2:#0d1322;--border:#1e2944;--text:#e8edf7;--mut:#64748b;--mut2:#94a3b8;
         --naf:#F97316;--riv:#06B6D4;--ok:#22C55E;--bad:#ef4444}
@@ -34,6 +34,13 @@
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
+<!-- Marca la fila del jugador que inicio sesion. Si no es un jugador, no
+     hace nada: solo AGREGA una clase, nunca cambia como se arma la tabla. -->
+<script src="mi_fila.js" onerror="void 0"></script>
 </head>
 <body>
   <div class="hdr">
@@ -53,7 +60,7 @@
   <script>
   (function(){
     var S=window.SCOUTING_RIVAL||{};
-    var NAF='{{CLUB}}';
+    var NAF='Biogas Volley {{Club}}';
     var naf=S[NAF];
     var teams=Object.keys(S).filter(function(t){return t!==NAF && S[t].matches>=5;}).sort(function(a,b){return S[b].matches-S[a].matches;});
     var sel=document.getElementById('sel');
@@ -85,7 +92,7 @@
     function render(name){
       var r=S[name], out=document.getElementById('out');
       if(!r||!naf){out.innerHTML='<div class="empty">Elegí un rival para comparar.</div>';return;}
-      var h='<div class="names"><div class="nm l">{{CLUB}}</div><div class="mid">'+naf.matches+' vs '+r.matches+' PJ</div><div class="nm r">'+name+'</div></div>';
+      var h='<div class="names"><div class="nm l">{{Club}}</div><div class="mid">'+naf.matches+' vs '+r.matches+' PJ</div><div class="nm r">'+name+'</div></div>';
       GROUPS.forEach(function(g){
         h+='<div class="grp"><div class="grp-t"><span class="ic" style="background:'+g.ic+'"></span>'+g.t+'</div>';
         g.rows.forEach(function(row){

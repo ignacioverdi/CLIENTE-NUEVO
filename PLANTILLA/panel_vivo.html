@@ -522,6 +522,10 @@ input.f:focus,select.f:focus{border-color:var(--b2)}
      sale de inmediato. En ingles o aleman traduce 200 ms despues de que la
      pantalla se queda quieta, asi que no molesta mientras se scoutea. -->
 <script src="lang.js"></script>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
 </head>
 <body>
 
@@ -1188,10 +1192,10 @@ const EVALS  = ['#','+','!','-','/','='];
 const HITS  = {H:'Potente',P:'Colocada',T:'Finta'};   /* ataque; ver SUBTYPE para el resto */
 const SUBZ  = ['A','B','C','D'];
 const ZGRID = [4,3,2,7,8,9,5,6,1];   /* red arriba, fondo abajo */
-/* Tablas oficiales, extraidas de los DVW de Näfels (76) + CASLA (1 extra) */
+/* Tablas oficiales, extraidas de los DVW de {{Club}} (76) + CASLA (1 extra) */
 /* d=descripción · z=zona · et=tipo de armado · tg=destino del armado (col. 3 y 8 de [3ATTACKCOMBINATION]) */
 /* Lado del ataque (col. 2) y nombre de cada llamada (col. 2 de [3SETTERCALL]),
-   sacados de los 97 DVW oficiales de Näfels. No están inventados. */
+   sacados de los 97 DVW oficiales de {{Club}}. No están inventados. */
 const COMBO_LADO = {"V5":"R","V6":"L","V8":"C","VP":"C","V0":"C","VB":"C","VR":"C","XO":"L","XQ":"L","XS":"L","X9":"R","XT":"R","X3":"L","X4":"L","XP":"C","X0":"C","XB":"C","XR":"C","X5":"R","X6":"L","X8":"C","X1":"R","X7":"R","X2":"L","XM":"C","XG":"R","XC":"R","XD":"R","XL":"C","CB":"L","CF":"L","CS":"L","PP":"L","W4":"C","W2":"C","J1":"C","J2":"C","J3":"C","J4":"C","J5":"C","J7":"C","Y9":"C","Y8":"C","W1":"C","W3":"C","JJ":"C","V3":"C","V2":"C","V4":"C","G4":"C","G3":"C","G8":"C","G9":"C","G2":"C","Y1":"L","YI":"C","YD":"C","Y7":"C","C7":"C","C4":"C","C2":"C","C8":"C","C9":"C","L1":"C","G5":"C","PR":"C","JY":"C","XF":"L","CD":"L","C5":"R","C0":"C","C6":"L","P2":"C","XA":"C","V9":"C","PO":"C"};
 const CALL_DESC  = {"K1":"Quick ahead","KM":"Push","K2":"Quick behind","K7":"Gap","KS":"Slide","K3":"Corta Atras","K4":"Jatu","K5":"Beti","KE":"no primer tiempo","KB":"Caida en 2","KF":"Caida en 4","K8":"Caida en 8","K9":"Caida en 9","KC":"Contra","K6":"Shiftet 2","KK":"Während der Reali","KD":"Second ball"};
 const COMBOS={C0:{d:"Shoot set in 5",z:'7',et:'U',tg:'F'},C2:{d:"Semi 2",z:'2',et:'M',tg:'B'},C4:{d:"Semi 4",z:'4',et:'M',tg:'F'},C5:{d:"Shoot set in 4",z:'4',et:'U',tg:'F'},C6:{d:"Shoot set in 2",z:'2',et:'U',tg:'B'},C7:{d:"Semi 5",z:'7',et:'M',tg:'F'},C8:{d:"Shoot set in 1",z:'9',et:'U',tg:'B'},C9:{d:"Semi 9",z:'9',et:'M',tg:'B'},CB:{d:"Slide near S",z:'2',et:'N',tg:'C'},CD:{d:"Slide away from setter",z:'2',et:'N',tg:'C'},CF:{d:"Slide moved from S",z:'2',et:'N',tg:'C'},CS:{d:"Slide far from S",z:'2',et:'N',tg:'C'},G2:{d:"Alta en 2",z:'2',et:'H',tg:'B'},G3:{d:"Alta en 3",z:'3',et:'H',tg:'C'},G4:{d:"Alta en 4",z:'4',et:'H',tg:'F'},G5:{d:"ALTA X 5",z:'7',et:'H',tg:'F'},G8:{d:"Alta en 6",z:'8',et:'H',tg:'P'},G9:{d:"Alta en 1",z:'9',et:'H',tg:'B'},J1:{d:"Corta",z:'3',et:'Q',tg:'C'},J2:{d:"B",z:'3',et:'Q',tg:'C'},J3:{d:"Corta Atras",z:'3',et:'Q',tg:'C'},J4:{d:"Hatu",z:'3',et:'Q',tg:'C'},J5:{d:"Caminada Atras",z:'2',et:'Q',tg:'B'},J7:{d:"Zero one leg",z:'2',et:'Q',tg:'B'},J9:{d:"Toque de 2 de Zaguer",z:'8',et:'O',tg:'S'},JJ:{d:"Toque de Armador",z:'2',et:'M',tg:'S'},JY:{d:"Toque de Segunda de",z:'9',et:'O',tg:'-'},L1:{d:"COMBINACION",z:'3',et:'M',tg:'C'},P2:{d:"Second hit to opponent court",z:'3',et:'O',tg:'-'},PO:{d:"Dump ball in 2",z:'2',et:'O',tg:'B'},PP:{d:"Setter Dump",z:'3',et:'O',tg:'S'},PR:{d:"Attack on opponent freeball",z:'3',et:'O',tg:'-'},V0:{d:"High A",z:'7',et:'H',tg:'F'},V2:{d:"Vendida en 2",z:'2',et:'O',tg:'B'},V3:{d:"High set to 3",z:'3',et:'O',tg:'-'},V4:{d:"Vendida en 4",z:'4',et:'O',tg:'F'},V5:{d:"Hut",z:'4',et:'H',tg:'F'},V6:{d:"Red",z:'2',et:'H',tg:'B'},V8:{d:"High D",z:'9',et:'H',tg:'B'},V9:{d:"High minus",z:'9',et:'H',tg:'B'},VB:{d:"High C",z:'8',et:'H',tg:'P'},VP:{d:"Pipe",z:'8',et:'H',tg:'P'},VR:{d:"High B",z:'8',et:'H',tg:'P'},W1:{d:"Interna 3 - 2",z:'2',et:'T',tg:'B'},W2:{d:"Rapida en 2",z:'2',et:'T',tg:'B'},W3:{d:"Internal 4 - 3",z:'4',et:'T',tg:'F'},W4:{d:"Rapida en 4",z:'4',et:'T',tg:'F'},X0:{d:"A (fast ball area 5)",z:'7',et:'U',tg:'F'},X1:{d:"Quick in front (4)",z:'3',et:'Q',tg:'C'},X2:{d:"Quick ball back(5)",z:'2',et:'Q',tg:'C'},X3:{d:"O hits in middle",z:'3',et:'M',tg:'B'},X4:{d:"O hits a 2nd step 4",z:'2',et:'M',tg:'B'},X5:{d:"Go",z:'4',et:'T',tg:'F'},X6:{d:"X",z:'2',et:'T',tg:'B'},X7:{d:"2",z:'4',et:'Q',tg:'C'},X8:{d:"D",z:'9',et:'T',tg:'B'},X9:{d:"OH hits a 10",z:'4',et:'M',tg:'F'},XA:{d:"Pipe set to 6-5",z:'8',et:'M',tg:'P'},XB:{d:"C Quick Ball",z:'8',et:'U',tg:'P'},XC:{d:"4- hitter jumps away",z:'3',et:'Q',tg:'C'},XD:{d:"2- hitter jumps away",z:'3',et:'Q',tg:'C'},XF:{d:"Quick lower set behind",z:'2',et:'Q',tg:'C'},XG:{d:"7-1 Gun",z:'3',et:'Q',tg:'C'},XL:{d:"4-setter in area 2",z:'2',et:'Q',tg:'C'},XM:{d:"Quick in Center",z:'3',et:'Q',tg:'C'},XO:{d:"5 by the opposite",z:'2',et:'Q',tg:'B'},XP:{d:"Bic",z:'8',et:'U',tg:'P'},XQ:{d:"5 by O with MB back",z:'2',et:'Q',tg:'B'},XR:{d:"B Quick Ball",z:'8',et:'U',tg:'P'},XS:{d:"Slide by the opposite",z:'2',et:'N',tg:'B'},XT:{d:"OH hits in middle",z:'3',et:'M',tg:'F'},Y1:{d:"Internal 1 C",z:'9',et:'T',tg:'B'},Y7:{d:"Rapida en 5",z:'7',et:'T',tg:'F'},Y8:{d:"Pipe",z:'8',et:'T',tg:'P'},Y9:{d:"Rapida en 1",z:'9',et:'T',tg:'B'},YD:{d:"PIPE RED",z:'8',et:'T',tg:'P'},YI:{d:"PIPE BLUE",z:'8',et:'T',tg:'P'}};
@@ -1654,7 +1658,7 @@ function parseTail(s,skill,ev){
   let i=0;
   const head=s.slice(0,2).toUpperCase();
   if(COMBOS[head]||CALLS[head]){ d.combo=head; i=2; }
-  /* Verificado contra 1366 códigos reales de Näfels:
+  /* Verificado contra 1366 códigos reales de {{Club}}:
      · armado (E) y bloqueo (B) NUNCA llevan zona de origen -> un dígito = destino
      · recepción (R) con un solo dígito -> destino
      · saque, ataque, defensa y freeball: primer dígito = origen, segundo = destino  */
@@ -1717,7 +1721,7 @@ function buildTail(d,a){
 }
 /* CARACTERES PERSONALIZADOS (DV4 4.1.4): hasta 5, los define el usuario.
    Lo que el programa no interpreta se guarda acá.
-   'convención Näfels' = lo que hace el scout de la liga suiza: diferencia de puntos + fila del jugador.
+   'convención {{Club}}' = lo que hace el scout de la liga suiza: diferencia de puntos + fila del jugador.
    NO es un estándar de DataVolley: lo dedujimos de los archivos. */
 function customFor(d,a){
   if(d.custom) return d.custom.slice(0,5);
@@ -5099,7 +5103,7 @@ function importarSQ(input, side){
   if(!file) return;
   const fr = new FileReader();
   fr.onload = () => {
-    /* La codificación cambia según el archivo: los de {{CLUB}} y Schönenwerd vienen en UTF-8,
+    /* La codificación cambia según el archivo: los de {{Club}} y Schönenwerd vienen en UTF-8,
        el de Vélez en latin-1. Probamos UTF-8 estricto y, si falla, latin-1. */
     const bytes = new Uint8Array(fr.result);
     let txt;
@@ -5860,7 +5864,7 @@ function abrirDVW(){
     /* La codificación no es confiable: los .dvw declaran 1252 en la cabecera
        pero muchos vienen en UTF-8 de verdad. En vez de creerle al archivo,
        probamos UTF-8 estricto y, si no encaja, caemos a Windows-1252.
-       Si no, «{{CLUB}}» se lee «NÃ¤fels». */
+       Si no, «{{Club}}» se lee «NÃ¤fels». */
     fr.readAsArrayBuffer(f);
   };
   inp.click();
@@ -6054,7 +6058,7 @@ function exportDVW(modo){
      y castellano.
 
      El navegador, si se le pasa un texto, lo guarda en UTF-8. Y un archivo
-     UTF-8 abierto con la pagina 1252 muestra "NÃ¤fels" en vez de "Näfels":
+     UTF-8 abierto con la pagina 1252 muestra "NÃ¤fels" en vez de "{{Club}}":
      34 de los 97 .dvw de esta carpeta ya tienen los nombres corrompidos asi
      ("ChÃªnois GenÃ¨ve"). Escribiendo en 1252 el archivo abre bien en el Data
      Volley de cualquier club europeo.

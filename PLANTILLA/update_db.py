@@ -43,7 +43,7 @@ NLA_TEAMS = ['Amriswil','Chenois','Colombier','Jona','Lausanne',
              'Nafels','Schonenwerd','St Gallen']
 
 TEAM_NORM = {
-    '{{CLUB}} (NLA Men)': 'Nafels',
+    'Biogas Volley {{Club}} (NLA Men)': 'Nafels',
     'Volley NFELS': 'Nafels', 'Volley Nfels': 'Nafels',
     'Volley Amriswil (NLA Men)': 'Amriswil',
     'Volley Schönenwerd (NLA Men)': 'Schonenwerd',

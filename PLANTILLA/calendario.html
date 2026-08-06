@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>CALENDARIO — {{CLUB}}</title>
+<title>CALENDARIO — Axpo Volley {{Club}}</title>
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -152,6 +152,7 @@
     .plan-nav{margin-left:0;width:100%;justify-content:center}
   }
 </style>
+<link rel="stylesheet" href="movil.css">
 </head>
 <body>
 <div class="wrap" id="wrap">
@@ -159,7 +160,7 @@
     <a href="index.html" class="back-btn">← Hub</a>
     <div>
       <h1>📅 CALENDARIO</h1>
-      <div class="subtitle">{{CLUB}}</div>
+      <div class="subtitle">Axpo Volley {{Club}}</div>
     </div>
   </div>
 
@@ -174,6 +175,19 @@
       <button class="tab on" id="tab-partidos" onclick="setTab('partidos')">🏆 Partidos</button>
       <button class="tab" id="tab-entrenamientos" onclick="setTab('entrenamientos')">🏋️ Entrenamientos</button>
     </div>
+    <!-- Un solo boton para llevarse TODO al calendario del telefono: los
+         partidos y los entrenamientos juntos. Ir uno por uno con 14 partidos y
+         tres entrenamientos por semana no lo hace nadie.
+         Sin data-solo-editor: esto lo usa el jugador, no el cuerpo tecnico. -->
+    <!-- Solo la suscripcion. Existia tambien un boton para bajar una copia,
+         pero se quito a proposito: esa copia queda vieja apenas cambia un
+         horario, y con dos botones parecidos alguno elegia el equivocado.
+         La funcion todoAlCalendario() sigue en el codigo por si hace falta
+         volver a ofrecerla. -->
+    <button class="import-btn" id="cal-sub-btn" onclick="suscribirCalendario()"
+            style="background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.4);color:#4ade80">
+      🔄 Suscribirme al calendario
+    </button>
     <button class="add-btn" id="add-btn" onclick="openForm()" data-solo-editor>+ Agregar</button>
     <button class="import-btn" id="import-btn" onclick="importFixture()" data-solo-editor>⬇️ Importar fixture 2026/27 (14 partidos)</button>
     <button class="import-btn" id="import-gym-btn" onclick="importGym()" data-solo-editor style="display:none">🏋️ Gimnasio (Lun/Mié/Vie · sep–abr)</button>
@@ -262,7 +276,7 @@
 
   // ── Escudos de los clubes (monograma con color real; reemplazable por logo real vía ESCUDOS) ──
   var CLUBS={
-    'Näfels':{ab:'NÄF',c:'#d81e28'}, 'Nafels':{ab:'NÄF',c:'#d81e28'},
+    '{{Club}}':{ab:'NÄF',c:'#d81e28'}, 'Nafels':{ab:'NÄF',c:'#d81e28'},
     'Lausanne':{ab:'LUC',c:'#00397a'},
     'St. Gallen':{ab:'SG',c:'#0a7a37'}, 'St Gallen':{ab:'SG',c:'#0a7a37'},
     'Jona':{ab:'JON',c:'#1d4f91'},
@@ -274,7 +288,7 @@
   // Logos reales: dejá los 8 archivos PNG en una carpeta "escudos/" junto a este archivo.
   // Si el archivo existe, se muestra el logo; si falta, queda el monograma. Nunca se rompe.
   var ESCUDOS={
-    'Näfels':'escudos/nafels.png', 'Nafels':'escudos/nafels.png',
+    '{{Club}}':'escudos/nafels.png', 'Nafels':'escudos/nafels.png',
     'Lausanne':'escudos/lausanne.png',
     'St. Gallen':'escudos/stgallen.png', 'St Gallen':'escudos/stgallen.png',
     'Jona':'escudos/jona.png',
@@ -330,18 +344,18 @@
 
   // ── Fixture NLA 2026/27 (temporada regular) ──
   var FIXTURE=[
-    {fecha:'2026-10-18',hora:'17:00',rival:'Lausanne',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-10-18',hora:'17:00',rival:'Lausanne',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
     {fecha:'2026-10-24',hora:'18:00',rival:'St. Gallen',condicion:'Visitante',lugar:'St. Gallen',mapa:'https://www.google.com/maps/search/?api=1&query=8FVFC88X%2BRW'},
-    {fecha:'2026-10-31',hora:'17:00',rival:'Jona',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-10-31',hora:'17:00',rival:'Jona',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
     {fecha:'2026-11-07',hora:'18:00',rival:'Chênois',condicion:'Visitante',lugar:'Genève',mapa:'https://www.google.com/maps/search/?api=1&query=8FR855QV%2BF3'},
     {fecha:'2026-11-14',hora:'17:30',rival:'Schönenwerd',condicion:'Visitante',lugar:'Schönenwerd',mapa:'https://www.google.com/maps/search/?api=1&query=8FVC92H3%2BVH'},
-    {fecha:'2026-11-21',hora:'17:00',rival:'Amriswil',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-11-28',hora:'17:00',rival:'Colombier',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-11-21',hora:'17:00',rival:'Amriswil',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-11-28',hora:'17:00',rival:'Colombier',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
     {fecha:'2026-12-05',hora:'17:30',rival:'Lausanne',condicion:'Visitante',lugar:'Lausanne',mapa:'https://www.google.com/maps/search/?api=1&query=8FR8GH9H%2BPM'},
-    {fecha:'2026-12-13',hora:'17:00',rival:'St. Gallen',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2026-12-13',hora:'17:00',rival:'St. Gallen',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
     {fecha:'2026-12-19',hora:'17:00',rival:'Jona',condicion:'Visitante',lugar:'Jona',mapa:'https://www.google.com/maps/search/?api=1&query=8FVC6RCV%2BRJ'},
-    {fecha:'2027-01-03',hora:'17:00',rival:'Chênois',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2027-01-16',hora:'17:00',rival:'Schönenwerd',condicion:'Local',lugar:'Lintharena, {{CLUB}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2027-01-03',hora:'17:00',rival:'Chênois',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
+    {fecha:'2027-01-16',hora:'17:00',rival:'Schönenwerd',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
     {fecha:'2027-01-30',hora:'17:00',rival:'Amriswil',condicion:'Visitante',lugar:'Amriswil',mapa:'https://www.google.com/maps/search/?api=1&query=8FVFG7XQ%2BCP'},
     {fecha:'2027-02-13',hora:'17:30',rival:'Colombier',condicion:'Visitante',lugar:'Colombier',mapa:'https://www.google.com/maps/search/?api=1&query=8FV83W73%2B5G'}
   ];
@@ -417,7 +431,7 @@
   function importVolley(){ if(window.VB_esEditor&&!VB_esEditor())return;
     if(!confirm('¿Agregar la seguidilla de entrenamientos de vóley (01/09/26 – 30/04/27, sin vacaciones)?')) return;
     var arr=(data.entrenamientos||[]).slice(), added=0;
-    var lugar='Lintharena, Näfels', mapa='https://maps.app.goo.gl/MtXaacJWfLWZ1QKM8?g_st=iw';
+    var lugar='Lintharena, {{Club}}', mapa='https://maps.app.goo.gl/MtXaacJWfLWZ1QKM8?g_st=iw';
     var SEM={ 1:[['VOLLEYBALL SESSION','17:30','19:00']],
       2:[['VOLLEYBALL SESSION','10:00','11:30'],['VOLLEYBALL SESSION','18:30','20:30']],
       3:[['VOLLEYBALL SESSION','17:00','19:00']],
@@ -486,18 +500,18 @@
     arr.forEach(function(e){
       if(tab==='partidos'){
         var rival=e.rival||'—';
-        var home=((e.condicion||'').indexOf('Visit')===0)?rival:'{{CLUB}}';
-        var away=((e.condicion||'').indexOf('Visit')===0)?'{{CLUB}}':rival;
+        var home=((e.condicion||'').indexOf('Visit')===0)?rival:'{{Club}}';
+        var away=((e.condicion||'').indexOf('Visit')===0)?'{{Club}}':rival;
         var dd=fxDate(e.fecha);
-        function tName(x){ return (x==='{{CLUB}}'||x==='{{CLUB}}')?'{{CLUB}}':esc(x); }
+        function tName(x){ return (x==='{{Club}}'||x==='{{CLUB}}')?'{{CLUB}}':esc(x); }
         function tAbbr(x){ var c=CLUBS[x]; return c?c.ab:esc((x||'').substr(0,3).toUpperCase()); }
         h+='<div class="fx" data-cond="'+esc(e.condicion||'')+'">'+
              '<div class="fx-date"><span class="d">'+dd.d+'</span><span class="mo">'+dd.mo+'</span><span class="dow">'+dd.dow+'</span></div>'+
-             '<div class="fx-home'+(home==='Näfels'?' us':'')+'">'+tName(home)+'</div>'+
+             '<div class="fx-home'+(home==='{{Club}}'?' us':'')+'">'+tName(home)+'</div>'+
              fxCrest(home)+
              '<div class="fx-vs">vs</div>'+
              fxCrest(away)+
-             '<div class="fx-away'+(away==='Näfels'?' us':'')+'">'+tName(away)+'</div>'+
+             '<div class="fx-away'+(away==='{{Club}}'?' us':'')+'">'+tName(away)+'</div>'+
              '<div class="fx-meta"><span class="fx-time">'+esc(e.hora||'')+'</span><span class="fx-place">'+venueRender(e)+'</span></div>'+
              '<div class="fx-acts">'+
                ((window.VB_esEditor&&!VB_esEditor())?'':
@@ -686,6 +700,155 @@
 
   applyCalLang();
   load(); render();
+
+
+/* ══ AGREGAR AL CALENDARIO DEL TELEFONO ════════════════════════════════════
+   Se arma un archivo .ics, el formato que entienden Google Calendar, el
+   iPhone y Outlook. El telefono lo abre y ofrece agregar el partido.
+
+   OJO CON LA HORA: el .ics tiene que decir en que huso esta. Si se pone la
+   hora "pelada", cada telefono la interpreta con SU huso y un jugador de
+   viaje veria el partido a otra hora. Por eso va con TZID=Europe/Zurich.
+
+   Se agrega un aviso 2 horas antes, que es lo que un jugador necesita para
+   salir a tiempo.
+
+   LIMITE CONOCIDO: esto guarda una COPIA en el telefono. Si despues cambia el
+   horario, el evento que el jugador ya guardo NO se actualiza solo. Para eso
+   hace falta una suscripcion, que es otra cosa. */
+function _icsFecha(fecha, hora){
+  var f = (fecha || '').replace(/-/g, '');
+  var h = (hora || '00:00').replace(':', '') + '00';
+  return f + 'T' + h;
+}
+function _icsEscapar(t){
+  return String(t == null ? '' : t)
+    .replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+}
+function _icsDe(e){
+  var rival  = e.rival || 'Partido';
+  var visita = (e.condicion || '').indexOf('Visit') === 0;
+  var titulo = visita ? (rival + ' vs {{Club}}') : ('{{Club}} vs ' + rival);
+  var hora   = e.hora || '00:00';
+  var ini    = _icsFecha(e.fecha, hora);
+  var hh     = parseInt(hora.split(':')[0], 10);
+  var mm     = hora.split(':')[1] || '00';
+  var hFin   = ('0' + Math.min(hh + 2, 23)).slice(-2) + ':' + mm;   /* dos horas de partido */
+  var fin    = _icsFecha(e.fecha, hFin);
+  var uid    = 'nafels-' + (e.id || String(e.fecha + rival).replace(/\W/g, '')) + '@volley-nafels';
+  return [
+    'BEGIN:VEVENT',
+    'UID:' + uid,
+    'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z',
+    'DTSTART;TZID=Europe/Zurich:' + ini,
+    'DTEND;TZID=Europe/Zurich:' + fin,
+    'SUMMARY:' + _icsEscapar(titulo),
+    'LOCATION:' + _icsEscapar(e.lugar || ''),
+    'DESCRIPTION:' + _icsEscapar((visita ? 'Visitante' : 'Local') + (e.lugar ? ' - ' + e.lugar : '')),
+    'BEGIN:VALARM',
+    'TRIGGER:-PT2H',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:' + _icsEscapar(titulo),
+    'END:VALARM',
+    'END:VEVENT'
+  ].join('\r\n');
+}
+function _icsArchivo(eventos){
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Volley Nafels//Calendario//ES',
+          'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:{{Club}} Voley']
+         .concat(eventos).concat(['END:VCALENDAR']).join('\r\n');
+}
+function _icsBajar(texto, nombre){
+  var b = new Blob([texto], {type: 'text/calendar;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+}
+window.alCalendario = function(id){
+  var arr = (typeof data !== 'undefined' && data.partidos) ? data.partidos : [];
+  var e = null;
+  for(var i = 0; i < arr.length; i++){ if(String(arr[i].id) === String(id)) e = arr[i]; }
+  if(!e) return;
+  _icsBajar(_icsArchivo([_icsDe(e)]), 'nafels-' + (e.fecha || 'partido') + '.ics');
+};
+/* Un entrenamiento no es igual a un partido: puede durar varios dias (las
+   vacaciones de Navidad son un solo registro del 20 al 25) y tiene hora de fin
+   propia. Los de varios dias van como evento de dia completo, que es como
+   corresponde. */
+function _icsDeEntreno(e){
+  var titulo = e.tipo || 'Entrenamiento';
+  var _vb = (typeof venueBits === 'function') ? venueBits(e) : {name:''};
+  var lugar = (_vb && _vb.name) || e.lugar || '';
+  var uid = 'nafels-ent-' + (e.id || String(e.fecha + titulo).replace(/\W/g,'')) + '@volley-nafels';
+  var cab = ['BEGIN:VEVENT','UID:' + uid,
+             'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z'];
+  var cuerpo;
+  if(e.fechaFin && e.fechaFin > e.fecha){
+    /* varios dias: evento de dia completo. DTEND va al dia SIGUIENTE al ultimo,
+       que es como lo pide el formato. */
+    var f = new Date(e.fechaFin + 'T00:00:00');
+    f.setDate(f.getDate() + 1);
+    var finExcl = f.toISOString().slice(0,10).replace(/-/g,'');
+    cuerpo = ['DTSTART;VALUE=DATE:' + e.fecha.replace(/-/g,''),
+              'DTEND;VALUE=DATE:' + finExcl];
+  } else {
+    var h1 = e.hora || '00:00';
+    var h2 = e.horaFin || (('0' + Math.min(parseInt(h1.split(':')[0],10) + 2, 23)).slice(-2) + ':' + (h1.split(':')[1] || '00'));
+    cuerpo = ['DTSTART;TZID=Europe/Zurich:' + _icsFecha(e.fecha, h1),
+              'DTEND;TZID=Europe/Zurich:'   + _icsFecha(e.fecha, h2)];
+  }
+  return cab.concat(cuerpo).concat([
+    'SUMMARY:' + _icsEscapar(titulo),
+    'LOCATION:' + _icsEscapar(lugar),
+    'END:VEVENT'
+  ]).join('\r\n');
+}
+
+/* ══ SUSCRIPCION ═══════════════════════════════════════════════════════════
+   La direccion /api/calendario devuelve el fixture leyendo Firebase en el
+   momento. El telefono la relee cada varias horas, asi que un cambio de
+   horario le llega solo, sin que el jugador haga nada.
+
+   webcal:// es el mismo enlace pero con otro prefijo: el telefono lo reconoce
+   como "calendario para suscribirse" y ofrece agregarlo. En Android no
+   siempre funciona, por eso se muestra tambien la direccion para copiarla. */
+window.suscribirCalendario = function(){
+  var url  = location.origin + '/api/calendario';
+  var wcal = url.replace(/^https?:/, 'webcal:');
+  var iOS  = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if(iOS){
+    location.href = wcal;      /* el iPhone lo resuelve solo */
+    return;
+  }
+  var t = (typeof calT === 'function' && calT().subTxt) ? calT().subTxt : null;
+  var msg = t || ('Suscribite al calendario del club.\n\n' +
+    'ANDROID / GOOGLE CALENDAR:\n' +
+    '1. Entrá a calendar.google.com desde la computadora\n' +
+    '2. Otros calendarios → + → Desde una URL\n' +
+    '3. Pegá esta dirección:\n\n' + url + '\n\n' +
+    'Se sincroniza solo: si cambia un horario, te cambia en el teléfono.');
+  if(window.prompt) window.prompt(msg, url);
+  else alert(msg + '\n\n' + url);
+};
+
+/* TODO de una vez: partidos + entrenamientos. Baja una COPIA. */
+window.todoAlCalendario = function(){
+  var pa = ((typeof data !== 'undefined' && data.partidos) ? data.partidos : []).filter(function(e){ return e.fecha; });
+  var en = ((typeof data !== 'undefined' && data.entrenamientos) ? data.entrenamientos : []).filter(function(e){ return e.fecha; });
+  if(!pa.length && !en.length){ alert('Todavía no hay nada cargado en el calendario.'); return; }
+  var evs = pa.map(_icsDe).concat(en.map(_icsDeEntreno));
+  _icsBajar(_icsArchivo(evs), 'nafels-calendario.ics');
+};
+
+window.temporadaAlCalendario = function(){
+  var arr = (typeof data !== 'undefined' && data.partidos) ? data.partidos : [];
+  arr = arr.filter(function(e){ return e.fecha; });
+  if(!arr.length){ alert('No hay partidos cargados todavía.'); return; }
+  _icsBajar(_icsArchivo(arr.map(_icsDe)), 'nafels-temporada.ics');
+};
+
 </script>
 <script src="lang.js" onerror="void 0"></script>
 </body></html>

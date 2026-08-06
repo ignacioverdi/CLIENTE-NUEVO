@@ -21,7 +21,7 @@
   'use strict';
 
   // ── Roster por defecto (hoja EQUIPO del Excel). Editable. ────────────────
-  // ── Plantel {{CLUB}} — lee de plantel_club.js (fuente única) ──
+  // ── Plantel Axpo Volley {{Club}} — lee de plantel_club.js (fuente única) ──
   //    Si ese archivo no está, usa esta lista como respaldo.
   var ROSTER = (typeof window !== 'undefined' && window.PLANTEL_CLUB && window.PLANTEL_CLUB.lista)
     ? window.PLANTEL_CLUB.lista.map(function (j) { return { c: j.num, n: j.nombre, a: true }; })

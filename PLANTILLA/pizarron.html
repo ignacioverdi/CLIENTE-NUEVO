@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PIZARRÓN — {{CLUB}}</title>
+<title>PIZARRÓN — Axpo Volley {{Club}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="utils.js" onerror="void 0"></script>
 <script src="plantel_club.js" onerror="void 0"></script>
@@ -124,6 +124,10 @@ body.fullscreen{background:#000;}
   .series-grid{gap:3px;}
 }
 </style>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
 </head>
 <body>
 <!-- El selector de idiomas estaba en un contenedor FIJO arriba a la derecha,

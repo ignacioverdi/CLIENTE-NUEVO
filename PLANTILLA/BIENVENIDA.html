@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>La app del equipo — {{CLUB}} VOLEY</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
+<!--
+  ══════════════════════════════════════════════════════════════════════════
+  BIENVENIDA.html — la primera pantalla que ve un jugador
+
+  A PROPOSITO NO carga firebase.js: es la unica pagina publica del sistema.
+  Explica COMO entrar, asi que no puede estar detras del ingreso. No muestra
+  ningun dato del club, solo instrucciones.
+
+  Tampoco usa lang.js: los tres idiomas van escritos aca adentro. Es la pagina
+  que se manda por WhatsApp a gente que todavia no tiene la app, y tiene que
+  abrir sola aunque no cargue ningun otro archivo.
+  ══════════════════════════════════════════════════════════════════════════
+-->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#07080F;--card:#0D0E1A;--card2:#111220;--border:rgba(255,255,255,.08);
+      --red:#E8192C;--green:#22C55E;--indigo:#818CF8;--amber:#F59E0B;
+      --text:#E2E8F0;--muted:#64748B;--subtle:#475569}
+html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:680px;margin:0 auto;padding:0 18px 60px}
+.top{display:flex;align-items:center;gap:10px;padding:16px 0 8px;position:sticky;top:0;
+  background:linear-gradient(180deg,var(--bg) 72%,transparent);z-index:10}
+.lang{display:flex;gap:5px;margin-left:auto}
+.lang button{cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--muted);
+  border-radius:8px;padding:6px 11px;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:1px}
+.lang button.on{background:var(--red);border-color:var(--red);color:#fff}
+h1{font-family:"Bebas Neue",sans-serif;font-size:clamp(34px,9vw,52px);line-height:.95;letter-spacing:1px;margin-top:14px}
+h1 span{color:var(--red)}
+.sub{color:var(--muted);font-size:15px;margin-top:10px;line-height:1.55}
+.sec{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--subtle);
+  font-weight:800;margin:34px 0 12px}
+.entrar{background:linear-gradient(180deg,rgba(34,197,94,.10),rgba(34,197,94,.03));
+  border:1px solid rgba(34,197,94,.30);border-radius:14px;padding:16px 16px 14px}
+.entrar .l{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:800}
+.entrar .v{font-size:17px;font-weight:700;margin:3px 0 12px}
+.entrar .v:last-of-type{margin-bottom:6px}
+.ej{font-size:13px;color:var(--muted);border-top:1px dashed rgba(255,255,255,.10);padding-top:10px;margin-top:4px}
+.ej b{color:var(--green);font-family:"Bebas Neue",sans-serif;font-size:17px;letter-spacing:2px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:15px 16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
+.card .ic{font-size:24px;line-height:1;flex-shrink:0;margin-top:1px}
+.card .t{font-family:"Bebas Neue",sans-serif;font-size:19px;letter-spacing:1.5px}
+.card .d{color:var(--muted);font-size:14px;line-height:1.5;margin-top:3px}
+.aviso{background:rgba(232,25,44,.07);border:1px solid rgba(232,25,44,.28);border-radius:14px;
+  padding:15px 16px;display:flex;gap:13px;align-items:flex-start;margin-top:6px}
+.aviso .ic{font-size:22px;flex-shrink:0}
+.aviso .d{font-size:14.5px;line-height:1.55}
+.pasos{counter-reset:p;list-style:none}
+.pasos li{counter-increment:p;position:relative;padding:9px 0 9px 40px;font-size:15px;line-height:1.5;
+  border-bottom:1px solid rgba(255,255,255,.05)}
+.pasos li:last-child{border-bottom:0}
+.pasos li::before{content:counter(p);position:absolute;left:0;top:9px;width:26px;height:26px;
+  border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--indigo);
+  font-family:"Bebas Neue",sans-serif;font-size:15px;display:flex;align-items:center;justify-content:center}
+.telefonos{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:620px){.telefonos{grid-template-columns:1fr 1fr}}
+.tel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px 16px}
+.tel h3{font-family:"Bebas Neue",sans-serif;font-size:19px;letter-spacing:2px;display:flex;
+  align-items:center;gap:9px;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.tel.ios h3{color:#9ca3af}
+.tel.and h3{color:var(--green)}
+.tel ol{counter-reset:s;list-style:none}
+.tel li{counter-increment:s;position:relative;padding:7px 0 7px 32px;font-size:14px;line-height:1.45;
+  color:var(--text)}
+.tel li::before{content:counter(s);position:absolute;left:0;top:8px;width:21px;height:21px;border-radius:50%;
+  background:var(--card2);border:1px solid var(--border);color:var(--muted);
+  font-family:"Bebas Neue",sans-serif;font-size:13px;display:flex;align-items:center;justify-content:center}
+.tel.ios li::before{color:#9ca3af}
+.tel.and li::before{color:var(--green)}
+.pie{color:var(--subtle);font-size:13px;line-height:1.6;margin-top:34px;
+  border-top:1px solid var(--border);padding-top:16px}
+[data-l]{display:none}
+[data-l].on{display:block}
+.card[data-l],.aviso[data-l]{display:none}
+.card[data-l].on,.aviso[data-l].on{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;color:var(--muted)">{{CLUB}} VOLEY</div>
+    <div class="lang">
+      <button id="b-es" class="on" onclick="setIdioma('es')">ES</button>
+      <button id="b-de" onclick="setIdioma('de')">DE</button>
+      <button id="b-en" onclick="setIdioma('en')">EN</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ ESPAÑOL ══════════════ -->
+  <div data-l="es" class="on">
+    <h1>La app<br>del <span>equipo</span></h1>
+    <p class="sub">Todo en un solo lugar: los horarios, el calendario, tus estadísticas, tus rutinas del gimnasio y los videos. Se instala una vez y después la abrís como cualquier otra app.</p>
+
+    <div class="sec">Cómo entrar</div>
+    <div class="entrar">
+      <div class="l">Usuario</div>
+      <div class="v">Tu dirección de mail</div>
+      <div class="l">Clave</div>
+      <div class="v">Tu fecha de nacimiento — 6 números, sin puntos ni barras</div>
+      <div class="ej">Si naciste el 01.01.1990, tu clave es <b>010190</b></div>
+    </div>
+
+    <div class="sec">Qué vas a encontrar</div>
+  </div>
+
+  <div class="card" data-l="es"><div class="ic">📊</div><div>
+    <div class="t">Tu perfil</div>
+    <div class="d">Cómo venís en saque, recepción, ataque y bloqueo. Partido por partido, o el acumulado de la temporada.</div></div></div>
+
+  <div class="card" data-l="es"><div class="ic">💪</div><div>
+    <div class="t">Físico</div>
+    <div class="d">Tu rutina del día con tus pesos. Los vas cargando vos y quedan guardados. En el gimnasio, la misma rutina se ve en la pantalla grande.</div></div></div>
+
+  <div class="card" data-l="es"><div class="ic">🌡️</div><div>
+    <div class="t">Wellness</div>
+    <div class="d">Cómo llegás cada día: sueño, cansancio, dolores. Son 30 segundos y nos sirve muchísimo para saber cómo armar la práctica.</div></div></div>
+
+  <div class="card" data-l="es"><div class="ic">📅</div><div>
+    <div class="t">Agenda</div>
+    <div class="d">Horarios de entrenamiento y calendario de partidos, siempre al día. Si algo cambia, se actualiza solo.</div></div></div>
+
+  <div class="card" data-l="es"><div class="ic">🎬</div><div>
+    <div class="t">Video</div>
+    <div class="d">Los cortes de tus acciones, filtrados por lo que quieras ver. Para mirar tranquilo lo que hablamos en el entrenamiento.</div></div></div>
+
+  <div class="aviso" data-l="es"><div class="ic">🔔</div><div class="d">
+    <b>Activá las notificaciones.</b> Los cambios de horario y los avisos de partido llegan por la app. Si no las activás, te los vas a perder. Abajo están los pasos.</div></div>
+
+  <div data-l="es">
+    <div class="sec">Instalarla en el celular</div>
+    <p class="sub" style="margin-top:-4px;margin-bottom:14px">Seguí la columna de tu teléfono. Es una sola vez y lleva 2 minutos.</p>
+    <div class="telefonos">
+      <div class="tel ios"><h3>🍎 iPhone <span style="font-size:12px;color:var(--muted);letter-spacing:0;font-family:'Barlow Condensed'">(iOS 16.4 o más nuevo)</span></h3>
+        <ol>
+          <li>Abrí <b>{{DOMINIO}}</b> en <b>Safari</b> (tiene que ser Safari, no Chrome).</li>
+          <li>Tocá el botón <b>Compartir</b> — el cuadradito con la flecha hacia arriba, abajo en el centro.</li>
+          <li>Deslizá hacia abajo y tocá <b>“Agregar a inicio”</b>.</li>
+          <li>Tocá <b>“Agregar”</b>, arriba a la derecha.</li>
+          <li>Abrí la app desde el ícono nuevo en tu pantalla.</li>
+          <li>Entrá con tu mail y tu clave.</li>
+          <li>Tocá el botón rojo <b>“Activar avisos”</b>, abajo a la izquierda.</li>
+          <li>Tocá <b>“Permitir”</b>. ¡Listo!</li>
+        </ol></div>
+      <div class="tel and"><h3>🤖 Android</h3>
+        <ol>
+          <li>Abrí <b>{{DOMINIO}}</b> en <b>Chrome</b>.</li>
+          <li>Tocá los <b>3 puntitos</b>, arriba a la derecha.</li>
+          <li>Tocá <b>“Instalar app”</b> o <b>“Agregar a pantalla principal”</b>.</li>
+          <li>Confirmá <b>“Instalar”</b>.</li>
+          <li>Abrí la app desde el ícono nuevo.</li>
+          <li>Entrá con tu mail y tu clave.</li>
+          <li>Tocá <b>“Activar avisos”</b>.</li>
+          <li>Tocá <b>“Permitir”</b>. ¡Listo!</li>
+        </ol></div>
+    </div>
+    <div class="aviso" style="display:flex;margin-top:12px"><div class="ic">🍎</div><div class="d">
+      <b>iPhone: instalarla no es opcional.</b> Si no la agregás a la pantalla de inicio (pasos 1 a 5), <b>no</b> te van a llegar los avisos. Es una regla de Apple, no del club.</div></div>
+    <p class="pie" style="margin-top:14px;border:0;padding:0">Se entra <b>una sola vez por dispositivo</b>. Si usás el celular y la computadora, tenés que entrar en cada uno; después queda abierto y no te lo vuelve a pedir.</p>
+    <p class="pie">La app está en español, inglés y alemán. Se cambia con los botones de arriba a la derecha, en cualquier momento.<br><br>
+    Si no podés entrar o algo no funciona, escribile al cuerpo técnico.</p>
+  </div>
+
+  <!-- ══════════════ DEUTSCH ══════════════ -->
+  <div data-l="de">
+    <h1>Die App<br>des <span>Teams</span></h1>
+    <p class="sub">Alles an einem Ort: Trainingszeiten, Spielplan, deine Statistiken, deine Kraftprogramme und die Videos. Einmal installieren, danach öffnest du sie wie jede andere App.</p>
+
+    <div class="sec">Zum Einloggen</div>
+    <div class="entrar">
+      <div class="l">Benutzer</div>
+      <div class="v">Deine E-Mail-Adresse</div>
+      <div class="l">Passwort</div>
+      <div class="v">Dein Geburtsdatum — 6 Zahlen, ohne Punkte</div>
+      <div class="ej">Geburtstag 01.01.1990 → Passwort <b>010190</b></div>
+    </div>
+
+    <div class="sec">Was du dort findest</div>
+  </div>
+
+  <div class="card" data-l="de"><div class="ic">📊</div><div>
+    <div class="t">Dein Profil</div>
+    <div class="d">Wie du in Aufschlag, Annahme, Angriff und Block stehst. Spiel für Spiel oder über die ganze Saison.</div></div></div>
+
+  <div class="card" data-l="de"><div class="ic">💪</div><div>
+    <div class="t">Kraft</div>
+    <div class="d">Dein Tagesprogramm mit deinen Gewichten. Du trägst sie selbst ein und sie bleiben gespeichert. Im Kraftraum läuft dasselbe Programm auf dem grossen Bildschirm.</div></div></div>
+
+  <div class="card" data-l="de"><div class="ic">🌡️</div><div>
+    <div class="t">Wellness</div>
+    <div class="d">Wie du dich fühlst: Schlaf, Müdigkeit, Schmerzen. 30 Sekunden, und uns hilft es enorm bei der Trainingsplanung.</div></div></div>
+
+  <div class="card" data-l="de"><div class="ic">📅</div><div>
+    <div class="t">Kalender</div>
+    <div class="d">Trainingszeiten und Spielplan, immer aktuell. Änderungen erscheinen automatisch.</div></div></div>
+
+  <div class="card" data-l="de"><div class="ic">🎬</div><div>
+    <div class="t">Video</div>
+    <div class="d">Clips deiner Aktionen, gefiltert nach dem, was du sehen willst. Um in Ruhe anzuschauen, was wir im Training besprochen haben.</div></div></div>
+
+  <div class="aviso" data-l="de"><div class="ic">🔔</div><div class="d">
+    <b>Benachrichtigungen aktivieren.</b> Änderungen bei Trainingszeiten und Spielen kommen über die App. Ohne aktivierte Benachrichtigungen verpasst du sie. Die Anleitung steht unten.</div></div>
+
+  <div data-l="de">
+    <div class="sec">Auf dem Handy installieren</div>
+    <p class="sub" style="margin-top:-4px;margin-bottom:14px">Folge der Spalte für dein Handy. Nur einmal nötig, dauert 2 Minuten.</p>
+    <div class="telefonos">
+      <div class="tel ios"><h3>🍎 iPhone <span style="font-size:12px;color:var(--muted);letter-spacing:0;font-family:'Barlow Condensed'">(iOS 16.4 oder neuer)</span></h3>
+        <ol>
+          <li>Öffne <b>{{DOMINIO}}</b> in <b>Safari</b> (es muss Safari sein, nicht Chrome).</li>
+          <li>Tippe auf <b>Teilen</b> — das Quadrat mit dem Pfeil nach oben, unten in der Mitte.</li>
+          <li>Scrolle nach unten und tippe auf <b>„Zum Home-Bildschirm“</b>.</li>
+          <li>Tippe auf <b>„Hinzufügen“</b>, oben rechts.</li>
+          <li>Öffne die App über das neue Symbol auf deinem Bildschirm.</li>
+          <li>Melde dich mit E-Mail und Passwort an.</li>
+          <li>Tippe auf den roten Button <b>„Benachrichtigungen aktivieren“</b>, unten links.</li>
+          <li>Tippe auf <b>„Erlauben“</b>. Fertig!</li>
+        </ol></div>
+      <div class="tel and"><h3>🤖 Android</h3>
+        <ol>
+          <li>Öffne <b>{{DOMINIO}}</b> in <b>Chrome</b>.</li>
+          <li>Tippe auf die <b>3 Punkte</b>, oben rechts.</li>
+          <li>Tippe auf <b>„App installieren“</b> oder <b>„Zum Startbildschirm hinzufügen“</b>.</li>
+          <li>Bestätige <b>„Installieren“</b>.</li>
+          <li>Öffne die App über das neue Symbol.</li>
+          <li>Melde dich mit E-Mail und Passwort an.</li>
+          <li>Tippe auf <b>„Benachrichtigungen aktivieren“</b>.</li>
+          <li>Tippe auf <b>„Erlauben“</b>. Fertig!</li>
+        </ol></div>
+    </div>
+    <div class="aviso" style="display:flex;margin-top:12px"><div class="ic">🍎</div><div class="d">
+      <b>iPhone: die Installation ist nicht optional.</b> Ohne Hinzufügen zum Home-Bildschirm (Schritte 1 bis 5) bekommst du <b>keine</b> Benachrichtigungen. Das ist eine Regel von Apple, nicht vom Verein.</div></div>
+    <p class="pie" style="margin-top:14px;border:0;padding:0">Du meldest dich <b>einmal pro Gerät</b> an. Wenn du Handy und Computer benutzt, musst du dich auf beiden anmelden; danach bleibst du angemeldet.</p>
+    <p class="pie">Die App gibt es auf Deutsch, Englisch und Spanisch. Umschalten kannst du jederzeit oben rechts.<br><br>
+    Wenn du dich nicht einloggen kannst oder etwas nicht funktioniert, melde dich beim Trainerstab.</p>
+  </div>
+
+  <!-- ══════════════ ENGLISH ══════════════ -->
+  <div data-l="en">
+    <h1>The team<br><span>app</span></h1>
+    <p class="sub">Everything in one place: training times, fixtures, your stats, your gym programmes and the videos. Install it once, then open it like any other app.</p>
+
+    <div class="sec">How to log in</div>
+    <div class="entrar">
+      <div class="l">Username</div>
+      <div class="v">Your email address</div>
+      <div class="l">Password</div>
+      <div class="v">Your date of birth — 6 digits, no dots or slashes</div>
+      <div class="ej">Born 01.01.1990 → password <b>010190</b></div>
+    </div>
+
+    <div class="sec">What you'll find</div>
+  </div>
+
+  <div class="card" data-l="en"><div class="ic">📊</div><div>
+    <div class="t">Your profile</div>
+    <div class="d">How you're doing in serve, reception, attack and block. Match by match, or across the season.</div></div></div>
+
+  <div class="card" data-l="en"><div class="ic">💪</div><div>
+    <div class="t">Strength</div>
+    <div class="d">Your programme for the day with your weights. You enter them yourself and they stay saved. In the gym, the same programme runs on the big screen.</div></div></div>
+
+  <div class="card" data-l="en"><div class="ic">🌡️</div><div>
+    <div class="t">Wellness</div>
+    <div class="d">How you're feeling: sleep, fatigue, soreness. It takes 30 seconds and it helps us a lot when planning the session.</div></div></div>
+
+  <div class="card" data-l="en"><div class="ic">📅</div><div>
+    <div class="t">Calendar</div>
+    <div class="d">Training times and fixtures, always up to date. If something changes, it updates by itself.</div></div></div>
+
+  <div class="card" data-l="en"><div class="ic">🎬</div><div>
+    <div class="t">Video</div>
+    <div class="d">Clips of your actions, filtered however you want. To watch what we talked about in training, in your own time.</div></div></div>
+
+  <div class="aviso" data-l="en"><div class="ic">🔔</div><div class="d">
+    <b>Turn on notifications.</b> Changes to training times and matches come through the app. If you don't turn them on, you'll miss them. The steps are below.</div></div>
+
+  <div data-l="en">
+    <div class="sec">Install it on your phone</div>
+    <p class="sub" style="margin-top:-4px;margin-bottom:14px">Follow the column for your phone. Once only, takes 2 minutes.</p>
+    <div class="telefonos">
+      <div class="tel ios"><h3>🍎 iPhone <span style="font-size:12px;color:var(--muted);letter-spacing:0;font-family:'Barlow Condensed'">(iOS 16.4 or newer)</span></h3>
+        <ol>
+          <li>Open <b>{{DOMINIO}}</b> in <b>Safari</b> (it must be Safari, not Chrome).</li>
+          <li>Tap the <b>Share</b> button — the square with the up arrow, bottom centre.</li>
+          <li>Scroll down and tap <b>“Add to Home Screen”</b>.</li>
+          <li>Tap <b>“Add”</b>, top right.</li>
+          <li>Open the app from the new icon on your screen.</li>
+          <li>Log in with your email and password.</li>
+          <li>Tap the red <b>“Activate notifications”</b> button, bottom left.</li>
+          <li>Tap <b>“Allow”</b>. Done!</li>
+        </ol></div>
+      <div class="tel and"><h3>🤖 Android</h3>
+        <ol>
+          <li>Open <b>{{DOMINIO}}</b> in <b>Chrome</b>.</li>
+          <li>Tap the <b>3 dots</b>, top right.</li>
+          <li>Tap <b>“Install app”</b> or <b>“Add to Home screen”</b>.</li>
+          <li>Confirm <b>“Install”</b>.</li>
+          <li>Open the app from the new icon.</li>
+          <li>Log in with your email and password.</li>
+          <li>Tap <b>“Activate notifications”</b>.</li>
+          <li>Tap <b>“Allow”</b>. Done!</li>
+        </ol></div>
+    </div>
+    <div class="aviso" style="display:flex;margin-top:12px"><div class="ic">🍎</div><div class="d">
+      <b>iPhone: installing is not optional.</b> If you don't add it to your home screen (steps 1 to 5), you will <b>not</b> receive notifications. That's an Apple rule, not a club one.</div></div>
+    <p class="pie" style="margin-top:14px;border:0;padding:0">You log in <b>once per device</b>. If you use your phone and your computer, you have to log in on each one; after that you stay logged in.</p>
+    <p class="pie">The app is in English, German and Spanish. Switch it any time with the buttons at the top right.<br><br>
+    If you can't log in or something isn't working, message the coaching staff.</p>
+  </div>
+
+</div>
+
+<script>
+/* El idioma elegido queda guardado, asi que si vuelve a abrir la pagina la
+   encuentra como la dejo. Si el celular esta en aleman, arranca en aleman. */
+function setIdioma(l){
+  ['es','de','en'].forEach(function(x){
+    document.querySelectorAll('[data-l="'+x+'"]').forEach(function(el){
+      el.classList.toggle('on', x === l);
+    });
+    var b = document.getElementById('b-' + x);
+    if(b) b.classList.toggle('on', x === l);
+  });
+  document.documentElement.lang = l;
+  try{ localStorage.setItem('bienvenida_idioma', l); }catch(e){}
+}
+(function(){
+  var l = null;
+  try{ l = localStorage.getItem('bienvenida_idioma'); }catch(e){}
+  if(!l){
+    var nav = (navigator.language || 'es').slice(0,2).toLowerCase();
+    l = (nav === 'de' || nav === 'en') ? nav : 'es';
+  }
+  setIdioma(l);
+})();
+</script>
+</body>
+</html>

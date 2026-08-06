@@ -12,11 +12,11 @@
      Solo si no estuvieran cargados cae al acceso directo (compatibilidad). */
   function videoSet(path, value){
     if(typeof fbSet==='function'){ try{ return fbSet(path, value); }catch(e){} }
-    try{ var u=(typeof FB_URL!=='undefined'?FB_URL:'https://nafels-voley-default-rtdb.firebaseio.com'); fetch(u+'/'+path+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(value)}).catch(function(){}); }catch(e){}
+    try{ var u=(typeof FB_URL!=='undefined'?FB_URL:'{{FIREBASE_URL}}'); fetch(u+'/'+path+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(value)}).catch(function(){}); }catch(e){}
   }
   function videoGet(path, cb){
     if(typeof fbGet==='function'){ try{ return fbGet(path, cb); }catch(e){} }
-    try{ var u=(typeof FB_URL!=='undefined'?FB_URL:'https://nafels-voley-default-rtdb.firebaseio.com'); fetch(u+'/'+path+'.json').then(function(r){return r.json();}).then(function(d){cb(d);}).catch(function(){cb(null);}); }catch(e){ cb(null); }
+    try{ var u=(typeof FB_URL!=='undefined'?FB_URL:'{{FIREBASE_URL}}'); fetch(u+'/'+path+'.json').then(function(r){return r.json();}).then(function(d){cb(d);}).catch(function(){cb(null);}); }catch(e){ cb(null); }
   }
 
 

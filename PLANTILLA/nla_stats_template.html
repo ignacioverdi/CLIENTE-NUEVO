@@ -115,6 +115,10 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
      desde aca en cada HACER_TODO, asi que el candado tiene que estar aqui
      o se pierde en la proxima corrida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
 </head>
 <body>
 <div class="header">
@@ -184,7 +188,7 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
       <tbody id="teams-tbody"></tbody>
     </table>
   </div>
-  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{CLUB}}</span> resaltado. <span id="updated-label" style="color:#475569"></span></div>
+  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado. <span id="updated-label" style="color:#475569"></span></div>
 </div>
 <div class="panel" id="panel-jugadores">
   <div class="section-title">RANKING JUGADORES NLA — ELEGÍ UN FUNDAMENTO</div>
@@ -196,7 +200,7 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
       <tbody id="players-tbody"></tbody>
     </table>
   </div>
-  <div class="rank-legend">La columna <b>EFF%</b> manda el ranking <span class="lg-tot">(entre paréntesis: total de acciones del fundamento elegido)</span> · color = ranking en ese corte (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{CLUB}}</span> resaltado · filtrá por posición para comparar like-with-like.</div>
+  <div class="rank-legend">La columna <b>EFF%</b> manda el ranking <span class="lg-tot">(entre paréntesis: total de acciones del fundamento elegido)</span> · color = ranking en ese corte (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado · filtrá por posición para comparar like-with-like.</div>
 </div>
 <script>
 /*__DATA_PLACEHOLDER__*/

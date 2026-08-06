@@ -1,0 +1,164 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   movil.css — QUE LAS PANTALLAS ENTREN EN UN CELULAR
+   ----------------------------------------------------------------------------
+   Casi todas las paginas tienen el encabezado armado con display:flex y
+   overflow:hidden, pensado para una computadora donde sobra el ancho. En un
+   telefono de 390 px no entra: el escudo, el titulo con mucho espaciado entre
+   letras y los botones de la derecha suman mas de 500 px, y como el desborde
+   esta oculto, lo que sobra NO baja a otro renglon — se corta.
+
+   Este archivo solo actua en pantallas de menos de 768 px y toca unicamente el
+   encabezado y las barras de herramientas. No cambia colores, ni tipografias,
+   ni el contenido de ninguna pantalla. En la computadora no hace nada.
+
+   Va cargado DESPUES de los estilos de cada pagina para poder corregirlos, y
+   por eso usa !important: los estilos propios de cada pantalla son mas
+   especificos y si no, ganan ellos.
+
+   Si alguna pantalla necesita un ajuste propio, se le agrega ahi y no aca:
+   este archivo es el piso comun de las 49 paginas.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── El encabezado ──────────────────────────────────────────────────────
+     Lo esencial son dos cosas: que pueda bajar a otro renglon (flex-wrap) y
+     que deje de recortar lo que sobresale (overflow). Sin la segunda, lo que
+     baja igual queda cortado. */
+  header,
+  .header,
+  .hdr,
+  .topbar {
+    flex-wrap: wrap !important;
+    overflow: visible !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    gap: 10px !important;
+    row-gap: 8px !important;
+  }
+
+  /* El escudo, mas chico. Ocupaba 72 px de los 390 disponibles. */
+  .logo-wrap,
+  .logo,
+  .escudo {
+    width: 50px !important;
+    height: 50px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* El nombre del club. El espaciado entre letras es lo que mas ancho come:
+     con 6 px por letra, "{{CLUB}} VOLEY" solo ya pide 240 px. */
+  .club-name,
+  .hdr-t,
+  .header-text h1,
+  header h1 {
+    font-size: 21px !important;
+    letter-spacing: 2.5px !important;
+    line-height: 1.05 !important;
+  }
+  .club-sub,
+  .hdr-s,
+  .header-text .subtitle {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* El texto del medio tiene que poder achicarse. Sin min-width:0 un elemento
+     flexible no baja de su contenido y empuja al resto afuera. */
+  .header-text,
+  .hdr-text {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  /* ── La columna de la derecha ───────────────────────────────────────────
+     Idiomas, "Sistema activo", la fecha, Temporadas, Pantalla completa. En el
+     escritorio va apilada a la derecha; en el celular baja a su propio renglon
+     y se acomoda en fila, usando el ancho completo. */
+  .header-right,
+  .hdr-right,
+  .header-actions {
+    margin-left: 0 !important;
+    width: 100% !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+  }
+  #lang-wrap {
+    margin-left: 0 !important;
+  }
+  .live-badge {
+    font-size: 9px !important;
+    padding: 4px 10px !important;
+    letter-spacing: 1px !important;
+  }
+  .fecha-txt {
+    font-size: 10px !important;
+    margin-left: auto !important;
+    text-align: right !important;
+  }
+
+  /* ── Barras de filtros y solapas ────────────────────────────────────────
+     Muchas pantallas ponen los filtros en una fila fija. En el celular se
+     desplazan de costado en vez de desbordar. */
+  .tabs,
+  .filtros,
+  .filters,
+  .toolbar,
+  .barra-filtros {
+    flex-wrap: wrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Tablas ─────────────────────────────────────────────────────────────
+     Una tabla con muchas columnas no se puede achicar sin volverla ilegible.
+     Se deja que se desplace de costado dentro de su contenedor, en vez de
+     estirar toda la pagina. */
+  .tabla-wrap,
+  .table-wrap,
+  .tabla-scroll {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Telefonos angostos (iPhone SE, modelos chicos de Android) */
+@media (max-width: 400px) {
+  .club-name,
+  .hdr-t,
+  header h1 {
+    font-size: 19px !important;
+    letter-spacing: 2px !important;
+  }
+  /* La fecha completa no entra al lado del resto: se va sola a un renglon. */
+  .fecha-txt {
+    width: 100% !important;
+    margin-left: 0 !important;
+    text-align: left !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   TU PROPIA FILA
+   ----------------------------------------------------------------------------
+   La marca mi_fila.js cuando el que entro es un jugador. Es una barra al
+   costado y un fondo apenas mas claro: se encuentra de un vistazo y no compite
+   con los colores que ya usan las tablas para marcar bueno y malo.
+
+   Va fuera de las reglas de celular: se ve igual en la computadora y en el
+   telefono.
+   ════════════════════════════════════════════════════════════════════════════ */
+tr.mi-fila > td:first-child,
+tr.mi-fila > th:first-child {
+  box-shadow: inset 3px 0 0 0 #22C55E;
+}
+tr.mi-fila > td,
+tr.mi-fila > th {
+  background: rgba(34, 197, 94, .07) !important;
+}
+tr.mi-fila {
+  font-weight: 700;
+}

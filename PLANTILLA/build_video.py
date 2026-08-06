@@ -31,7 +31,7 @@ SK={'S':'Saque','R':'Recepción','A':'Ataque','B':'Bloqueo','D':'Defensa','E':'A
 
 # Mapeo de nombres de equipo del DVW -> nombre canonico (igual que update_db_nafels_FULL.py)
 TEAM_NORM = {
-    '{{CLUB}} (NLA Men)': 'Nafels',
+    'Biogas Volley {{Club}} (NLA Men)': 'Nafels',
     'Volley NFELS': 'Nafels', 'Volley Nfels': 'Nafels',
     'Volley Amriswil (NLA Men)': 'Amriswil',
     'Volley Schönenwerd (NLA Men)': 'Schonenwerd',

@@ -64,6 +64,10 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
 </head>
 <body>
 <div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
@@ -307,7 +311,7 @@ function sc(label,color,val,sub){
   return "<div class='scard'><div style='font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px'>"+label+"</div><div class='big' style='color:"+color+"'>"+val+"</div><div class='lbl'>"+sub+"</div></div>";
 }
 var VSK='Recepción';
-function _vchk(){ if(typeof equipo!=='undefined'&&equipo&&equipo!=='{{CLUB_SLUG}}'){alert('Por ahora el video está disponible solo para {{CLUB}}.');return false;} if(!F.player){alert('Elegí un jugador primero.');return false;} return true; }
+function _vchk(){ if(typeof equipo!=='undefined'&&equipo&&equipo!=='{{CLUB_SLUG}}'){alert('Por ahora el video está disponible solo para {{Club}}.');return false;} if(!F.player){alert('Elegí un jugador primero.');return false;} return true; }
 function verVideoDest(zone,extra){ if(!_vchk())return; window.open('cortes.html?num='+encodeURIComponent(F.player)+'&sk='+encodeURIComponent(VSK)+'&dz='+zone+(extra||''),'_blank'); }
 function verVideoOrig(zone,extra){ if(!_vchk())return; window.open('cortes.html?num='+encodeURIComponent(F.player)+'&sk='+encodeURIComponent(VSK)+'&oz='+zone+(extra||''),'_blank'); }
 function abrirVideo(){ if(!_vchk())return; window.open('cortes.html?num='+encodeURIComponent(F.player)+'&sk='+encodeURIComponent(VSK),'_blank'); }

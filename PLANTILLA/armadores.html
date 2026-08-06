@@ -272,6 +272,13 @@ select, select option {
 <script src="mapa_videos.js.enc" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
   <script>abrirDatos();</script>
 <script src="videos.js" onerror="window.VIDEOS_DATA=window.VIDEOS_DATA||{}"></script>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
+<!-- Marca la fila del jugador que inicio sesion. Si no es un jugador, no
+     hace nada: solo AGREGA una clase, nunca cambia como se arma la tabla. -->
+<script src="mi_fila.js" onerror="void 0"></script>
 </head>
 <body>
 
@@ -280,7 +287,7 @@ select, select option {
   <button onclick="descargarPDF()" class="pdf-btn" id="pdf-btn">📄 Descargar PDF</button>
   <div>
     <div class="page-title"><span>Distribución de Armado</span></div>
-    <div style="font-size:10px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-top:1px">Mi performance en partidos — {{CLUB}}</div>
+    <div style="font-size:10px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-top:1px">Mi performance en partidos — Volley {{Club}}</div>
   </div>
   <div>
     <div class="rival-name" id="rival-nombre">{{CLUB}}</div>
@@ -511,7 +518,7 @@ window.__MODO=(function(){try{return localStorage.getItem('vb_modo')||'partido';
 var GP_RIVAL_SLUG = (GP_PARAMS.get('rival') || GP_PARAMS.get('team') || '{{CLUB_SLUG}}').toLowerCase();
 var GP_L = (window.__MODO==='entrenamiento' && window.LIGA_DATA_ENT) ? window.LIGA_DATA_ENT : window.LIGA_DATA;
 
-// Perfil del armador propio: equipo fijo = Näfels (en entrenamiento puede llamarse 'entrenamiento')
+// Perfil del armador propio: equipo fijo = {{Club}} (en entrenamiento puede llamarse 'entrenamiento')
 if (!GP_L.teams[GP_RIVAL_SLUG]) {
   GP_RIVAL_SLUG = GP_L.teams['{{CLUB_SLUG}}'] ? '{{CLUB_SLUG}}' : (GP_L.teams['entrenamiento'] ? 'entrenamiento' : Object.keys(GP_L.teams)[0]);
 }

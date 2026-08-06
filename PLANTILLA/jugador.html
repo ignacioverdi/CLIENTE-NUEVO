@@ -114,6 +114,13 @@ select, select option{color:#111 !important;background-color:#fff !important;}
 .hm-sub{font-size:9px;color:#64748b;text-align:center}
 @media(min-width:600px){.main{padding:24px 20px;}.accesos-grid{grid-template-columns:repeat(2,1fr);}.hero-badge{width:72px;height:72px;}.hero-nombre{font-size:40px;}}
 </style>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
+<!-- Marca la fila del jugador que inicio sesion. Si no es un jugador, no
+     hace nada: solo AGREGA una clase, nunca cambia como se arma la tabla. -->
+<script src="mi_fila.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="page-header">

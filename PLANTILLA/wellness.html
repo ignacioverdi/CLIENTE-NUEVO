@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>WELLNESS — {{CLUB}}</title>
+<title>WELLNESS — Axpo Volley {{Club}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="datos_seguros.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
@@ -65,12 +65,14 @@
   .teamavg .n{font-family:'Bebas Neue';font-size:40px;line-height:1}
   .note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px}
   @media(max-width:560px){.row2{grid-template-columns:1fr}.result .big{font-size:52px}}
-</style></head>
+</style><link rel="stylesheet" href="movil.css">
+<script src="mi_fila.js" onerror="void 0"></script>
+</head>
 <body>
 <div class="wrap">
   <div class="header">
     <a href="index.html" class="back-btn">← Hub</a>
-    <div><div class="subtitle">{{CLUB}}</div><h1>WELLNESS</h1></div>
+    <div><div class="subtitle">Axpo Volley {{Club}}</div><h1>WELLNESS</h1></div>
     <div class="badge">Estado físico diario</div>
   </div>
   <div class="topline"></div>
@@ -245,6 +247,10 @@ function maybeLoadExisting(){
 
 function saveSurvey(){
   var sel=document.getElementById('selJug'); var num=+sel.value;
+  /* Si es un jugador, siempre manda su propio dorsal: aunque alguien cambiara
+     el desplegable desde el navegador, no puede cargar como otro. */
+  var _yo = jugadorConectado();
+  if(_yo !== null) num = _yo;
   var j=roster().find(function(x){return x.num===num;}); if(!j){ alert('Elegí un jugador.'); return; }
   var date=document.getElementById('selFecha').value||todayISO();
   var q={}, sum=0;
@@ -355,11 +361,41 @@ function showTab(t){
 }
 
 /* ---- init ---- */
+/* ══ Quien esta respondiendo ═══════════════════════════════════════════════
+   La app ya sabe quien inicio sesion: al entrar guarda su dorsal en
+   vb_player_num. El wellness no lo usaba y obligaba a elegirse de una lista de
+   14 nombres.
+
+   Con trece jugadores cargando todos los dias, alguno se equivoca de nombre
+   tarde o temprano — y ese dato queda mal para siempre, atribuido a otro.
+
+   Ahora, si el que entro es un JUGADOR, queda elegido de entrada y el
+   desplegable se bloquea: solo puede cargar lo suyo. El cuerpo tecnico sigue
+   viendo la lista completa, porque a veces carga por alguien que no tiene el
+   telefono a mano. */
+function jugadorConectado(){
+  try{
+    if((localStorage.getItem('vb_role')||'').toLowerCase() !== 'player') return null;
+    var n = parseInt(localStorage.getItem('vb_player_num'), 10);
+    return isNaN(n) ? null : n;
+  }catch(e){ return null; }
+}
+
 (function init(){
   var sel=document.getElementById('selJug');
   var rs=roster();
   if(rs.length){
     sel.innerHTML=rs.map(function(j){return '<option value="'+j.num+'">#'+j.num+'  '+pname(j)+'</option>';}).join('');
+
+    var yo = jugadorConectado();
+    if(yo !== null && rs.some(function(j){ return j.num === yo; })){
+      sel.value = String(yo);
+      sel.disabled = true;                  /* solo puede cargar lo suyo */
+      sel.style.opacity = '.75';
+      sel.title = 'Estás cargando tu propio wellness';
+      var lbl = sel.parentNode && sel.parentNode.querySelector('.fld');
+      if(lbl) lbl.textContent = 'Vos';
+    }
   } else {
     sel.innerHTML='<option value="">(no se cargó el plantel)</option>';
   }

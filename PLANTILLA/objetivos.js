@@ -1,12 +1,12 @@
 /* ============================================================================
-   objetivos.js — Näfels
+   objetivos.js — {{Club}}
    Metas del equipo + funciones de las BATERÍAS (diseño y clasificación),
-   copiadas 1:1 del dashboard de Näfels, más el MOTOR que calcula las 11
+   copiadas 1:1 del dashboard de {{Club}}, más el MOTOR que calcula las 11
    baterías EN VIVO desde los códigos que se van scouteando.
    El motor es un port fiel de baterias_engine.py (validado contra DataVolley).
    ========================================================================== */
 
-/* ── Metas del equipo (idénticas al dashboard de Näfels) ── */
+/* ── Metas del equipo (idénticas al dashboard de {{Club}}) ── */
 window.OBJETIVOS_CONFIG = window.OBJETIVOS_CONFIG || {};
 window.OBJETIVOS_CONFIG = {metas:{
   sq:   {label:'% Saque',   obj:3,  min:-12,max:8,  g2:3,  g1:-3, y:-8},

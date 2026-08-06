@@ -1055,8 +1055,8 @@
     "El manual permite hasta 5 caracteres libres al final del código (4.1.4). Los códigos especiales ya vienen definidos por DataVolley según el fundamento y la evaluación, así que no hace falta editarlos.":{en:"The manual allows up to 5 free characters at the end of the code (4.1.4). The special codes are already defined by DataVolley by skill and rating, so there's no need to edit them.",de:"Das Handbuch erlaubt bis zu 5 freie Zeichen am Ende des Codes (4.1.4). Die Spezialcodes sind von DataVolley bereits nach Element und Bewertung definiert, sie müssen also nicht bearbeitet werden."},
     "Completar automáticamente":{en:"Auto-complete",de:"Automatisch vervollständigen"},
     "No (código estándar de DataVolley)":{en:"No (standard DataVolley code)",de:"Nein (Standard-DataVolley-Code)"},
-    "Sí — como los archivos de {{CLUB}}: diferencia de puntos + fila del jugador":{en:"Yes — like the {{CLUB}} files: point difference + player row",de:"Ja — wie die {{CLUB}}-Dateien: Punktdifferenz + Spielerzeile"},
-    "La opción de {{CLUB}}":{en:"The {{CLUB}} option",de:"Die {{CLUB}}-Option"},
+    "Sí — como los archivos de {{Club}}: diferencia de puntos + fila del jugador":{en:"Yes — like the {{Club}} files: point difference + player row",de:"Ja — wie die {{Club}}-Dateien: Punktdifferenz + Spielerzeile"},
+    "La opción de {{Club}}":{en:"The {{Club}} option",de:"Die {{Club}}-Option"},
     "no es un estándar de DataVolley":{en:"is not a DataVolley standard",de:"ist kein DataVolley-Standard"},
     ": la dedujimos de sus archivos (coincide en el 98% de las acciones). Dejala en \"No\" si querés el código puro del manual.":{en:": we deduced it from their files (it matches 98% of actions). Leave it on \"No\" if you want the manual's pure code.",de:": wir haben sie aus ihren Dateien abgeleitet (stimmt bei 98% der Aktionen überein). Lass sie auf \"Nein\", wenn du den reinen Code des Handbuchs willst."},
     "rápido ·":{en:"quick ·",de:"schnell ·"},
@@ -1392,17 +1392,17 @@
     "Flotado":{en:"Float",de:"Flatteraufschlag"},
     "Doble-click":{en:"Double-click",de:"Doppelklick"},
     // ===== BARRIDO COMPLETO (analisis, scouting, prep, etc.) =====
-    "EQUIPO — {{CLUB}}":{en:"TEAM — {{CLUB}}",de:"TEAM — {{CLUB}}"},
-    "PIZARRÓN — {{CLUB}}":{en:"WHITEBOARD — {{CLUB}}",de:"TAKTIKTAFEL — {{CLUB}}"},
-    "PREPARACIÓN FÍSICA — {{CLUB}}":{en:"PHYSICAL PREP — {{CLUB}}",de:"ATHLETIK — {{CLUB}}"},
+    "EQUIPO — Axpo Volley {{Club}}":{en:"TEAM — Axpo Volley {{Club}}",de:"TEAM — Axpo Volley {{Club}}"},
+    "PIZARRÓN — Axpo Volley {{Club}}":{en:"WHITEBOARD — Axpo Volley {{Club}}",de:"TAKTIKTAFEL — Axpo Volley {{Club}}"},
+    "PREPARACIÓN FÍSICA — Axpo Volley {{Club}}":{en:"PHYSICAL PREP — Axpo Volley {{Club}}",de:"ATHLETIK — Axpo Volley {{Club}}"},
     "Recepción — {{CLUB}} Voley":{en:"Reception — {{CLUB}} Voley",de:"Annahme — {{CLUB}} Voley"},
     "Scouting Rival — {{CLUB}} Voley":{en:"Opponent Scouting — {{CLUB}} Voley",de:"Gegner-Scouting — {{CLUB}} Voley"},
-    "Comparador — {{CLUB}} vs Rival":{en:"Comparator — {{CLUB}} vs Opponent",de:"Vergleich — {{CLUB}} vs Gegner"},
-    "Plan de Partido — {{CLUB}}":{en:"Match Plan — {{CLUB}}",de:"Matchplan — {{CLUB}}"},
-    "Cargar Videos — {{CLUB}}":{en:"Upload Videos — {{CLUB}}",de:"Videos hochladen — {{CLUB}}"},
+    "Comparador — {{Club}} vs Rival":{en:"Comparator — {{Club}} vs Opponent",de:"Vergleich — {{Club}} vs Gegner"},
+    "Plan de Partido — {{Club}}":{en:"Match Plan — {{Club}}",de:"Matchplan — {{Club}}"},
+    "Cargar Videos — {{Club}}":{en:"Upload Videos — {{Club}}",de:"Videos hochladen — {{Club}}"},
     "Mi Performance — {{CLUB}} Voley":{en:"My Performance — {{CLUB}} Voley",de:"Meine Leistung — {{CLUB}} Voley"},
     "Análisis de Partidos — {{CLUB}} VOLEY":{en:"Match Analysis — {{CLUB}} VOLEY",de:"Spielanalyse — {{CLUB}} VOLEY"},
-    "Análisis táctico de rivales — {{CLUB}}":{en:"Opponent tactical analysis — {{CLUB}}",de:"Taktische Gegneranalyse — {{CLUB}}"},
+    "Análisis táctico de rivales — Volley {{Club}}":{en:"Opponent tactical analysis — Volley {{Club}}",de:"Taktische Gegneranalyse — Volley {{Club}}"},
     "Volley {{CLUB}} — Análisis Liga":{en:"Volley {{CLUB}} — League Analysis",de:"Volley {{CLUB}} — Liga-Analyse"},
     "{{LIGA}} 2026/27 — Estadísticas Liga":{en:"Swiss NLA 2026/27 — League Stats",de:"Schweizer NLA 2026/27 — Liga-Statistiken"},
     "Analisis de Armado — {{CLUB}} 2026":{en:"Setting Analysis — {{CLUB}} 2026",de:"Zuspiel-Analyse — {{CLUB}} 2026"},
@@ -1419,7 +1419,7 @@
     "Arrastrá o seleccioná el archivo .dvw exportado de DataVolley 4":{en:"Drag or select the .dvw file exported from DataVolley 4",de:"Ziehe oder wähle die aus DataVolley 4 exportierte .dvw-Datei"},
     "Asignar por orden de fecha":{en:"Assign by date order",de:"Nach Datum zuordnen"},
     "Ataque · Saque · Rec · Armado":{en:"Attack · Serve · Rec · Setting",de:"Angriff · Aufschlag · Ann · Zuspiel"},
-    "{{CLUB}} · Cuerpo técnico":{en:"{{CLUB}} · Coaching staff",de:"{{CLUB}} · Trainerstab"},
+    "Axpo Volley {{Club}} · Cuerpo técnico":{en:"Axpo Volley {{Club}} · Coaching staff",de:"Axpo Volley {{Club}} · Trainerstab"},
     "Ayuda al bloqueo":{en:"Block help",de:"Blockhilfe"},
     "Baja a la diagonal corta":{en:"Drops to the short cross",de:"Geht auf die kurze Diagonale"},
     "Bloqueo a la pelota":{en:"Block on the ball",de:"Block am Ball"},
@@ -1603,7 +1603,7 @@
     "🛡 SIDE-OUT (tras recepción)":{en:"🛡 SIDE-OUT (after reception)",de:"🛡 SIDE-OUT (nach Annahme)"},
     "🤚 Bloqueo":{en:"🤚 Block",de:"🤚 Block"},
     "🧤 DEFENSA · datos de partidos (NLA)":{en:"🧤 DEFENSE · match data (NLA)",de:"🧤 ABWEHR · Spieldaten (NLA)"},
-    "⚖ Comparar con {{CLUB}}":{en:"⚖ Compare with {{CLUB}}",de:"⚖ Mit {{CLUB}} vergleichen"},
+    "⚖ Comparar con {{Club}}":{en:"⚖ Compare with {{Club}}",de:"⚖ Mit {{Club}} vergleichen"},
     "1° zona":{en:"1st zone",de:"1. Zone"},
     "2° zona":{en:"2nd zone",de:"2. Zone"},
     "(P = zona del armador). La":{en:"(P = setter zone). The",de:"(P = Zuspieler-Zone). Die"},
@@ -1715,7 +1715,7 @@
     "Analisis tactico del rival. Ataques, saques y zonas preferidas por jugador.":{en:"Tactical analysis of the opponent. Attacks, serves and preferred zones by player.",de:"Taktische Analyse des Gegners. Angriffe, Aufschläge und bevorzugte Zonen pro Spieler."},
     "Videoteca de acciones, clips por jugador y análisis de jugadas específicas vinculadas al plan de juego.":{en:"Action video library, clips by player and analysis of specific plays linked to the game plan.",de:"Video-Bibliothek der Aktionen, Clips pro Spieler und Analyse bestimmter Spielzüge, verknüpft mit dem Matchplan."},
     "Dossier completo de cada rival de la liga: saque, ataque por rematador con direcciones, armador, recepción, rotaciones y en sistema vs fuera de sistema.":{en:"Complete dossier of each league opponent: serve, attack by hitter with directions, setter, reception, rotations and in system vs out of system.",de:"Komplettes Dossier jedes Liga-Gegners: Aufschlag, Angriff pro Angreifer mit Richtungen, Zuspieler, Annahme, Rotationen und In-System vs. Out-of-System."},
-    "{{CLUB}} vs cualquier rival, lado a lado: saque, ataque y recepción con barras que marcan quién está mejor en cada métrica.":{en:"{{CLUB}} vs any opponent, side by side: serve, attack and reception with bars marking who's better in each metric.",de:"{{CLUB}} vs. jeden Gegner, Seite an Seite: Aufschlag, Angriff und Annahme mit Balken, die zeigen, wer in jeder Metrik besser ist."},
+    "{{Club}} vs cualquier rival, lado a lado: saque, ataque y recepción con barras que marcan quién está mejor en cada métrica.":{en:"{{Club}} vs any opponent, side by side: serve, attack and reception with bars marking who's better in each metric.",de:"{{Club}} vs. jeden Gegner, Seite an Seite: Aufschlag, Angriff und Annahme mit Balken, die zeigen, wer in jeder Metrik besser ist."},
     "Evolución partido a partido del equipo: ataque, saque, recepción y bloqueo en gráficos, con la tira de resultados y promedios.":{en:"Match-by-match evolution of the team: attack, serve, reception and block in charts, with the results strip and averages.",de:"Spiel-für-Spiel-Entwicklung des Teams: Angriff, Aufschlag, Annahme und Block in Diagrammen, mit der Ergebnisleiste und Durchschnittswerten."},
     // ===== AÑADIDOS: login, perfil del jugador, cortes, wellness =====
     '— Elegí tu nombre —':{en:'— Choose your name —',de:'— Wähle deinen Namen —'},
@@ -1945,7 +1945,7 @@
     'Final (17+)':{en:'End (17+)',de:'Ende (17+)'},
 
     // ════ Botones ════
-    'Comparar con {{CLUB}}':{en:'Compare with {{CLUB}}',de:'Mit {{CLUB}} vergleichen'},
+    'Comparar con {{Club}}':{en:'Compare with {{Club}}',de:'Mit {{Club}} vergleichen'},
     'Plan de partido':{en:'Match plan',de:'Spielplan'},
     'Imprimir':{en:'Print',de:'Drucken'},
 
@@ -2382,10 +2382,10 @@
     try{
       if(document.getElementById('club-escudo')) return;
       var a=document.createElement('a');
-      a.id='club-escudo'; a.href='index.html'; a.title='Inicio · {{CLUB}}';
+      a.id='club-escudo'; a.href='index.html'; a.title='Inicio · Volley {{Club}}';
       a.style.cssText='position:fixed;left:12px;bottom:12px;z-index:99990;width:46px;height:46px;border-radius:50%;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.18);box-shadow:0 2px 12px rgba(0,0,0,.55);display:block;';
       var img=document.createElement('img');
-      img.src='escudo.png'; img.alt='{{CLUB}}';
+      img.src='escudo.png'; img.alt='Volley {{Club}}';
       img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';
       a.appendChild(img); document.body.appendChild(a);
     }catch(e){}

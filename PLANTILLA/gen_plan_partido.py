@@ -11,7 +11,7 @@ import json, re, os, glob, sys, argparse
 from collections import defaultdict, Counter
 
 import unicodedata
-# --- equipos de la liga (Naefels): keyword normalizado -> (slug, display) ---
+# --- equipos de la liga ({{Club}}): keyword normalizado -> (slug, display) ---
 SLUGS = [
  ('amriswil',   ('amriswil','Amriswil')),
  ('{{CLUB_SLUG}}',     ('{{CLUB_SLUG}}','N\u00e4fels')),
@@ -36,7 +36,7 @@ TYPE={'Q':'pot','T':'pot','M':'flo','H':'flo'}
 
 def read_dvw(fp):
     b=open(fp,'rb').read()
-    t=b.decode('utf-8','replace')   # Naefels: DVW en UTF-8 (tolerante a bytes sueltos)
+    t=b.decode('utf-8','replace')   # {{Club}}: DVW en UTF-8 (tolerante a bytes sueltos)
     return t.replace('\r\n','\n').replace('\r','\n')
 
 def load_season_map(db_path, out_dir):

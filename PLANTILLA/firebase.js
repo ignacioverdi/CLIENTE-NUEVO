@@ -11,8 +11,8 @@
 //  Sin internet, la app sigue andando con lo último que quedó guardado.
 // ============================================================================
 
-var FB_URL  = 'https://nafels-voley-default-rtdb.firebaseio.com';
-var FB_KEY  = 'AIzaSyDsl7RZkk0vuPUP0IADZcf6cgrv5_Wp5Fg';   // clave pública del proyecto
+var FB_URL  = '{{FIREBASE_URL}}';
+var FB_KEY  = '{{FIREBASE_KEY}}';   // clave pública del proyecto
 var FB_DOM  = 'nafels.app';       // dominio interno de las cuentas de jugadores
 var FB_CLUB = 'NÄFELS';
 

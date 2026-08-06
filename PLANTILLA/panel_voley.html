@@ -482,6 +482,10 @@ function renderObjetivosJugador(cid,nombre,extra){
 <style>
 .hbtn2{ text-align:center; line-height:1.15; font-size:11px; padding:5px 10px; white-space:normal; }
 </style>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
 </head>
 <body>
 <div style="padding:6px 20px;background:rgba(7,8,15,.97);border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:12px"><a href="dashboard.html" style="padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#475569;font-size:10px;font-weight:700;letter-spacing:1px;text-decoration:none;text-transform:uppercase">← Dashboard</a><div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div></div>
@@ -1830,7 +1834,7 @@ function showJugDetail(nombre, num){
   if(!jug) return;
 
   // Datos del jugador (posición) desde el PLANTEL
-  // Plantel Näfels — lee de plantel_club.js (fuente única); respaldo abajo
+  // Plantel {{Club}} — lee de plantel_club.js (fuente única); respaldo abajo
   var PLANTEL = (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores)
     ? window.PLANTEL_CLUB.jugadores.map(function(j){ return {num:j.num, nombre:j.ap, pos:j.pos}; })
     : [

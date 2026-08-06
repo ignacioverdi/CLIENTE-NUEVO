@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PREPARACIÓN FÍSICA — {{CLUB}}</title>
+<title>PREPARACIÓN FÍSICA — Axpo Volley {{Club}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="plantel_club.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
@@ -187,6 +187,13 @@ select,select option{color:#111!important;background-color:#fff!important}
 .evo-svg{display:block;width:100%;height:46px}
 .evo-foot{display:flex;justify-content:space-between;font-size:10px;color:var(--mut);margin-top:5px}
 </style>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
+<!-- Marca la fila del jugador que inicio sesion. Si no es un jugador, no
+     hace nada: solo AGREGA una clase, nunca cambia como se arma la tabla. -->
+<script src="mi_fila.js" onerror="void 0"></script>
 </head>
 <body>
 <div class="page-header">
