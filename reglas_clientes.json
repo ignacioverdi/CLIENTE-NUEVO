@@ -2,9 +2,11 @@
   "rules": {
     "clubes": {
       "$club": {
-        ".read":  "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()",
+        ".read": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()",
         ".write": false,
-
+        "calendario": {
+          ".read": true
+        },
         "usuarios": {
           ".write": "auth != null && (root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() || !root.child('clubes').child($club).child('usuarios').exists())"
         },
@@ -14,9 +16,9 @@
         "jugador_num": {
           ".write": "auth != null && (root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() || !root.child('clubes').child($club).child('usuarios').exists())"
         },
-
-        "admins": { ".write": false },
-
+        "admins": {
+          ".write": false
+        },
         "sesiones": {
           "corte": {
             ".write": "auth != null && root.child('clubes').child($club).child('admins').child(auth.uid).exists()"
@@ -41,7 +43,6 @@
             }
           }
         },
-
         "pesos": {
           "$k": {
             ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $k.beginsWith('prep_' + root.child('clubes').child($club).child('jugador_num').child(auth.uid).val() + '_')"
@@ -72,10 +73,12 @@
             ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && $num === root.child('clubes').child($club).child('jugador_num').child(auth.uid).val()"
           }
         },
-
-        "video_salas":  { ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()" },
-        "video_signal": { ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()" },
-
+        "video_salas": {
+          ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()"
+        },
+        "video_signal": {
+          ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists()"
+        },
         "$resto": {
           ".write": "auth != null && root.child('clubes').child($club).child('usuarios').child(auth.uid).exists() && root.child('clubes').child($club).child('roles').child(auth.uid).val() != 'player'"
         }

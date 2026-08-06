@@ -27,12 +27,23 @@
    igual por la app, como siempre.
    ════════════════════════════════════════════════════════════════════════════ */
 
-const FB = '{{FIREBASE_URL}}';
+const FB = 'https://nafels-voley-default-rtdb.firebaseio.com';
 const TZ = 'Europe/Zurich';
-const CLUB = '{{Club}}';
+const CLUB = 'Näfels';
+
+/* ── DONDE VIVE EL CALENDARIO ────────────────────────────────────────────────
+   No todos los clubes lo guardan en el mismo lugar. El club original lo tiene
+   en la raiz (calendario/partidos), pero las instalaciones nuevas usan una
+   rama por club: clubes/<club>/calendario/partidos, que es lo que arma
+   arreglar_firebase.py.
+
+   Se prueban las dos, en ese orden. Asi el mismo archivo sirve para los dos
+   casos y no hay que acordarse de tocarlo al dar de alta un cliente. */
+const RAMA = 'nafels';
+const CAMINOS = [`clubes/${RAMA}/calendario`, 'calendario'];
 
 /* El .ics escapa con barra invertida las comas, los punto y coma y los saltos
-   de linea. Sin esto, una direccion como "Lintharena, {{Club}}" parte el campo
+   de linea. Sin esto, una direccion como "Lintharena, Näfels" parte el campo
    en dos y el evento llega roto. */
 function esc(t) {
   return String(t == null ? '' : t)
@@ -138,9 +149,16 @@ function plegar(linea) {
 export default async function handler(req, res) {
   let eventos = [];
   try {
-    /* El parametro suelto evita que Firebase devuelva una copia guardada. */
-    const r = await fetch(`${FB}/calendario.json?ts=${Date.now()}`);
-    const d = (await r.json()) || {};
+    /* Se prueba rama por club y despues la raiz. El parametro suelto evita
+       que Firebase devuelva una copia guardada. */
+    let d = {};
+    for (const camino of CAMINOS) {
+      try {
+        const r = await fetch(`${FB}/${camino}.json?ts=${Date.now()}`);
+        const x = await r.json();
+        if (x && (x.partidos || x.entrenamientos)) { d = x; break; }
+      } catch (_) { /* se prueba el siguiente */ }
+    }
     /* Firebase NO siempre devuelve una lista. Si los indices no son 0,1,2...
        —porque se borro un partido del medio, por ejemplo— la guarda como un
        objeto con claves numericas. Un Array.isArray() sobre eso da false y se
