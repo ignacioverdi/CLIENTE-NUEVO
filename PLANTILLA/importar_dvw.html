@@ -159,9 +159,9 @@ select,select option{color:#111!important;background:#fff!important;}
 <script>
 // ── Plantel {{CLUB}} ─────────────────────────────────────────────
 var NOMBRES = {
-  '01':'DURDOS','03':'SCHWITTER','04':'VAZQUEZ','05':'CLEMENT',
-  '07':'SCHMID R','09':'NORRIS','10':'BOGDANOVSKI','11':'BARTHOLET',
-  '12':'JOHANSSON','13':'STEIMANN','17':'ROFFLER','20':'SCHMID J'
+  /* Vacia a proposito. Los nombres salen del propio .dvw que se importa.
+     Antes aca estaba el plantel del club que escribio el sistema, y
+     cualquier cliente veia esos apellidos en vez de los suyos. */
 };
 
 var VAL_MAP = {
@@ -253,9 +253,10 @@ function procesarDVW(){
   setTimeout(function(){
     try {
       // Detectar {{CLUB}} por nombres
-      var APEBIO = new Set(['DURDOS','SCHWITTER','VAZQUEZ','CLEMENT',
-        'SCHMID','SCHMID R','SCHMID J','NORRIS','BOGDANOVSKI','BARTHOLET',
-        'JOHANSSON','STEIMANN','ROFFLER']);
+      var APEBIO = new Set([
+  /* Vacio a proposito: eran los apellidos del club que escribio el
+     sistema. Sin la lista, el importador usa lo que trae el .dvw. */
+]);
       function cntCasla(sec){
         return getSeccion(lines,sec).filter(function(l){
           var p=l.split(';'); if(p.length<10) return false;
@@ -282,7 +283,7 @@ function procesarDVW(){
             var parts = p[4].trim().replace(/ /g,'').split('-');
             var h = parseInt(parts[0]); var v = parseInt(parts[1]);
             if(isNaN(h)||isNaN(v)) return;
-            // DVW guarda LOCAL-VISITANTE — invertir si NAFELS es visitante
+            // DVW guarda LOCAL-VISITANTE — invertir si {{CLUB}} es visitante
             var caslaP = caslaChar==='a' ? v : h;
             var rivalP = caslaChar==='a' ? h : v;
             sets.push({h:caslaP,v:rivalP});
@@ -317,7 +318,7 @@ function procesarDVW(){
         if(line.includes('[3SCOUT]')){ inScout = true; continue; }
         if(inScout && line.startsWith('[3')){ break; }
         if(!inScout || !line.trim()) continue;
-        if(line[0] !== caslaChar) continue; // Solo NAFELS
+        if(line[0] !== caslaChar) continue; // Solo {{CLUB}}
         if(line.length < 6) continue;
 
         var camisa = line.substring(1,3).trim().padStart(2,'0');
@@ -464,7 +465,7 @@ function mostrarResultado(sesion, sets, caslaS, rivalS, rival){
 
   var tipo = sesion.tipo === 'P' ? 'Partido' : 'Entrenamiento';
   document.getElementById('res-titulo').textContent = tipo + (rival ? ' vs ' + rival : '');
-  document.getElementById('res-sub').textContent = sesion.fecha + ' · NAFELS ' + caslaS + ' - ' + rivalS + (rival?' '+rival:'');
+  document.getElementById('res-sub').textContent = sesion.fecha + ' · {{CLUB}} ' + caslaS + ' - ' + rivalS + (rival?' '+rival:'');
 
   // Sets
   var setsRow = document.getElementById('sets-row');

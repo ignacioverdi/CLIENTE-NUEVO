@@ -39,26 +39,62 @@ def normalize_combo(combo):
 # ═══════════════════════════════════════════════════════════════════
 # CONFIGURACIÓN CASLA (Liga Argentina División de Honor)
 # ═══════════════════════════════════════════════════════════════════
-NLA_TEAMS = ['Amriswil','Chenois','Colombier','Jona','Lausanne','Nafels','Schonenwerd','St Gallen']
+# Solo el equipo propio. Los rivales salen de los .dvw al procesarlos, asi que
+# no hace falta escribirlos: cualquier liga funciona sin configurar nada.
+NLA_TEAMS = ['{{Club}}']
 
 TEAM_NORM = {
-    'Biogas Volley {{Club}} (NLA Men)': 'Nafels',
-    'Volley NFELS': 'Nafels', 'Volley Nfels': 'Nafels',
-    'Volley Amriswil (NLA Men)': 'Amriswil',
-    'Volley Schönenwerd (NLA Men)': 'Schonenwerd',
-    'Chênois Genève Volleyball (NLA Men)': 'Chenois',
-    'Chnois Genve Volleyball': 'Chenois',
-    'Colombier Volley (NLA Men)': 'Colombier',
-    'STV St Gallen (NLA Men)': 'St Gallen',
-    'TSV Jona Volleyball (NLA Men)': 'Jona',
-    'TSV Jona Volleyball': 'Jona',
-    'Lausanne UC (NLA Men)': 'Lausanne',
-    'VBC Sursee (NLB Men)': 'Sursee',
-    'Orion Stars': 'Orion', 'CSU Corona Brasov': 'Brasov',
-    'Neftohimic 2010 BURGAS': 'Burgas',
-    'SCM ZALAU': 'Zalau', 'SCM Zalau': 'Zalau',
+    # Los nombres largos tal como vienen en el .dvw. Solo hace falta cargar
+    # los del propio club si aparece escrito de varias formas (por el
+    # patrocinador, por ejemplo). Los rivales NO hacen falta: si un nombre
+    # no esta aca, se usa tal cual viene, limpio de lo que va entre
+    # parentesis. Antes esta tabla traia los ocho equipos suizos.
 }
-MAIN_TEAM = 'Nafels'
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  DE DONDE SALEN LOS EQUIPOS
+# ---------------------------------------------------------------------------
+#  Antes la lista estaba escrita aca arriba, con los ocho de la liga suiza.
+#  Para el club que la escribio funcionaba; para cualquier otro, no: los .dvw
+#  traian Boca, River o quien fuera, el motor recorria SOLO su lista y no
+#  encontraba nada. La app quedaba vacia sin decir por que.
+#
+#  Ahora salen de dos lados, en este orden:
+#
+#    1) config_club.json, si el club lo configuro. Es lo que manda.
+#    2) LOS DATOS MISMOS. Despues de leer los .dvw se sabe exactamente que
+#       equipos hay: se usan esos. Asi funciona aunque nadie haya configurado
+#       nada, que es como llega un cliente nuevo.
+#
+#  La lista de aca abajo queda solo como ultimo recurso.
+# ═══════════════════════════════════════════════════════════════════════════
+try:
+    import config_club as _cfg
+    _e = _cfg.equipos()
+    if _e:
+        NLA_TEAMS = list(_e)
+        TEAM_NORM = dict(_cfg.tabla_de_equipos()) or TEAM_NORM
+        MAIN_TEAM = _cfg.equipo_propio() or MAIN_TEAM
+except Exception:
+    pass   # sin configuracion se sigue con lo de abajo y con lo que traigan los datos
+
+
+def equipos_de_los_datos(teams_data, actuales, propio):
+    """Los equipos que REALMENTE aparecen en los partidos leidos.
+
+    Se suman a los conocidos en vez de reemplazarlos, para no perder a un
+    equipo que este configurado pero todavia no haya jugado. El propio va
+    primero, que es como lo esperan las tablas.
+    """
+    vistos = [t for t in (teams_data or {}) if t]
+    if not vistos:
+        return actuales
+    juntos = list(dict.fromkeys(list(actuales) + vistos))
+    if propio in juntos:
+        juntos.remove(propio)
+        juntos.insert(0, propio)
+    return juntos
+MAIN_TEAM = '{{Club}}'   # el equipo propio
 
 # Posiciones oficiales del plantel CASLA (por número de camiseta).
 # Fuente única de verdad — coincide con EQUIPO_DEMO de jugador.html.
@@ -70,9 +106,7 @@ CASLA_POS_OFICIAL = {
 
 
 TEAM_COLORS = {
-    'Nafels':'#22c55e','Amriswil':'#3b82f6','Schonenwerd':'#f97316',
-    'Chenois':'#818cf8','Colombier':'#f59e0b','Jona':'#06b6d4',
-    'Lausanne':'#ec4899','St Gallen':'#94a3b8'
+    '{{Club}}':'#22c55e'   # el propio; los rivales reciben un color automatico
 }
 
 ATK_COMBOS = ['X5','V5','X6','V6','X8','V8','X1','X7','XM','X2','XB','XP','XR',
@@ -301,6 +335,11 @@ def update_database(dvw_dir, temporada, db_path='nla_players_db.json'):
     else:
         teams_data = {}; games_log = []; existing_dates = set()
 
+    # Los equipos que ya estaban en la base. Se agregan a los conocidos ANTES
+    # de procesar, para que un club que ya venia trabajando no pierda ninguno.
+    global NLA_TEAMS
+    NLA_TEAMS = equipos_de_los_datos(teams_data, NLA_TEAMS, MAIN_TEAM)
+
     # firma por PARTIDO (fecha + equipos) para evitar contar dos veces archivos duplicados/copias
     existing_sigs = {(g.get('date'), tuple(sorted([g.get('home',''), g.get('away','')]))) for g in games_log}
 
@@ -365,6 +404,12 @@ def update_database(dvw_dir, temporada, db_path='nla_players_db.json'):
         json.dump(db_out, f, ensure_ascii=False)
 
     print(f"✓ DB updated: {added} added, {skipped} skipped")
+    # Ya se leyeron los .dvw: ahora se sabe exactamente que equipos hay. Se
+    # recalcula la lista para que todo lo que viene despues —las estadisticas,
+    # los mapas de calor, la tabla de la liga— los recorra a todos.
+    global NLA_TEAMS
+    NLA_TEAMS = equipos_de_los_datos(teams_data, NLA_TEAMS, MAIN_TEAM)
+
     return teams_data, games_log
 
 # ── FILTRO POR TEMPORADA ──────────────────────────────────────────
@@ -931,6 +976,13 @@ def build_stats_table(players, teams, output_path='nla_stats_table.html'):
     opciones = sorted(set(list(temporadas) + list(temps_eq)))
     opts = ''.join(f'<option>{t}</option>' for t in opciones)
     html = html.replace('<!--__TEMPORADAS__-->', opts)
+
+    # El desplegable de equipos tambien se llena aca. Antes la plantilla traia
+    # los ocho clubes suizos escritos, asi que un cliente de otra liga veia esos
+    # nombres en su filtro y ninguno de los suyos.
+    _eq = sorted({t.get('team','') for t in teams if t.get('team')})
+    html = html.replace('<!--__EQUIPOS__-->',
+                        ''.join(f'<option>{e}</option>' for e in _eq))
 
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(html)

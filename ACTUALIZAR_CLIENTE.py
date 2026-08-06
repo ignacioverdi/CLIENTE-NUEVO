@@ -244,6 +244,23 @@ for slug in objetivo:
         print('     Guardado en _CONFIG.txt: la proxima vez no pregunto.')
         print()
 
+    # ── que no se publique lo que es de la fabrica ──────────────────────────
+    # El respaldo y la configuracion son herramientas nuestras, no parte de la
+    # app del cliente. Sin esto se suben a SU repositorio: la primera vez se
+    # colaron 80 archivos de respaldo y el _CONFIG.txt con su direccion de
+    # Firebase adentro.
+    gi = os.path.join(destino, '.gitignore')
+    lineas = []
+    if os.path.exists(gi):
+        lineas = open(gi, encoding='utf-8', errors='replace').read().split('\n')
+    faltan = [x for x in ('_ANTES-*/', '_CONFIG.txt') if x not in [l.strip() for l in lineas]]
+    if faltan:
+        with open(gi, 'a', encoding='utf-8') as f:
+            f.write('\n# Herramientas de la fabrica: no son parte de la app\n')
+            for x in faltan:
+                f.write(x + '\n')
+        print('     .gitignore: agregado %s' % ', '.join(faltan))
+
     # ── copia de seguridad ──────────────────────────────────────────────────
     sello = datetime.datetime.now().strftime('%Y%m%d-%H%M')
     respaldo = os.path.join(destino, '_ANTES-' + sello)

@@ -1838,11 +1838,6 @@ function showJugDetail(nombre, num){
   var PLANTEL = (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores)
     ? window.PLANTEL_CLUB.jugadores.map(function(j){ return {num:j.num, nombre:j.ap, pos:j.pos}; })
     : [
-    {num:4,nombre:'VAZQUEZ',pos:'ARMADOR'},{num:13,nombre:'STEIMANN',pos:'ARMADOR'},
-    {num:9,nombre:'NORRIS',pos:'OPUESTO'},{num:3,nombre:'SCHWITTER',pos:'OPUESTO'},
-    {num:12,nombre:'JOHANSSON',pos:'CENTRAL'},{num:7,nombre:'SCHMID R',pos:'CENTRAL'},{num:5,nombre:'CLEMENT',pos:'CENTRAL'},
-    {num:1,nombre:'DURDOS',pos:'PUNTA'},{num:11,nombre:'BARTHOLET',pos:'PUNTA'},{num:17,nombre:'ROFFLER',pos:'PUNTA'},{num:10,nombre:'BOGDANOVSKI',pos:'PUNTA'},
-    {num:20,nombre:'SCHMID J',pos:'LIBERO'}
   ];
   var jugInfo = null;
   if(typeof PLANTEL !== 'undefined'){

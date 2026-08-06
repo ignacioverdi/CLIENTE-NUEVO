@@ -276,26 +276,18 @@
 
   // ── Escudos de los clubes (monograma con color real; reemplazable por logo real vía ESCUDOS) ──
   var CLUBS={
-    '{{Club}}':{ab:'NÄF',c:'#d81e28'}, 'Nafels':{ab:'NÄF',c:'#d81e28'},
-    'Lausanne':{ab:'LUC',c:'#00397a'},
-    'St. Gallen':{ab:'SG',c:'#0a7a37'}, 'St Gallen':{ab:'SG',c:'#0a7a37'},
-    'Jona':{ab:'JON',c:'#1d4f91'},
-    'Chênois':{ab:'CHE',c:'#1e7a46'}, 'Chenois':{ab:'CHE',c:'#1e7a46'},
-    'Schönenwerd':{ab:'SCH',c:'#b3121f'}, 'Schonenwerd':{ab:'SCH',c:'#b3121f'},
-    'Amriswil':{ab:'AMR',c:'#005bac'},
-    'Colombier':{ab:'COL',c:'#d0361f'}
+    /* Solo el club propio. Los rivales aparecen igual: si un equipo no esta
+       aca, el calendario le arma el monograma con sus iniciales y un color
+       neutro. Antes esto traia los ocho clubes suizos, asi que un cliente
+       argentino veia Amriswil y Lausanne en su calendario. */
+    '{{Club}}':{ab:'{{CLUB}}',c:'var(--club, #d81e28)'}
   };
   // Logos reales: dejá los 8 archivos PNG en una carpeta "escudos/" junto a este archivo.
   // Si el archivo existe, se muestra el logo; si falta, queda el monograma. Nunca se rompe.
   var ESCUDOS={
-    '{{Club}}':'escudos/nafels.png', 'Nafels':'escudos/nafels.png',
-    'Lausanne':'escudos/lausanne.png',
-    'St. Gallen':'escudos/stgallen.png', 'St Gallen':'escudos/stgallen.png',
-    'Jona':'escudos/jona.png',
-    'Chênois':'escudos/chenois.png', 'Chenois':'escudos/chenois.png',
-    'Schönenwerd':'escudos/schoenenwerd.png', 'Schonenwerd':'escudos/schoenenwerd.png',
-    'Amriswil':'escudos/amriswil.png',
-    'Colombier':'escudos/colombier.png'
+    /* Los logos reales van en la carpeta escudos/. Si el archivo no esta,
+       queda el monograma: nunca se rompe. */
+    '{{Club}}':'escudos/{{club}}.png'
   };
   // ── Escudo del rival subido a mano (por partido): se guarda con el partido y se reutiliza por nombre de rival ──
   var FORM_ESCUDO='';
@@ -342,23 +334,12 @@
     return '<div class="fx-cr"><img src="'+url+'"'+(alt?' data-alt="'+alt+'"':'')+' alt="" onerror="'+oe+'"></div>';
   }
 
-  // ── Fixture NLA 2026/27 (temporada regular) ──
-  var FIXTURE=[
-    {fecha:'2026-10-18',hora:'17:00',rival:'Lausanne',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-10-24',hora:'18:00',rival:'St. Gallen',condicion:'Visitante',lugar:'St. Gallen',mapa:'https://www.google.com/maps/search/?api=1&query=8FVFC88X%2BRW'},
-    {fecha:'2026-10-31',hora:'17:00',rival:'Jona',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-11-07',hora:'18:00',rival:'Chênois',condicion:'Visitante',lugar:'Genève',mapa:'https://www.google.com/maps/search/?api=1&query=8FR855QV%2BF3'},
-    {fecha:'2026-11-14',hora:'17:30',rival:'Schönenwerd',condicion:'Visitante',lugar:'Schönenwerd',mapa:'https://www.google.com/maps/search/?api=1&query=8FVC92H3%2BVH'},
-    {fecha:'2026-11-21',hora:'17:00',rival:'Amriswil',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-11-28',hora:'17:00',rival:'Colombier',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-12-05',hora:'17:30',rival:'Lausanne',condicion:'Visitante',lugar:'Lausanne',mapa:'https://www.google.com/maps/search/?api=1&query=8FR8GH9H%2BPM'},
-    {fecha:'2026-12-13',hora:'17:00',rival:'St. Gallen',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2026-12-19',hora:'17:00',rival:'Jona',condicion:'Visitante',lugar:'Jona',mapa:'https://www.google.com/maps/search/?api=1&query=8FVC6RCV%2BRJ'},
-    {fecha:'2027-01-03',hora:'17:00',rival:'Chênois',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2027-01-16',hora:'17:00',rival:'Schönenwerd',condicion:'Local',lugar:'Lintharena, {{Club}}',mapa:'https://www.google.com/maps/search/?api=1&query=8FVF4358%2B77'},
-    {fecha:'2027-01-30',hora:'17:00',rival:'Amriswil',condicion:'Visitante',lugar:'Amriswil',mapa:'https://www.google.com/maps/search/?api=1&query=8FVFG7XQ%2BCP'},
-    {fecha:'2027-02-13',hora:'17:30',rival:'Colombier',condicion:'Visitante',lugar:'Colombier',mapa:'https://www.google.com/maps/search/?api=1&query=8FV83W73%2B5G'}
-  ];
+  // ── Fixture de arranque ──
+  // Vacio a proposito. Aca estaba el fixture real del club que escribio el
+  // sistema: 14 partidos contra equipos suizos, con sus canchas y sus mapas.
+  // Cualquier cliente los veia como si fueran suyos. Cada club carga los
+  // propios desde la pantalla del calendario.
+  var FIXTURE=[];
   function importFixture(){ if(window.VB_esEditor&&!VB_esEditor())return;
     if(!confirm('¿Agregar los 14 partidos del fixture 2026/27 al calendario?')) return;
     var arr=(data.partidos||[]).slice(), added=0;
@@ -754,7 +735,7 @@ function _icsDe(e){
   ].join('\r\n');
 }
 function _icsArchivo(eventos){
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Volley Nafels//Calendario//ES',
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Volley {{Club}}//Calendario//ES',
           'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:{{Club}} Voley']
          .concat(eventos).concat(['END:VCALENDAR']).join('\r\n');
 }

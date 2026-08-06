@@ -26,11 +26,6 @@
   var ROSTER = (typeof window !== 'undefined' && window.PLANTEL_CLUB && window.PLANTEL_CLUB.lista)
     ? window.PLANTEL_CLUB.lista.map(function (j) { return { c: j.num, n: j.nombre, a: true }; })
     : [
-    {c:4,n:'VAZQUEZ',a:true},{c:13,n:'STEIMANN',a:true},
-    {c:9,n:'NORRIS',a:true},{c:3,n:'SCHWITTER',a:true},
-    {c:12,n:'JOHANSSON',a:true},{c:7,n:'SCHMID R',a:true},{c:5,n:'CLEMENT',a:true},
-    {c:1,n:'DURDOS',a:true},{c:11,n:'BARTHOLET',a:true},{c:17,n:'ROFFLER',a:true},
-    {c:10,n:'BOGDANOVSKI',a:true},{c:20,n:'SCHMID J',a:true}
   ];
 
   // ── Mapas DV4 (port de MapearDV4 / ZonaOrigenDV4) ────────────────────────

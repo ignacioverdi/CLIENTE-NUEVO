@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>{{LIGA}} 2026/27 — Estadísticas Liga</title>
+<title>{{LIGA}}  — Estadísticas Liga</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -115,6 +115,10 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
      desde aca en cada HACER_TODO, asi que el candado tiene que estar aqui
      o se pierde en la proxima corrida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
+     toca el encabezado y las barras: en la computadora no hace nada.
+     Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
+<link rel="stylesheet" href="movil.css">
 </head>
 <body>
 <div class="header">
@@ -124,7 +128,11 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
   </div>
   <!-- La temporada la escribe el generador: estaba fija en 2025/26 y seguia
        diciendo eso aunque los datos ya fueran de la 26/27. -->
-  <div class="season-badge">TEMPORADA 2026/27</div>
+  <div class="season-badge">TEMPORADA —</div>
+  <!-- Los botones ES / EN / DE. lang.js ya estaba cargado, pero dibuja el
+       selector dentro de #lang-wrap y esta pagina no lo tenia: el motor
+       traducia los textos y no habia forma de cambiar de idioma. -->
+  <div id="lang-wrap" style="display:flex;gap:4px;margin-left:12px"></div>
 </div>
 <div class="tabs">
   <div class="tab active" data-tab="equipos">🏆 Ranking Equipos</div>
@@ -135,14 +143,11 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
     <span class="filter-label">Equipo</span>
     <select id="f-team">
       <option value="">Todos</option>
-      <option>Amriswil</option><option>Chenois</option><option>Colombier</option>
-      <option>Jona</option><option>Lausanne</option><option>{{CLUB}}</option>
-      <option>Schonenwerd</option><option>St Gallen</option>
-    </select>
+      </select>
   </div>
   <div class="filter-group">
     <span class="filter-label">Temporada</span>
-    <select id="f-temporada"><option value="">Todas</option><option>2026/27</option></select>
+    <select id="f-temporada"><option value="">Todas</option></select>
   </div>
   <div class="filter-group">
     <span class="filter-label">Posición</span>
@@ -180,7 +185,7 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
       <tbody id="teams-tbody"></tbody>
     </table>
   </div>
-  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{CLUB}}</span> resaltado. <span id="updated-label" style="color:#475569"></span></div>
+  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado. <span id="updated-label" style="color:#475569"></span></div>
 </div>
 <div class="panel" id="panel-jugadores">
   <div class="section-title">RANKING JUGADORES NLA — ELEGÍ UN FUNDAMENTO</div>
@@ -192,19 +197,19 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
       <tbody id="players-tbody"></tbody>
     </table>
   </div>
-  <div class="rank-legend">La columna <b>EFF%</b> manda el ranking <span class="lg-tot">(entre paréntesis: total de acciones del fundamento elegido)</span> · color = ranking en ese corte (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{CLUB}}</span> resaltado · filtrá por posición para comparar like-with-like.</div>
+  <div class="rank-legend">La columna <b>EFF%</b> manda el ranking <span class="lg-tot">(entre paréntesis: total de acciones del fundamento elegido)</span> · color = ranking en ese corte (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado · filtrá por posición para comparar like-with-like.</div>
 </div>
 <script>
-var PLAYERS=[];
-var TEAMS=[{"team": "Amriswil", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Chenois", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Colombier", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Jona", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Lausanne", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Nafels", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "Schonenwerd", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}, {"team": "St Gallen", "temporada": "2026/27", "atk_eff": null, "srv_eff": null, "rec_eff": null, "blk_eff": null, "atk_tot": 0, "srv_tot": 0, "rec_tot": 0, "blk_tot": 0}];
-
+var PLAYERS=[];var TEAMS=[];
 var SEASONS=[];
 
 
+
 var TEAM_COLORS={
-  'Nafels':'#22c55e','Amriswil':'#3b82f6','Schonenwerd':'#f97316',
-  'Chenois':'#818cf8','Colombier':'#f59e0b','Jona':'#06b6d4',
-  'Lausanne':'#ec4899','St Gallen':'#94a3b8'
+  /* Un color por equipo. El propio va primero; los rivales que no esten
+     aca reciben un color de la paleta automatica. Antes esto traia los
+     ocho clubes suizos. */
+  '{{Club}}':'var(--club, #22c55e)'
 };
 var sortState={col:'atk_eff',dir:-1};
 
