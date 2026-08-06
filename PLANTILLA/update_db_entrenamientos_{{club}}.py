@@ -450,7 +450,7 @@ def update_database(dvw_dir, temporada, db_path='entrenamientos_nafels_db.json')
     # Ya se leyeron los .dvw: ahora se sabe exactamente que equipos hay. Se
     # recalcula la lista para que todo lo que viene despues —las estadisticas,
     # los mapas de calor, la tabla de la liga— los recorra a todos.
-    global NLA_TEAMS
+    # (el 'global' ya esta declarado arriba: repetirlo es un error de sintaxis)
     NLA_TEAMS = equipos_de_los_datos(teams_data, NLA_TEAMS, MAIN_TEAM)
 
     return teams_data, games_log

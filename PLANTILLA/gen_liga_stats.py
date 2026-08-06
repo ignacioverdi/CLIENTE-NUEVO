@@ -9,6 +9,24 @@ Uso:  python gen_liga_stats.py
 Salida: nla_stats.json  (en el mismo directorio)
 """
 import os, glob, json, unicodedata, datetime, sys
+
+# ── Encontrar el motor sin saber como se llama ───────────────────────────────
+# El archivo del motor lleva el nombre del club: update_db_nafels_FULL.py,
+# update_db_casla_FULL.py... Escribirlo aca fijo hacia que en cualquier otro
+# club el import fallara con "No module named". Se busca por patron.
+import glob as _glob, os as _os, sys as _sys, importlib as _imp
+
+def _motor(sufijo='_FULL'):
+    aqui = _os.path.dirname(_os.path.abspath(__file__))
+    if aqui not in _sys.path:
+        _sys.path.insert(0, aqui)
+    cand = sorted(_glob.glob(_os.path.join(aqui, 'update_db_*%s.py' % sufijo)))
+    if not cand:
+        cand = sorted(_glob.glob(_os.path.join(aqui, 'update_db_*.py')))
+        cand = [c for c in cand if 'entrenamientos' not in _os.path.basename(c)]
+    if not cand:
+        raise ImportError('No encuentro el motor update_db_*%s.py en %s' % (sufijo, aqui))
+    return _imp.import_module(_os.path.basename(cand[0])[:-3])
 from baterias_engine import calc_baterias, merge_acum, to_pcts
 
 # ── Config de temporadas: (etiqueta, carpeta de DVW) ──────────────────
@@ -123,7 +141,9 @@ def main():
     # 99 jugadores horneados → 0 drift) + los campos nuevos.
     all_players = []
     try:
-        from update_db_nafels import build_teams_data_fresh, calculate_stats
+        _m = _motor("")
+        build_teams_data_fresh = _m.build_teams_data_fresh
+        calculate_stats        = _m.calculate_stats
         print("Generando PLAYERS por temporada...")
         for label in seasons_con_datos:
             carpeta = dict(SEASONS)[label]

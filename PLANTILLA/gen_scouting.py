@@ -15,7 +15,25 @@ import sys, os, re, json, glob, argparse
 from collections import defaultdict, Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import update_db_nafels_FULL as eng
+# ── Encontrar el motor sin saber como se llama ───────────────────────────────
+# El archivo del motor lleva el nombre del club: update_db_nafels_FULL.py,
+# update_db_casla_FULL.py... Escribirlo aca fijo hacia que en cualquier otro
+# club el import fallara con "No module named". Se busca por patron.
+import glob as _glob, os as _os, sys as _sys, importlib as _imp
+
+def _motor(sufijo='_FULL'):
+    aqui = _os.path.dirname(_os.path.abspath(__file__))
+    if aqui not in _sys.path:
+        _sys.path.insert(0, aqui)
+    cand = sorted(_glob.glob(_os.path.join(aqui, 'update_db_*%s.py' % sufijo)))
+    if not cand:
+        cand = sorted(_glob.glob(_os.path.join(aqui, 'update_db_*.py')))
+        cand = [c for c in cand if 'entrenamientos' not in _os.path.basename(c)]
+    if not cand:
+        raise ImportError('No encuentro el motor update_db_*%s.py en %s' % (sufijo, aqui))
+    return _imp.import_module(_os.path.basename(cand[0])[:-3])
+
+eng = _motor("_FULL")
 
 MIN_MATCHES = 5            # equipos con menos partidos no se muestran
 MIN_ATK_PLAYER = 15        # ataques minimos para listar a un rematador
