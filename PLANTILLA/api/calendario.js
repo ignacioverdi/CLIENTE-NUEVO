@@ -27,9 +27,9 @@
    igual por la app, como siempre.
    ════════════════════════════════════════════════════════════════════════════ */
 
-const FB = 'https://nafels-voley-default-rtdb.firebaseio.com';
+const FB = '{{FIREBASE_URL}}';
 const TZ = 'Europe/Zurich';
-const CLUB = 'Näfels';
+const CLUB = '{{Club}}';
 
 /* ── DONDE VIVE EL CALENDARIO ────────────────────────────────────────────────
    No todos los clubes lo guardan en el mismo lugar. El club original lo tiene
@@ -39,7 +39,7 @@ const CLUB = 'Näfels';
 
    Se prueban las dos, en ese orden. Asi el mismo archivo sirve para los dos
    casos y no hay que acordarse de tocarlo al dar de alta un cliente. */
-const RAMA = 'nafels';
+const RAMA = '{{club}}';
 const CAMINOS = [`clubes/${RAMA}/calendario`, 'calendario'];
 
 /* El .ics escapa con barra invertida las comas, los punto y coma y los saltos
@@ -83,7 +83,7 @@ function partido(e) {
   const hora   = e.hora || '00:00';
   return [
     'BEGIN:VEVENT',
-    `UID:nafels-p-${e.id || (e.fecha + rival).replace(/\W/g, '')}@volley-nafels`,
+    `UID:{{club}}-p-${e.id || (e.fecha + rival).replace(/\W/g, '')}@volley-{{club}}`,
     `DTSTAMP:${sello()}`,
     `DTSTART;TZID=${TZ}:${fechaHora(e.fecha, hora)}`,
     `DTEND;TZID=${TZ}:${fechaHora(e.fecha, masHoras(hora, 2))}`,
@@ -103,7 +103,7 @@ function entrenamiento(e) {
   const titulo = e.tipo || 'Entrenamiento';
   const cab = [
     'BEGIN:VEVENT',
-    `UID:nafels-e-${e.id || (e.fecha + titulo).replace(/\W/g, '')}@volley-nafels`,
+    `UID:{{club}}-e-${e.id || (e.fecha + titulo).replace(/\W/g, '')}@volley-{{club}}`,
     `DTSTAMP:${sello()}`
   ];
   let cuerpo;
@@ -178,7 +178,7 @@ export default async function handler(req, res) {
   const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Volley Nafels//Calendario//ES',
+    'PRODID:-//Volley {{Club}}//Calendario//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:${CLUB} Voley`,
@@ -188,7 +188,7 @@ export default async function handler(req, res) {
    .join('\r\n').split('\r\n').map(plegar).join('\r\n');
 
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-  res.setHeader('Content-Disposition', 'inline; filename="nafels.ics"');
+  res.setHeader('Content-Disposition', 'inline; filename="{{club}}.ics"');
   /* Sin cache. Un calendario que se actualiza solo no puede quedar servido
      de una copia: si se corrige un horario, tiene que salir en la proxima
      lectura. Google y Apple releen cada varias horas igual, asi que no hay
