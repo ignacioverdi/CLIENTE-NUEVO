@@ -307,6 +307,64 @@ def infer_pos(atk_acts):
     return best if scores[best] > 0 else '?'
 
 # ── PARSE DVW (both teams) ────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════
+#  LA TEMPORADA DE CADA PARTIDO
+# ---------------------------------------------------------------------------
+#  Antes se le pasaba UNA temporada a toda la carpeta, calculada del ano del
+#  nombre. Eso alcanza para un club que juega un solo torneo al ano, pero no
+#  para uno que juega dos con calendarios distintos: en Argentina el
+#  Metropolitano va de mayo a agosto —empieza y termina el mismo ano— y la
+#  Liga Nacional de septiembre a abril —cruza al siguiente—. Con un solo corte,
+#  uno de los dos siempre queda mal etiquetado y sus partidos desaparecen de
+#  las pantallas.
+#
+#  Ahora cada partido dice de que torneo es, y de ahi sale su temporada. El
+#  torneo se busca en dos lados, en este orden:
+#
+#    1) lo que declara el propio .dvw (campo Competencia de [3MATCH])
+#    2) la carpeta donde esta, segun config_club.json
+#
+#  Hacen falta los dos: un club que scoutea el mismo carga la competencia; uno
+#  que baja los partidos de VolleyMetrics NO —de 97 archivos reales, 94 vinieron
+#  sin ese campo— y ahi la unica pista es la carpeta.
+#
+#  Si no hay configuracion, se usa la temporada de siempre y todo sigue como
+#  antes: ningun club existente se rompe.
+# ═══════════════════════════════════════════════════════════════════════════
+def competencia_del_dvw(lineas):
+    """El torneo tal como lo escribio el scout, en la linea de [3MATCH]."""
+    try:
+        for i, l in enumerate(lineas):
+            if l.strip().startswith('[3MATCH]'):
+                if i + 1 < len(lineas):
+                    campos = lineas[i + 1].split(';')
+                    if len(campos) > 3:
+                        return campos[3].strip()
+                break
+    except Exception:
+        pass
+    return ''
+
+
+def temporada_del_partido(fecha, lineas, carpeta, por_defecto):
+    """La temporada que le corresponde a ESTE partido."""
+    try:
+        import config_club as _cc
+        if _cc.torneos():
+            t = _cc.temporada_de(fecha, competencia_del_dvw(lineas), carpeta)
+            if t:
+                # se devuelve con la misma forma que usa el resto: "2026/27" si
+                # el torneo cruza de ano, "2026" si empieza y termina igual.
+                tor = _cc.resolver_torneo(competencia_del_dvw(lineas), carpeta)
+                cfg = _cc.torneos().get(tor) or {}
+                if cfg.get('cruza'):
+                    return '%d/%02d' % (int(t), (int(t) + 1) % 100)
+                return str(t)
+    except Exception:
+        pass
+    return por_defecto
+
+
 def parse_dvw_both(fpath, temporada):
     with open(fpath, encoding='utf-8', errors='ignore') as f:
         content = f.read()
@@ -315,6 +373,11 @@ def parse_dvw_both(fpath, temporada):
     home = norm(home_raw); away = norm(away_raw)
     m = re.search(r'(\d{4}-\d{2}-\d{2})', os.path.basename(fpath))
     date = m.group(1) if m else ''
+
+    # La temporada de ESTE partido, segun su torneo. Si el club no configuro
+    # torneos, queda la que vino por parametro y nada cambia.
+    temporada = temporada_del_partido(date, lines, os.path.dirname(fpath), temporada)
+
     result = {}
 
     for team, pfx, section in [(home,'*','[3PLAYERS-H]'),(away,'a','[3PLAYERS-V]')]:

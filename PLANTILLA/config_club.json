@@ -1,0 +1,22 @@
+{
+  "_leeme": "La configuracion de ESTE club. Todo es opcional: sin este archivo el sistema igual funciona, deduciendo lo que puede de los propios .dvw. Pero si algo esta MAL escrito aca, las pantallas aparecen vacias sin decir por que. Los nombres de las claves tienen que ser exactamente estos.",
+
+  "club": "{{club}}",
+  "nombre": "{{CLUB_COMPLETO}}",
+  "equipo": "{{Club}}",
+  "liga": "{{Liga}}",
+  "pais": "{{PAIS}}",
+
+  "_torneos": "Cada torneo que juega el club, con su calendario. 'inicio' es el mes en que arranca (1=enero, 9=septiembre); 'cruza' es si termina en el año siguiente. Una liga europea suele ser {inicio:9, cruza:true}. Un torneo que empieza y termina el mismo año, {inicio:5, cruza:false}. Si el club juega uno solo, alcanza con dejar uno.",
+  "torneos": {
+    "{{Liga}}": { "inicio": 9, "cruza": true }
+  },
+
+  "_carpetas": "De que torneo son los .dvw de cada carpeta. Hace falta SOLO para los partidos que no declaran la competencia adentro: los que se bajan de VolleyMetrics vienen asi. Si tus .dvw la traen, dejalo vacio. Alcanza con que el nombre configurado aparezca adentro del de la carpeta.",
+  "carpetas": {
+  },
+
+  "_equipos": "El nombre largo tal como viene en el .dvw, y el corto que se muestra en las tablas. Los que no esten aca se usan tal cual vienen, limpios de lo que va entre parentesis: NO hace falta cargarlos todos. Sirve sobre todo para el propio club, que suele aparecer escrito de varias formas segun el patrocinador.",
+  "equipos": {
+  }
+}

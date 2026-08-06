@@ -48,22 +48,32 @@ if exist "DVW {{CLUB}} 2027\*.dvw" set "ANIO=2027"
 
 REM ===================================================================
 REM   ETIQUETA DE TEMPORADA  (formato AAAA/AA, con barra)
-REM   Los datos se guardan asi:  la 2025/26 = "2025/26",
-REM   la 2026/27 = "2026/27".  De la carpeta DVW (ANIO) sale solo.
+REM
+REM   La carpeta se llama con el ano en que ARRANCA la temporada.
+REM   "DVW {{CLUB}} 2026"  ->  temporada  "2026/27"
+REM
+REM   OJO: antes esto restaba un ano y etiquetaba "2025/26". Los partidos
+REM   quedaban guardados con una etiqueta y la web buscaba la otra, asi que
+REM   la app aparecia vacia aunque los .dvw se hubieran procesado bien.
+REM   El sintoma era ese: "96 partidos procesados" y "0 partidos" en pantalla.
+REM
 REM   TEMP_TAG  = etiqueta de la carpeta que se esta procesando.
-REM   2026 -> "2025/26"   |   2027 -> "2026/27"
+REM   2026 -> "2026/27"   |   2027 -> "2027/28"
 REM ===================================================================
-set /a PREV=ANIO-1
-set "YY=!ANIO:~2!"
-set "TEMP_TAG=!PREV!/!YY!"
+set /a SIG=ANIO+1
+set "YY=!SIG:~2!"
+set "TEMP_TAG=!ANIO!/!YY!"
 
 REM ===================================================================
 REM   TEMPORADA QUE SE MUESTRA EN LA WEB
-REM   Hoy la liga en curso es la 2026/27.  Como todavia no hay
-REM   partidos cargados, esto deja TODO en 0 (correcto).
-REM   Cuando arranque la 2027/28, cambia a "2027/28".
+REM   Tiene que ser LA MISMA que TEMP_TAG, o la web no encuentra los datos.
+REM   Por eso se toma de ahi en vez de escribirla a mano: escritas por
+REM   separado, tarde o temprano una queda vieja.
+REM
+REM   Si algun dia hace falta mostrar una temporada distinta de la que se
+REM   esta procesando, se cambia aca.
 REM ===================================================================
-set "TEMPORADA_ACTUAL=2026/27"
+set "TEMPORADA_ACTUAL=!TEMP_TAG!"
 
 if not exist "!DVW_DIR!\*.dvw" (
     echo  [ATENCION] No hay .dvw en "!DVW_DIR!".  SALTEO partidos.

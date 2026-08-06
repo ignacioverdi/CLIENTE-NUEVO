@@ -186,7 +186,60 @@ def torneo_de(competencia):
     return corto or (liga() or '')
 
 
-def temporada_de(fecha, competencia=''):
+def torneo_de_carpeta(ruta):
+    """De que torneo son los .dvw de una carpeta.
+
+    Hace falta porque no todos los .dvw declaran la competencia. Los que se
+    bajan de VolleyMetrics vienen SIN ese campo: de los 97 partidos de un club
+    real, 94 llegaron vacios. En esos casos el torneo no se puede sacar del
+    archivo y hay que decirlo de otra forma.
+
+    La forma es la carpeta. En config_club.json:
+
+        "carpetas": {
+          "DVW CASLA 2026":    "Division de Honor",
+          "DVW LIGA 2026-27":  "Liga Nacional"
+        }
+
+    Se compara sin acentos ni mayusculas, y alcanza con que el nombre
+    configurado aparezca adentro del de la carpeta: asi "DVW LIGA 2026-27" y
+    "DVW LIGA 2027-28" caen las dos en el mismo torneo sin tener que
+    cargarlas una por una cada temporada.
+    """
+    if not ruta:
+        return ''
+    base = os.path.basename(os.path.normpath(str(ruta)))
+    plano = re.sub(r'[^a-z0-9]', '', sin_acentos(base).lower())
+    for carpeta, torneo in (_cargar().get('carpetas') or {}).items():
+        p2 = re.sub(r'[^a-z0-9]', '', sin_acentos(str(carpeta)).lower())
+        if p2 and p2 in plano:
+            return torneo
+    return ''
+
+
+def resolver_torneo(competencia='', carpeta=''):
+    """El torneo de un partido, mirando las dos fuentes en orden.
+
+        1) lo que declara el .dvw          — el dato mas confiable
+        2) la carpeta donde esta el archivo — para los que vienen sin declarar
+        3) la liga del club                 — si no hay nada mas
+
+    Los dos caminos conviven a proposito: un club que scoutea el mismo carga la
+    competencia y no necesita configurar carpetas; uno que baja los partidos de
+    VolleyMetrics los separa por carpeta. Y un club con un solo torneo no
+    configura nada: todo cae en su liga.
+    """
+    if competencia and str(competencia).strip():
+        t = torneo_de(competencia)
+        if t:
+            return t
+    t = torneo_de_carpeta(carpeta)
+    if t:
+        return t
+    return liga() or ''
+
+
+def temporada_de(fecha, competencia='', carpeta=''):
     """De qué temporada es un partido, según su torneo.
 
        Devuelve el año en que arrancó esa temporada. Con el calendario de la
@@ -211,7 +264,7 @@ def temporada_de(fecha, competencia=''):
     if y is None or m is None:
         return None
 
-    tor = torneo_de(competencia)
+    tor = resolver_torneo(competencia, carpeta)
     cfg = torneos().get(tor) or {}
     try:
         inicio = int(cfg.get('inicio', mes_de_arranque()))
