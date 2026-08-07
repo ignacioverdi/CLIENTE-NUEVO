@@ -89,25 +89,32 @@ if not exist "!DVW_DIR!\*.dvw" (
 
 echo  Carpeta: "!DVW_DIR!"   ^(temporada !ANIO!^)
 echo.
-echo  [1/4] Procesando partidos... (puede tardar, NO la cierres)
+echo  [1/3] Procesando partidos... (puede tardar, NO la cierres)
 python update_db_{{club}}_FULL.py --dvw_dir "!DVW_DIR!" --temporada "!TEMP_TAG!" --output_dir . --filter_temporada "!TEMPORADA_ACTUAL!"
 if errorlevel 1 echo      [aviso] Hubo un problema en partidos. Mira el detalle de arriba; sigo igual.
 echo.
-echo  [2/4] Scouting de rivales...
+echo  [2/3] Scouting de rivales...
 python gen_scouting.py --dvw_dir "!DVW_DIR!" --output_dir .
 python gen_plan_partido.py --dvw_dir "!DVW_DIR!" --output_dir . --filter_temporada "!TEMPORADA_ACTUAL!"
 if errorlevel 1 echo      [aviso] Hubo un problema en el scouting. Sigo igual.
 echo.
-echo  [3/4] Videos destacados (si hay Excel)...
-if exist "videos_{{club}}.xlsx" python build_videos.py videos_{{club}}.xlsx
-echo.
+REM ===================================================================
+REM   Aca habia un paso que leia un Excel de videos destacados. Quedo de
+REM   una etapa anterior: hoy los videos se cargan desde la propia app
+REM   (Importar video), que genera el .js directamente.
+REM
+REM   Se saco porque ademas hacia dano: calculaba un "proximo rival" con
+REM   el fixture del club de origen, y cualquier cliente veia un rival
+REM   que no era suyo. Si el Excel no estaba, igual imprimia "0 videos"
+REM   en cada corrida y parecia un error.
+REM ===================================================================
 
 echo.
-echo  [4/4] Cortes de video de partidos...
+echo  [3/3] Cortes de video de partidos...
 python build_video.py "!DVW_DIR!" datos_video.js VIDEO_DATA
 if errorlevel 1 echo      [aviso] Hubo un problema en los cortes de partidos. Sigo igual.
 echo.
-echo  [4b/4] Acciones de bloqueo...
+echo  [3b/3] Acciones de bloqueo...
 python gen_bloqueo.py
 if errorlevel 1 echo      [aviso] Problema en bloqueo. Sigo igual.
 

@@ -191,6 +191,43 @@ for k, fs in raras.items():
     fallas.append('marca desconocida {{%s}} en %s' % (k, ', '.join(sorted(fs))[:50]))
 print('     %s' % ('bien' if not raras else '%d marcas raras' % len(raras)))
 
+# ── 7 · la rama de Firebase ─────────────────────────────────────────────────
+# Las reglas de la base estan escritas para clubes/<club>/... Si la app pide a
+# la raiz, la base rechaza todo o no encuentra nada, y las pantallas quedan
+# vacias sin ningun error. Fue la causa de una tarde entera de pruebas.
+print('  7) Rama de Firebase')
+fb = os.path.join(PLANT, 'firebase.js')
+if os.path.exists(fb):
+    t = leer(fb)
+    if 'function fbRuta' not in t:
+        fallas.append('firebase.js: no arma la rama del club (falta fbRuta)')
+    if re.search(r"FB_RAMA\s*=\s*'(nafels|casla)'", t):
+        fallas.append('firebase.js: la rama tiene un club real escrito')
+    sueltas = len(re.findall(r"FB_URL \+ '/' \+ (?!fbRuta)[a-zA-Z_]", t))
+    if sueltas:
+        fallas.append('firebase.js: %d pedidos van a la raiz en vez de la rama' % sueltas)
+    if re.search(r"FB_DOM\s*=\s*'(nafels|casla)", t):
+        fallas.append('firebase.js: el dominio de las cuentas tiene un club real')
+    print('     %s' % ('bien' if not any('firebase.js' in f for f in fallas) else 'problemas'))
+else:
+    print('     no encontre firebase.js')
+
+# ── 8 · generadores que existen y nadie llama ───────────────────────────────
+# El patron que mas problemas causo: un script que arregla algo, escrito y
+# probado, que nunca entro a la cadena. El cliente no lo recibe nunca.
+print('  8) Generadores que nadie ejecuta')
+bat = ''
+for b in glob.glob(os.path.join(PLANT, '*.bat')):
+    bat += leer(b)
+huerfanos = []
+for g in ('gen_baterias.py', 'generar_datos_equipo.py', 'gen_bloqueo.py',
+          'gen_plan_partido.py', 'gen_scouting.py', 'build_video.py'):
+    if os.path.exists(os.path.join(PLANT, g)) and g not in bat:
+        huerfanos.append(g)
+for g in huerfanos:
+    fallas.append('%s: existe y ningun .bat lo llama' % g)
+print('     %s' % ('bien' if not huerfanos else '%d sin ejecutar' % len(huerfanos)))
+
 # ── resultado ───────────────────────────────────────────────────────────────
 print()
 print('  ' + '-' * 68)

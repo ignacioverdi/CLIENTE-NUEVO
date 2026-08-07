@@ -13,11 +13,42 @@
 
 var FB_URL  = '{{FIREBASE_URL}}';
 var FB_KEY  = '{{FIREBASE_KEY}}';   // clave pública del proyecto
-var FB_DOM  = 'nafels.app';       // dominio interno de las cuentas de jugadores
+var FB_DOM  = '{{club}}.app';       // dominio interno de las cuentas de jugadores
 var FB_CLUB = 'NÄFELS';
 
 function fbKey(path){
   return 'fb_' + path.replace(/[^a-zA-Z0-9]/g, '_');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DÓNDE VIVEN LOS DATOS DE ESTE CLUB
+   --------------------------------------------------------------------------
+   Todos los clubes comparten una misma base, cada uno en su propia rama, y
+   las reglas sólo dejan leer adentro de la propia. Por eso TODA ruta pasa
+   por acá.
+   ══════════════════════════════════════════════════════════════════════════ */
+var FB_RAMA = '{{club}}';
+
+/* ── LA RAMA DEL CLUB ───────────────────────────────────────────────────────
+   Cada club vive en su propia rama: clubes/<club>/... Las reglas de Firebase
+   estan escritas asi, y sin este prefijo los pedidos van a la raiz y la base
+   los rechaza —o peor, no encuentran nada y la pantalla queda vacia sin dar
+   error.
+
+   Faltaba en la plantilla: existia arreglar_firebase.py para agregarlo, pero
+   habia que acordarse de correrlo en cada club. Ahora viene puesto de fabrica
+   y el alta reemplaza {{club}} por el nombre corto.
+   ────────────────────────────────────────────────────────────────────────── */
+function fbRuta(camino){
+  var c = String(camino || '').replace(/^\/+/, '');
+  if (!FB_RAMA) return c;
+  if (c.indexOf('clubes/') === 0) return c;
+  return 'clubes/' + FB_RAMA + '/' + c;
+}
+
+/* Arma la dirección completa de un pedido a la base. */
+function fbURL(camino, sufijo){
+  return FB_URL + '/' + fbRuta(camino) + '.json' + (sufijo || '');
 }
 
 // ── PERMISOS DE EDICIÓN POR ROL ───────────────────────────────
@@ -76,7 +107,7 @@ function _fbTraerLlave(){
   if(typeof guardarLlave !== 'function') return Promise.resolve();
   try{ if(localStorage.getItem('club_llave')) return Promise.resolve(); }catch(e){}
   return _fbSufijo().then(function(q){
-    return fetch(FB_URL + '/' + (typeof fbRuta === 'function' ? fbRuta('llave') : 'llave') + '.json' + q)
+    return fetch(fbURL('llave', q))
       .then(function(r){ return r.json(); })
       .then(function(k){ if(typeof k === 'string' && k.length >= 32) guardarLlave(k); })
       .catch(function(){});
@@ -145,7 +176,7 @@ function _fbRegistrarDisp(){
   var tipo = /iPad|Tablet/i.test(ua) ? 'Tablet'
            : /Android|iPhone|Mobile/i.test(ua) ? 'Celular' : 'Computadora';
   return _fbSufijo().then(function(q){
-    return fetch(FB_URL + '/sesiones/dispositivos/' + FB_SES.uid + '/' + _fbDispId() + '.json' + q, {
+    return fetch(fbURL('sesiones/dispositivos/' + FB_SES.uid + '/' + _fbDispId(), q), {
       method:'PATCH', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ tipo:tipo, mail:FB_SES.email||'',
                              desde:(FB_SES.emitido||Date.now()), ultimo:Date.now() })
@@ -165,7 +196,7 @@ function _fbRegistrarAcceso(){
            : /Android|iPhone|Mobile/i.test(ua) ? 'Celular' : 'Computadora';
   var id = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
   _fbSufijo().then(function(q){
-    return fetch(FB_URL + '/sesiones/accesos/' + id + '.json' + q, {
+    return fetch(fbURL('sesiones/accesos/' + id, q), {
       method:'PUT', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ uid:FB_SES.uid, mail:FB_SES.email||'',
                              cuando:Date.now(), tipo:tipo, disp:_fbDispId() })
@@ -176,7 +207,7 @@ function _fbRegistrarAcceso(){
 function _fbControlSesion(){
   if(!FB_SES || !FB_SES.uid) return Promise.resolve();
   return _fbSufijo().then(function(q){
-    return fetch(FB_URL + '/sesiones.json' + q).then(function(r){ return r.json(); });
+    return fetch(fbURL('sesiones', q)).then(function(r){ return r.json(); });
   }).then(function(d){
     if(!d || d.error) return _fbRegistrarDisp();
     var emitido = FB_SES.emitido || 0;
@@ -200,8 +231,8 @@ function _fbCargarRol(){
   return _fbSufijo().then(function(q){
     /* Rol (coach/at/pf/player) y numero de camiseta, los dos atados al UID.
        El numero lo necesitan la vista por jugador y los avisos personales. */
-    var pRol = fetch(FB_URL + '/roles/' + FB_SES.uid + '.json' + q).then(function(r){ return r.json(); });
-    var pNum = fetch(FB_URL + '/jugador_num/' + FB_SES.uid + '.json' + q).then(function(r){ return r.json(); });
+    var pRol = fetch(fbURL('roles/' + FB_SES.uid, q)).then(function(r){ return r.json(); });
+    var pNum = fetch(fbURL('jugador_num/' + FB_SES.uid, q)).then(function(r){ return r.json(); });
     return Promise.all([pRol, pNum]).then(function(res){
       var rol = res[0], num = res[1];
       try{
@@ -395,7 +426,7 @@ function fbSet(path, value){
   try{ localStorage.setItem(fbKey(path), JSON.stringify(value)); }catch(e){}
   _fbArrancar().then(_fbSufijo).then(function(q){
     if(FB_OFF) return;
-    fetch(FB_URL + '/' + path + '.json' + q, {
+    fetch(FB_URL + '/' + fbRuta(path) + '.json' + q, {
       method:'PUT', headers:{'Content-Type':'application/json'},
       body: JSON.stringify(value)
     }).catch(function(){});
@@ -411,7 +442,7 @@ function fbGet(path, callback){
   }
   _fbArrancar().then(_fbSufijo).then(function(q){
     if(FB_OFF) return local();
-    fetch(FB_URL + '/' + path + '.json' + q)
+    fetch(FB_URL + '/' + fbRuta(path) + '.json' + q)
       .then(function(r){ return r.json(); })
       .then(function(data){
         if(data !== null && data !== undefined && !(data && data.error)){
@@ -432,7 +463,7 @@ function fbPush(path, value){
   }catch(e){}
   _fbArrancar().then(_fbSufijo).then(function(q){
     if(FB_OFF) return;
-    fetch(FB_URL + '/' + path + '.json' + q, {
+    fetch(FB_URL + '/' + fbRuta(path) + '.json' + q, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify(value)
     }).catch(function(){});

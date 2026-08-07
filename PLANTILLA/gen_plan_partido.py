@@ -11,25 +11,63 @@ import json, re, os, glob, sys, argparse
 from collections import defaultdict, Counter
 
 import unicodedata
-# --- equipos de la liga ({{Club}}): keyword normalizado -> (slug, display) ---
-SLUGS = [
-    # Los equipos salen de los propios .dvw. Antes estaban los de la liga
-    # del club de origen escritos aca.
-]
+# ── Los equipos ─────────────────────────────────────────────────────────────
+# Antes esta tabla traia los de la liga del club de origen escritos a mano, y
+# un cliente de otra liga no reconocia a ninguno de los suyos.
+#
+# Ahora sale de config_club.json si el club la cargo, y lo que no este ahi se
+# resuelve con el propio nombre del equipo (ver name_to_slug). Nadie queda
+# afuera por no estar en una lista.
+SLUGS = []
+try:
+    import config_club as _cc
+    for _largo, _corto in (_cc.tabla_de_equipos() or {}).items():
+        _k = re.sub(r'[^a-z0-9]', '', _corto.lower())
+        if _k:
+            SLUGS.append((_k, (_k, _corto)))
+except Exception:
+    pass
 DISP_BY_SLUG = {slug:disp for kw,(slug,disp) in SLUGS}
 def _norm(x):
     x=''.join(c for c in unicodedata.normalize('NFD',x or '') if unicodedata.category(c)!='Mn')
     return re.sub(r'[^a-z0-9]','',x.lower())
 def name_to_slug(name):
-    k=_norm(name)
-    for kw,(slug,disp) in SLUGS:
-        if kw in k: return slug
-    return None
+    """El nombre corto de un equipo, a partir de como viene en el .dvw.
+
+    Se compara el nombre LARGO contra la tabla del club, no por pedacitos: si
+    se busca la palabra corta adentro de la larga, "Club Atletico San Lorenzo"
+    contiene "uba" —en "clUBAtletico"— y San Lorenzo se convertia en UBA.
+
+    Lo que no este en la tabla se resuelve con su propio nombre, en vez de
+    descartarlo: antes devolvia None y el equipo desaparecia del plan sin
+    ningun aviso.
+    """
+    k = _norm(name)
+    if not k:
+        return None
+    # 1) la tabla del club, comparando nombres completos
+    try:
+        import config_club as _cc
+        for largo, corto in (_cc.tabla_de_equipos() or {}).items():
+            kl = _norm(largo)
+            if kl and (kl == k or kl in k or k in kl):
+                return _norm(corto)
+    except Exception:
+        pass
+    # 2) por si el .dvw ya trae el nombre corto
+    for kw, (slug, disp) in SLUGS:
+        if kw == k:
+            return slug
+    # 3) lo que no este configurado, con su propio nombre
+    return k
 TYPE={'Q':'pot','T':'pot','M':'flo','H':'flo'}
 
 def read_dvw(fp):
     b=open(fp,'rb').read()
-    t=b.decode('utf-8','replace')   # {{Club}}: DVW en UTF-8 (tolerante a bytes sueltos)
+    # Los .dvw se escriben en Windows-1252, que es la pagina de codigos de
+    # DataVolley. Leerlos como UTF-8 borra los acentos: "Atletico" queda
+    # "Atltico" y despues no coincide con el nombre configurado.
+    t=b.decode('latin-1','replace')
     return t.replace('\r\n','\n').replace('\r','\n')
 
 def load_season_map(db_path, out_dir):
