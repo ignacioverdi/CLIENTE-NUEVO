@@ -52,9 +52,37 @@ def load_season_map(db_path, out_dir):
         except Exception: pass
     return {}
 
+# ── La temporada, segun el torneo del club ───────────────────────────────────
+# Antes cada generador la calculaba por su cuenta con la regla europea:
+# "arranca en agosto". Eso deja mal etiquetado cualquier torneo con otro
+# calendario —el Metropolitano argentino va de mayo a agosto— y los partidos
+# desaparecen de las pantallas sin ningun aviso: el motor los guarda con una
+# etiqueta y el generador busca otra.
+#
+# Ahora se le pregunta a config_club.json, que es el unico lugar donde vive el
+# calendario de cada torneo. Si el club no lo configuro, se usa la cuenta de
+# siempre y nada cambia.
+def _temp_config(date, carpeta=''):
+    try:
+        import config_club as _cc
+        if _cc.torneos():
+            t = _cc.temporada_de(date, '', carpeta)
+            if t:
+                tor = _cc.resolver_torneo('', carpeta)
+                cfg = _cc.torneos().get(tor) or {}
+                if cfg.get('cruza'):
+                    return "%d/%02d" % (int(t), (int(t) + 1) % 100)
+                return str(t)
+    except Exception:
+        pass
+    return None
+
+
 def season_from_date(date):
     """Fallback: deduce temporada 'YYYY/YY' desde la fecha (arranca en agosto)."""
     try:
+        _t = _temp_config(date)
+        if _t: return _t
         p=date.split('-'); y=int(p[0]); m=int(p[1]); st=y if m>=8 else y-1
         return "%d/%02d"%(st,(st+1)%100)
     except Exception: return None

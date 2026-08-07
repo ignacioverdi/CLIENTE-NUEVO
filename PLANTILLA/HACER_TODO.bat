@@ -162,8 +162,49 @@ echo.
 
 REM ================= VERIFICACION =================
 :LINKS
+
+REM ===================================================================
+REM   LO QUE FALTABA CORRER
+REM
+REM   Estos dos generadores existen en la carpeta desde siempre, pero el
+REM   script nunca los llamaba. El resultado era que el cliente veia las
+REM   baterias vacias y la solapa Equipo sin ningun jugador, sin ningun
+REM   aviso de por que.
+REM
+REM   Van DESPUES de :LINKS a proposito: los "goto LINKS" de arriba
+REM   saltean partidos o entrenamientos cuando no hay .dvw, y esto tiene
+REM   que correr igual. Y ANTES del cifrado del final, porque los dos
+REM   necesitan leer los datos todavia sin cifrar.
+REM ===================================================================
+echo  ================= EL PLANTEL =================
+echo.
+REM   Arma datos_equipo.js con los jugadores que aparecen en los .dvw.
+REM   Sin esto, todas las pantallas muestran "Sin datos de equipo": el
+REM   generador saca el plantel del club de origen -y hace bien, son
+REM   jugadores de otro club- pero nadie ponia el propio en su lugar.
+python generar_datos_equipo.py
+if errorlevel 1 echo      [aviso] Problema armando el plantel. Sigo igual.
+echo.
+
+echo  ================= BATERIAS =================
+echo.
+REM   Las dos carpetas en UNA sola corrida. El generador etiqueta cada
+REM   sesion con su tipo y arma tambien el acumulado de cada uno por
+REM   separado, para que las pantallas puedan filtrar Partidos /
+REM   Entrenamientos sin cruzar datos.
+echo  Baterias de la temporada !TEMPORADA_ACTUAL!...
+if "!ENT_DIR!"=="" (
+    python gen_baterias.py --partidos "!DVW_DIR!" --temporada "!TEMPORADA_ACTUAL!" --out "datos_baterias.js"
+) else (
+    python gen_baterias.py --partidos "!DVW_DIR!" --entrenamientos "!ENT_DIR!" --temporada "!TEMPORADA_ACTUAL!" --out "datos_baterias.js"
+)
+if errorlevel 1 echo      [aviso] Problema en las baterias. Sigo igual.
+echo.
+
 echo  ==================================================
 echo      VERIFICACION (archivos clave):
+if exist "datos_equipo.js"       (echo      OK  datos_equipo.js)              else (echo      --  falta datos_equipo.js)
+if exist "datos_baterias.js"     (echo      OK  datos_baterias.js)            else (echo      --  falta datos_baterias.js)
 if exist "datos_partidos.js"     (echo      OK  datos_partidos.js)            else (echo      --  falta datos_partidos.js)
 if exist "liga_data.js"          (echo      OK  liga_data.js)                 else (echo      --  falta liga_data.js)
 if exist "scouting_rival.js"     (echo      OK  scouting_rival.js)            else (echo      --  falta scouting_rival.js)

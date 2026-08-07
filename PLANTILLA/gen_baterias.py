@@ -194,18 +194,62 @@ def parse_dvw(path):
     # resultado (sets) — simple: contar de la meta si está
     return {'code':code,'rival':rival,'date':date,'side':side,'names':names,'scout':scout}
 
+# ── La temporada, segun el torneo del club ───────────────────────────────────
+# Antes cada generador la calculaba por su cuenta con la regla europea:
+# "arranca en agosto". Eso deja mal etiquetado cualquier torneo con otro
+# calendario —el Metropolitano argentino va de mayo a agosto— y los partidos
+# desaparecen de las pantallas sin ningun aviso: el motor los guarda con una
+# etiqueta y el generador busca otra.
+#
+# Ahora se le pregunta a config_club.json, que es el unico lugar donde vive el
+# calendario de cada torneo. Si el club no lo configuro, se usa la cuenta de
+# siempre y nada cambia.
+def _temp_config(date, carpeta=''):
+    try:
+        import config_club as _cc
+        if _cc.torneos():
+            t = _cc.temporada_de(date, '', carpeta)
+            if t:
+                tor = _cc.resolver_torneo('', carpeta)
+                cfg = _cc.torneos().get(tor) or {}
+                if cfg.get('cruza'):
+                    return "%d/%02d" % (int(t), (int(t) + 1) % 100)
+                return str(t)
+    except Exception:
+        pass
+    return None
+
+
 def season_from_date(date):
     """Temporada 'YYYY/YY' desde la fecha. Arranca en agosto, igual que en
     gen_plan_partido.py: una practica del 30 de julio cae en la anterior."""
     try:
+        _t = _temp_config(date)
+        if _t: return _t
         p=date.split('-'); y=int(p[0]); m=int(p[1]); st=y if m>=8 else y-1
         return "%d/%02d"%(st,(st+1)%100)
     except Exception: return None
 
 def _norm_temp(t):
-    """Acepta '2026/27' o '2026' y devuelve siempre 'YYYY/YY'."""
+    """Deja la etiqueta de temporada tal como viene.
+
+    Antes convertia '2026' en '2026/27' siempre. Eso servia mientras todos los
+    torneos cruzaban de ano, pero rompe los que empiezan y terminan en el
+    mismo: el motor los guarda como '2026' y esta funcion los buscaba como
+    '2026/27', asi que no encontraba ninguna sesion.
+
+    Si el club configuro torneos, la etiqueta ya viene con la forma correcta
+    desde config_club y no hay que tocarla. Sin configuracion se mantiene la
+    conversion de antes, para no cambiarle nada a los clubes que ya andan.
+    """
     if not t: return None
     t=str(t).strip()
+    try:
+        import config_club as _cc
+        if _cc.torneos():
+            return t
+    except Exception:
+        pass
     if re.fullmatch(r'\d{4}', t):
         y=int(t); return "%d/%02d"%(y,(y+1)%100)
     return t

@@ -172,7 +172,19 @@ def get_players(lines, section):
                 first=parts[10].strip() if len(parts)>10 else ''
                 role=parts[12].strip() if len(parts)>12 else ''
                 pc=parts[13].strip() if len(parts)>13 else ''
-                pm={'1':'OH','2':'OPP','3':'MB','4':'S','L':'L','5':'OH','':'?'}
+                # ── Las posiciones que trae el .dvw ──────────────────────
+                # DataVolley las numera asi:
+                #     1 Libero   2 Punta   3 Opuesto   4 Central   5 Armador
+                # La tabla anterior estaba CORRIDA UN LUGAR: mapeaba 1 a punta,
+                # 2 a opuesto, 5 a punta. Consecuencia: los armadores aparecian
+                # entre los receptores, los liberos como puntas, y los puntas
+                # desaparecian de las tablas de recepcion.
+                #
+                # No se noto antes porque el club de origen tenia las posiciones
+                # escritas a mano en el motor y este campo nunca se usaba. Los
+                # .dvw que bajan de VolleyMetrics lo traen vacio; los que
+                # scoutea un club, cargado.
+                pm={'1':'L','2':'OH','3':'OPP','4':'MB','5':'S','L':'L','':'?'}
                 pos='L' if role=='L' else pm.get(pc,'?')
                 players[num]={'name':f"{last} {first}".strip(),'apellido':last,'pos':pos,'num':num}
             except: pass
