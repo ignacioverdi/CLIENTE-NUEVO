@@ -901,6 +901,30 @@ function renderEqStats(){
       });
     })();
   var dEff=dT>0?Math.round((dPerf+0.5*dBuena-0.5*dMala-dErr)/dT*100):null;
+
+  /* ══ La Defensa, ahora de los .dvw como las otras cuatro ══════════════════
+     Arriba se cuenta del VIDEO, y eso funciona solo si el club subio los
+     cortes: un club nuevo tiene el recuadro en cero para siempre, aunque sus
+     .dvw traigan las defensas —146 en un solo partido—. Era la unica pill que
+     no se llenaba sola.
+
+     Ahora, si el archivo de baterias trae el dato, manda ese: sale de los
+     mismos .dvw que el resto y respeta la sesion elegida. El conteo por video
+     queda como respaldo para los clubes que ya lo venian usando. */
+  (function(){
+    try{
+      if(typeof objGetVals !== 'function' && typeof batGet !== 'function') return;
+      var v = (typeof objGetVals === 'function') ? objGetVals(null)
+            : batGet(null, window._dbatPartido || 'acumulado');
+      if(!v || v.defT === undefined || v.defT === null) return;
+      if(!v.defT) { if(!dT){ dEff = null; } return; }
+      dT    = v.defT;
+      dPerf = v.defPerf || 0;
+      dErr  = v.defErr || 0;
+      dEff  = (v['def'] === null || v['def'] === undefined) ? null : v['def'];
+    }catch(e){}
+  })();
+
   var dEff_str=dEff!==null?fmt(dEff):'—';
 
   var rectHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px">';

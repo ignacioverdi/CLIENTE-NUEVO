@@ -1780,8 +1780,49 @@ function _sincronizarBaterias(){
     window._objTipo = ent ? 'entrenamiento' : 'partido';
     var META = (window.BAT_PARTIDOS && window.BAT_PARTIDOS.meta) || null;
     var idx  = (typeof PARTIDO_IDX !== 'undefined') ? PARTIDO_IDX : null;
-    if(idx === null || idx < 0 || !META || !META[idx]) window._objPartido = 'acumulado';
-    else window._objPartido = META[idx].id;
+
+    /* ══ Buscar la sesion por su FECHA, no por su posicion ══════════════════
+       Antes decia META[idx].id, usando la posicion del partido en la lista de
+       ESTA pantalla para buscar en la lista de las baterias. Son dos listas
+       distintas: la del analisis puede traer todos los partidos de la liga y
+       la de baterias solo los del club, y en otro orden. La posicion 3 de una
+       no es la 3 de la otra, asi que las baterias mostraban otro partido —o
+       ninguno, y por eso no cambiaban al elegir.
+
+       La fecha identifica la sesion sin depender del orden. Si no se
+       encuentra, se muestra el acumulado en vez de un partido equivocado. */
+    var _ses = null;
+    try{
+      var _lista = (typeof DATA !== 'undefined' && DATA.entrenamientos) ? DATA.entrenamientos : null;
+      if(idx !== null && idx >= 0 && _lista && _lista[idx]) _ses = _lista[idx];
+    }catch(e){}
+
+    function _fecha(o){
+      var f = (o && (o.fecha || o.date || o.dia)) || '';
+      f = String(f).trim();
+      /* las dos listas no siempre usan el mismo formato */
+      var m = f.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if(m) return m[1]+m[2]+m[3];
+      m = f.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if(m) return m[3]+m[2]+m[1];
+      return f.replace(/\D/g,'');
+    }
+
+    var elegido = null;
+    if(_ses && META){
+      var fs = _fecha(_ses);
+      for(var i=0; i<META.length && !elegido; i++){
+        if(fs && _fecha(META[i]) === fs) elegido = META[i];
+      }
+      /* si dos sesiones caen el mismo dia, se desempata por el rival */
+      if(!elegido && _ses.rival){
+        var rv = String(_ses.rival).toLowerCase();
+        for(var j=0; j<META.length && !elegido; j++){
+          if(String(META[j].rival||'').toLowerCase() === rv) elegido = META[j];
+        }
+      }
+    }
+    window._objPartido = elegido ? elegido.id : 'acumulado';
     /* las dos pantallas leen la misma sesion */
     window._dbatPartido = window._objPartido;
     if(typeof objRenderBaterias === 'function') objRenderBaterias();

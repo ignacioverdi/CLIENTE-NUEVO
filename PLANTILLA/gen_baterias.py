@@ -110,6 +110,11 @@ def _bat_nuevo():
     return {'S':{'#':0,'+':0,'/':0,'=':0,'T':0},
             'R':{'#':0,'+':0,'/':0,'=':0,'T':0},
             'B':{'#':0,'+':0,'T':0},
+            # La DEFENSA. No estaba: el recuadro del dashboard la sacaba del
+            # video, que un club nuevo no tiene, y quedaba siempre en cero
+            # aunque los .dvw traigan las acciones —146 en un solo partido—.
+            # Ahora sale de los .dvw como los otros cuatro fundamentos.
+            'D':{'#':0,'+':0,'-':0,'/':0,'=':0,'T':0},
             'Aall':na(),'cent':na(),'alta':na(),'rap':na(),
             'rp':na(),'ri':na(),'rm':na(),'tr':na()}
 
@@ -139,6 +144,11 @@ def _calc_baterias(codes, side):
         elif skill=='B' and pfx==side:
             Pb=get(num); Pb['B']['T']+=1
             if res in Pb['B']: Pb['B'][res]+=1
+        elif skill=='D' and pfx==side:
+            # Defensa: misma cuenta que el resto. Va DESPUES del corte de
+            # rec_valida de arriba, que solo mira las acciones del rival.
+            Pd=get(num); Pd['D']['T']+=1
+            if res in Pd['D']: Pd['D'][res]+=1
         elif skill=='A' and pfx==side:
             tipo=body[3]  # Q=central · H=alta · T=rápida
             if last_rec is not None and rec_valida:
@@ -177,6 +187,7 @@ def _roundpy(x):
 def _bat_to_pcts(P):
     def atk(d): return _roundpy((d['#']-d['/']-d['='])/d['T']*100) if d['T'] else None
     S,R,B=P['S'],P['R'],P['B']
+    D=P.get('D') or {'#':0,'+':0,'-':0,'/':0,'=':0,'T':0}
     return {
         'sq':    _roundpy((S['#']+0.5*S['/']+0.25*S['+']-S['='])/S['T']*100) if S['T'] else None,
         'rec':   _roundpy((R['#']+0.5*R['+']-0.5*R['/']-R['='])/R['T']*100) if R['T'] else None,
@@ -189,6 +200,14 @@ def _bat_to_pcts(P):
         'atqri': atk(P['ri']),
         'atqrm': atk(P['rm']),
         'atqtr': atk(P['tr']),
+        # ── Defensa ──────────────────────────────────────────────────────────
+        # Perfectas menos errores sobre el total, la misma forma que usan las
+        # otras pills. 'defT' va aparte porque el recuadro muestra el total de
+        # acciones al lado del porcentaje.
+        'def':      _roundpy((D['#']+0.5*D['+']-D['='])/D['T']*100) if D['T'] else None,
+        'defT':     D['T'],
+        'defPerf':  D['#'],
+        'defErr':   D['='],
     }
 
 # ══════════ LECTURA DVW ══════════
@@ -226,8 +245,32 @@ def parse_dvw(path):
             names[nn]=re.sub(r'\s+',' ',nom).strip()
 
     scout=txt.split('[3SCOUT]')[-1].strip().splitlines()
-    # resultado (sets) — simple: contar de la meta si está
-    return {'code':code,'rival':rival,'date':date,'side':side,'names':names,'scout':scout}
+
+    # ── El resultado ────────────────────────────────────────────────────────
+    # Antes esto no se calculaba: habia un comentario que decia "contar de la
+    # meta si esta" y nada mas. La meta salia sin resultado, y las tarjetas de
+    # sesion mostraban 0 sets para el club y pintaban todos los partidos como
+    # derrota.
+    #
+    # El ultimo parcial de cada linea de [3SET] es el resultado del set. Se
+    # cuenta desde el lado del club: si juega de visitante, se dan vuelta.
+    sets_club = sets_riv = 0
+    parciales = []
+    bloque = txt.split('[3SET]')
+    if len(bloque) > 1:
+        for linea in bloque[1].split('[3')[0].strip().splitlines():
+            campos = linea.split(';')
+            if len(campos) < 5: continue
+            m2 = re.match(r'\s*(\d+)\s*-\s*(\d+)', campos[4])
+            if not m2: continue
+            h, a = int(m2.group(1)), int(m2.group(2))
+            nos, ellos = (h, a) if casla_home else (a, h)
+            parciales.append('%d-%d' % (nos, ellos))
+            if nos > ellos: sets_club += 1
+            elif ellos > nos: sets_riv += 1
+
+    return {'code':code,'rival':rival,'date':date,'side':side,'names':names,'scout':scout,
+            'sets_club':sets_club,'sets_rival':sets_riv,'parciales':parciales}
 
 # ── La temporada, segun el torneo del club ───────────────────────────────────
 # Antes cada generador la calculaba por su cuenta con la regla europea:
@@ -347,6 +390,8 @@ def build(fuentes, out='datos_baterias.js', filtro_temp=None):
                 jug[nom]=_bat_to_pcts(P)
             eq=_bat_to_pcts(pl['__EQUIPO__']) if '__EQUIPO__' in pl else {}
             matches.append({'id':sid,'tipo':tipo,'rival':r['rival'],'fecha':r['date'],
+                            'sets_club':r.get('sets_club',0),'sets_rival':r.get('sets_rival',0),
+                            'parciales':r.get('parciales',[]),
                             'jug':jug,'eq':eq,'_acum':pl,'names':r['names']})
 
     matches.sort(key=lambda m:(m['fecha'], m['id']))
@@ -379,7 +424,10 @@ def build(fuentes, out='datos_baterias.js', filtro_temp=None):
         porTipo[tipo]={'total':len(sub),'jug':j_t,'eq':e_t,
                        'ids':[m['id'] for m in sub]}
 
-    meta=[{'id':m['id'],'tipo':m['tipo'],'rival':m['rival'],'nombre':m['rival'],'fecha':m['fecha']} for m in matches]
+    meta=[{'id':m['id'],'tipo':m['tipo'],'rival':m['rival'],'nombre':m['rival'],'fecha':m['fecha'],
+           'sets_club':str(m.get('sets_club',0)),'sets_rival':str(m.get('sets_rival',0)),
+           'resultado':[m.get('sets_club',0), m.get('sets_rival',0)],
+           'parciales':m.get('parciales',[])} for m in matches]
     ind=[{'id':m['id'],'tipo':m['tipo'],'jug':m['jug'],'eq':m['eq']} for m in matches]
     OUT={'total':len(matches),'meta':meta,'jug':jug_acum,'ind':ind,'eq':eq_acum,
          'porTipo':porTipo,'temporada':filtro_temp or ''}
