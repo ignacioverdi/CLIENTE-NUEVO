@@ -298,7 +298,14 @@ def temporada_del_partido(fecha, lineas, carpeta, por_defecto):
 
 
 def parse_dvw_both(fpath, temporada):
-    with open(fpath, encoding='utf-8', errors='ignore') as f:
+    # Los .dvw se escriben en Windows-1252 (latin-1), que es la pagina de codigos
+    # que usa DataVolley. Leerlos como UTF-8 descartando lo que no entiende borra
+    # todos los acentos: "Club Atletico" queda "Club Atltico" y "Division" queda
+    # "Divisin". Eso rompia dos cosas a la vez: los nombres de los equipos que ve
+    # el cliente, y el reconocimiento del torneo -que compara contra el nombre
+    # configurado y ya no coincidia-, con lo cual la temporada salia mal y los
+    # partidos desaparecian de las pantallas.
+    with open(fpath, encoding='latin-1', errors='replace') as f:
         content = f.read()
     lines = content.split('\n')
     home_raw, away_raw = get_teams(lines)
@@ -739,7 +746,7 @@ def collect_setter_rallies(dvw_dir, team_norm_map, main_teams, teams_data=None):
     seen_sigs = set()  # evitar contar dos veces archivos del mismo partido (copias/duplicados)
     files = sorted([f for f in os.listdir(dvw_dir) if f.endswith('.dvw')])
     for fname in files:
-        with open(os.path.join(dvw_dir, fname), encoding='utf-8', errors='ignore') as f:
+        with open(os.path.join(dvw_dir, fname), encoding='latin-1', errors='replace') as f:
             content = f.read()
         lines = content.replace('\r\n','\n').split('\n')
         h_raw, a_raw = get_teams(lines)
@@ -1605,7 +1612,7 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
 
     games = []
     for fname in files:
-        with open(os.path.join(dvw_dir,fname), encoding='utf-8', errors='ignore') as f:
+        with open(os.path.join(dvw_dir,fname), encoding='latin-1', errors='replace') as f:
             content = f.read()
         lines = content.split('\n')
         home_raw, away_raw = get_teams(lines)
@@ -1638,7 +1645,7 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
     historial = []
     for g in sorted(games, key=lambda x:x['date']):
         if not g['date']: continue
-        with open(g['content_path'], encoding='utf-8', errors='ignore') as f:
+        with open(g['content_path'], encoding='latin-1', errors='replace') as f:
             content = f.read()
         lines = content.split('\n')
         home_raw,_ = get_teams(lines)
@@ -1751,7 +1758,7 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
     _arm_acum_names={}
     for g in sorted(games,key=lambda x:x['date']):
         if not g['date']: continue
-        with open(g['content_path'], encoding='utf-8', errors='ignore') as f:
+        with open(g['content_path'], encoding='latin-1', errors='replace') as f:
             bcontent=f.read().replace('\r\n','\n')
         bidx=bcontent.find('[3SCOUT]\n')
         if bidx<0: continue
@@ -1798,7 +1805,7 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
     acum_names={}
     for g in sorted(games,key=lambda x:x['date']):
         if not g['date']: continue
-        with open(g['content_path'], encoding='utf-8', errors='ignore') as f:
+        with open(g['content_path'], encoding='latin-1', errors='replace') as f:
             cc=f.read().replace('\r\n','\n')
         acum_names.update(_bat_name_map(cc, '*' if g['team_home'] else 'a'))
     # Inyectar objetivos acumulados en cada jugador de partidos_jug

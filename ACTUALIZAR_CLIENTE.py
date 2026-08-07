@@ -56,11 +56,24 @@ PROGRAMA = {'datos_seguros.js', 'nla_stats_template.html'}
 # El club puede tener versiones propias mejores que la plantilla
 DEL_CLUB = {'sw.js', 'procesar.py'}
 
+# Documentacion interna: no viaja al cliente. Misma lista que ACTUALIZAR_KIT.
+FUERA = {
+    'ESTADO_PROYECTO.md', 'ESTADO_DEL_PROYECTO_VOLEYIQ.md',
+    'REFERENCIA_TECNICA.md', 'RESUMEN_PARA_NUEVO_CHAT.md',
+    'RESUMEN_SISTEMA_COMPLETO.md', 'TRASPASO_PROYECTO.md', 'EL_PRODUCTO.md',
+    'diagnostico.html', 'PROTOTIPO_canchita_video.html',
+}
+
 SUBCARPETAS = ['api']
-EXT = ('.html', '.js', '.py', '.css')
+# Los .bat entran a proposito: HACER_TODO.bat es el que orquesta todos los
+# generadores. Sin ellos, un arreglo en la cadena de procesamiento nunca llega
+# al cliente y las pantallas siguen vacias aunque los motores esten al dia.
+EXT = ('.html', '.js', '.py', '.css', '.bat')
 
 
 def es_dato(n):
+    if n in FUERA:
+        return True
     if n in DEL_CLUB:
         return True
     if n in PROGRAMA:

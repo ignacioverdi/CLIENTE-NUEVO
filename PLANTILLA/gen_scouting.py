@@ -206,7 +206,14 @@ def collect():
                                  'pl_atk_files':defaultdict(set)})
     files = sorted(glob.glob(os.path.join(DVW_DIR, '*.dvw')))
     for fp in files:
-        with open(fp, encoding='utf-8', errors='ignore') as f:
+        # Los .dvw se escriben en Windows-1252 (latin-1), que es la pagina de codigos
+        # que usa DataVolley. Leerlos como UTF-8 descartando lo que no entiende borra
+        # todos los acentos: "Club Atletico" queda "Club Atltico" y "Division" queda
+        # "Divisin". Eso rompia dos cosas a la vez: los nombres de los equipos que ve
+        # el cliente, y el reconocimiento del torneo -que compara contra el nombre
+        # configurado y ya no coincidia-, con lo cual la temporada salia mal y los
+        # partidos desaparecian de las pantallas.
+        with open(fp, encoding='latin-1', errors='replace') as f:
             content = f.read()
         lines = content.replace('\r\n','\n').split('\n')
         rh, ra = eng.get_teams(lines)
@@ -271,7 +278,7 @@ def rotations_for(team, apellido_of):
     """Devuelve {r: [apellido_z4, apellido_z3, apellido_z2]} (front row mas comun por rotacion)."""
     front_counter = {r: Counter() for r in range(1,7)}
     for mi in team['matchinfo']:
-        with open(mi['fp'], encoding='utf-8', errors='ignore') as f:
+        with open(mi['fp'], encoding='latin-1', errors='replace') as f:
             content = f.read().replace('\r\n','\n')
         i = content.find('[3SCOUT]\n')
         if i < 0: continue

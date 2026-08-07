@@ -22,7 +22,12 @@ def _cargar_equipos(carpeta):
     vistos = {}
     for f in sorted(glob.glob(os.path.join(carpeta, '*.dvw'))):
         try:
-            txt = read_dvw(f)
+            # Antes decia read_dvw(f), una funcion que NO existe en este
+            # archivo. Como el error caia en el except de abajo, cada .dvw se
+            # descartaba en silencio y la tabla de equipos quedaba vacia: el
+            # generador terminaba con "Equipos: 0" y "0 sesiones" sin decir
+            # por que. El resto del archivo los lee asi.
+            txt = open(f, encoding='latin-1', errors='ignore').read()
         except Exception:
             continue
         lin = txt.split('\n')
@@ -45,6 +50,16 @@ def _cargar_equipos(carpeta):
             ut = [w for w in pal if w.lower() not in relleno and len(w) > 2]
             corto = (ut[0].capitalize() if ut else (pal[0] if pal else n[:10]))
             vistos[n] = corto
+    # La tabla del club manda sobre lo que se deduce del nombre. Sin esto,
+    # "Club Atletico San Lorenzo de Almagro" se acorta como "San" -la primera
+    # palabra que no es relleno- y despues no coincide con "Casla", que es como
+    # el motor guarda al equipo. En config_club.json se declara la equivalencia
+    # una vez y todos los generadores la usan igual.
+    try:
+        import config_club as _cc
+        vistos.update(_cc.tabla_de_equipos() or {})
+    except Exception:
+        pass
     TEAM_NORM = dict(vistos)
     return TEAM_NORM
 NUESTRO = ['']          # se completa al arrancar, con el nombre del club
@@ -59,6 +74,26 @@ def is_casla(n):
     import unicodedata
     if not n: return False
     t = unicodedata.normalize('NFKD', n).encode('ascii', 'ignore').decode().lower()
+
+    # El nombre largo del club, tal como figura en el .dvw. Hace falta porque
+    # el nombre corto casi nunca esta adentro del largo: "Casla" no aparece en
+    # "Club Atletico San Lorenzo de Almagro", asi que la comparacion de abajo
+    # daba siempre que no. Se declara una vez en config_club.json.
+    try:
+        import config_club as _cc
+        plano = re.sub(r'[^a-z]', '', t)
+        for largo, corto in (_cc.tabla_de_equipos() or {}).items():
+            if corto and corto.lower() == (_cc.equipo_propio() or '').lower():
+                lp = re.sub(r'[^a-z]', '',
+                            unicodedata.normalize('NFKD', largo).encode('ascii','ignore').decode().lower())
+                if lp and (lp in plano or plano in lp):
+                    return True
+        propio = (_cc.equipo_propio() or '').lower()
+        if propio and re.sub(r'[^a-z]', '', propio) in plano:
+            return True
+    except Exception:
+        pass
+
     clave = (NUESTRO[0] or '').lower()
     if not clave: return False
     return clave in re.sub(r'[^a-z]', '', t) or clave in t

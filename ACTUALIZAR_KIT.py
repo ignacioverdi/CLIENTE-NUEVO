@@ -258,7 +258,22 @@ DEL_KIT = {'sw.js', 'procesar.py'}
 # Paginas que quedaron de pruebas: no las enlaza nadie, no aportan nada y son
 # superficie expuesta de mas. Se borraron de los dos repos; esta lista evita
 # que vuelvan a entrar solas desde la carpeta de origen.
-FUERA = {'diagnostico.html', 'PROTOTIPO_canchita_video.html'}
+FUERA = {
+    'diagnostico.html', 'PROTOTIPO_canchita_video.html',
+    # ── Documentacion INTERNA ────────────────────────────────────────────────
+    # El estado del proyecto, los errores conocidos, como esta armado por
+    # dentro. Es el know-how, no la aplicacion. Se colaba en el repositorio de
+    # cada cliente: el .vercelignore lo sacaba de la web, pero cualquiera que
+    # mirara su GitHub lo tenia ahi.
+    #
+    # NO se sacan las guias que SI son para el cliente: LEEME_PRIMERO,
+    # GUIA_MAESTRA_SISTEMA, GUIA_PF, VIDEOS_COMO_USAR, VIDEO_DELAY y
+    # COMO_SCOUTEAR_SIN_INTERNET.
+    'ESTADO_PROYECTO.md', 'ESTADO_DEL_PROYECTO_VOLEYIQ.md',
+    'REFERENCIA_TECNICA.md', 'RESUMEN_PARA_NUEVO_CHAT.md',
+    'RESUMEN_SISTEMA_COMPLETO.md', 'TRASPASO_PROYECTO.md',
+    'EL_PRODUCTO.md',
+}
 
 def es_dato(n):
     if n in FUERA:
@@ -308,7 +323,7 @@ def _listar(carpeta, prefijo=''):
             if f in SUBCARPETAS:
                 salida.extend(_listar(ruta, rel + '/'))
             continue
-        if f in CONFIG or (f.lower().endswith(('.html', '.js', '.py', '.css')) and not es_dato(f)):
+        if f in CONFIG or (f.lower().endswith(('.html', '.js', '.py', '.css', '.bat')) and not es_dato(f)):
             salida.append(rel)
     return salida
 
@@ -390,7 +405,7 @@ print('     REVISION FINAL')
 print('  ' + '-' * 70)
 quedan = {}
 for nombre in os.listdir(destino):
-    if not nombre.lower().endswith(('.html', '.js', '.py', '.css')) or es_dato(nombre):
+    if not nombre.lower().endswith(('.html', '.js', '.py', '.css', '.bat')) or es_dato(nombre):
         continue
     try:
         s = open(os.path.join(destino, nombre), encoding='utf-8', errors='replace').read()
