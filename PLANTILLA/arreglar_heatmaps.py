@@ -11,7 +11,7 @@
 
   Las demás pantallas —index, equipo, historial— ya tenían el nuevo:
 
-      href="hm_ataque.html?equipo=nafels"
+      href="hm_ataque.html?equipo={{club}}"
 
   Por eso desde el dashboard sólo aparecían cuatro mapas y al abrir cualquiera
   daba error. El menú viejo tenía cuatro; el nuevo tiene cinco, con defensa.

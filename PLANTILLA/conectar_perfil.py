@@ -13,7 +13,7 @@
   Ahora llevan al plan de partido, con el jugador ya elegido y la sección
   abierta:
 
-      plan_partido.html?equipo=casla&jug=11#saque
+      plan_partido.html?equipo={{club}}&jug=11#saque
 
   Es la pantalla completa: el comparativo contra los demás de su puesto, las
   canchitas por rotación y el detalle por zona. Las viejas quedan como estaban,

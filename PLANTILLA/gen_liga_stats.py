@@ -44,7 +44,10 @@ SEASONS = [
     ("25-26", "DVW NAFELS 2026"),
     ("26-27", "DVW NAFELS 2027"),   # se llena durante la temporada en curso
 ]
-NLA_TEAMS = ['Amriswil','Chenois','Colombier','Jona','Lausanne','Nafels','Schonenwerd','St Gallen']
+# Los equipos salen de config_club.json o de los propios .dvw. Antes esta
+# lista traia los ocho clubes de la liga del club de origen, asi que un
+# cliente de otra liga no encontraba ninguno de los suyos.
+NLA_TEAMS = []
 
 # ── Normalización robusta de nombres (anti-mojibake + sin acentos) ────
 def _fix_mojibake(s):
@@ -54,12 +57,11 @@ def _fix_mojibake(s):
     return s
 def _deaccent(s):
     return ''.join(c for c in unicodedata.normalize('NFKD', s) if not unicodedata.combining(c))
-_CANON = {'{{CLUB_SLUG}}':'Nafels','chenois':'Chenois','schonenwerd':'Schonenwerd','amriswil':'Amriswil',
-          'colombier':'Colombier','jona':'Jona','lausanne':'Lausanne','gallen':'St Gallen'}
-_VARIANTS = [('{{CLUB_SLUG}}',['{{CLUB_SLUG}}','nfels']), ('chenois',['chenois','chnois']),
-             ('schonenwerd',['schonenwerd','schnenwerd','schoenenwerd']), ('amriswil',['amriswil']),
-             ('colombier',['colombier']), ('jona',['jona']), ('lausanne',['lausanne']),
-             ('gallen',['gallen'])]
+# La tabla de nombres largos y sus variantes sale de config_club.json
+# (clave "equipos"). Antes estaban escritos aca los de la liga del club
+# de origen, y un cliente de otra liga no reconocia a ninguno.
+_CANON = {}
+_VARIANTS = []
 def norm(name):
     s=''.join(ch for ch in _deaccent(_fix_mojibake(name)).lower() if ch.isalnum() or ch==' ')
     for ckey,variants in _VARIANTS:

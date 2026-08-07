@@ -13,15 +13,8 @@ from collections import defaultdict, Counter
 import unicodedata
 # --- equipos de la liga ({{Club}}): keyword normalizado -> (slug, display) ---
 SLUGS = [
- ('amriswil',   ('amriswil','Amriswil')),
- ('{{CLUB_SLUG}}',     ('{{CLUB_SLUG}}','N\u00e4fels')),
- ('schonenwerd',('schonenwerd','Sch\u00f6nenwerd')),
- ('chenois',    ('chenois','Ch\u00eanois')),
- ('jona',       ('jona','Jona')),
- ('colombier',  ('colombier','Colombier')),
- ('gallen',     ('stgallen','St Gallen')),
- ('lausanne',   ('lausanne','Lausanne')),
- ('orion',      ('orion','Orion Stars')),
+    # Los equipos salen de los propios .dvw. Antes estaban los de la liga
+    # del club de origen escritos aca.
 ]
 DISP_BY_SLUG = {slug:disp for kw,(slug,disp) in SLUGS}
 def _norm(x):

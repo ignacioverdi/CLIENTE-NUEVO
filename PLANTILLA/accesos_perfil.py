@@ -8,7 +8,7 @@
   Deja los seis accesos del perfil —Distribución, Recepción, Saque, Ataque,
   Defensa y Bloqueo— apuntando al plan de partido con ese jugador ya elegido:
 
-      plan_partido.html?equipo=casla&jug=11#saque
+      plan_partido.html?equipo={{club}}&jug=11#saque
 
   Es exactamente como lo tiene CASLA, que funciona. El nombre del equipo se
   escribe directo en el enlace, no se deduce en el momento: así no hay nada que

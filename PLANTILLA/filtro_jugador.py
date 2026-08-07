@@ -6,7 +6,7 @@
 
   ── QUÉ AGREGA ──────────────────────────────────────────────────────────────
   Al entrar desde el perfil de un jugador —
-  plan_partido.html?equipo=casla&jug=11#saque— la pantalla mostraba TODO el
+  plan_partido.html?equipo={{club}}&jug=11#saque— la pantalla mostraba TODO el
   equipo en vez de sólo ese jugador.
 
   Le faltaba el filtro entero: no tenía ni el selector, ni la lectura del

@@ -270,6 +270,10 @@ select, select option {
 <script src="liga_data_entrenamientos.js.enc" onerror="void 0"></script>
 <script src="firebase.js" onerror="void 0"></script>
 <script src="mapa_videos.js.enc" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
+<!-- Esta pantalla usa RECEPCION_RIVAL_DATA pero no cargaba su archivo:
+     la variable quedaba sin definir y la seccion salia vacia sin aviso.
+     Va con .enc porque los datos del club se publican cifrados. -->
+<script src="datos_recepcion.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <script src="videos.js" onerror="window.VIDEOS_DATA=window.VIDEOS_DATA||{}"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo

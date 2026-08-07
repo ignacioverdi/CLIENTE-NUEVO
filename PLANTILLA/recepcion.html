@@ -472,7 +472,11 @@ function defaultReceptores(){
       if(r.length) return r;
     }
   }catch(e){}
-  return ["DURDOS", "BARTHOLET", "ROFFLER", "BOGDANOVSKI", "SCHMID J"];
+  // Vacio a proposito. Aca estaban los receptores del club que escribio el
+  // sistema: cuando el plantel propio no cargaba —por ejemplo si datos_equipo
+  // no llegaba— la pantalla mostraba esos cinco apellidos como si fueran del
+  // club. Es peor que no mostrar nada, porque parece que funciona.
+  return [];
 }
 function initReceptores(){
   cargarRecepcionNafels();

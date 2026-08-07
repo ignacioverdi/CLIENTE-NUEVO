@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Videos — {{CLUB}} VOLEY</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="datos_videos.js" onerror="void 0"></script>
+<!-- El descifrador va SIEMPRE antes que los datos cifrados: si va
+     despues, no los abre y la pantalla queda vacia sin dar error. -->
 <script src="datos_seguros.js"></script>
+<script src="datos_videos.js.enc" onerror="void 0"></script>
   <script src="datos_equipo.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <script src="lang.js" onerror="void 0"></script>

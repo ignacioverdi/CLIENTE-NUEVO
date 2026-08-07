@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Stats Entrenamiento</title>
-<script src="datos_voley.js" onerror="void 0" onerror="void 0"></script>
+<!-- El descifrador va SIEMPRE antes que los datos cifrados: si va
+     despues, no los abre y la pantalla queda vacia sin dar error. -->
+<script src="datos_seguros.js"></script>
+<script src="datos_voley.js.enc" onerror="void 0" onerror="void 0"></script>
+<!-- Abre todo lo registrado arriba. Va al final: un .enc cargado
+     despues de esta linea no lo abre nadie. -->
+<script>abrirDatos();</script>
 <style id="fuentes-embebidas">
 /* Fuentes embebidas (Barlow, Barlow Condensed, JetBrains Mono) — SIL Open Font License.
    El panel ya no depende de Google Fonts: funciona 100% offline. */
@@ -278,7 +284,6 @@ body::before{content:'';position:fixed;inset:0;
 
 select, select option { color: #111111 !important; background-color: #ffffff !important; }
 </style>
-<script src="datos_seguros.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
 <script src="lang.js"></script>
 <script src="objetivos.js" onerror="void 0"></script>
@@ -486,6 +491,10 @@ function renderObjetivosJugador(cid,nombre,extra){
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
 <link rel="stylesheet" href="movil.css">
+<!-- Esta pantalla usa HISTORIAL_DATA y no cargaba su archivo. Va SIN
+     .enc a proposito: datos_historial.js es uno de los que no se
+     cifran, porque hay paginas que lo piden con fetch(). -->
+<script src="datos_historial.js" onerror="void 0"></script>
 </head>
 <body>
 <div style="padding:6px 20px;background:rgba(7,8,15,.97);border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:12px"><a href="dashboard.html" style="padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#475569;font-size:10px;font-weight:700;letter-spacing:1px;text-decoration:none;text-transform:uppercase">← Dashboard</a><div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div></div>

@@ -34,18 +34,6 @@ TEAM_NORM = {
     'Biogas Volley {{Club}} (NLA Men)': 'Nafels',
     'Volley NFELS': 'Nafels', 'Volley Nfels': 'Nafels',
     'Volley Amriswil (NLA Men)': 'Amriswil',
-    'Volley Schönenwerd (NLA Men)': 'Schonenwerd',
-    'Chênois Genève Volleyball (NLA Men)': 'Chenois',
-    'Chnois Genve Volleyball': 'Chenois',
-    'Colombier Volley (NLA Men)': 'Colombier',
-    'STV St Gallen (NLA Men)': 'St Gallen',
-    'TSV Jona Volleyball (NLA Men)': 'Jona',
-    'TSV Jona Volleyball': 'Jona',
-    'Lausanne UC (NLA Men)': 'Lausanne',
-    'VBC Sursee (NLB Men)': 'Sursee',
-    'Orion Stars': 'Orion', 'CSU Corona Brasov': 'Brasov',
-    'Neftohimic 2010 BURGAS': 'Burgas',
-    'SCM ZALAU': 'Zalau', 'SCM Zalau': 'Zalau',
 }
 
 def is_naf(n): return bool(re.search(r'n[aä]fels|biogas',n or '',re.I))

@@ -170,9 +170,6 @@ def _asegurar_config(carpeta):
         'tres de febrero': 'Untref', 'ferro carril oeste': 'Ferro',
         'nautico hacoaj': 'Hacoaj', 'boca juniors': 'Boca',
         # Suiza
-        'nafels': 'Nafels', 'amriswil': 'Amriswil', 'schonenwerd': 'Schonenwerd',
-        'chenois': 'Chenois', 'colombier': 'Colombier', 'lausanne': 'Lausanne',
-        'st gallen': 'St Gallen', 'jona': 'Jona',
     }
     import unicodedata
     relleno = ('club', 'atletico', 'atltico', 'volley', 'voley', 'de', 'del', 'la',

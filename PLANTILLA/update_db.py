@@ -39,33 +39,14 @@ def normalize_combo(combo):
 # ═══════════════════════════════════════════════════════════════════
 # CONFIGURACIÓN CASLA (Liga Argentina División de Honor)
 # ═══════════════════════════════════════════════════════════════════
-NLA_TEAMS = ['Amriswil','Chenois','Colombier','Jona','Lausanne',
-             'Nafels','Schonenwerd','St Gallen']
+NLA_TEAMS = []
 
-TEAM_NORM = {
-    'Biogas Volley {{Club}} (NLA Men)': 'Nafels',
-    'Volley NFELS': 'Nafels', 'Volley Nfels': 'Nafels',
-    'Volley Amriswil (NLA Men)': 'Amriswil',
-    'Volley Schönenwerd (NLA Men)': 'Schonenwerd',
-    'Chênois Genève Volleyball (NLA Men)': 'Chenois',
-    'Chnois Genve Volleyball': 'Chenois',
-    'Colombier Volley (NLA Men)': 'Colombier',
-    'STV St Gallen (NLA Men)': 'St Gallen',
-    'TSV Jona Volleyball (NLA Men)': 'Jona',
-    'TSV Jona Volleyball': 'Jona',
-    'Lausanne UC (NLA Men)': 'Lausanne',
-    'VBC Sursee (NLB Men)': 'Sursee',
-    'Orion Stars': 'Orion', 'CSU Corona Brasov': 'Brasov',
-    'Neftohimic 2010 BURGAS': 'Burgas',
-    'SCM ZALAU': 'Zalau', 'SCM Zalau': 'Zalau',
-}
+TEAM_NORM = {}
 MAIN_TEAM = 'Nafels'
 
 
 TEAM_COLORS = {
-    'Nafels':'#22c55e','Amriswil':'#3b82f6','Schonenwerd':'#f97316',
-    'Chenois':'#818cf8','Colombier':'#f59e0b','Jona':'#06b6d4',
-    'Lausanne':'#ec4899','St Gallen':'#94a3b8'
+    '{{Club}}':'#22c55e'
 }
 
 ATK_COMBOS = ['X5','V5','X6','V6','X8','V8','X1','X7','XM','X2','XB','XP','XR',
