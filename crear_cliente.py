@@ -409,6 +409,34 @@ if ENT_MAIL and ENT_CLAVE and FB_URL and FB_KEY:
             if ok:
                 print('     listo: ' + ENT_MAIL + ' entra como entrenador')
 
+                # ── LA LLAVE DE LOS DATOS ────────────────────────────────
+                # Los datos del club se publican cifrados. La llave vive en
+                # Firebase y la app la trae al iniciar sesion; sin ella, TODAS
+                # las pantallas quedan vacias sin dar un solo error.
+                #
+                # Hasta ahora habia que crearla a mano con CIFRAR_DATOS.bat y
+                # copiarla a Firebase a mano. Dos pasos que nadie recuerda y
+                # que, si se saltean, dan una app que parece rota. Ahora se
+                # hacen solos, aprovechando la misma sesion de arriba.
+                try:
+                    import secrets as _sec
+                    _ruta_llave = os.path.join(DESTINO, 'LLAVE.txt')
+                    _llave = ''
+                    if os.path.exists(_ruta_llave):
+                        _llave = open(_ruta_llave, encoding='utf-8').read().strip()
+                    if len(_llave) != 64:
+                        _llave = _sec.token_hex(32)
+                        open(_ruta_llave, 'w', encoding='utf-8').write(_llave)
+                    _rl = api('%s/clubes/%s/llave.json?auth=%s' % (base, CLUB_ID, token),
+                              '', _llave, metodo='PUT', tipo='vercel')
+                    if isinstance(_rl, dict) and '_error' in _rl:
+                        print('     [aviso] no pude guardar la llave en Firebase.')
+                        print('             Copiala de LLAVE.txt a clubes/%s/llave' % CLUB_ID)
+                    else:
+                        print('     llave de los datos: creada y guardada en Firebase')
+                except Exception as _e:
+                    print('     [aviso] problema con la llave:', _e)
+
             # ══════════════════════════════════════════════════════════════
             #  EL ROBOT QUE PROCESA LOS PARTIDOS
             # --------------------------------------------------------------
