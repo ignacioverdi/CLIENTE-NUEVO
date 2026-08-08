@@ -453,6 +453,12 @@ function selectPartido(idx, btn){
 }
 
 function activarPartidoBtns(btn){
+  /* Las baterias tienen que seguir al partido elegido.
+     _sincronizarBaterias() solo se llamaba al cambiar el filtro de tipo, nunca
+     al elegir una sesion: por eso los objetivos se quedaban en el acumulado
+     hicieras lo que hicieras. Va ANTES de renderObjetivos, que es quien los
+     dibuja con el valor que esta puesto. */
+  try{ _sincronizarBaterias(); }catch(e){}
   setTimeout(function(){if(typeof renderObjetivos!=="undefined")renderObjetivos("objetivos-panel");},50);
   document.querySelectorAll('.partido-btn').forEach(function(b){ b.classList.remove('activo'); });
   btn.classList.add('activo');

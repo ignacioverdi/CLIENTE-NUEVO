@@ -1148,7 +1148,58 @@ function renderDefensaTabla(){
       Object.keys(M).forEach(function(k){ VD[k] = M[k]; });
     });
   }catch(e){}
-  if(!Object.keys(VD).length) return '<div class="empty">Sin datos de defensa todavía</div>';
+  /* ══ Sin video, la defensa igual sale de los .dvw ═══════════════════════
+     Esta tabla se armaba SOLO con los cortes de video. Un club que todavia no
+     subio videos veia "Sin datos de defensa" para siempre, aunque sus .dvw
+     traigan las acciones —146 en un solo partido—. Era la unica tabla que no
+     se llenaba sola, igual que le pasaba a la pill de arriba.
+
+     Si no hay video, se arma con el archivo de baterias, que ya trae la
+     defensa por jugador y respeta la sesion elegida. */
+  if(!Object.keys(VD).length){
+    try{
+      var _B = window.BAT_PARTIDOS;
+      var _cual = window._dbatPartido || window._objPartido || 'acumulado';
+      var _fuente = null;
+      if(_B){
+        if(!_cual || _cual === 'acumulado') _fuente = _B.jug || null;
+        else {
+          var _s = (_B.ind || []).filter(function(x){ return x.id === _cual; })[0];
+          _fuente = _s ? _s.jug : null;
+        }
+      }
+      if(_fuente){
+        var _filas = [];
+        Object.keys(_fuente).forEach(function(n){
+          /* La fila del equipo no es un jugador: el total se calcula abajo. */
+          if(n === '__EQUIPO__') return;
+          var d = _fuente[n];
+          if(!d || !d.defT) return;
+          _filas.push({n:n, T:d.defT, perf:d.defPerf||0, buena:d.defBuena||0,
+                       reg:d.defReg||0, mala:d.defMala||0, err:d.defErr||0});
+        });
+        if(_filas.length){
+          _filas.sort(function(a,b){ return b.T - a.T; });
+          var _t = {T:0,perf:0,buena:0,reg:0,mala:0,err:0};
+          _filas.forEach(function(p){ _t.T+=p.T; _t.perf+=p.perf; _t.buena+=p.buena;
+                                      _t.reg+=p.reg; _t.mala+=p.mala; _t.err+=p.err; });
+          var _ef = function(p){ return p.T ? Math.round((p.perf+0.5*p.buena-0.5*p.mala-p.err)/p.T*100) : 0; };
+          var _h = '<table class="tabla"><thead><tr>';
+          ['Jugador','Total','#','+','!','-','=','EFF%'].forEach(function(x){ _h += '<th>'+x+'</th>'; });
+          _h += '</tr></thead><tbody>';
+          _filas.forEach(function(p){
+            _h += '<tr><td class="left">'+p.n+'</td><td>'+p.T+'</td><td>'+p.perf+'</td><td>'+p.buena+'</td>'
+                + '<td>'+p.reg+'</td><td>'+p.mala+'</td><td>'+p.err+'</td><td>'+_ef(p)+'%</td></tr>';
+          });
+          _h += '<tr class="total-row"><td class="left">TOTAL</td><td>'+_t.T+'</td><td>'+_t.perf+'</td>'
+              + '<td>'+_t.buena+'</td><td>'+_t.reg+'</td><td>'+_t.mala+'</td><td>'+_t.err+'</td>'
+              + '<td>'+_ef(_t)+'%</td></tr></tbody></table>';
+          return _h;
+        }
+      }
+    }catch(e){}
+    return '<div class="empty">Sin datos de defensa todavía</div>';
+  }
   var P={};
   /* Cada corte tiene que ser de esta temporada.
 

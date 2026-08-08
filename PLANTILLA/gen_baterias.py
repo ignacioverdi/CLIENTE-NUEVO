@@ -114,7 +114,7 @@ def _bat_nuevo():
             # video, que un club nuevo no tiene, y quedaba siempre en cero
             # aunque los .dvw traigan las acciones —146 en un solo partido—.
             # Ahora sale de los .dvw como los otros cuatro fundamentos.
-            'D':{'#':0,'+':0,'-':0,'/':0,'=':0,'T':0},
+            'D':{'#':0,'+':0,'!':0,'-':0,'/':0,'=':0,'T':0},
             'Aall':na(),'cent':na(),'alta':na(),'rap':na(),
             'rp':na(),'ri':na(),'rm':na(),'tr':na()}
 
@@ -204,9 +204,12 @@ def _bat_to_pcts(P):
         # Perfectas menos errores sobre el total, la misma forma que usan las
         # otras pills. 'defT' va aparte porque el recuadro muestra el total de
         # acciones al lado del porcentaje.
-        'def':      _roundpy((D['#']+0.5*D['+']-D['='])/D['T']*100) if D['T'] else None,
+        'def':      _roundpy((D['#']+0.5*D['+']-0.5*D['-']-D['='])/D['T']*100) if D['T'] else None,
         'defT':     D['T'],
         'defPerf':  D['#'],
+        'defBuena': D['+'],
+        'defReg':   D.get('!', 0),
+        'defMala':  D['-'],
         'defErr':   D['='],
     }
 
