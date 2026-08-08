@@ -41,6 +41,29 @@
 <!-- Marca la fila del jugador que inicio sesion. Si no es un jugador, no
      hace nada: solo AGREGA una clase, nunca cambia como se arma la tabla. -->
 <script src="mi_fila.js" onerror="void 0"></script>
+<script>
+/* ══ EL RESULTADO DE UN PARTIDO ═══════════════════════════════════════════
+   El generador guarda los sets del club con SU nombre como clave:
+       resultado: { casla: 3, rival: 1, sets: [...] }
+   ...y las pantallas los leian como resultado.nafels, el nombre del club que
+   escribio el sistema. Como esa clave no existe, daba 0 y TODOS los partidos
+   aparecian como derrota, en rojo, con el resultado mal.
+
+   Esta funcion los busca sin depender de como se llame el club. */
+function setsDelClub(res){
+  if(!res) return 0;
+  var v = res.club;
+  if(v === undefined) v = res.sets_club;
+  if(v === undefined){
+    for(var k in res){
+      if(k === 'rival' || k === 'sets' || k === 'parciales') continue;
+      if(typeof res[k] === 'number' || /^\d+$/.test(res[k])){ v = res[k]; break; }
+    }
+  }
+  return parseInt(v, 10) || 0;
+}
+function setsDelRival(res){ return (res && parseInt(res.rival,10)) || 0; }
+</script>
 </head>
 <body>
   <div class="hdr">
@@ -71,10 +94,10 @@
         s.aT+=j.aT||0; s.aP+=j.aPunto||0; s.aErr+=j.aErr||0; s.aEffW+=(j.aEff||0)*(j.aT||0);
         s.bPt+=j.bPt||0;
       });
-      var won=m.resultado.nafels>m.resultado.rival;
+      var won=setsDelClub(m.resultado)>setsDelRival(m.resultado);
       return {
         fecha:m.fecha, rival:m.rival, won:won,
-        score:m.resultado.nafels+'-'+m.resultado.rival,
+        score:setsDelClub(m.resultado)+'-'+setsDelRival(m.resultado),
         atk_eff: s.aT? Math.round(s.aEffW/s.aT):0,
         atk_kill: s.aT? Math.round(s.aP/s.aT*100):0,
         srv_ace: s.sT? Math.round(s.sP/s.sT*100):0,

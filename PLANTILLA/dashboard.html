@@ -425,6 +425,29 @@ function dbatBuildSubfiltro(){
 <!-- Marca la fila del jugador que inicio sesion. Si no es un jugador, no
      hace nada: solo AGREGA una clase, nunca cambia como se arma la tabla. -->
 <script src="mi_fila.js" onerror="void 0"></script>
+<script>
+/* ══ EL RESULTADO DE UN PARTIDO ═══════════════════════════════════════════
+   El generador guarda los sets del club con SU nombre como clave:
+       resultado: { casla: 3, rival: 1, sets: [...] }
+   ...y las pantallas los leian como resultado.nafels, el nombre del club que
+   escribio el sistema. Como esa clave no existe, daba 0 y TODOS los partidos
+   aparecian como derrota, en rojo, con el resultado mal.
+
+   Esta funcion los busca sin depender de como se llame el club. */
+function setsDelClub(res){
+  if(!res) return 0;
+  var v = res.club;
+  if(v === undefined) v = res.sets_club;
+  if(v === undefined){
+    for(var k in res){
+      if(k === 'rival' || k === 'sets' || k === 'parciales') continue;
+      if(typeof res[k] === 'number' || /^\d+$/.test(res[k])){ v = res[k]; break; }
+    }
+  }
+  return parseInt(v, 10) || 0;
+}
+function setsDelRival(res){ return (res && parseInt(res.rival,10)) || 0; }
+</script>
 </head>
 <body>
 <div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
@@ -1421,10 +1444,10 @@ function renderGamePlans(){
 
     var resHtml = '';
     if(gp.resultado){
-      var win = gp.resultado.nafels > gp.resultado.rival;
+      var win = setsDelClub(gp.resultado) > setsDelRival(gp.resultado);
       var col = win ? '#22c55e' : '#ef4444';
       resHtml = '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,255,255,.03);border-radius:7px;margin-bottom:10px">'
-        +'<div style="font-family:Bebas Neue,sans-serif;font-size:20px;color:'+col+'">'+gp.resultado.nafels+' — '+gp.resultado.rival+'</div>'
+        +'<div style="font-family:Bebas Neue,sans-serif;font-size:20px;color:'+col+'">'+setsDelClub(gp.resultado)+' — '+setsDelRival(gp.resultado)+'</div>'
         +'<div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:1px">'+(win?'✓ Victoria':'✗ Derrota')+'</div>'
         +'</div>';
     }
