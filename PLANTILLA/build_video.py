@@ -30,11 +30,14 @@ COMBOS = json.loads(r'''{"PP":"Setter tip","V0":"High set in 5","V5":"High set i
 SK={'S':'Saque','R':'Recepción','A':'Ataque','B':'Bloqueo','D':'Defensa','E':'Armado','F':'Freeball'}
 
 # Mapeo de nombres de equipo del DVW -> nombre canonico (igual que update_db_nafels_FULL.py)
-TEAM_NORM = {
-    'Biogas Volley {{Club}} (NLA Men)': 'Nafels',
-    'Volley NFELS': 'Nafels', 'Volley Nfels': 'Nafels',
-    'Volley Amriswil (NLA Men)': 'Amriswil',
-}
+TEAM_NORM = {}
+try:
+    # La tabla de nombres largos sale de config_club.json. Antes estaban
+    # escritos aca los de la liga del club de origen.
+    import config_club as _cc
+    TEAM_NORM = dict(_cc.tabla_de_equipos() or {})
+except Exception:
+    pass
 
 def is_naf(n): return bool(re.search(r'n[aä]fels|biogas',n or '',re.I))
 
@@ -67,6 +70,25 @@ def slugify(name):
 
     Ahora, si adentro del nombre aparece un club conocido, se usa ese.
     """
+    # ── El nombre corto del club, primero ────────────────────────────────
+    # Sin esto, "Club Atletico San Lorenzo de Almagro" daba el slug
+    # "club_atletico_san_lorenzo_de_almagro", y las pantallas —que buscan
+    # "casla"— no encontraban ninguna accion: los cortes de video salian
+    # vacios aunque los datos estuvieran bien.
+    try:
+        import config_club as _cc
+        _t = _cc.tabla_de_equipos() or {}
+        _plano = re.sub(r'[^a-z0-9]', '',
+                        unicodedata.normalize('NFKD', name or '').encode('ascii','ignore').decode().lower())
+        for _largo, _corto in _t.items():
+            _lp = re.sub(r'[^a-z0-9]', '',
+                         unicodedata.normalize('NFKD', _largo).encode('ascii','ignore').decode().lower())
+            if _lp and (_lp == _plano or _lp in _plano or _plano in _lp):
+                return re.sub(r'[^a-z0-9]', '',
+                              unicodedata.normalize('NFKD', _corto).encode('ascii','ignore').decode().lower())
+    except Exception:
+        pass
+
     n = unicodedata.normalize('NFKD', name or '').encode('ascii', 'ignore').decode('ascii')
     entero = re.sub(r'\s+', '_', n.lower().strip())
 

@@ -146,9 +146,23 @@ function equipoActual(){
   var B=window.PP_BLOCK||{};
   var k=Object.keys(B);
   if(!k.length) return null;
-  /* el club propio primero; si no se reconoce, el que mas bloqueos tenga */
-  var propio=k.filter(function(x){return /nafels|naefels/i.test(x);})[0];
-  if(propio) return propio;
+  /* ══ El club propio ═══════════════════════════════════════════════════
+     Antes buscaba literalmente "nafels", el club que escribio el sistema. En
+     cualquier otro no lo encontraba y caia al respaldo de abajo: el equipo con
+     MAS bloqueos de toda la liga. Por eso un club argentino veia el mapa de
+     Ferro Carril Oeste, con los jugadores de Ferro, como si fueran propios.
+
+     Ahora sale de la direccion (?equipo=) o del nombre corto del club, que es
+     el mismo criterio que usa hm_defensa.html. */
+  var _mio = (new URLSearchParams(location.search).get('equipo') || '{{CLUB_SLUG}}');
+  if(_mio){
+    var _n = String(_mio).toLowerCase().replace(/[^a-z0-9]/g,'');
+    var propio = k.filter(function(x){
+      var y = String(x).toLowerCase().replace(/[^a-z0-9]/g,'');
+      return y === _n || y.indexOf(_n) === 0 || _n.indexOf(y) === 0;
+    })[0];
+    if(propio) return propio;
+  }
   return k.sort(function(a,b){
     var sa=(B[a]||[]).reduce(function(t,p){return t+(p.total||0);},0);
     var sb=(B[b]||[]).reduce(function(t,p){return t+(p.total||0);},0);
