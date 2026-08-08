@@ -193,6 +193,16 @@ python generar_datos_equipo.py
 if errorlevel 1 echo      [aviso] Problema armando el plantel. Sigo igual.
 echo.
 
+echo  ================= INFORME DE EQUIPO =================
+echo.
+REM   Las metricas con las que se analiza voley en serio: cambio de saque,
+REM   breakpoint y sus valores ESPERADOS, que son los que convierten un
+REM   numero en un diagnostico. Se calculan con los .dvw de toda la liga,
+REM   porque la referencia de cada calidad de recepcion depende del nivel.
+python gen_informe.py --dvw_dir "!DVW_DIR!" --temporada "!TEMPORADA_ACTUAL!" --out "datos_informe.js"
+if errorlevel 1 echo      [aviso] Problema armando el informe. Sigo igual.
+echo.
+
 echo  ================= BATERIAS =================
 echo.
 REM   Las dos carpetas en UNA sola corrida. El generador etiqueta cada
@@ -212,6 +222,7 @@ echo  ==================================================
 echo      VERIFICACION (archivos clave):
 if exist "datos_equipo.js"       (echo      OK  datos_equipo.js)              else (echo      --  falta datos_equipo.js)
 if exist "datos_baterias.js"     (echo      OK  datos_baterias.js)            else (echo      --  falta datos_baterias.js)
+if exist "datos_informe.js"      (echo      OK  datos_informe.js)             else (echo      --  falta datos_informe.js)
 if exist "datos_partidos.js"     (echo      OK  datos_partidos.js)            else (echo      --  falta datos_partidos.js)
 if exist "liga_data.js"          (echo      OK  liga_data.js)                 else (echo      --  falta liga_data.js)
 if exist "scouting_rival.js"     (echo      OK  scouting_rival.js)            else (echo      --  falta scouting_rival.js)

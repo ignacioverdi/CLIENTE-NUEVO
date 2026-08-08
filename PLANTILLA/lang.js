@@ -191,6 +191,13 @@
   //  Traduce cualquier texto en español que esté en este diccionario, incluso
   //  el contenido generado dinámicamente por JS (tablas, etiquetas, etc.).
   var PHRASES_EXTRA = {
+    // ═══ Informe de equipo ═══════════════════════════════════════════════
+    "Informe de equipo":{en:"Team report",de:"Mannschaftsbericht"},
+    "Cambio de saque y breakpoint contra su valor esperado: no cuánto sacaste, sino cuánto deberías haber sacado. En una pantalla.":{
+      en:"Sideout and breakpoint against their expected value: not how much you got, but how much you should have. On one screen.",
+      de:"Sideout und Breakpoint gegen ihren Erwartungswert: nicht was du geholt hast, sondern was du holen solltest. Auf einem Bildschirm."},
+    "Nuevo":{en:"New",de:"Neu"},
+    "Cargando el informe…":{en:"Loading the report…",de:"Bericht wird geladen…"},
     // ═══ Tabla de estadisticas de la liga ═════════════════════════════════
     // Los nombres de los equipos NO se traducen: Amriswil, Chenois, Jona y el
     // resto se llaman igual en los tres idiomas.
@@ -1682,7 +1689,6 @@
     "Próximo partido":{en:"Next match",de:"Nächstes Spiel"},
     "Liga NLA":{en:"NLA League",de:"NLA-Liga"},
     "Estadísticas Liga":{en:"League Stats",de:"Liga-Statistiken"},
-    "Nuevo":{en:"New",de:"Neu"},
     "Cargar Videos":{en:"Upload Videos",de:"Videos hochladen"},
     "Pizarrón":{en:"Whiteboard",de:"Taktiktafel"},
     "Próximamente":{en:"Coming soon",de:"Demnächst"},

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Informe de equipo — {{CLUB}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<!--
+  ══════════════════════════════════════════════════════════════════════════
+  informe_equipo.html — EL INFORME, EN UNA PANTALLA
+
+  Los informes que se usan hoy en el voley profesional tienen 100 paginas y
+  arrancan con dos de indice. Nadie los lee antes de un partido.
+
+  Este responde tres preguntas y el resto queda a un clic:
+
+     1. ¿Como venimos?        las dos metricas que cubren el 100% de los
+                              puntos, cada una contra su valor esperado
+     2. ¿Donde perdemos?      el cambio de saque segun como recibimos,
+                              comparado con la liga
+     3. ¿Quien rinde?         jugador por jugador, real contra esperado
+
+  La idea que lo hace util no es el numero: es la COMPARACION. "64.6% de
+  cambio de saque" no dice nada solo. "64.6% cuando lo esperado era 56.3%"
+  dice que el ataque esta rindiendo por encima de lo que la recepcion le da.
+  ══════════════════════════════════════════════════════════════════════════
+-->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#07080f;--card:#0f1020;--card2:#151730;--txt:#e2e8f0;--mut:#64748b;
+      --border:rgba(255,255,255,.07);--ok:#22c55e;--mal:#ef4444;--neu:#94a3b8;
+      --club:#e8192c;--azul:#3b82f6}
+body{background:var(--bg);color:var(--txt);font-family:'Barlow Condensed',sans-serif;
+     -webkit-font-smoothing:antialiased;padding-bottom:60px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.page-header{display:flex;align-items:center;justify-content:space-between;gap:14px;
+     padding:16px 0 14px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap}
+.back-btn{color:var(--mut);text-decoration:none;font-size:12px;letter-spacing:1.5px;
+     text-transform:uppercase;border:1px solid var(--border);border-radius:9px;padding:7px 12px}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px}
+.sub{font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.kpi-lbl{font-size:11px;color:var(--mut);letter-spacing:2px;text-transform:uppercase}
+.kpi-row{display:flex;align-items:baseline;gap:12px;margin:8px 0 12px}
+.kpi-val{font-family:'Bebas Neue',sans-serif;font-size:52px;line-height:.9;letter-spacing:1px}
+.kpi-dif{font-size:14px;font-weight:700}
+.barra{position:relative;height:9px;background:#0a0b16;border-radius:5px;overflow:visible}
+.barra i{position:absolute;left:0;top:0;height:9px;border-radius:5px;display:block}
+.barra u{position:absolute;top:-4px;width:2px;height:17px;background:var(--txt);opacity:.85}
+.kpi-pie{font-size:12px;color:var(--mut);margin-top:10px;line-height:1.45}
+
+.sec{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);
+     font-weight:800;margin:26px 0 4px}
+.sec-sub{font-size:12px;color:var(--mut);margin-bottom:12px}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+.chart-box{position:relative;width:100%;height:260px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);
+   font-weight:700;text-align:right;padding:8px 6px;border-bottom:1px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+td{padding:9px 6px;border-bottom:1px solid rgba(255,255,255,.04);text-align:right}
+tr:last-child td{border-bottom:0}
+.t-name{display:flex;align-items:center;gap:9px}
+.t-cam{width:26px;height:26px;border-radius:7px;background:var(--card2);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--mut);flex-shrink:0}
+.mio td{background:rgba(232,25,44,.07)}
+.mio td:first-child{box-shadow:inset 3px 0 0 0 var(--club)}
+.dif{font-weight:800}
+.tabla-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.minibar{height:7px;background:#0a0b16;border-radius:4px;overflow:hidden;min-width:60px}
+.halls{display:grid;gap:9px;margin-bottom:6px}
+.hall{background:var(--card);border:1px solid var(--border);border-left:3px solid;
+  border-radius:11px;padding:12px 15px}
+.hall-top{display:flex;align-items:flex-start;gap:9px}
+.hall-ic{font-size:12px;line-height:1.5;flex-shrink:0}
+.hall-txt{font-size:15px;font-weight:600;line-height:1.35}
+.hall-bot{display:flex;align-items:baseline;gap:12px;margin:6px 0 0 21px;flex-wrap:wrap}
+.hall-cost{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.5px}
+.hall-det{font-size:12px;color:var(--mut)}
+.minibar i{display:block;height:7px;border-radius:4px}
+tr.clic{cursor:pointer}
+tr.clic:hover td{background:rgba(255,255,255,.03)}
+.vacio{color:var(--mut);font-size:13px;text-align:center;padding:34px 0}
+</style>
+<!-- Puerta de entrada. Sin usuario y clave no se ve nada. -->
+<script src="firebase.js" onerror="void 0"></script>
+<script src="datos_seguros.js"></script>
+<script src="datos_informe.js.enc" onerror="void 0"></script>
+<!-- El plantel: el informe guarda solo el numero de cada jugador y el
+     nombre sale de aca, para no repetir el dato en dos archivos. -->
+<script src="datos_equipo.js.enc" onerror="void 0"></script>
+<script>abrirDatos();</script>
+<script src="lang.js" onerror="void 0"></script>
+<link rel="stylesheet" href="movil.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="page-header header">
+    <div class="header-text" style="display:flex;align-items:center;gap:14px">
+      <a href="index.html" class="back-btn">← Inicio</a>
+      <div>
+        <div class="page-title">📊 <span data-t="informe_equipo">Informe de equipo</span></div>
+        <div class="sub" id="cab-sub">{{CLUB}} · {{LIGA}}</div>
+      </div>
+    </div>
+    <div class="header-right" style="display:flex;align-items:center;gap:12px">
+      <div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div>
+    </div>
+  </div>
+
+  <div id="cuerpo"><div class="vacio" data-t="inf_cargando">Cargando el informe…</div></div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* ── Textos ────────────────────────────────────────────────────────────── */
+var T = {
+  es:{so:'Cambio de saque',bp:'Breakpoint',esp:'esperado',sobre:'sobre lo esperado',
+      bajo:'por debajo de lo esperado',
+      so_pie_alto:'El ataque rinde por encima de lo que la recepción le da',
+      so_pie_bajo:'Se están perdiendo puntos con recepciones que daban para más',
+      bp_pie_alto:'El saque y el bloqueo generan más de lo esperable',
+      bp_pie_bajo:'El saque no está generando lo que podría',
+      s2:'Dónde se ganan y se pierden los puntos',
+      s2sub:'Cambio de saque según cómo se recibió, contra el promedio de la liga',
+      s3:'Recepción, jugador por jugador',
+      s3sub:'Real contra esperado: quién saca más de lo que su recepción da',
+      hall:'Lo que hay que mirar',hallsub:'Ordenado por lo que pesa en puntos por partido · el sistema lo calcula solo',ptspp:'pts/partido',s5:'Ataque por fase',s5sub:'Atacar tras recibir no es lo mismo que atacar en desorden: son dos habilidades distintas',s6:'Ataque según con qué recepción se llegó',s6sub:'Cuánto se aprovecha cada calidad de pase',s7:'Saque por tipo',s7sub:'Qué rinde más: potencia o flotado',fase:'Fase',eficacia:'Eficacia',ptos:'Puntos',errs:'Errores',bloq:'Bloq.',tipo:'Tipo',aces:'Aces',s35:'Rotación por rotación',s35sub:'Dónde el equipo gana y dónde se le complica · P1 es el armador en zona 1',rot:'Rot',saldo:'Saldo',s4:'La liga',s4sub:'Ordenada por la suma de las dos métricas',ver:'Ver los cortes de video',
+      jug:'Jugador',rec:'Recep.',real:'Real',espc:'Esp.',dif:'Dif',pos:'Pos %',err:'Err %',
+      eq:'Equipo',pj:'PJ',sinDatos:'Todavía no hay partidos procesados',
+      cal:{'#':'# perfecta','+':'+ positiva','!':'! regular','-':'− mala','/':'/ sobrepase','=':'= error'},
+      liga:'Liga',nos:'Nosotros'},
+  en:{so:'Sideout',bp:'Breakpoint',esp:'expected',sobre:'above expected',
+      bajo:'below expected',
+      so_pie_alto:'The attack is delivering more than the reception gives it',
+      so_pie_bajo:'Points are being lost on receptions that offered more',
+      bp_pie_alto:'Serve and block generate more than expected',
+      bp_pie_bajo:'The serve is not generating what it could',
+      s2:'Where points are won and lost',
+      s2sub:'Sideout by reception quality, against the league average',
+      s3:'Reception, player by player',
+      s3sub:'Actual against expected: who gets more than their pass gives',
+      hall:'What to look at',hallsub:'Sorted by what it costs in points per match · calculated automatically',ptspp:'pts/match',s5:'Attack by phase',s5sub:'Attacking after a pass is not the same as attacking out of system',s6:'Attack by reception quality',s6sub:'How much each pass quality is turned into points',s7:'Serve by type',s7sub:'What works better: power or float',fase:'Phase',eficacia:'Efficiency',ptos:'Points',errs:'Errors',bloq:'Blocked',tipo:'Type',aces:'Aces',s35:'Rotation by rotation',s35sub:'Where the team wins and where it struggles · P1 is setter in zone 1',rot:'Rot',saldo:'Net',s4:'The league',s4sub:'Sorted by the sum of both metrics',ver:'Watch the video clips',
+      jug:'Player',rec:'Recept.',real:'Actual',espc:'Exp.',dif:'Diff',pos:'Pos %',err:'Err %',
+      eq:'Team',pj:'M',sinDatos:'No matches processed yet',
+      cal:{'#':'# perfect','+':'+ positive','!':'! ok','-':'− poor','/':'/ overpass','=':'= error'},
+      liga:'League',nos:'Us'},
+  de:{so:'Annahme-Punkt',bp:'Breakpoint',esp:'erwartet',sobre:'über dem Erwartungswert',
+      bajo:'unter dem Erwartungswert',
+      so_pie_alto:'Der Angriff holt mehr heraus, als die Annahme hergibt',
+      so_pie_bajo:'Bei guten Annahmen gehen Punkte verloren',
+      bp_pie_alto:'Aufschlag und Block bringen mehr als erwartet',
+      bp_pie_bajo:'Der Aufschlag bringt nicht, was er könnte',
+      s2:'Wo Punkte gewonnen und verloren gehen',
+      s2sub:'Sideout nach Annahmequalität, gegen den Ligadurchschnitt',
+      s3:'Annahme, Spieler für Spieler',
+      s3sub:'Ist gegen Erwartung: wer mehr holt, als seine Annahme hergibt',
+      hall:'Worauf zu achten ist',hallsub:'Nach Punkten pro Spiel sortiert · automatisch berechnet',ptspp:'Pkt/Spiel',s5:'Angriff nach Phase',s5sub:'Angriff nach Annahme ist nicht dasselbe wie Angriff aus dem Spiel heraus',s6:'Angriff nach Annahmequalität',s6sub:'Wie viel aus jeder Annahmequalität gemacht wird',s7:'Aufschlag nach Art',s7sub:'Was bringt mehr: Sprung oder Flatter',fase:'Phase',eficacia:'Effizienz',ptos:'Punkte',errs:'Fehler',bloq:'Geblockt',tipo:'Art',aces:'Asse',s35:'Rotation für Rotation',s35sub:'Wo das Team gewinnt und wo es schwer wird · P1 ist Zuspieler auf Position 1',rot:'Rot',saldo:'Saldo',s4:'Die Liga',s4sub:'Nach der Summe beider Werte sortiert',ver:'Videoclips ansehen',
+      jug:'Spieler',rec:'Annahmen',real:'Ist',espc:'Erw.',dif:'Diff',pos:'Pos %',err:'Fehler %',
+      eq:'Team',pj:'Sp',sinDatos:'Noch keine Spiele verarbeitet',
+      cal:{'#':'# perfekt','+':'+ positiv','!':'! ok','-':'− schwach','/':'/ Überpass','=':'= Fehler'},
+      liga:'Liga',nos:'Wir'}
+};
+function L(){ try{ return (typeof getLang==='function') ? getLang() : 'es'; }catch(e){ return 'es'; } }
+function t(){ return T[L()] || T.es; }
+
+/* ── Ayudas ────────────────────────────────────────────────────────────── */
+function n1(x){ return (x===null||x===undefined) ? '—' : Number(x).toFixed(1); }
+function difTxt(real, esp){
+  if(real===null||esp===null||real===undefined||esp===undefined) return null;
+  return Math.round((real-esp)*10)/10;
+}
+function colorDif(d){ return d===null ? 'var(--mut)' : (d>=0 ? 'var(--ok)' : 'var(--mal)'); }
+
+/* Los nombres de los jugadores salen del plantel, igual que en el resto de las
+   pantallas: el informe guarda solo el numero para no repetir el dato. */
+function nombreDe(num){
+  try{
+    var p = (window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores) || [];
+    for(var i=0;i<p.length;i++) if(+p[i].num === +num) return p[i].nombre || ('#'+num);
+  }catch(e){}
+  return '#' + num;
+}
+
+/* ── Dibujo ────────────────────────────────────────────────────────────── */
+function kpi(lbl, real, esp, color, pieAlto, pieBajo){
+  var d = difTxt(real, esp);
+  var pie = (d===null) ? '' : (d>=0 ? pieAlto : pieBajo);
+  return '<div class="kpi">'
+    + '<div class="kpi-lbl">'+lbl+'</div>'
+    + '<div class="kpi-row"><span class="kpi-val">'+n1(real)+'%</span>'
+    + (d===null ? '' : '<span class="kpi-dif" style="color:'+colorDif(d)+'">'
+        + (d>=0?'+':'') + n1(d) + ' ' + (d>=0 ? t().sobre : t().bajo) + '</span>')
+    + '</div>'
+    + '<div class="barra"><i style="width:'+Math.max(0,Math.min(100,real||0))+'%;background:'+color+'"></i>'
+    + (esp===null?'':'<u style="left:'+Math.max(0,Math.min(100,esp))+'%"></u>') + '</div>'
+    + '<div class="kpi-pie">' + t().esp + ' ' + n1(esp) + '%' + (pie ? ' · ' + pie : '') + '</div>'
+    + '</div>';
+}
+
+/* Los cortes de ese jugador, filtrados por recepcion. cortes.html ya entiende
+   num y sk, asi que no hace falta nada nuevo del otro lado. */
+function verCortes(num){
+  try{ window.open('cortes.html?num='+encodeURIComponent(num)+'&sk=Recepcion','_blank'); }catch(e){}
+}
+
+function tablaJugadores(js){
+  if(!js || !js.length) return '';
+  var h = '<div class="tabla-wrap"><table><thead><tr>'
+    + '<th>'+t().jug+'</th><th>'+t().rec+'</th><th>'+t().real+'</th>'
+    + '<th>'+t().espc+'</th><th>'+t().dif+'</th><th>'+t().pos+'</th><th>'+t().err+'</th>'
+    + '</tr></thead><tbody>';
+  js.forEach(function(j){
+    var d = difTxt(j.so, j.so_esp);
+    /* Cada fila lleva a los cortes de video de ESE jugador en recepcion: el
+       numero deja de ser un dato y pasa a ser la puerta a las jugadas. */
+    h += '<tr class="clic" title="'+t().ver+'" onclick="verCortes('+j.num+')">'
+       + '<td><div class="t-name"><div class="t-cam">'+j.num+'</div>'
+       + '<span style="font-weight:700">'+nombreDe(j.num)+'</span>'
+       + '<span style="opacity:.35;font-size:13px">🎬</span></div></td>'
+       + '<td>'+j.n+'</td><td style="font-weight:700">'+n1(j.so)+'%</td>'
+       + '<td style="color:var(--mut)">'+n1(j.so_esp)+'%</td>'
+       + '<td class="dif" style="color:'+colorDif(d)+'">'+(d>=0?'+':'')+n1(d)+'</td>'
+       + '<td>'+n1(j.pos)+'%</td><td style="color:var(--mal)">'+n1(j.err)+'%</td></tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+
+
+/* ══ Los hallazgos ═══════════════════════════════════════════════════════
+   La parte que los informes del mercado no tienen: en vez de cien tablas
+   para que el entrenador busque, el sistema se queda con lo que mas pesa y
+   lo dice en puntos por partido. */
+function panelHallazgos(hs){
+  if(!hs || !hs.length) return '';
+  var h = '<div class="halls">';
+  hs.forEach(function(x){
+    var malo = (x.tipo === 'malo');
+    var col = malo ? 'var(--mal)' : 'var(--ok)';
+    h += '<div class="hall" style="border-left-color:'+col+'">'
+       + '<div class="hall-top">'
+       + '<span class="hall-ic" style="color:'+col+'">'+(malo?'▼':'▲')+'</span>'
+       + '<span class="hall-txt">'+x.txt+'</span></div>'
+       + '<div class="hall-bot"><span class="hall-cost" style="color:'+col+'">'
+       + (malo?'−':'+') + Math.abs(x.costo) + ' ' + t().ptspp + '</span>'
+       + '<span class="hall-det">'+x.det+'</span></div></div>';
+  });
+  return h + '</div>';
+}
+
+function tablaAtaque(as){
+  if(!as || !as.length) return '';
+  var NOM = {tot:'Total', so:{es:'Tras recepción',en:'After reception',de:'Nach Annahme'}[L()]||'Tras recepción',
+             tr:{es:'Contraataque',en:'Counterattack',de:'Gegenangriff'}[L()]||'Contraataque'};
+  var h = '<div class="tabla-wrap"><table><thead><tr><th>'+t().fase+'</th><th>N</th>'
+    + '<th>'+t().eficacia+'</th><th>'+t().ptos+'</th><th>'+t().errs+'</th><th>'+t().bloq+'</th>'
+    + '</tr></thead><tbody>';
+  as.forEach(function(a){
+    h += '<tr><td style="font-weight:700">'+(NOM[a.fase]||a.fase)+'</td>'
+       + '<td style="color:var(--mut)">'+a.n+'</td>'
+       + '<td style="font-weight:800;color:#f97316">'+n1(a.eff)+'%</td>'
+       + '<td style="color:var(--ok)">'+a.pt+'</td>'
+       + '<td style="color:var(--mal)">'+a.err+'</td>'
+       + '<td style="color:var(--mut)">'+a.blo+'</td></tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+
+function tablaSaque(ss){
+  if(!ss || !ss.length) return '';
+  var TS = {Q:{es:'Potencia en salto',en:'Jump power',de:'Sprungaufschlag'},
+            M:{es:'Flotado en salto',en:'Jump float',de:'Sprung-Flatter'},
+            H:{es:'Flotado parado',en:'Standing float',de:'Flatteraufschlag'},
+            T:{es:'Potencia parado',en:'Standing power',de:'Standaufschlag'}};
+  var h = '<div class="tabla-wrap"><table><thead><tr><th>'+t().tipo+'</th><th>N</th>'
+    + '<th>'+t().bp+'</th><th>'+t().aces+'</th><th>'+t().errs+'</th></tr></thead><tbody>';
+  ss.forEach(function(x){
+    var nom = (TS[x.tipo] && TS[x.tipo][L()]) || x.tipo;
+    h += '<tr><td style="font-weight:700">'+nom+'</td>'
+       + '<td style="color:var(--mut)">'+x.n+'</td>'
+       + '<td style="font-weight:800">'+n1(x.bp)+'%</td>'
+       + '<td style="color:var(--ok)">'+x.ace+' <span style="color:var(--mut);font-size:11px">('+n1(x.ace_pct)+'%)</span></td>'
+       + '<td style="color:var(--mal)">'+x.err+' <span style="color:var(--mut);font-size:11px">('+n1(x.err_pct)+'%)</span></td></tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+
+function tablaRotaciones(rs){
+  if(!rs || !rs.length) return '';
+  /* Se pinta la barra proporcional al valor: de un vistazo se ve en que
+     rotacion el equipo recibe bien y en cual se le complica, sin tener que
+     comparar numeros de a uno. */
+  var maxSo = Math.max.apply(null, rs.map(function(r){ return r.so || 0; }));
+  var maxBp = Math.max.apply(null, rs.map(function(r){ return r.bp || 0; }));
+  var h = '<div class="tabla-wrap"><table><thead><tr>'
+    + '<th>'+t().rot+'</th><th>'+t().so+'</th><th></th>'
+    + '<th>'+t().bp+'</th><th></th><th>'+t().saldo+'</th></tr></thead><tbody>';
+  rs.forEach(function(r){
+    h += '<tr><td><div class="t-name"><div class="t-cam">'+r.rot+'</div></div></td>'
+       + '<td style="font-weight:700">'+n1(r.so)+'%</td>'
+       + '<td style="width:34%"><div class="minibar"><i style="width:'
+       + (maxSo ? Math.round(100*(r.so||0)/maxSo) : 0) + '%;background:#1baf7a"></i></div></td>'
+       + '<td style="font-weight:700">'+n1(r.bp)+'%</td>'
+       + '<td style="width:34%"><div class="minibar"><i style="width:'
+       + (maxBp ? Math.round(100*(r.bp||0)/maxBp) : 0) + '%;background:#3b82f6"></i></div></td>'
+       + '<td class="dif" style="color:'+(r.dif>=0?'var(--ok)':'var(--mal)')+'">'
+       + (r.dif>=0?'+':'')+r.dif+'</td></tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+
+function tablaLiga(eqs, propio){
+  var h = '<div class="tabla-wrap"><table><thead><tr>'
+    + '<th>'+t().eq+'</th><th>'+t().pj+'</th><th>'+t().so+'</th><th>'+t().espc+'</th>'
+    + '<th>'+t().dif+'</th><th>'+t().bp+'</th><th>'+t().espc+'</th><th>'+t().dif+'</th>'
+    + '</tr></thead><tbody>';
+  eqs.forEach(function(e){
+    var d1 = difTxt(e.so, e.so_esp), d2 = difTxt(e.bp, e.bp_esp);
+    h += '<tr'+(e.equipo===propio?' class="mio"':'')+'>'
+       + '<td style="font-weight:'+(e.equipo===propio?'800':'600')+'">'+e.equipo+'</td>'
+       + '<td style="color:var(--mut)">'+e.partidos+'</td>'
+       + '<td style="font-weight:700">'+n1(e.so)+'%</td>'
+       + '<td style="color:var(--mut)">'+n1(e.so_esp)+'%</td>'
+       + '<td class="dif" style="color:'+colorDif(d1)+'">'+(d1>=0?'+':'')+n1(d1)+'</td>'
+       + '<td style="font-weight:700">'+n1(e.bp)+'%</td>'
+       + '<td style="color:var(--mut)">'+n1(e.bp_esp)+'%</td>'
+       + '<td class="dif" style="color:'+colorDif(d2)+'">'+(d2>=0?'+':'')+n1(d2)+'</td></tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+
+function pintar(){
+  var D = window.INFORME_DATA;
+  var cont = document.getElementById('cuerpo');
+  if(!D || !D.equipos || !D.equipos.length){
+    cont.innerHTML = '<div class="vacio">'+t().sinDatos+'</div>'; return;
+  }
+  var mio = null;
+  D.equipos.forEach(function(e){ if(e.equipo === D.propio) mio = e; });
+  if(!mio){ cont.innerHTML = '<div class="vacio">'+t().sinDatos+'</div>'; return; }
+
+  var sub = document.getElementById('cab-sub');
+  if(sub) sub.textContent = D.propio + ' · ' + (D.temporada||'') + ' · ' + mio.partidos + ' PJ';
+
+  var h = '<div class="kpis">'
+    + kpi(t().so, mio.so, mio.so_esp, '#1baf7a', t().so_pie_alto, t().so_pie_bajo)
+    + kpi(t().bp, mio.bp, mio.bp_esp, '#3b82f6', t().bp_pie_alto, t().bp_pie_bajo)
+    + '</div>';
+
+  var hs = (D.detalle && D.detalle.hallazgos) || [];
+  if(hs.length){
+    h += '<div class="sec">'+t().hall+'</div><div class="sec-sub">'+t().hallsub+'</div>'
+       + panelHallazgos(hs);
+  }
+
+  var pc = (D.detalle && D.detalle.por_calidad) || [];
+  if(pc.length){
+    h += '<div class="sec">'+t().s2+'</div><div class="sec-sub">'+t().s2sub+'</div>'
+       + '<div class="panel"><div class="chart-box"><canvas id="gCal" role="img" aria-label="'
+       + t().s2sub + '"></canvas></div></div>';
+  }
+
+  var js = (D.detalle && D.detalle.jugadores) || [];
+  if(js.length){
+    h += '<div class="sec">'+t().s3+'</div><div class="sec-sub">'+t().s3sub+'</div>'
+       + '<div class="panel">' + tablaJugadores(js) + '</div>';
+  }
+
+  var rs = (D.detalle && D.detalle.rotaciones) || [];
+  if(rs.length){
+    h += '<div class="sec">'+t().s35+'</div><div class="sec-sub">'+t().s35sub+'</div>'
+       + '<div class="panel">' + tablaRotaciones(rs) + '</div>';
+  }
+
+  var at = (D.detalle && D.detalle.ataque) || [];
+  if(at.length){
+    h += '<div class="sec">'+t().s5+'</div><div class="sec-sub">'+t().s5sub+'</div>'
+       + '<div class="panel">' + tablaAtaque(at) + '</div>';
+  }
+
+  var apr = (D.detalle && D.detalle.atk_por_rec) || [];
+  if(apr.length){
+    h += '<div class="sec">'+t().s6+'</div><div class="sec-sub">'+t().s6sub+'</div>'
+       + '<div class="panel"><div class="chart-box" style="height:230px">'
+       + '<canvas id="gAtk" role="img" aria-label="'+t().s6sub+'"></canvas></div></div>';
+  }
+
+  var sq = (D.detalle && D.detalle.saque) || [];
+  if(sq.length){
+    h += '<div class="sec">'+t().s7+'</div><div class="sec-sub">'+t().s7sub+'</div>'
+       + '<div class="panel">' + tablaSaque(sq) + '</div>';
+  }
+
+  h += '<div class="sec">'+t().s4+'</div><div class="sec-sub">'+t().s4sub+'</div>'
+     + '<div class="panel">' + tablaLiga(D.equipos, D.propio) + '</div>';
+
+  cont.innerHTML = h;
+
+  if(pc.length) grafCalidad(pc);
+  if(apr.length) grafAtaque(apr);
+}
+
+var CHART = null, CHART2 = null;
+function grafAtaque(apr){
+  var el = document.getElementById('gAtk'); if(!el || typeof Chart === 'undefined') return;
+  if(CHART2){ CHART2.destroy(); CHART2 = null; }
+  CHART2 = new Chart(el, {
+    type:'bar',
+    data:{ labels: apr.map(function(x){ return t().cal[x.cal] || x.cal; }),
+      datasets:[{ label:t().eficacia, data:apr.map(function(x){ return x.eff; }),
+        backgroundColor:'#f97316', borderRadius:4, maxBarThickness:26 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label:function(c){
+          return t().eficacia+': '+c.parsed.y.toFixed(1)+'% · n='+apr[c.dataIndex].n; } } } },
+      scales:{ y:{ beginAtZero:true, ticks:{color:'#64748b',callback:function(v){return v+'%';}},
+                   grid:{color:'rgba(148,163,184,.12)'} },
+               x:{ ticks:{color:'#64748b'}, grid:{display:false} } } }
+  });
+}
+
+function grafCalidad(pc){
+  var el = document.getElementById('gCal'); if(!el || typeof Chart === 'undefined') return;
+  if(CHART){ CHART.destroy(); CHART = null; }
+  var usa = pc.filter(function(x){ return x.liga !== null && x.n >= 5; });
+  if(!usa.length) usa = pc;
+  CHART = new Chart(el, {
+    type:'bar',
+    data:{
+      labels: usa.map(function(x){ return (t().cal[x.cal] || x.cal); }),
+      datasets:[
+        { label:t().nos,  data:usa.map(function(x){ return x.so; }),
+          backgroundColor:'#1baf7a', borderRadius:4, maxBarThickness:22 },
+        { label:t().liga, data:usa.map(function(x){ return x.liga; }),
+          backgroundColor:'#5f5e5a', borderRadius:4, maxBarThickness:22 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:true, labels:{ color:'#94a3b8', boxWidth:10, boxHeight:10,
+                  font:{family:'Barlow Condensed', size:13} } },
+        tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+c.parsed.y.toFixed(1)+'%'; } } } },
+      scales:{
+        y:{ beginAtZero:true, max:100, ticks:{ color:'#64748b', callback:function(v){ return v+'%'; } },
+            grid:{ color:'rgba(148,163,184,.12)' } },
+        x:{ ticks:{ color:'#64748b' }, grid:{ display:false } }
+      }
+    }
+  });
+}
+
+/* al cambiar de idioma se vuelve a dibujar: los textos estan adentro */
+window.addEventListener('vb-lang', pintar);
+document.addEventListener('DOMContentLoaded', pintar);
+if(document.readyState !== 'loading') pintar();
+</script>
+</body>
+</html>

@@ -304,7 +304,7 @@ var PF_T = {
        sync:'Tus pesos y notas se guardan y sincronizan automáticamente', sel_jug:'Seleccioná un jugador',
        prog_empty_head:'📈 Mi progreso', prog_empty:'Registrá tus pesos en cada sesión y acá vas a ver tus <b>récords</b> y cómo vas <b>progresando</b> 💪', evo_head:'🚀 Tu evolución', evo_sub:'Cómo fueron subiendo tus cargas', rec_head:'🏆 Tus récords', rec_sub:'Tu mejor peso en cada ejercicio', 
        mnames:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
-       dnames:{lunes:'Lunes',martes:'Martes',miercoles:'Miércoles',jueves:'Jueves',viernes:'Viernes',sabado:'Sábado',domingo:'Domingo',y:'y'} },
+       well_rec:'Al terminar, cargá tu wellness del día',well_cta:'Completar wellness',dnames:{lunes:'Lunes',martes:'Martes',miercoles:'Miércoles',jueves:'Jueves',viernes:'Viernes',sabado:'Sábado',domingo:'Domingo',y:'y'} },
   en:{ ejercicios:'exercises', superserie:'SUPERSET', series:'SETS', reps:'REPS',
        indicacion:"📋 Coach's note", ingresa_rm:'Enter your 1RM to see the weight to use',
        trabaja:'Work with', de:'of', prescripcion:'Prescription', de_tu_max:'of your max',
@@ -315,7 +315,7 @@ var PF_T = {
        sync:'Your weights and notes are saved and synced automatically', sel_jug:'Select a player',
        prog_empty_head:'📈 My progress', prog_empty:'Log your weights each session and here you\'ll see your <b>records</b> and how you\'re <b>progressing</b> 💪', evo_head:'🚀 Your evolution', evo_sub:'How your loads went up', rec_head:'🏆 Your records', rec_sub:'Your best weight per exercise', 
        mnames:['January','February','March','April','May','June','July','August','September','October','November','December'],
-       dnames:{lunes:'Monday',martes:'Tuesday',miercoles:'Wednesday',jueves:'Thursday',viernes:'Friday',sabado:'Saturday',domingo:'Sunday',y:'and'} },
+       well_rec:'After the session, fill in your wellness',well_cta:'Fill in wellness',dnames:{lunes:'Monday',martes:'Tuesday',miercoles:'Wednesday',jueves:'Thursday',viernes:'Friday',sabado:'Saturday',domingo:'Sunday',y:'and'} },
   de:{ ejercicios:'Übungen', superserie:'SUPERSATZ', series:'SÄTZE', reps:'Wdh',
        indicacion:'📋 Trainernotiz', ingresa_rm:'Gib dein 1RM ein, um das Gewicht zu sehen',
        trabaja:'Arbeite mit', de:'von', prescripcion:'Vorgabe', de_tu_max:'deines Maximums',
@@ -326,7 +326,7 @@ var PF_T = {
        sync:'Deine Gewichte und Notizen werden automatisch gespeichert', sel_jug:'Wähle einen Spieler',
        prog_empty_head:'📈 Mein Fortschritt', prog_empty:'Notiere deine Gewichte in jeder Einheit und hier siehst du deine <b>Rekorde</b> und wie du <b>Fortschritte</b> machst 💪', evo_head:'🚀 Deine Entwicklung', evo_sub:'Wie deine Gewichte gestiegen sind', rec_head:'🏆 Deine Rekorde', rec_sub:'Dein bestes Gewicht pro Übung', 
        mnames:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
-       dnames:{lunes:'Montag',martes:'Dienstag',miercoles:'Mittwoch',jueves:'Donnerstag',viernes:'Freitag',sabado:'Samstag',domingo:'Sonntag',y:'und'} }
+       well_rec:'Nach dem Training: trag dein Wellness ein',well_cta:'Wellness ausfüllen',dnames:{lunes:'Montag',martes:'Dienstag',miercoles:'Mittwoch',jueves:'Donnerstag',viernes:'Freitag',sabado:'Samstag',domingo:'Sonntag',y:'und'} }
 };
 function tP(k){ var l=PF_LANG(); return (PF_T[l]&&PF_T[l][k]!==undefined)?PF_T[l][k]:PF_T.es[k]; }
 
@@ -466,10 +466,44 @@ var WELL = {
              date:d, today:(d===todayISO()) };
   }
 };
+/* ¿Este jugador ya cargo el wellness HOY? Se compara por fecha, no por la
+   ultima carga: una de ayer no sirve para la sesion de hoy. */
+WELL.hoyDe = function(num){
+  try{
+    var d = new Date();
+    var hoy = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    return (this.cache || []).some(function(e){ return e.num === num && e.date === hoy; });
+  }catch(e){ return false; }
+};
+
 function renderReadiness(num){
   var chip=document.getElementById('readiness-chip'), banner=document.getElementById('readiness-banner');
   var r=WELL.latest(num);
-  if(!r){ if(chip) chip.innerHTML=''; if(banner) banner.style.display='none'; return; }
+  /* ══ Sin wellness cargado hoy: se lo recordamos ═══════════════════════
+     Antes, si el jugador no lo habia completado, esto simplemente ocultaba el
+     aviso: el circuito se cortaba en silencio y nadie le decia que tenia que
+     llenarlo. El entrenador tampoco veia nada, asi que no podia ajustar la
+     carga.
+
+     En este club el wellness se carga DESPUES de entrenar: el jugador
+     responde como se sintio y cuan dura le resulto la sesion (el RPE). Por eso
+     el recordatorio dice "al terminar" y no "antes de entrenar". */
+  if(!r){
+    if(chip) chip.innerHTML='';
+    if(banner){
+      var _hoy = (typeof WELL!=='undefined' && WELL.hoyDe) ? WELL.hoyDe(num) : null;
+      if(_hoy){ banner.style.display='none'; return; }
+      var _t = (PF_T[PF_LANG()] || PF_T.es);
+      banner.style.display='flex';
+      banner.style.borderColor='rgba(56,189,248,.28)';
+      banner.style.background='rgba(56,189,248,.08)';
+      banner.innerHTML='<span style="font-size:15px">🩺</span>'
+        + '<span style="font-size:12px;color:#38bdf8">' + (_t.well_rec || '')
+        + ' · <a href="wellness.html" style="color:#38bdf8;font-weight:700">'
+        + (_t.well_cta || '') + ' →</a></span>';
+    }
+    return;
+  }
   var c=wellColor(r.pct);
   if(chip) chip.innerHTML='<div class="readiness" style="border-color:'+c+'55">'
     +'<span class="rd-dot" style="background:'+c+'"></span><span class="rd-pct" style="color:'+c+'">'+r.pct+'%</span>'
