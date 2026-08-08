@@ -186,7 +186,7 @@
          volver a ofrecerla. -->
     <button class="import-btn" id="cal-sub-btn" onclick="suscribirCalendario()"
             style="background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.4);color:#4ade80">
-      🔄 Suscribirme al calendario
+      <span id="cal-sub-txt">🔄 Suscribirme al calendario</span>
     </button>
     <button class="add-btn" id="add-btn" onclick="openForm()" data-solo-editor>+ Agregar</button>
     <button class="import-btn" id="import-btn" onclick="importFixture()" data-solo-editor>⬇️ Importar fixture 2026/27 (14 partidos)</button>
@@ -228,13 +228,13 @@
 
   // ── Traducción de la vista (es/en/de) ──
   var CAL_I18N={
-    es:{lista:'📋 Lista',plan:'🗓️ Planificación',semana:'Semana',quincena:'Quincena',mes:'Mes',hoy:'Hoy',partido:'Partido',entren:'Entrenamiento',tap:'Tocá un evento para editarlo',
+    es:{sub:'🔄 Suscribirme al calendario',subIns:'Suscribite al calendario del club.\n\nANDROID / GOOGLE CALENDAR:\n1. Entrá a calendar.google.com desde la computadora\n2. Otros calendarios → + → Desde una URL\n3. Pegá esta dirección:',subFin:'Se sincroniza solo: si cambia un horario, te cambia en el teléfono.',lista:'📋 Lista',plan:'🗓️ Planificación',semana:'Semana',quincena:'Quincena',mes:'Mes',hoy:'Hoy',partido:'Partido',entren:'Entrenamiento',tap:'Tocá un evento para editarlo',
         dow:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],mc:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
         ml:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']},
-    en:{lista:'📋 List',plan:'🗓️ Planning',semana:'Week',quincena:'Fortnight',mes:'Month',hoy:'Today',partido:'Match',entren:'Training',tap:'Tap an event to edit it',
+    en:{sub:'🔄 Subscribe to the calendar',subIns:'Subscribe to the club calendar.\n\nANDROID / GOOGLE CALENDAR:\n1. Go to calendar.google.com on a computer\n2. Other calendars → + → From URL\n3. Paste this address:',subFin:'It syncs by itself: if a time changes, it changes on your phone.',lista:'📋 List',plan:'🗓️ Planning',semana:'Week',quincena:'Fortnight',mes:'Month',hoy:'Today',partido:'Match',entren:'Training',tap:'Tap an event to edit it',
         dow:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],mc:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
         ml:['January','February','March','April','May','June','July','August','September','October','November','December']},
-    de:{lista:'📋 Liste',plan:'🗓️ Planung',semana:'Woche',quincena:'Zwei Wochen',mes:'Monat',hoy:'Heute',partido:'Spiel',entren:'Training',tap:'Tippe auf ein Ereignis zum Bearbeiten',
+    de:{sub:'🔄 Kalender abonnieren',subIns:'Abonniere den Vereinskalender.\n\nANDROID / GOOGLE KALENDER:\n1. Öffne calendar.google.com am Computer\n2. Weitere Kalender → + → Per URL\n3. Füge diese Adresse ein:',subFin:'Aktualisiert sich von selbst: ändert sich eine Uhrzeit, ändert sie sich auf deinem Handy.',lista:'📋 Liste',plan:'🗓️ Planung',semana:'Woche',quincena:'Zwei Wochen',mes:'Monat',hoy:'Heute',partido:'Spiel',entren:'Training',tap:'Tippe auf ein Ereignis zum Bearbeiten',
         dow:['Mo','Di','Mi','Do','Fr','Sa','So'],mc:['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
         ml:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']}
   };
@@ -246,6 +246,9 @@
     setTxt('rg-semana',t.semana); setTxt('rg-quincena',t.quincena); setTxt('rg-mes',t.mes);
     setTxt('btn-hoy',t.hoy);
     setTxt('lg-partido',t.partido); setTxt('lg-entren',t.entren); setTxt('lg-tap',t.tap);
+    /* El boton de suscribirse tenia el texto fijo en castellano: un jugador
+       suizo veia "Suscribirme al Kalender", mitad y mitad. */
+    setTxt('cal-sub-txt', t.sub);
   }
   var data={partidos:[],entrenamientos:[]};
   var tab='partidos', editId=null, formCond='Local';
@@ -803,13 +806,10 @@ window.suscribirCalendario = function(){
     location.href = wcal;      /* el iPhone lo resuelve solo */
     return;
   }
-  var t = (typeof calT === 'function' && calT().subTxt) ? calT().subTxt : null;
-  var msg = t || ('Suscribite al calendario del club.\n\n' +
-    'ANDROID / GOOGLE CALENDAR:\n' +
-    '1. Entrá a calendar.google.com desde la computadora\n' +
-    '2. Otros calendarios → + → Desde una URL\n' +
-    '3. Pegá esta dirección:\n\n' + url + '\n\n' +
-    'Se sincroniza solo: si cambia un horario, te cambia en el teléfono.');
+  var t = (typeof calT === 'function') ? calT() : null;
+  var msg = (t && t.subIns)
+    ? (t.subIns + '\n\n' + url + '\n\n' + (t.subFin || ''))
+    : ('Suscribite al calendario del club.\n\n' + url);
   if(window.prompt) window.prompt(msg, url);
   else alert(msg + '\n\n' + url);
 };

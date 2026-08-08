@@ -196,18 +196,21 @@ select,select option{color:#111!important;background-color:#fff!important}
 <script src="mi_fila.js" onerror="void 0"></script>
 </head>
 <body>
-<div class="page-header">
-  <div style="display:flex;align-items:center;gap:14px;">
+<div class="page-header header">
+  <div class="header-text" style="display:flex;align-items:center;gap:14px;">
     <a href="index.html" class="back-btn">← Inicio</a>
     <div>
       <div class="page-title">💪 <span data-t="prep_fisica">Preparación Física</span></div>
       <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;">{{CLUB}} · {{LIGA}} 2026/27</div>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:12px;">
-    <a href="prep_builder.html" class="back-btn" style="border-color:rgba(239,39,64,.4);color:#ff5870">✏️ Armar rutinas</a>
+  <!-- header-right hace que en el celular esta columna baje a su propio
+       renglon en vez de encimarse con el titulo: movil.css la busca por ese
+       nombre. -->
+  <div class="header-right" style="display:flex;align-items:center;gap:12px;">
+    <a href="prep_builder.html" class="back-btn" style="border-color:rgba(239,39,64,.4);color:#ff5870" data-solo-editor>✏️ Armar rutinas</a>
     <div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div>
-    <div style="font-size:9px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase;" id="fecha-hoy"></div>
+    <div class="fecha-txt" style="font-size:9px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase;" id="fecha-hoy"></div>
   </div>
 </div>
 
@@ -300,7 +303,8 @@ var PF_T = {
        mi_progreso:'Mi Progreso', ejercicio:'Ejercicio', dias:'Días', ej_lbl:'Ejercicios', registros:'Registros',
        sync:'Tus pesos y notas se guardan y sincronizan automáticamente', sel_jug:'Seleccioná un jugador',
        prog_empty_head:'📈 Mi progreso', prog_empty:'Registrá tus pesos en cada sesión y acá vas a ver tus <b>récords</b> y cómo vas <b>progresando</b> 💪', evo_head:'🚀 Tu evolución', evo_sub:'Cómo fueron subiendo tus cargas', rec_head:'🏆 Tus récords', rec_sub:'Tu mejor peso en cada ejercicio', 
-       mnames:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] },
+       mnames:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+       dnames:{lunes:'Lunes',martes:'Martes',miercoles:'Miércoles',jueves:'Jueves',viernes:'Viernes',sabado:'Sábado',domingo:'Domingo',y:'y'} },
   en:{ ejercicios:'exercises', superserie:'SUPERSET', series:'SETS', reps:'REPS',
        indicacion:"📋 Coach's note", ingresa_rm:'Enter your 1RM to see the weight to use',
        trabaja:'Work with', de:'of', prescripcion:'Prescription', de_tu_max:'of your max',
@@ -310,7 +314,8 @@ var PF_T = {
        mi_progreso:'My Progress', ejercicio:'Exercise', dias:'Days', ej_lbl:'Exercises', registros:'Logs',
        sync:'Your weights and notes are saved and synced automatically', sel_jug:'Select a player',
        prog_empty_head:'📈 My progress', prog_empty:'Log your weights each session and here you\'ll see your <b>records</b> and how you\'re <b>progressing</b> 💪', evo_head:'🚀 Your evolution', evo_sub:'How your loads went up', rec_head:'🏆 Your records', rec_sub:'Your best weight per exercise', 
-       mnames:['January','February','March','April','May','June','July','August','September','October','November','December'] },
+       mnames:['January','February','March','April','May','June','July','August','September','October','November','December'],
+       dnames:{lunes:'Monday',martes:'Tuesday',miercoles:'Wednesday',jueves:'Thursday',viernes:'Friday',sabado:'Saturday',domingo:'Sunday',y:'and'} },
   de:{ ejercicios:'Übungen', superserie:'SUPERSATZ', series:'SÄTZE', reps:'Wdh',
        indicacion:'📋 Trainernotiz', ingresa_rm:'Gib dein 1RM ein, um das Gewicht zu sehen',
        trabaja:'Arbeite mit', de:'von', prescripcion:'Vorgabe', de_tu_max:'deines Maximums',
@@ -320,7 +325,8 @@ var PF_T = {
        mi_progreso:'Mein Fortschritt', ejercicio:'Übung', dias:'Tage', ej_lbl:'Übungen', registros:'Einträge',
        sync:'Deine Gewichte und Notizen werden automatisch gespeichert', sel_jug:'Wähle einen Spieler',
        prog_empty_head:'📈 Mein Fortschritt', prog_empty:'Notiere deine Gewichte in jeder Einheit und hier siehst du deine <b>Rekorde</b> und wie du <b>Fortschritte</b> machst 💪', evo_head:'🚀 Deine Entwicklung', evo_sub:'Wie deine Gewichte gestiegen sind', rec_head:'🏆 Deine Rekorde', rec_sub:'Dein bestes Gewicht pro Übung', 
-       mnames:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'] }
+       mnames:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+       dnames:{lunes:'Montag',martes:'Dienstag',miercoles:'Mittwoch',jueves:'Donnerstag',viernes:'Freitag',sabado:'Samstag',domingo:'Sonntag',y:'und'} }
 };
 function tP(k){ var l=PF_LANG(); return (PF_T[l]&&PF_T[l][k]!==undefined)?PF_T[l][k]:PF_T.es[k]; }
 
@@ -710,6 +716,19 @@ function loadRutinas(j){
 }
 
 // ── Render semanas ────────────────────────────────────────────────
+
+function traducirDias(txt){
+  try{
+    var d = (PF_T[PF_LANG()] || PF_T.es).dnames;
+    if(!d) return txt;
+    return String(txt).replace(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+/g, function(pal){
+      var k = pal.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      var tr = d[k];
+      if(!tr) return pal;
+      return (pal === pal.toUpperCase()) ? tr.toUpperCase() : tr;
+    });
+  }catch(e){ return txt; }
+}
 function renderSemanas(j){
   var tabs = document.getElementById('semanas-tabs');
   tabs.innerHTML = '';
@@ -724,7 +743,11 @@ function renderSemanas(j){
   j.semanas.forEach(function(s, idx){
     var tab = document.createElement('button');
     tab.className = 'semana-tab' + (idx === 0 ? ' active' : '');
-    tab.textContent = (s.label||'').replace(/Semana/gi, tP('semana'));
+    /* Los dias de la rutina se traducen palabra por palabra: antes solo se
+       cambiaba "Semana" y una etiqueta como "LUNES, VIERNES" quedaba en
+       castellano para todos. Lo que no se reconoce queda como lo escribio el
+       preparador. */
+    tab.textContent = traducirDias((s.label||'').replace(/Semana/gi, tP('semana')));
     tab.onclick = (function(semana, t){
       return function(){
         document.querySelectorAll('.semana-tab').forEach(function(x){ x.classList.remove('active'); });

@@ -147,6 +147,7 @@
   <span class="st" id="savest">—</span>
   <button class="btn btn-ghost" onclick="cpOpen('copiar')">📋 COPIAR A…</button>
   <button class="btn btn-ghost" onclick="cpOpen('vaciar')">🧹 VACIAR EN…</button>
+  <button class="btn btn-ghost" onclick="moverMes()">📅 MOVER DE MES…</button>
   <button class="btn btn-teal" onclick="guardar()">💾 GUARDAR RUTINA</button>
 </div>
 
@@ -493,6 +494,71 @@ function guardar(){
   setDirty(false);
   refreshSavedChips();
 }
+
+/* ══ MOVER UNA RUTINA DE MES ══════════════════════════════════════════════
+   La rutina queda guardada bajo la clave del mes que se eligio al armarla
+   (2025-08). Si se elige mal, la unica salida era rehacerla entera o entrar a
+   la base de datos a mano. Ninguna de las dos se le puede pedir a un
+   preparador fisico.
+
+   Esto la copia al mes nuevo y borra la vieja, en un paso. Escribe primero la
+   nueva y despues borra: si se corta la conexion en el medio, el jugador
+   queda con las dos, nunca sin ninguna. */
+function moverMes(){
+  var num = +document.getElementById('selJug').value;
+  if(!num){ alert('Elegí un jugador.'); return; }
+  if(!R || !R.mes){ alert('Abrí primero la rutina que querés mover.'); return; }
+
+  var origen = R.mes;
+  var hoy = new Date();
+  var destino = prompt(
+    'Mover la rutina de ' + mesLabelFromKey(origen) + '\n\n' +
+    'Escribí el mes destino con este formato:  AAAA-MM\n' +
+    'Por ejemplo  2026-08  para agosto de 2026.',
+    hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0'));
+  if(!destino) return;
+  destino = destino.trim();
+
+  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(destino)){
+    alert('El formato tiene que ser AAAA-MM.\nPor ejemplo: 2026-08'); return;
+  }
+  if(destino === origen){ alert('Es el mismo mes.'); return; }
+
+  var seguir = function(){
+    var copia = JSON.parse(JSON.stringify(R));
+    copia.mes = destino;
+    copia.mesLabel = mesLabelFromKey(destino);
+    copia.actualizado = new Date().toISOString();
+
+    if(typeof fbSet === 'undefined'){
+      alert('Sin conexión a la nube no puedo mover la rutina.'); return;
+    }
+    fbSet('prep_rutinas/'+num+'/'+destino, copia);
+    setTimeout(function(){
+      fbSet('prep_rutinas/'+num+'/'+origen, null);
+      try{
+        localStorage.setItem('prep_rutina_'+num+'_'+destino, JSON.stringify(copia));
+        localStorage.removeItem('prep_rutina_'+num+'_'+origen);
+      }catch(e){}
+      R = copia;
+      try{ var sel=document.getElementById('selMes'); if(sel) sel.value = destino; }catch(e){}
+      document.getElementById('savest').textContent =
+        'Movida de ' + mesLabelFromKey(origen) + ' a ' + mesLabelFromKey(destino) + ' ✓';
+      setDirty(false);
+      refreshSavedChips();
+    }, 600);
+  };
+
+  if(typeof fbGet !== 'undefined'){
+    fbGet('prep_rutinas/'+num+'/'+destino, function(ya){
+      if(ya && ya.semanas && ya.semanas.length){
+        if(!confirm('En ' + mesLabelFromKey(destino) + ' ya hay una rutina cargada.\n\n¿La reemplazo por esta?')) return;
+      }
+      seguir();
+    });
+  } else { seguir(); }
+}
+
 /* ---------- copiar rutina a varios jugadores ---------- */
 var cpMode='copiar';
 function cpOpen(mode){
