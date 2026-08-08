@@ -228,6 +228,37 @@ for g in huerfanos:
     fallas.append('%s: existe y ningun .bat lo llama' % g)
 print('     %s' % ('bien' if not huerfanos else '%d sin ejecutar' % len(huerfanos)))
 
+# ── 9 · marcas que el alta no reemplaza ─────────────────────────────────────
+# El control 6 mira que no haya marcas DESCONOCIDAS. Este mira lo contrario:
+# que todas las que se usan esten realmente en la lista de reemplazos del alta.
+#
+# {{CLUB_SLUG}} estaba en 37 lugares de 19 archivos y NO estaba en esa lista:
+# quedaba literal en la app de cada cliente. Las pantallas comparaban contra el
+# texto "{{CLUB_SLUG}}", que no coincide con ningun equipo, y eso mezclaba
+# jugadores de distintos clubes con el mismo dorsal.
+print('  9) Marcas que el alta sabe reemplazar')
+alta = os.path.join(os.path.dirname(PLANT), 'crear_cliente.py')
+if not os.path.exists(alta):
+    alta = os.path.join(PLANT, 'crear_cliente.py')
+sin_reemplazo = []
+if os.path.exists(alta):
+    ta = leer(alta)
+    usadas = set()
+    for p2 in paginas + scripts:
+        for m in re.finditer(r'\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}', leer(p2)):
+            usadas.add(m.group(1))
+    for u in sorted(usadas):
+        if re.match(r'RIVAL\d+$', u):
+            continue
+        if ("'{{%s}}'" % u) not in ta and ('"{{%s}}"' % u) not in ta:
+            sin_reemplazo.append(u)
+    for u in sin_reemplazo:
+        cuantos = sum(leer(p2).count('{{%s}}' % u) for p2 in paginas + scripts)
+        fallas.append('{{%s}}: se usa %d veces y el alta no la reemplaza' % (u, cuantos))
+    print('     %s' % ('bien' if not sin_reemplazo else '%d marcas huerfanas' % len(sin_reemplazo)))
+else:
+    print('     no encontre crear_cliente.py')
+
 # ── resultado ───────────────────────────────────────────────────────────────
 print()
 print('  ' + '-' * 68)

@@ -80,12 +80,20 @@ def slugify(name):
         _t = _cc.tabla_de_equipos() or {}
         _plano = re.sub(r'[^a-z0-9]', '',
                         unicodedata.normalize('NFKD', name or '').encode('ascii','ignore').decode().lower())
+        def _pl(x):
+            return re.sub(r'[^a-z0-9]', '',
+                          unicodedata.normalize('NFKD', str(x)).encode('ascii','ignore').decode().lower())
+        # ── Comparar nombres COMPLETOS, nunca por pedacitos ──────────────
+        # "uba" esta adentro de "clUBAtletico": buscando la palabra corta
+        # dentro de la larga, UBA se convertia en Casla y sus acciones se
+        # mezclaban con las del club. Solo vale que el nombre que viene sea
+        # igual al corto, o que CONTENGA al largo configurado.
         for _largo, _corto in _t.items():
-            _lp = re.sub(r'[^a-z0-9]', '',
-                         unicodedata.normalize('NFKD', _largo).encode('ascii','ignore').decode().lower())
-            if _lp and (_lp == _plano or _lp in _plano or _plano in _lp):
-                return re.sub(r'[^a-z0-9]', '',
-                              unicodedata.normalize('NFKD', _corto).encode('ascii','ignore').decode().lower())
+            _lp, _cp = _pl(_largo), _pl(_corto)
+            if not _lp:
+                continue
+            if _plano == _cp or _plano == _lp or _lp in _plano:
+                return _cp
     except Exception:
         pass
 

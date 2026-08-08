@@ -48,10 +48,14 @@ def name_to_slug(name):
     # 1) la tabla del club, comparando nombres completos
     try:
         import config_club as _cc
+        # Nombres COMPLETOS, nunca por pedacitos: "uba" esta adentro de
+        # "clUBAtletico", y buscando la palabra corta dentro de la larga UBA se
+        # convertia en Casla. Solo vale que sea igual al corto, o que el nombre
+        # que viene CONTENGA al largo configurado.
         for largo, corto in (_cc.tabla_de_equipos() or {}).items():
-            kl = _norm(largo)
-            if kl and (kl == k or kl in k or k in kl):
-                return _norm(corto)
+            kl, kc = _norm(largo), _norm(corto)
+            if kl and (k == kc or k == kl or kl in k):
+                return kc
     except Exception:
         pass
     # 2) por si el .dvw ya trae el nombre corto

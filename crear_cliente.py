@@ -228,6 +228,13 @@ REEMPLAZOS = {
     '{{CLUB}}':          NOMBRE.upper(),
     '{{Club}}':          NOMBRE.capitalize(),
     '{{club}}':          slug(NOMBRE),
+    # El nombre corto con el que se etiqueta cada accion en los datos. Faltaba
+    # en esta lista, asi que quedaba literal en la app del cliente: 37 lugares
+    # de 19 archivos comparaban contra el texto "{{CLUB_SLUG}}", que no coincide
+    # con ningun equipo. De ahi las mezclas —un jugador del club apareciendo
+    # con los videos del mismo dorsal de otro equipo— y varias pantallas
+    # vacias sin explicacion.
+    '{{CLUB_SLUG}}':     slug(NOMBRE),
     '{{FIREBASE_URL}}':  FB_URL or 'https://CONFIGURAR.firebaseio.com',
     '{{FIREBASE_KEY}}':  FB_KEY or 'CONFIGURAR',
     '{{DOMINIO}}':       REPO + '.vercel.app',
