@@ -1184,16 +1184,37 @@ function renderDefensaTabla(){
           _filas.forEach(function(p){ _t.T+=p.T; _t.perf+=p.perf; _t.buena+=p.buena;
                                       _t.reg+=p.reg; _t.mala+=p.mala; _t.err+=p.err; });
           var _ef = function(p){ return p.T ? Math.round((p.perf+0.5*p.buena-0.5*p.mala-p.err)/p.T*100) : 0; };
-          var _h = '<table class="tabla"><thead><tr>';
-          ['Jugador','Total','#','+','!','-','=','EFF%'].forEach(function(x){ _h += '<th>'+x+'</th>'; });
+          /* Mismo formato que las otras tablas del dashboard: el contenedor
+             tabla-wrap, las mismas columnas y los mismos colores por columna.
+             Antes usaba una clase que no existe en esta pantalla y salia sin
+             ningun estilo. */
+          var _ths = ['EFF%','TOT','# Perf','+ Buena','! Reg','– Mala','= Err'];
+          var _h = '<div style="font-size:14px;color:var(--mut);margin:0 0 8px;letter-spacing:1px">🧤 DEFENSA · de los partidos scouteados</div>';
+          _h += '<div class="tabla-wrap"><table><thead><tr><th>Jugador</th>';
+          _ths.forEach(function(t){ _h += '<th>'+t+'</th>'; });
           _h += '</tr></thead><tbody>';
           _filas.forEach(function(p){
-            _h += '<tr><td class="left">'+p.n+'</td><td>'+p.T+'</td><td>'+p.perf+'</td><td>'+p.buena+'</td>'
-                + '<td>'+p.reg+'</td><td>'+p.mala+'</td><td>'+p.err+'</td><td>'+_ef(p)+'%</td></tr>';
+            var e = _ef(p);
+            _h += '<tr><td style="font-weight:700">'+p.n+'</td>'
+                + '<td style="font-weight:800;color:'+effColor(e)+'">'+fmt(e)+'</td>'
+                + '<td style="font-weight:700;color:#06b6d4">'+p.T+'</td>'
+                + '<td style="color:#22c55e">'+p.perf+'</td>'
+                + '<td style="color:#86efac">'+p.buena+'</td>'
+                + '<td style="color:#94a3b8">'+p.reg+'</td>'
+                + '<td style="color:#f97316">'+p.mala+'</td>'
+                + '<td style="color:#ef4444">'+p.err+'</td></tr>';
           });
-          _h += '<tr class="total-row"><td class="left">TOTAL</td><td>'+_t.T+'</td><td>'+_t.perf+'</td>'
-              + '<td>'+_t.buena+'</td><td>'+_t.reg+'</td><td>'+_t.mala+'</td><td>'+_t.err+'</td>'
-              + '<td>'+_ef(_t)+'%</td></tr></tbody></table>';
+          var _te = _ef(_t);
+          _h += '<tr style="border-top:2px solid rgba(255,255,255,.1)">'
+              + '<td style="font-weight:800;color:var(--mut)">TOTALES EQUIPO</td>'
+              + '<td style="font-weight:800;color:'+effColor(_te)+'">'+fmt(_te)+'</td>'
+              + '<td style="font-weight:800;color:#06b6d4">'+_t.T+'</td>'
+              + '<td style="color:#22c55e">'+_t.perf+'</td>'
+              + '<td style="color:#86efac">'+_t.buena+'</td>'
+              + '<td style="color:#94a3b8">'+_t.reg+'</td>'
+              + '<td style="color:#f97316">'+_t.mala+'</td>'
+              + '<td style="color:#ef4444">'+_t.err+'</td></tr>';
+          _h += '</tbody></table></div>';
           return _h;
         }
       }
