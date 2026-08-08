@@ -1170,13 +1170,30 @@ function renderDefensaTabla(){
       }
       if(_fuente){
         var _filas = [];
+        /* Las baterias guardan a los jugadores por su nombre completo. Las
+           otras tablas muestran el dorsal en un recuadro y solo el apellido,
+           asi que se busca el numero en el plantel para que quede igual. */
+        var _plantel = (window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores) || [];
+        function _datosDe(nombreLargo){
+          var q = String(nombreLargo||'').toLowerCase();
+          for(var i=0;i<_plantel.length;i++){
+            var ap = String(_plantel[i].nombre||'').toLowerCase();
+            if(ap && (q === ap || q.indexOf(ap) === 0))
+              return {num:_plantel[i].num, ap:_plantel[i].nombre};
+          }
+          /* sin plantel, al menos el apellido: la primera palabra */
+          return {num:'', ap:String(nombreLargo||'').split(' ')[0]};
+        }
+
         Object.keys(_fuente).forEach(function(n){
           /* La fila del equipo no es un jugador: el total se calcula abajo. */
           if(n === '__EQUIPO__') return;
           var d = _fuente[n];
           if(!d || !d.defT) return;
-          _filas.push({n:n, T:d.defT, perf:d.defPerf||0, buena:d.defBuena||0,
-                       reg:d.defReg||0, mala:d.defMala||0, err:d.defErr||0});
+          var _q = _datosDe(n);
+          _filas.push({n:n, num:_q.num, ap:_q.ap, T:d.defT, perf:d.defPerf||0,
+                       buena:d.defBuena||0, reg:d.defReg||0, mala:d.defMala||0,
+                       err:d.defErr||0});
         });
         if(_filas.length){
           _filas.sort(function(a,b){ return b.T - a.T; });
@@ -1195,7 +1212,13 @@ function renderDefensaTabla(){
           _h += '</tr></thead><tbody>';
           _filas.forEach(function(p){
             var e = _ef(p);
-            _h += '<tr><td style="font-weight:700">'+p.n+'</td>'
+            /* Misma celda que las otras tablas: el dorsal en su recuadro y el
+               apellido al lado, y la fila abre los cortes de ese jugador. */
+            _h += '<tr style="cursor:pointer" title="Ver defensas de '+p.ap+' 🎬"'
+                + ' onclick="window.open(\'cortes.html?num='+encodeURIComponent(p.num)+'&sk=Defensa\',\'_blank\')">'
+                + '<td><div class="t-name"><div class="t-cam">'+p.num+'</div>'
+                + '<span style="font-weight:800;font-size:14px">'+p.ap+'</span>'
+                + ' <span style="opacity:.35;font-size:14px">🎬</span></div></td>'
                 + '<td style="font-weight:800;color:'+effColor(e)+'">'+fmt(e)+'</td>'
                 + '<td style="font-weight:700;color:#06b6d4">'+p.T+'</td>'
                 + '<td style="color:#22c55e">'+p.perf+'</td>'
