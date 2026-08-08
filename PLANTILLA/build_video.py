@@ -110,12 +110,16 @@ def parse_dvw(path, ent=False):
     home_slug=slugify(home_name); away_slug=slugify(away_name)
 
     base=os.path.basename(path)
-    mcode=re.search(r'(\d{6})',base); mdate=re.search(r'(\d{4}-\d{2}-\d{2})',base)
+    # El codigo oficial del partido: 5 o 6 digitos. Antes pedia exactamente 6
+    # y los .dvw con codigo de 5 —como los de la liga argentina— se descartaban
+    # TODOS en silencio: el paso no imprimia ni un error y el archivo de video
+    # salia vacio. El resto del sistema ya aceptaba las dos formas.
+    mcode=re.search(r'&?[\s_]*(\d{5,6})(?!\d)',base); mdate=re.search(r'(\d{4}-\d{2}-\d{2})',base)
     date=mdate.group(1) if mdate else ''
     if mcode: code=mcode.group(1)
     elif ent and date: code='ENT'+date.replace('-','')
     elif ent: code='ENT_'+re.sub(r'[^A-Za-z0-9]','',base)[:12]
-    else: return None   # partido sin codigo de 6 digitos -> se ignora
+    else: return None   # partido sin codigo oficial -> se ignora
 
     scout=txt.split('[3SCOUT]')[-1]
     scout_lines=scout.strip().splitlines()
