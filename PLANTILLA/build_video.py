@@ -190,9 +190,31 @@ def parse_dvw(path, ent=False):
     return code,{'home':home_slug,'away':away_slug,'homeName':home_name,'awayName':away_name,
                  'date':date,'result':_res,'teams':teams_meta,'players':players,'actions':actions}
 
-def season_of(date):
-    # Temporada oct->abr. 2025-10 -> "25-26"; 2026-04 -> "25-26"; 2026-10 -> "26-27".
+def season_of(date, carpeta=''):
+    """La temporada de una sesion, para el nombre del archivo.
+
+    La cuenta de abajo es la europea: "arranca en agosto". Con un torneo que va
+    de mayo a agosto —el Metropolitano argentino— un partido de mayo cae en la
+    temporada ANTERIOR, y el archivo de video queda etiquetado distinto que
+    todo el resto del sistema. Las pantallas buscan una temporada y el archivo
+    dice otra, asi que los cortes no aparecen nunca.
+
+    Si el club configuro sus torneos, la etiqueta sale de ahi. Si no, se usa la
+    cuenta de siempre y nada cambia para los clubes que ya andan.
+    """
     if not date or len(date)<7: return 'sin-fecha'
+    try:
+        import config_club as _cc
+        if _cc.torneos():
+            t = _cc.temporada_de(date, '', carpeta)
+            if t:
+                tor = _cc.resolver_torneo('', carpeta)
+                cfg = _cc.torneos().get(tor) or {}
+                if cfg.get('cruza'):
+                    return '%02d-%02d' % (int(t) % 100, (int(t)+1) % 100)
+                return str(t)
+    except Exception:
+        pass
     try: y=int(date[:4]); mo=int(date[5:7])
     except: return 'sin-fecha'
     s = y if mo>=8 else y-1
@@ -266,7 +288,7 @@ if __name__=='__main__':
     # agrupar por temporada (calculada desde la fecha)
     por_temp={}
     for code,m in nuevos.items():
-        s=_forzar or season_of(m.get('date',''))
+        s=_forzar or season_of(m.get('date',''), folder)
         por_temp.setdefault(s,{})[code]=m
 
     all_links=read_mapa_links(ent=ent)
