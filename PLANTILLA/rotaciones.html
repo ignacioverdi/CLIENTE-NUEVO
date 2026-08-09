@@ -104,6 +104,18 @@ select,.btn{background:var(--card);color:var(--txt);border:1px solid var(--borde
       <label data-t="rot_rival">Rival</label>
       <select id="selRival"></select>
     </div>
+    <!-- Los dos desplegables que hacen util la pantalla: en un partido mi P1
+         no enfrenta al P1 del rival. La relacion entre las dos rotaciones
+         depende de donde arranca cada uno, y eso cambia TODOS los duelos.
+         Aca se elige y las seis canchas se recalculan. -->
+    <div class="campo">
+      <label data-t="rot_mio">Mi armador en</label>
+      <select id="selMio"></select>
+    </div>
+    <div class="campo">
+      <label data-t="rot_suyo">Su armador en</label>
+      <select id="selSuyo"></select>
+    </div>
     <button class="btn" onclick="toggleEditor()" data-t="rot_editar">✏️ Cambiar los seis</button>
   </div>
 
@@ -117,21 +129,21 @@ select,.btn{background:var(--card);color:var(--txt);border:1px solid var(--borde
 var T = {
   es:{arm:'armador en zona',nos:'Nosotros',riv:'Rival',
       bloquea:'En la red',contra:'contra',
-      sinRival:'Elegí un rival para ver las rotaciones',
+      mio:'Mi armador en',suyo:'Su armador en',zonaN:'zona',sinRival:'Elegí un rival para ver las rotaciones',
       sinDatos:'Todavía no hay datos de equipos cargados',
       edNos:'Nuestro seis inicial',edRiv:'El seis del rival',
       guardar:'Guardar',rest:'Volver a lo automático',
       zona:'zona'},
   en:{arm:'setter in zone',nos:'Us',riv:'Opponent',
       bloquea:'At the net',contra:'against',
-      sinRival:'Pick an opponent to see the rotations',
+      mio:'My setter in',suyo:'Their setter in',zonaN:'zone',sinRival:'Pick an opponent to see the rotations',
       sinDatos:'No team data loaded yet',
       edNos:'Our starting six',edRiv:'Their starting six',
       guardar:'Save',rest:'Back to automatic',
       zona:'zone'},
   de:{arm:'Zuspieler auf Zone',nos:'Wir',riv:'Gegner',
       bloquea:'Am Netz',contra:'gegen',
-      sinRival:'Wähle einen Gegner, um die Rotationen zu sehen',
+      mio:'Mein Zuspieler auf',suyo:'Ihr Zuspieler auf',zonaN:'Zone',sinRival:'Wähle einen Gegner, um die Rotationen zu sehen',
       sinDatos:'Noch keine Teamdaten geladen',
       edNos:'Unsere Startsechs',edRiv:'Ihre Startsechs',
       guardar:'Speichern',rest:'Zurück zu automatisch',
@@ -299,13 +311,26 @@ function pintar(){
   var armN = armadorDe(plN, zN), armR = armadorDe(plR, zR);
   var RN = seisRotaciones(zN, armN, plN), RR = seisRotaciones(zR, armR, plR);
 
+  /* ══ El desfase entre los dos equipos ═══════════════════════════════════
+     Si mi armador arranca en zona 1 y el suyo en zona 3, cuando yo paso a P2
+     el pasa a P4: la diferencia se mantiene todo el partido. Eso es lo que
+     define quien bloquea a quien, y es distinto en cada partido segun quien
+     saca primero y como esta el marcador. */
+  var arrMio  = +document.getElementById('selMio').value  || 1;
+  var arrSuyo = +document.getElementById('selSuyo').value || 1;
+  var desfase = ((arrSuyo - arrMio) % 6 + 6) % 6;
+
   var h = '';
-  ['P1','P2','P3','P4','P5','P6'].forEach(function(p){
-    var a = RN[p], b = RR[p];
+  var orden = [];
+  for(var i=0;i<6;i++) orden.push('P' + (((arrMio - 1 + i) % 6) + 1));
+  orden.forEach(function(p, i){
+    var pr = 'P' + (((arrSuyo - 1 + i) % 6) + 1);
+    var a = RN[p], b = RR[pr];
     if(!a || !b) return;
     h += '<div class="rot">'
-      + '<div class="rot-top"><span class="rot-p">'+p+'</span>'
-      + '<span class="rot-sub">'+t().arm+' '+p[1]+'</span></div>'
+      + '<div class="rot-top"><span class="rot-p">'+p+' <span style="color:var(--mut);font-size:14px">vs</span> '
+      + '<span style="color:#f97316">'+pr+'</span></span>'
+      + '<span class="rot-sub">'+t().zonaN+' '+p[1]+' '+t().contra+' '+pr[1]+'</span></div>'
       /* el rival arriba y espejado: su fondo primero, despues su red */
       + fila(plR, b, [1,6,5], '#f97316', armR)
       + fila(plR, b, [2,3,4], '#f97316', armR)
@@ -399,6 +424,15 @@ function arrancar(){
     return '<option value="'+e.clave+'">'+e.nombre+'</option>';
   }).join('');
   sel.onchange = function(){ document.getElementById('editor').classList.remove('on'); pintar(); };
+
+  /* las seis zonas donde puede arrancar cada armador */
+  [['selMio', 1], ['selSuyo', 1]].forEach(function(par){
+    var e = document.getElementById(par[0]);
+    e.innerHTML = [1,2,3,4,5,6].map(function(n){
+      return '<option value="'+n+'"'+(n===par[1]?' selected':'')+'>'+t().zonaN+' '+n+'</option>';
+    }).join('');
+    e.onchange = pintar;
+  });
   var cab = document.getElementById('cab');
   if(cab) cab.textContent = NOSOTROS;
   pintar();

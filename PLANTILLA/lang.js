@@ -191,6 +191,8 @@
   //  Traduce cualquier texto en español que esté en este diccionario, incluso
   //  el contenido generado dinámicamente por JS (tablas, etiquetas, etc.).
   var PHRASES_EXTRA = {
+    "Mi armador en":{en:"My setter in",de:"Mein Zuspieler auf"},
+    "Su armador en":{en:"Their setter in",de:"Ihr Zuspieler auf"},
     // ═══ Rotaciones ══════════════════════════════════════════════════════
     "Rotaciones":{en:"Rotations",de:"Rotationen"},
     "Las seis rotaciones enfrentadas al rival, en una hoja. Para preparar el saque, el bloqueo y la defensa antes del partido.":{
