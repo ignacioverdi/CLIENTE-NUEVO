@@ -239,8 +239,28 @@ function especializar(z, pl, libero){
     else if(j.pue === 'PUN')                    destino = esDelantero ? 4 : 6;
     else                                        destino = esDelantero ? 3 : 5;
     /* el central de zaguero sale y entra el libero */
-    out[destino] = (j.pue === 'CEN' && !esDelantero && libero) ? libero : num;
+    var quien = (j.pue === 'CEN' && !esDelantero && libero) ? libero : num;
+    /* Si dos jugadores caen en la misma zona —pasa cuando el seis inicial no
+       tiene los pares opuestos, por ejemplo dos centrales juntos— se busca la
+       primera zona libre de esa fila en vez de dejar un hueco. Antes uno
+       pisaba al otro y la zona vacia salia como "undefined". */
+    if(out[destino] !== undefined){
+      var fila = esDelantero ? [4,3,2] : [5,6,1];
+      for(var k=0;k<fila.length;k++){
+        if(out[fila[k]] === undefined){ destino = fila[k]; break; }
+      }
+    }
+    out[destino] = quien;
   });
+  /* red de seguridad: si aun asi quedo alguna vacia, se completa con los que
+     no entraron, para que la pantalla nunca muestre un hueco */
+  var puestos = [4,3,2,5,6,1].filter(function(x){ return out[x] === undefined; });
+  if(puestos.length){
+    var usados = [4,3,2,5,6,1].map(function(x){ return out[x]; });
+    var faltan = [4,3,2,5,6,1].map(function(x){ return z[x]; })
+                  .filter(function(n){ return usados.indexOf(n) < 0; });
+    puestos.forEach(function(zz, i){ if(faltan[i] !== undefined) out[zz] = faltan[i]; });
+  }
   return out;
 }
 
@@ -358,8 +378,21 @@ function seisIniciales(clave, pl){
   var arm = por('ARM')[0], op = por('OPU')[0], ce = por('CEN'), pu = por('PUN');
   var resto = pl.filter(function(x){ return x.pue !== 'LIB'; });
   var elegir = function(x, i){ return (x || resto[i] || pl[i] || {num:i+1}).num; };
-  return {1:elegir(arm,0), 4:elegir(pu[0],1), 3:elegir(ce[0],2),
-          2:elegir(op,3),  5:elegir(pu[1],4), 6:elegir(ce[1],5)};
+
+  /* ══ Los pares tienen que estar OPUESTOS ══════════════════════════════
+     En voley cada pareja de un mismo puesto va a tres zonas de distancia:
+
+         armador 1  ·  opuesto 4
+         punta   2  ·  punta   5
+         central 3  ·  central 6
+
+     Asi hay siempre uno de cada puesto adelante y uno atras. Antes ponia al
+     armador en 1 y al opuesto en 2 —pegados— y en algunas rotaciones los dos
+     quedaban delanteros: los dos peleaban por la zona 2, uno pisaba al otro y
+     la otra zona quedaba vacia. Eso era el "undefined" en pantalla. */
+  return {1:elegir(arm,0),   4:elegir(op,1),
+          2:elegir(pu[0],2), 5:elegir(pu[1],3),
+          3:elegir(ce[0],4), 6:elegir(ce[1],5)};
 }
 
 function toggleEditor(){
