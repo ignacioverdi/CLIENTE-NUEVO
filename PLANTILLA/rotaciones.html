@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rotaciones — {{CLUB}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<!--
+  ══════════════════════════════════════════════════════════════════════════
+  rotaciones.html — LAS SEIS ROTACIONES, ENFRENTADAS
+
+  Para preparar el partido: ver como queda cada rotacion propia contra cada
+  una del rival, y de ahi decidir el saque, el bloqueo y la defensa.
+
+  ── LA DISPOSICION ──────────────────────────────────────────────────────
+  Es la de siempre en voley, la misma que usa la planilla del entrenador:
+
+        fila de la red     zona 4 · zona 3 · zona 2
+        fila del fondo     zona 5 · zona 6 · zona 1
+
+  Al girar, cada jugador pasa de la zona n a la n+1. Cada rotacion se llama
+  por donde queda el ARMADOR: "P3" es armador en zona 3.
+
+  El rival se dibuja arriba y espejado —su zona 2 queda enfrentada a nuestra
+  zona 4— porque asi es como se ven las dos canchas desde afuera. Eso es lo
+  que permite leer los duelos de un vistazo: quien bloquea a quien.
+
+  ── DE DONDE SALEN LOS JUGADORES ────────────────────────────────────────
+  El plantel propio de datos_equipo.js y el del rival de liga_data.js, que
+  ya guarda el puesto de cada jugador de los 12 equipos. El seis inicial se
+  puede corregir a mano y queda guardado en el telefono.
+  ══════════════════════════════════════════════════════════════════════════
+-->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#07080f;--card:#0f1020;--card2:#151730;--txt:#e2e8f0;--mut:#64748b;
+      --border:rgba(255,255,255,.07);--nos:#3b82f6;--riv:#f97316;--club:#e8192c}
+body{background:var(--bg);color:var(--txt);font-family:'Barlow Condensed',sans-serif;
+     -webkit-font-smoothing:antialiased;padding-bottom:60px}
+.wrap{max-width:1280px;margin:0 auto;padding:0 16px}
+.page-header{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:16px 0 14px;border-bottom:1px solid var(--border);margin-bottom:18px;flex-wrap:wrap}
+.back-btn{color:var(--mut);text-decoration:none;font-size:12px;letter-spacing:1.5px;
+  text-transform:uppercase;border:1px solid var(--border);border-radius:9px;padding:7px 12px}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px}
+.sub{font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase}
+
+.barra{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px}
+.campo{display:flex;flex-direction:column;gap:4px}
+.campo label{font-size:10px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase}
+select,.btn{background:var(--card);color:var(--txt);border:1px solid var(--border);
+  border-radius:9px;padding:8px 12px;font-family:inherit;font-size:14px;cursor:pointer}
+.btn:hover{border-color:rgba(255,255,255,.2)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:12px}
+.rot{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px 15px}
+.rot-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+.rot-p{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:1.5px}
+.rot-sub{font-size:10px;color:var(--mut);letter-spacing:1px;text-transform:uppercase}
+.fila{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:5px}
+.cel{border-radius:9px;padding:7px 4px;text-align:center;border:1px solid}
+.cel-num{font-family:'Bebas Neue',sans-serif;font-size:19px;line-height:1;letter-spacing:.5px}
+.cel-ape{font-size:10px;line-height:1.2;margin-top:2px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.cel-pue{font-size:8px;letter-spacing:.8px;color:var(--mut);margin-top:1px}
+.red{height:2px;background:rgba(255,255,255,.45);margin:8px 0;border-radius:2px}
+.arm{box-shadow:0 0 0 1px currentColor inset}
+.duelos{font-size:11px;color:var(--mut);margin-top:8px;line-height:1.5}
+.duelos b{color:var(--txt);font-weight:700}
+.vacio{color:var(--mut);text-align:center;padding:40px 0;font-size:13px}
+.editor{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:14px 16px;margin-bottom:16px;display:none}
+.editor.on{display:block}
+.ed-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:9px}
+.ed-campo{display:flex;flex-direction:column;gap:3px}
+.ed-campo span{font-size:10px;color:var(--mut);letter-spacing:1px}
+</style>
+<script src="firebase.js" onerror="void 0"></script>
+<script src="datos_seguros.js"></script>
+<script src="datos_equipo.js.enc" onerror="void 0"></script>
+<script src="liga_data.js.enc" onerror="void 0"></script>
+<script>abrirDatos();</script>
+<script src="lang.js" onerror="void 0"></script>
+<link rel="stylesheet" href="movil.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="page-header header">
+    <div class="header-text" style="display:flex;align-items:center;gap:14px">
+      <a href="index.html" class="back-btn">← Inicio</a>
+      <div>
+        <div class="page-title">🔄 <span data-t="g_rotaciones">Rotaciones</span></div>
+        <div class="sub" id="cab">{{CLUB}}</div>
+      </div>
+    </div>
+    <div class="header-right" style="display:flex;align-items:center;gap:12px">
+      <div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div>
+    </div>
+  </div>
+
+  <div class="barra">
+    <div class="campo">
+      <label data-t="rot_rival">Rival</label>
+      <select id="selRival"></select>
+    </div>
+    <button class="btn" onclick="toggleEditor()" data-t="rot_editar">✏️ Cambiar los seis</button>
+  </div>
+
+  <div class="editor" id="editor"></div>
+  <div id="grid" class="grid"></div>
+
+</div>
+
+<script>
+/* ── Textos ────────────────────────────────────────────────────────────── */
+var T = {
+  es:{arm:'armador en zona',nos:'Nosotros',riv:'Rival',
+      bloquea:'En la red',contra:'contra',
+      sinRival:'Elegí un rival para ver las rotaciones',
+      sinDatos:'Todavía no hay datos de equipos cargados',
+      edNos:'Nuestro seis inicial',edRiv:'El seis del rival',
+      guardar:'Guardar',rest:'Volver a lo automático',
+      zona:'zona'},
+  en:{arm:'setter in zone',nos:'Us',riv:'Opponent',
+      bloquea:'At the net',contra:'against',
+      sinRival:'Pick an opponent to see the rotations',
+      sinDatos:'No team data loaded yet',
+      edNos:'Our starting six',edRiv:'Their starting six',
+      guardar:'Save',rest:'Back to automatic',
+      zona:'zone'},
+  de:{arm:'Zuspieler auf Zone',nos:'Wir',riv:'Gegner',
+      bloquea:'Am Netz',contra:'gegen',
+      sinRival:'Wähle einen Gegner, um die Rotationen zu sehen',
+      sinDatos:'Noch keine Teamdaten geladen',
+      edNos:'Unsere Startsechs',edRiv:'Ihre Startsechs',
+      guardar:'Speichern',rest:'Zurück zu automatisch',
+      zona:'Zone'}
+};
+function L(){ try{ return (typeof getLang==='function') ? getLang() : 'es'; }catch(e){ return 'es'; } }
+function t(){ return T[L()] || T.es; }
+
+var PUESTO = {SETTER:'ARM', OUTSIDE:'PUN', MIDDLE:'CEN', LIBERO:'LIB', OPPOSITE:'OPU', OTRO:''};
+var NOSOTROS = '{{Club}}';
+
+/* ── De donde salen los jugadores ──────────────────────────────────────── */
+function planteles(){
+  /* El propio, con nombre y puesto, sale de datos_equipo.js. */
+  var mio = [];
+  try{
+    var js = (window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores) || [];
+    mio = js.map(function(j){
+      return {num:+j.num, ape:j.nombre||('#'+j.num), pue:(j.pos||'').slice(0,3)};
+    });
+  }catch(e){}
+  return mio;
+}
+
+function equiposLiga(){
+  var out = [];
+  try{
+    var T2 = (window.LIGA_DATA && window.LIGA_DATA.teams) || {};
+    for(var k in T2) out.push({clave:k, nombre:T2[k].name || k});
+  }catch(e){}
+  out.sort(function(a,b){ return a.nombre.localeCompare(b.nombre); });
+  return out;
+}
+
+function plantelDe(clave){
+  /* liga_data guarda el puesto de cada jugador de los 12 equipos, y el nombre
+     aparece en cualquiera de las tres destrezas. */
+  var out = [];
+  try{
+    var e = (window.LIGA_DATA && window.LIGA_DATA.teams && window.LIGA_DATA.teams[clave]) || null;
+    if(!e) return out;
+    var roster = e.roster || {};
+    function ape(n){
+      var sk = ['atk','srv','rec'];
+      for(var i=0;i<sk.length;i++){
+        var d = (e[sk[i]] || {})[String(n)];
+        if(d && d.name) return d.name;
+      }
+      return '#'+n;
+    }
+    for(var n in roster){
+      out.push({num:+n, ape:ape(n), pue:PUESTO[roster[n]] || ''});
+    }
+  }catch(e2){}
+  out.sort(function(a,b){ return a.num - b.num; });
+  return out;
+}
+
+/* ── La rotacion ───────────────────────────────────────────────────────── */
+/* Al girar, cada jugador pasa de la zona n a la n+1. Verificado contra la
+   planilla que usa el cuerpo tecnico: las seis rotaciones dan identicas. */
+function girar(z){
+  var o = {};
+  for(var n in z) o[(+n % 6) + 1] = z[n];
+  return o;
+}
+
+/* ══ DONDE SE PARA CADA UNO ═══════════════════════════════════════════════
+   La rotacion dice el ORDEN en que giran; esto dice donde JUEGAN. Son dos
+   cosas distintas y confundirlas da cuadros que no pasan nunca en cancha: un
+   opuesto en zona 4 o un central en zona 6.
+
+   Despues del saque cada uno va a su puesto:
+
+       armador y opuesto   z2 de delantero · z1 de zaguero
+       punta               z4 de delantero · z6 de zaguero
+       central             z3 de delantero · de zaguero lo reemplaza
+                           el libero, que juega siempre en z5
+
+   Esta es la formacion de BLOQUEO Y DEFENSA, que es la que importa para
+   preparar el partido: es la que dice quien queda enfrentado a quien en la
+   red. En recepcion la formacion es otra —el libero y los puntas se acomodan
+   para recibir— pero eso no cambia los duelos del bloqueo. */
+function especializar(z, pl, libero){
+  var delante = [z[4], z[3], z[2]];
+  var out = {};
+  [4,3,2,5,6,1].forEach(function(zona){
+    var num = z[zona];
+    var j = pl.filter(function(x){ return x.num === +num; })[0] || {pue:''};
+    var esDelantero = delante.indexOf(num) >= 0;
+    var destino;
+    if(j.pue === 'ARM' || j.pue === 'OPU')      destino = esDelantero ? 2 : 1;
+    else if(j.pue === 'PUN')                    destino = esDelantero ? 4 : 6;
+    else                                        destino = esDelantero ? 3 : 5;
+    /* el central de zaguero sale y entra el libero */
+    out[destino] = (j.pue === 'CEN' && !esDelantero && libero) ? libero : num;
+  });
+  return out;
+}
+
+/* El libero del plantel: el que tenga ese puesto. */
+function liberoDe(pl){
+  var l = pl.filter(function(x){ return x.pue === 'LIB'; })[0];
+  return l ? l.num : null;
+}
+function seisRotaciones(zonas, armador, pl){
+  var out = {}, z = Object.assign({}, zonas), lib = liberoDe(pl);
+  for(var i=0;i<6;i++){
+    var zonaArm = null;
+    for(var n in z) if(+z[n] === +armador) zonaArm = +n;
+    /* se guarda ya especializada: es la formacion de bloqueo y defensa */
+    out['P' + (zonaArm || (i+1))] = especializar(z, pl, lib);
+    z = girar(z);
+  }
+  return out;
+}
+function armadorDe(pl, zonas){
+  /* el que tenga puesto de armador entre los seis en cancha */
+  for(var n in zonas){
+    var j = pl.filter(function(x){ return x.num === +zonas[n]; })[0];
+    if(j && (j.pue === 'ARM' || j.pue === 'SET')) return j.num;
+  }
+  return zonas[1];
+}
+
+/* ── Dibujo ────────────────────────────────────────────────────────────── */
+function celda(pl, num, color, esArm){
+  var j = pl.filter(function(x){ return x.num === +num; })[0] || {ape:'#'+num, pue:''};
+  return '<div class="cel' + (esArm ? ' arm' : '') + '" style="background:'+color+'14;'
+    + 'border-color:'+color+'4d;color:'+color+'">'
+    + '<div class="cel-num">'+num+'</div>'
+    + '<div class="cel-ape" style="color:var(--txt)">'+j.ape+'</div>'
+    + '<div class="cel-pue">'+(j.pue||'')+'</div></div>';
+}
+function fila(pl, z, zonas, color, arm){
+  return '<div class="fila">' + zonas.map(function(n){
+    return celda(pl, z[n], color, +z[n] === +arm);
+  }).join('') + '</div>';
+}
+
+function duelos(zn, zr, plN, plR){
+  /* Quien queda enfrentado a quien en la red. El rival esta espejado: su
+     zona 2 mira a nuestra zona 4. */
+  var pares = [[4,2],[3,3],[2,4]];
+  return pares.map(function(p){
+    var a = zn[p[0]], b = zr[p[1]];
+    var ja = plN.filter(function(x){ return x.num === +a; })[0] || {ape:'#'+a};
+    var jb = plR.filter(function(x){ return x.num === +b; })[0] || {ape:'#'+b};
+    return '<b>'+ja.ape+'</b> '+t().contra+' <b>'+jb.ape+'</b>';
+  }).join(' · ');
+}
+
+function pintar(){
+  var cont = document.getElementById('grid');
+  var plN = planteles();
+  var clave = document.getElementById('selRival').value;
+  if(!clave){ cont.innerHTML = '<div class="vacio">'+t().sinRival+'</div>'; return; }
+  var plR = plantelDe(clave);
+  if(!plN.length || !plR.length){
+    cont.innerHTML = '<div class="vacio">'+t().sinDatos+'</div>'; return;
+  }
+
+  var zN = seisIniciales('nos', plN);
+  var zR = seisIniciales(clave, plR);
+  var armN = armadorDe(plN, zN), armR = armadorDe(plR, zR);
+  var RN = seisRotaciones(zN, armN, plN), RR = seisRotaciones(zR, armR, plR);
+
+  var h = '';
+  ['P1','P2','P3','P4','P5','P6'].forEach(function(p){
+    var a = RN[p], b = RR[p];
+    if(!a || !b) return;
+    h += '<div class="rot">'
+      + '<div class="rot-top"><span class="rot-p">'+p+'</span>'
+      + '<span class="rot-sub">'+t().arm+' '+p[1]+'</span></div>'
+      /* el rival arriba y espejado: su fondo primero, despues su red */
+      + fila(plR, b, [1,6,5], '#f97316', armR)
+      + fila(plR, b, [2,3,4], '#f97316', armR)
+      + '<div class="red"></div>'
+      + fila(plN, a, [4,3,2], '#3b82f6', armN)
+      + fila(plN, a, [5,6,1], '#3b82f6', armN)
+      + '<div class="duelos">'+t().bloquea+': '+duelos(a, b, plN, plR)+'</div>'
+      + '</div>';
+  });
+  cont.innerHTML = h;
+}
+
+/* ── El seis inicial ───────────────────────────────────────────────────── */
+function seisIniciales(clave, pl){
+  /* Guardado en el telefono si se corrigio a mano; si no, se arma con los
+     primeros de cada puesto, que es lo mas probable. */
+  try{
+    var g = localStorage.getItem('rot_seis_' + clave);
+    if(g){
+      var z = JSON.parse(g);
+      if(z && z[1]) return z;
+    }
+  }catch(e){}
+  var por = function(p){ return pl.filter(function(x){ return x.pue === p; }); };
+  var arm = por('ARM')[0], op = por('OPU')[0], ce = por('CEN'), pu = por('PUN');
+  var resto = pl.filter(function(x){ return x.pue !== 'LIB'; });
+  var elegir = function(x, i){ return (x || resto[i] || pl[i] || {num:i+1}).num; };
+  return {1:elegir(arm,0), 4:elegir(pu[0],1), 3:elegir(ce[0],2),
+          2:elegir(op,3),  5:elegir(pu[1],4), 6:elegir(ce[1],5)};
+}
+
+function toggleEditor(){
+  var ed = document.getElementById('editor');
+  if(ed.classList.contains('on')){ ed.classList.remove('on'); return; }
+  var plN = planteles();
+  var clave = document.getElementById('selRival').value;
+  var plR = plantelDe(clave);
+  var zN = seisIniciales('nos', plN), zR = seisIniciales(clave, plR);
+  var sel = function(pl, z, lado, n){
+    return '<div class="ed-campo"><span>'+t().zona+' '+n+'</span>'
+      + '<select data-lado="'+lado+'" data-zona="'+n+'">'
+      + pl.map(function(j){
+          return '<option value="'+j.num+'"'+(+z[n]===j.num?' selected':'')+'>'
+            + j.num + ' · ' + j.ape + '</option>';
+        }).join('') + '</select></div>';
+  };
+  var zonas = [4,3,2,5,6,1];
+  ed.innerHTML = '<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mut)">'
+    + t().edNos + '</div><div class="ed-grid">'
+    + zonas.map(function(n){ return sel(plN, zN, 'nos', n); }).join('') + '</div>'
+    + '<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);margin-top:14px">'
+    + t().edRiv + '</div><div class="ed-grid">'
+    + zonas.map(function(n){ return sel(plR, zR, 'riv', n); }).join('') + '</div>'
+    + '<div style="display:flex;gap:8px;margin-top:14px">'
+    + '<button class="btn" onclick="guardarSeis()">💾 '+t().guardar+'</button>'
+    + '<button class="btn" onclick="restaurarSeis()">↺ '+t().rest+'</button></div>';
+  ed.classList.add('on');
+}
+
+function guardarSeis(){
+  var clave = document.getElementById('selRival').value;
+  var zn = {}, zr = {};
+  document.querySelectorAll('#editor select').forEach(function(s){
+    var z = +s.getAttribute('data-zona');
+    (s.getAttribute('data-lado') === 'nos' ? zn : zr)[z] = +s.value;
+  });
+  try{
+    localStorage.setItem('rot_seis_nos', JSON.stringify(zn));
+    localStorage.setItem('rot_seis_' + clave, JSON.stringify(zr));
+  }catch(e){}
+  document.getElementById('editor').classList.remove('on');
+  pintar();
+}
+function restaurarSeis(){
+  var clave = document.getElementById('selRival').value;
+  try{
+    localStorage.removeItem('rot_seis_nos');
+    localStorage.removeItem('rot_seis_' + clave);
+  }catch(e){}
+  document.getElementById('editor').classList.remove('on');
+  pintar();
+}
+
+/* ── Arranque ──────────────────────────────────────────────────────────── */
+function arrancar(){
+  var sel = document.getElementById('selRival');
+  var eqs = equiposLiga().filter(function(e){
+    return (e.nombre || '').toLowerCase() !== NOSOTROS.toLowerCase();
+  });
+  sel.innerHTML = eqs.map(function(e){
+    return '<option value="'+e.clave+'">'+e.nombre+'</option>';
+  }).join('');
+  sel.onchange = function(){ document.getElementById('editor').classList.remove('on'); pintar(); };
+  var cab = document.getElementById('cab');
+  if(cab) cab.textContent = NOSOTROS;
+  pintar();
+}
+window.addEventListener('vb-lang', pintar);
+document.addEventListener('DOMContentLoaded', arrancar);
+if(document.readyState !== 'loading') arrancar();
+</script>
+</body>
+</html>

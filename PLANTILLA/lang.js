@@ -191,6 +191,13 @@
   //  Traduce cualquier texto en español que esté en este diccionario, incluso
   //  el contenido generado dinámicamente por JS (tablas, etiquetas, etc.).
   var PHRASES_EXTRA = {
+    // ═══ Rotaciones ══════════════════════════════════════════════════════
+    "Rotaciones":{en:"Rotations",de:"Rotationen"},
+    "Las seis rotaciones enfrentadas al rival, en una hoja. Para preparar el saque, el bloqueo y la defensa antes del partido.":{
+      en:"All six rotations against the opponent, on one page. To prepare the serve, the block and the defence before the match.",
+      de:"Alle sechs Rotationen gegen den Gegner, auf einer Seite. Zur Vorbereitung von Aufschlag, Block und Abwehr."},
+    "Rival":{en:"Opponent",de:"Gegner"},
+    "✏️ Cambiar los seis":{en:"✏️ Change the starting six",de:"✏️ Startsechs ändern"},
     // ═══ Informe de equipo ═══════════════════════════════════════════════
     "Informe de equipo":{en:"Team report",de:"Mannschaftsbericht"},
     "Cambio de saque y breakpoint contra su valor esperado: no cuánto sacaste, sino cuánto deberías haber sacado. En una pantalla.":{
