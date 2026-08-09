@@ -131,21 +131,21 @@ var T = {
       bloquea:'En la red',contra:'contra',
       mio:'Mi armador en',suyo:'Su armador en',zonaN:'zona',sinRival:'Elegí un rival para ver las rotaciones',
       sinDatos:'Todavía no hay datos de equipos cargados',
-      edNos:'Nuestro seis inicial',edRiv:'El seis del rival',
+      libero:'Líbero',edNos:'Nuestro seis inicial',edRiv:'El seis del rival',
       guardar:'Guardar',rest:'Volver a lo automático',
       zona:'zona'},
   en:{arm:'setter in zone',nos:'Us',riv:'Opponent',
       bloquea:'At the net',contra:'against',
       mio:'My setter in',suyo:'Their setter in',zonaN:'zone',sinRival:'Pick an opponent to see the rotations',
       sinDatos:'No team data loaded yet',
-      edNos:'Our starting six',edRiv:'Their starting six',
+      libero:'Libero',edNos:'Our starting six',edRiv:'Their starting six',
       guardar:'Save',rest:'Back to automatic',
       zona:'zone'},
   de:{arm:'Zuspieler auf Zone',nos:'Wir',riv:'Gegner',
       bloquea:'Am Netz',contra:'gegen',
       mio:'Mein Zuspieler auf',suyo:'Ihr Zuspieler auf',zonaN:'Zone',sinRival:'Wähle einen Gegner, um die Rotationen zu sehen',
       sinDatos:'Noch keine Teamdaten geladen',
-      edNos:'Unsere Startsechs',edRiv:'Ihre Startsechs',
+      libero:'Libero',edNos:'Unsere Startsechs',edRiv:'Ihre Startsechs',
       guardar:'Speichern',rest:'Zurück zu automatisch',
       zona:'Zone'}
 };
@@ -265,12 +265,18 @@ function especializar(z, pl, libero){
 }
 
 /* El libero del plantel: el que tenga ese puesto. */
-function liberoDe(pl){
+function liberoDe(pl, clave){
+  /* Si se eligio uno a mano, manda ese. Un plantel puede tener dos o tres
+     liberos declarados y el que juega lo decide el entrenador, no el sistema. */
+  try{
+    var g = localStorage.getItem('rot_libero_' + clave);
+    if(g && pl.some(function(x){ return x.num === +g; })) return +g;
+  }catch(e){}
   var l = pl.filter(function(x){ return x.pue === 'LIB'; })[0];
   return l ? l.num : null;
 }
-function seisRotaciones(zonas, armador, pl){
-  var out = {}, z = Object.assign({}, zonas), lib = liberoDe(pl);
+function seisRotaciones(zonas, armador, pl, clave){
+  var out = {}, z = Object.assign({}, zonas), lib = liberoDe(pl, clave);
   for(var i=0;i<6;i++){
     var zonaArm = null;
     for(var n in z) if(+z[n] === +armador) zonaArm = +n;
@@ -329,7 +335,7 @@ function pintar(){
   var zN = seisIniciales('nos', plN);
   var zR = seisIniciales(clave, plR);
   var armN = armadorDe(plN, zN), armR = armadorDe(plR, zR);
-  var RN = seisRotaciones(zN, armN, plN), RR = seisRotaciones(zR, armR, plR);
+  var RN = seisRotaciones(zN, armN, plN, 'nos'), RR = seisRotaciones(zR, armR, plR, clave);
 
   /* ══ El desfase entre los dos equipos ═══════════════════════════════════
      Si mi armador arranca en zona 1 y el suyo en zona 3, cuando yo paso a P2
@@ -411,12 +417,26 @@ function toggleEditor(){
         }).join('') + '</select></div>';
   };
   var zonas = [4,3,2,5,6,1];
+  /* El libero se elige aparte: no ocupa una zona de la rotacion, entra por el
+     central que pasa a zaguero. Un plantel puede tener dos o tres declarados. */
+  var selLib = function(pl, lado, actual){
+    var libs = pl.filter(function(x){ return x.pue === 'LIB'; });
+    if(!libs.length) libs = pl;
+    return '<div class="ed-campo"><span>' + t().libero + '</span>'
+      + '<select data-lib="'+lado+'">'
+      + libs.map(function(j){
+          return '<option value="'+j.num+'"'+(+actual===j.num?' selected':'')+'>'
+            + j.num + ' · ' + j.ape + '</option>';
+        }).join('') + '</select></div>';
+  };
   ed.innerHTML = '<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mut)">'
     + t().edNos + '</div><div class="ed-grid">'
-    + zonas.map(function(n){ return sel(plN, zN, 'nos', n); }).join('') + '</div>'
+    + zonas.map(function(n){ return sel(plN, zN, 'nos', n); }).join('')
+    + selLib(plN, 'nos', liberoDe(plN, 'nos')) + '</div>'
     + '<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);margin-top:14px">'
     + t().edRiv + '</div><div class="ed-grid">'
-    + zonas.map(function(n){ return sel(plR, zR, 'riv', n); }).join('') + '</div>'
+    + zonas.map(function(n){ return sel(plR, zR, 'riv', n); }).join('')
+    + selLib(plR, 'riv', liberoDe(plR, clave)) + '</div>'
     + '<div style="display:flex;gap:8px;margin-top:14px">'
     + '<button class="btn" onclick="guardarSeis()">💾 '+t().guardar+'</button>'
     + '<button class="btn" onclick="restaurarSeis()">↺ '+t().rest+'</button></div>';
@@ -433,6 +453,10 @@ function guardarSeis(){
   try{
     localStorage.setItem('rot_seis_nos', JSON.stringify(zn));
     localStorage.setItem('rot_seis_' + clave, JSON.stringify(zr));
+    document.querySelectorAll('#editor select[data-lib]').forEach(function(s2){
+      var k = (s2.getAttribute('data-lib') === 'nos') ? 'nos' : clave;
+      localStorage.setItem('rot_libero_' + k, s2.value);
+    });
   }catch(e){}
   document.getElementById('editor').classList.remove('on');
   pintar();
@@ -442,6 +466,8 @@ function restaurarSeis(){
   try{
     localStorage.removeItem('rot_seis_nos');
     localStorage.removeItem('rot_seis_' + clave);
+    localStorage.removeItem('rot_libero_nos');
+    localStorage.removeItem('rot_libero_' + clave);
   }catch(e){}
   document.getElementById('editor').classList.remove('on');
   pintar();
