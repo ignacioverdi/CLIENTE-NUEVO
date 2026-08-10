@@ -205,6 +205,26 @@ function plantelDe(clave){
 /* ── La rotacion ───────────────────────────────────────────────────────── */
 /* Al girar, cada jugador pasa de la zona n a la n+1. Verificado contra la
    planilla que usa el cuerpo tecnico: las seis rotaciones dan identicas. */
+
+/* ══ EL PUESTO DE UN JUGADOR ══════════════════════════════════════════════
+   Viene escrito de formas distintas segun de donde salga: "ARMADOR" del
+   plantel propio, "SETTER" de liga_data, "ARM" si ya se acorto, y a veces en
+   ingles. Comparar contra una sola forma dejaba a todos sin clasificar y la
+   pantalla mostraba la rotacion cruda: el libero en zona 1 y los dos puntas
+   juntos atras.
+
+   Esta funcion los reconoce todos y devuelve siempre las mismas tres letras. */
+function puesto(p){
+  var x = String(p || '').toUpperCase().replace(/[^A-Z]/g, '');
+  if(!x) return '';
+  if(x.indexOf('ARMA') === 0 || x.indexOf('SETT') === 0 || x === 'ARM' || x === 'S') return 'ARM';
+  if(x.indexOf('OPUE') === 0 || x.indexOf('OPPO') === 0 || x === 'OPU' || x === 'OPP' || x === 'O') return 'OPU';
+  if(x.indexOf('LIBE') === 0 || x === 'LIB' || x === 'L') return 'LIB';
+  if(x.indexOf('CENT') === 0 || x.indexOf('MIDD') === 0 || x === 'CEN' || x === 'MB' || x === 'M') return 'CEN';
+  if(x.indexOf('PUNT') === 0 || x.indexOf('OUTS') === 0 || x.indexOf('RECE') === 0
+     || x === 'PUN' || x === 'OH' || x === 'P') return 'PUN';
+  return '';
+}
 function girar(z){
   var o = {};
   for(var n in z) o[(+n % 6) + 1] = z[n];
@@ -234,12 +254,13 @@ function especializar(z, pl, libero){
     var num = z[zona];
     var j = pl.filter(function(x){ return x.num === +num; })[0] || {pue:''};
     var esDelantero = delante.indexOf(num) >= 0;
+    var pu = puesto(j.pue);
     var destino;
-    if(j.pue === 'ARM' || j.pue === 'OPU')      destino = esDelantero ? 2 : 1;
-    else if(j.pue === 'PUN')                    destino = esDelantero ? 4 : 6;
-    else                                        destino = esDelantero ? 3 : 5;
+    if(pu === 'ARM' || pu === 'OPU')  destino = esDelantero ? 2 : 1;
+    else if(pu === 'PUN')             destino = esDelantero ? 4 : 6;
+    else                              destino = esDelantero ? 3 : 5;
     /* el central de zaguero sale y entra el libero */
-    var quien = (j.pue === 'CEN' && !esDelantero && libero) ? libero : num;
+    var quien = (pu === 'CEN' && !esDelantero && libero) ? libero : num;
     /* Si dos jugadores caen en la misma zona —pasa cuando el seis inicial no
        tiene los pares opuestos, por ejemplo dos centrales juntos— se busca la
        primera zona libre de esa fila en vez de dejar un hueco. Antes uno
@@ -272,7 +293,7 @@ function liberoDe(pl, clave){
     var g = localStorage.getItem('rot_libero_' + clave);
     if(g && pl.some(function(x){ return x.num === +g; })) return +g;
   }catch(e){}
-  var l = pl.filter(function(x){ return x.pue === 'LIB'; })[0];
+  var l = pl.filter(function(x){ return puesto(x.pue) === 'LIB'; })[0];
   return l ? l.num : null;
 }
 function seisRotaciones(zonas, armador, pl, clave){
@@ -290,7 +311,7 @@ function armadorDe(pl, zonas){
   /* el que tenga puesto de armador entre los seis en cancha */
   for(var n in zonas){
     var j = pl.filter(function(x){ return x.num === +zonas[n]; })[0];
-    if(j && (j.pue === 'ARM' || j.pue === 'SET')) return j.num;
+    if(j && puesto(j.pue) === 'ARM') return j.num;
   }
   return zonas[1];
 }
@@ -302,7 +323,7 @@ function celda(pl, num, color, esArm){
     + 'border-color:'+color+'4d;color:'+color+'">'
     + '<div class="cel-num">'+num+'</div>'
     + '<div class="cel-ape" style="color:var(--txt)">'+j.ape+'</div>'
-    + '<div class="cel-pue">'+(j.pue||'')+'</div></div>';
+    + '<div class="cel-pue">'+(puesto(j.pue)||'')+'</div></div>';
 }
 function fila(pl, z, zonas, color, arm){
   return '<div class="fila">' + zonas.map(function(n){
@@ -380,9 +401,9 @@ function seisIniciales(clave, pl){
       if(z && z[1]) return z;
     }
   }catch(e){}
-  var por = function(p){ return pl.filter(function(x){ return x.pue === p; }); };
+  var por = function(p){ return pl.filter(function(x){ return puesto(x.pue) === p; }); };
   var arm = por('ARM')[0], op = por('OPU')[0], ce = por('CEN'), pu = por('PUN');
-  var resto = pl.filter(function(x){ return x.pue !== 'LIB'; });
+  var resto = pl.filter(function(x){ return puesto(x.pue) !== 'LIB'; });
   var elegir = function(x, i){ return (x || resto[i] || pl[i] || {num:i+1}).num; };
 
   /* ══ Los pares tienen que estar OPUESTOS ══════════════════════════════
@@ -420,7 +441,7 @@ function toggleEditor(){
   /* El libero se elige aparte: no ocupa una zona de la rotacion, entra por el
      central que pasa a zaguero. Un plantel puede tener dos o tres declarados. */
   var selLib = function(pl, lado, actual){
-    var libs = pl.filter(function(x){ return x.pue === 'LIB'; });
+    var libs = pl.filter(function(x){ return puesto(x.pue) === 'LIB'; });
     if(!libs.length) libs = pl;
     return '<div class="ed-campo"><span>' + t().libero + '</span>'
       + '<select data-lib="'+lado+'">'
