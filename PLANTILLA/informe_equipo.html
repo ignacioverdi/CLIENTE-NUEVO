@@ -85,6 +85,12 @@ tr:last-child td{border-bottom:0}
 tr.clic{cursor:pointer}
 tr.clic:hover td{background:rgba(255,255,255,.03)}
 .vacio{color:var(--mut);font-size:13px;text-align:center;padding:34px 0}
+.barra-eq{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.barra-eq label{font-size:10px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase}
+.barra-eq select{background:var(--card);color:var(--txt);border:1px solid var(--border);
+  border-radius:9px;padding:8px 12px;font-family:inherit;font-size:14px;cursor:pointer;min-width:180px}
+.barra-eq select:hover{border-color:rgba(255,255,255,.2)}
+.es-rival{color:#f97316;font-size:11px;letter-spacing:1.5px;text-transform:uppercase}
 </style>
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada. -->
 <script src="firebase.js" onerror="void 0"></script>
@@ -113,6 +119,14 @@ tr.clic:hover td{background:rgba(255,255,255,.03)}
     </div>
   </div>
 
+  <!-- El selector de equipo. Los datos de los 13 estan en el archivo: hasta
+       ahora la pantalla mostraba solo el propio. Con esto el informe sirve
+       tambien para estudiar al rival antes de jugarle. -->
+  <div class="barra-eq" id="barra-eq" style="display:none">
+    <label data-t="inf_equipo">Equipo</label>
+    <select id="selEquipo"></select>
+  </div>
+
   <div id="cuerpo"><div class="vacio" data-t="inf_cargando">Cargando el informe…</div></div>
 
 </div>
@@ -133,7 +147,7 @@ var T = {
       s3sub:'Real contra esperado: quién saca más de lo que su recepción da',
       hall:'Lo que hay que mirar',hallsub:'Ordenado por lo que pesa en puntos por partido · el sistema lo calcula solo',ptspp:'pts/partido',s5:'Ataque por fase',s5sub:'Atacar tras recibir no es lo mismo que atacar en desorden: son dos habilidades distintas',s6:'Ataque según con qué recepción se llegó',s6sub:'Cuánto se aprovecha cada calidad de pase',s7:'Saque por tipo',s7sub:'Qué rinde más: potencia o flotado',fase:'Fase',eficacia:'Eficacia',ptos:'Puntos',errs:'Errores',bloq:'Bloq.',tipo:'Tipo',aces:'Aces',s35:'Rotación por rotación',promLiga:'promedio de la liga',s35sub:'Ordenadas de peor a mejor · la diferencia contra el promedio de la liga',rot:'Rot',saldo:'Saldo',s4:'La liga',s4sub:'Ordenada por la suma de las dos métricas',ver:'Ver los cortes de video',
       jug:'Jugador',rec:'Recep.',real:'Real',espc:'Esp.',dif:'Dif',pos:'Pos %',err:'Err %',
-      eq:'Equipo',pj:'PJ',sinDatos:'Todavía no hay partidos procesados',sinPartidos:'Todavía no hay partidos de la temporada',sinPartidosSub:'El informe se arma solo apenas se cargue el primero. Mientras tanto podés ver la temporada anterior.',verAnterior:'← Ver temporadas anteriores',
+      eq:'Equipo',pj:'PJ',equipo:'Equipo',rival:'rival',sinDatos:'Todavía no hay partidos procesados',sinPartidos:'Todavía no hay partidos de la temporada',sinPartidosSub:'El informe se arma solo apenas se cargue el primero. Mientras tanto podés ver la temporada anterior.',verAnterior:'← Ver temporadas anteriores',
       cal:{'#':'# perfecta','+':'+ positiva','!':'! regular','-':'− mala','/':'/ sobrepase','=':'= error'},
       liga:'Liga',nos:'Nosotros'},
   en:{so:'Sideout',bp:'Breakpoint',esp:'expected',sobre:'above expected',
@@ -148,7 +162,7 @@ var T = {
       s3sub:'Actual against expected: who gets more than their pass gives',
       hall:'What to look at',hallsub:'Sorted by what it costs in points per match · calculated automatically',ptspp:'pts/match',s5:'Attack by phase',s5sub:'Attacking after a pass is not the same as attacking out of system',s6:'Attack by reception quality',s6sub:'How much each pass quality is turned into points',s7:'Serve by type',s7sub:'What works better: power or float',fase:'Phase',eficacia:'Efficiency',ptos:'Points',errs:'Errors',bloq:'Blocked',tipo:'Type',aces:'Aces',s35:'Rotation by rotation',promLiga:'league average',s35sub:'Sorted worst to best · the gap against the league average',rot:'Rot',saldo:'Net',s4:'The league',s4sub:'Sorted by the sum of both metrics',ver:'Watch the video clips',
       jug:'Player',rec:'Recept.',real:'Actual',espc:'Exp.',dif:'Diff',pos:'Pos %',err:'Err %',
-      eq:'Team',pj:'M',sinDatos:'No matches processed yet',sinPartidos:'No matches yet for season',sinPartidosSub:'The report builds itself as soon as the first match is loaded. In the meantime you can look at the previous season.',verAnterior:'← See previous seasons',
+      eq:'Team',pj:'M',equipo:'Team',rival:'opponent',sinDatos:'No matches processed yet',sinPartidos:'No matches yet for season',sinPartidosSub:'The report builds itself as soon as the first match is loaded. In the meantime you can look at the previous season.',verAnterior:'← See previous seasons',
       cal:{'#':'# perfect','+':'+ positive','!':'! ok','-':'− poor','/':'/ overpass','=':'= error'},
       liga:'League',nos:'Us'},
   de:{so:'Annahme-Punkt',bp:'Breakpoint',esp:'erwartet',sobre:'über dem Erwartungswert',
@@ -163,7 +177,7 @@ var T = {
       s3sub:'Ist gegen Erwartung: wer mehr holt, als seine Annahme hergibt',
       hall:'Worauf zu achten ist',hallsub:'Nach Punkten pro Spiel sortiert · automatisch berechnet',ptspp:'Pkt/Spiel',s5:'Angriff nach Phase',s5sub:'Angriff nach Annahme ist nicht dasselbe wie Angriff aus dem Spiel heraus',s6:'Angriff nach Annahmequalität',s6sub:'Wie viel aus jeder Annahmequalität gemacht wird',s7:'Aufschlag nach Art',s7sub:'Was bringt mehr: Sprung oder Flatter',fase:'Phase',eficacia:'Effizienz',ptos:'Punkte',errs:'Fehler',bloq:'Geblockt',tipo:'Art',aces:'Asse',s35:'Rotation für Rotation',promLiga:'Ligadurchschnitt',s35sub:'Von schlecht nach gut · der Abstand zum Ligadurchschnitt',rot:'Rot',saldo:'Saldo',s4:'Die Liga',s4sub:'Nach der Summe beider Werte sortiert',ver:'Videoclips ansehen',
       jug:'Spieler',rec:'Annahmen',real:'Ist',espc:'Erw.',dif:'Diff',pos:'Pos %',err:'Fehler %',
-      eq:'Team',pj:'Sp',sinDatos:'Noch keine Spiele verarbeitet',sinPartidos:'Noch keine Spiele in der Saison',sinPartidosSub:'Der Bericht entsteht automatisch, sobald das erste Spiel geladen ist. Bis dahin kannst du die letzte Saison ansehen.',verAnterior:'← Frühere Saisons ansehen',
+      eq:'Team',pj:'Sp',equipo:'Team',rival:'Gegner',sinDatos:'Noch keine Spiele verarbeitet',sinPartidos:'Noch keine Spiele in der Saison',sinPartidosSub:'Der Bericht entsteht automatisch, sobald das erste Spiel geladen ist. Bis dahin kannst du die letzte Saison ansehen.',verAnterior:'← Frühere Saisons ansehen',
       cal:{'#':'# perfekt','+':'+ positiv','!':'! ok','-':'− schwach','/':'/ Überpass','=':'= Fehler'},
       liga:'Liga',nos:'Wir'}
 };
@@ -418,6 +432,33 @@ function tablaLiga(eqs, propio){
   return h + '</tbody></table></div>';
 }
 
+function llenarSelector(D, actual){
+  var sel = document.getElementById('selEquipo');
+  var barra = document.getElementById('barra-eq');
+  if(!sel || !barra) return;
+  var eqs = (D.equipos || []).filter(function(e){
+    return (D.detalles && D.detalles[e.equipo]) || e.equipo === D.propio;
+  });
+  if(eqs.length < 2){ barra.style.display = 'none'; return; }
+  /* el propio primero, despues el resto por orden de rendimiento */
+  eqs.sort(function(a,b){
+    if(a.equipo === D.propio) return -1;
+    if(b.equipo === D.propio) return 1;
+    return (b.so||0) - (a.so||0);
+  });
+  sel.innerHTML = eqs.map(function(e){
+    var propio = (e.equipo === D.propio);
+    return '<option value="'+e.equipo+'"'+(e.equipo===actual?' selected':'')+'>'
+      + e.equipo + (propio ? '  ★' : '') + '  ·  ' + e.partidos + ' PJ</option>';
+  }).join('');
+  barra.style.display = 'flex';
+  sel.onchange = function(){
+    window._infEquipo = this.value;
+    pintar();
+    try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); }
+  };
+}
+
 function pintar(){
   var D = window.INFORME_DATA;
   var cont = document.getElementById('cuerpo');
@@ -435,57 +476,68 @@ function pintar(){
       + t().verAnterior + '</a></div>';
     return;
   }
+  /* El equipo que se esta mirando: el propio por defecto, o el que se eligio
+     en el selector. */
+  var eqSel = (window._infEquipo || D.propio);
   var mio = null;
-  D.equipos.forEach(function(e){ if(e.equipo === D.propio) mio = e; });
+  D.equipos.forEach(function(e){ if(e.equipo === eqSel) mio = e; });
+  if(!mio){ D.equipos.forEach(function(e){ if(e.equipo === D.propio) mio = e; }); }
+  if(!mio) mio = D.equipos[0];
   if(!mio){ cont.innerHTML = '<div class="vacio">'+t().sinDatos+'</div>'; return; }
+  eqSel = mio.equipo;
+  llenarSelector(D, eqSel);
+
+  /* el detalle del equipo elegido; el propio sigue en 'detalle' por compatibilidad */
+  var DET = (D.detalles && D.detalles[eqSel]) || (eqSel === D.propio ? D.detalle : null);
 
   var sub = document.getElementById('cab-sub');
-  if(sub) sub.textContent = D.propio + ' · ' + (D.temporada||'') + ' · ' + mio.partidos + ' PJ';
+  if(sub) sub.textContent = eqSel + ' · ' + (D.temporada||'') + ' · ' + mio.partidos + ' PJ'
+    + (eqSel !== D.propio ? '  ·  ' + t().rival : '');
 
   var h = '<div class="kpis">'
     + kpi(t().so, mio.so, mio.so_esp, '#1baf7a', t().so_pie_alto, t().so_pie_bajo)
     + kpi(t().bp, mio.bp, mio.bp_esp, '#3b82f6', t().bp_pie_alto, t().bp_pie_bajo)
     + '</div>';
 
-  var hs = (D.detalle && D.detalle.hallazgos) || [];
+  var hs = (DET && DET.hallazgos) || [];
   if(hs.length){
     h += '<div class="sec">'+t().hall+'</div><div class="sec-sub">'+t().hallsub+'</div>'
        + panelHallazgos(hs);
   }
 
-  var pc = (D.detalle && D.detalle.por_calidad) || [];
+  var pc = (DET && DET.por_calidad) || [];
   if(pc.length){
     h += '<div class="sec">'+t().s2+'</div><div class="sec-sub">'+t().s2sub+'</div>'
        + distanciaLiga(pc);
   }
 
-  var js = (D.detalle && D.detalle.jugadores) || [];
+  var js = (DET && DET.jugadores) || [];
   if(js.length){
     h += '<div class="sec">'+t().s3+'</div><div class="sec-sub">'+t().s3sub+'</div>'
        + '<div class="panel">' + tablaJugadores(js) + '</div>';
   }
 
-  var rs = (D.detalle && D.detalle.rotaciones) || [];
+  var rs = (DET && DET.rotaciones) || [];
   if(rs.length){
     h += '<div class="sec">'+t().s35+'</div><div class="sec-sub">'+t().s35sub+'</div>'
        + barrasRotacion(rs, promedioLiga(D))
        + '<div class="panel" style="margin-top:10px">' + tablaRotaciones(rs) + '</div>';
   }
 
-  var at = (D.detalle && D.detalle.ataque) || [];
+  var at = (DET && DET.ataque) || [];
   if(at.length){
     h += '<div class="sec">'+t().s5+'</div><div class="sec-sub">'+t().s5sub+'</div>'
        + '<div class="panel">' + tablaAtaque(at) + '</div>';
   }
 
-  var apr = (D.detalle && D.detalle.atk_por_rec) || [];
+  var apr = (DET && DET.atk_por_rec) || [];
   if(apr.length){
     h += '<div class="sec">'+t().s6+'</div><div class="sec-sub">'+t().s6sub+'</div>'
        + '<div class="panel"><div class="chart-box" style="height:230px">'
        + '<canvas id="gAtk" role="img" aria-label="'+t().s6sub+'"></canvas></div></div>';
   }
 
-  var sq = (D.detalle && D.detalle.saque) || [];
+  var sq = (DET && DET.saque) || [];
   if(sq.length){
     h += '<div class="sec">'+t().s7+'</div><div class="sec-sub">'+t().s7sub+'</div>'
        + '<div class="panel">' + tablaSaque(sq) + '</div>';

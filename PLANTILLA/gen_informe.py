@@ -584,11 +584,20 @@ def armar(por_equipo, nombres, propio, temporada):
         e['blk_pt'] = D['blk']['pt']
         e['blk_x_set'] = None
 
-    # el desglose del club propio
-    Dp = por_equipo.get(propio)
-    detalle = None
-    if Dp:
-        detalle = {
+    def armar_detalle(Dp):
+        """El desglose de UN equipo.
+
+        Antes esto se calculaba solo para el club propio. Los datos de los
+        rivales ya estaban —se acumulan igual, partido a partido— pero no se
+        escribian, asi que la pantalla no podia mostrarlos.
+
+        Ahora se arma para todos: el informe deja de ser solo "como venimos" y
+        sirve tambien para estudiar al rival antes de jugarle, que es cuando
+        mas se usa.
+        """
+        if not Dp:
+            return None
+        det = {
             'por_calidad': [
                 {'cal': c, 'n': Dp['rec'].get(c, 0),
                  'so': pct(Dp['rec_g'].get(c, 0), Dp['rec'].get(c, 0)),
@@ -624,7 +633,7 @@ def armar(por_equipo, nombres, propio, temporada):
             r = Dp['rot'].get(k)
             if not r or (r['so_n'] + r['bp_n']) < 10:
                 continue
-            detalle['rotaciones'].append({
+            det['rotaciones'].append({
                 'rot': k,
                 'so': pct(r['so_g'], r['so_n']), 'so_n': r['so_n'],
                 'bp': pct(r['bp_g'], r['bp_n']), 'bp_n': r['bp_n'],
@@ -635,7 +644,7 @@ def armar(por_equipo, nombres, propio, temporada):
             if n < 15:
                 continue
             g = sum(Dp['jug_rec_g'][num].values())
-            detalle['jugadores'].append({
+            det['jugadores'].append({
                 'num': num, 'n': n,
                 'so': pct(g, n),
                 'so_esp': esperado(cuenta, ref_rec),
@@ -643,7 +652,16 @@ def armar(por_equipo, nombres, propio, temporada):
                 'pos': pct(cuenta.get('#', 0) + cuenta.get('+', 0), n),
                 'err': pct(cuenta.get('=', 0) + cuenta.get('/', 0), n),
             })
-        detalle['jugadores'].sort(key=lambda x: -(x['n']))
+        det['jugadores'].sort(key=lambda x: -(x['n']))
+        return det
+
+    # el desglose de CADA equipo, para poder elegirlo en la pantalla
+    detalles = {}
+    for _eq, _D in por_equipo.items():
+        d = armar_detalle(_D)
+        if d:
+            detalles[_eq] = d
+    detalle = detalles.get(propio)
 
     return {
         'temporada': temporada,
@@ -653,6 +671,7 @@ def armar(por_equipo, nombres, propio, temporada):
         'referencia_saque': {c: round(100 * v, 1) for c, v in ref_srv.items()},
         'equipos': equipos,
         'detalle': detalle,
+        'detalles': detalles,
     }
 
 
