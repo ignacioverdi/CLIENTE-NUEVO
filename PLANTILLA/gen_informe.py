@@ -95,36 +95,40 @@ def equipos_del_partido(txt):
 def fecha_del_partido(txt, ruta):
     """La fecha del partido, en AAAA-MM-DD.
 
-    Sale SIEMPRE de [3MATCH], que la trae como DD/MM/AAAA. El nombre del
-    archivo NO sirve: lo escribe el que baja el partido copiando esa misma
-    fecha con los numeros en otro orden, asi que "2025-10-11" es el 10 de
-    NOVIEMBRE y no el 11 de octubre. Leerla de ahi daba vuelta el dia y el
-    mes, y partidos de enero terminaban contados como de noviembre —incluso
-    aparecian meses 21, que no existen—.
+    Los .dvw la escriben como MM/DD/AAAA —el MES primero—, tanto adentro de
+    [3MATCH] como en el nombre del archivo. Se verifico ordenando los 97
+    partidos de un club por su codigo, que crece con el tiempo: el primer
+    numero avanza 10, 11, 12, 1, 2, 3, 4, o sea octubre a abril, el calendario
+    exacto de la liga. Si fuera el dia, saltaria sin orden.
+
+    Leerlo al reves manda partidos de enero a noviembre y hace que aparezcan
+    en la temporada equivocada: un club que todavia no jugo nada veia un
+    informe lleno.
+
+    Cuando el primer numero pasa de 12 no puede ser mes, asi que ahi se dan
+    vuelta: algunos archivos vienen con el dia adelante segun la configuracion
+    regional de quien los bajo.
     """
+    def armar(a, b, anio):
+        a, b = int(a), int(b)
+        mes, d = a, b                 # MM/DD, el formato de estos archivos
+        if mes > 12 and d <= 12:      # imposible: estaba al reves
+            mes, d = d, a
+        if not (1 <= mes <= 12 and 1 <= d <= 31):
+            return ''
+        return '%s-%02d-%02d' % (anio, mes, d)
+
     m = re.search(r'\[3MATCH\][^\n]*\n\s*(\d{1,2})/(\d{1,2})/(\d{4})', txt)
     if m:
-        d, mes, anio = int(m.group(1)), int(m.group(2)), m.group(3)
-        if 1 <= mes <= 12 and 1 <= d <= 31:
-            return '%s-%02d-%02d' % (anio, mes, d)
+        f = armar(m.group(1), m.group(2), m.group(3))
+        if f:
+            return f
 
-    # En muchos archivos ese campo viene VACIO —58 de 97 en un club real— y el
-    # unico dato es el nombre. Ahi la fecha esta escrita AAAA-DD-MM, con el dia
-    # antes del mes, porque quien los baja copia el orden de adentro.
+    # En 58 de 97 archivos ese campo viene vacio y el nombre es el unico dato.
     m = re.search(r'(\d{4})-(\d{1,2})-(\d{1,2})', os.path.basename(ruta))
     if m:
-        anio, a, b = m.group(1), int(m.group(2)), int(m.group(3))
-        # el que no puede ser mes, es el dia
-        if b <= 12 and a > 12:
-            d, mes = a, b
-        elif a <= 12 and b > 12:
-            d, mes = b, a
-        else:
-            d, mes = a, b        # ambos podrian: se respeta AAAA-DD-MM
-        if 1 <= mes <= 12 and 1 <= d <= 31:
-            return '%s-%02d-%02d' % (anio, mes, d)
+        return armar(m.group(2), m.group(3), m.group(1))
     return ''
-
 
 def es_de_la_temporada(fecha, carpeta, pedida):
     """Si este partido entra en la temporada que se esta procesando.

@@ -133,7 +133,7 @@ var T = {
       s3sub:'Real contra esperado: quién saca más de lo que su recepción da',
       hall:'Lo que hay que mirar',hallsub:'Ordenado por lo que pesa en puntos por partido · el sistema lo calcula solo',ptspp:'pts/partido',s5:'Ataque por fase',s5sub:'Atacar tras recibir no es lo mismo que atacar en desorden: son dos habilidades distintas',s6:'Ataque según con qué recepción se llegó',s6sub:'Cuánto se aprovecha cada calidad de pase',s7:'Saque por tipo',s7sub:'Qué rinde más: potencia o flotado',fase:'Fase',eficacia:'Eficacia',ptos:'Puntos',errs:'Errores',bloq:'Bloq.',tipo:'Tipo',aces:'Aces',s35:'Rotación por rotación',promLiga:'promedio de la liga',s35sub:'Ordenadas de peor a mejor · la diferencia contra el promedio de la liga',rot:'Rot',saldo:'Saldo',s4:'La liga',s4sub:'Ordenada por la suma de las dos métricas',ver:'Ver los cortes de video',
       jug:'Jugador',rec:'Recep.',real:'Real',espc:'Esp.',dif:'Dif',pos:'Pos %',err:'Err %',
-      eq:'Equipo',pj:'PJ',sinDatos:'Todavía no hay partidos procesados',
+      eq:'Equipo',pj:'PJ',sinDatos:'Todavía no hay partidos procesados',sinPartidos:'Todavía no hay partidos de la temporada',sinPartidosSub:'El informe se arma solo apenas se cargue el primero. Mientras tanto podés ver la temporada anterior.',verAnterior:'← Ver temporadas anteriores',
       cal:{'#':'# perfecta','+':'+ positiva','!':'! regular','-':'− mala','/':'/ sobrepase','=':'= error'},
       liga:'Liga',nos:'Nosotros'},
   en:{so:'Sideout',bp:'Breakpoint',esp:'expected',sobre:'above expected',
@@ -148,7 +148,7 @@ var T = {
       s3sub:'Actual against expected: who gets more than their pass gives',
       hall:'What to look at',hallsub:'Sorted by what it costs in points per match · calculated automatically',ptspp:'pts/match',s5:'Attack by phase',s5sub:'Attacking after a pass is not the same as attacking out of system',s6:'Attack by reception quality',s6sub:'How much each pass quality is turned into points',s7:'Serve by type',s7sub:'What works better: power or float',fase:'Phase',eficacia:'Efficiency',ptos:'Points',errs:'Errors',bloq:'Blocked',tipo:'Type',aces:'Aces',s35:'Rotation by rotation',promLiga:'league average',s35sub:'Sorted worst to best · the gap against the league average',rot:'Rot',saldo:'Net',s4:'The league',s4sub:'Sorted by the sum of both metrics',ver:'Watch the video clips',
       jug:'Player',rec:'Recept.',real:'Actual',espc:'Exp.',dif:'Diff',pos:'Pos %',err:'Err %',
-      eq:'Team',pj:'M',sinDatos:'No matches processed yet',
+      eq:'Team',pj:'M',sinDatos:'No matches processed yet',sinPartidos:'No matches yet for season',sinPartidosSub:'The report builds itself as soon as the first match is loaded. In the meantime you can look at the previous season.',verAnterior:'← See previous seasons',
       cal:{'#':'# perfect','+':'+ positive','!':'! ok','-':'− poor','/':'/ overpass','=':'= error'},
       liga:'League',nos:'Us'},
   de:{so:'Annahme-Punkt',bp:'Breakpoint',esp:'erwartet',sobre:'über dem Erwartungswert',
@@ -163,7 +163,7 @@ var T = {
       s3sub:'Ist gegen Erwartung: wer mehr holt, als seine Annahme hergibt',
       hall:'Worauf zu achten ist',hallsub:'Nach Punkten pro Spiel sortiert · automatisch berechnet',ptspp:'Pkt/Spiel',s5:'Angriff nach Phase',s5sub:'Angriff nach Annahme ist nicht dasselbe wie Angriff aus dem Spiel heraus',s6:'Angriff nach Annahmequalität',s6sub:'Wie viel aus jeder Annahmequalität gemacht wird',s7:'Aufschlag nach Art',s7sub:'Was bringt mehr: Sprung oder Flatter',fase:'Phase',eficacia:'Effizienz',ptos:'Punkte',errs:'Fehler',bloq:'Geblockt',tipo:'Art',aces:'Asse',s35:'Rotation für Rotation',promLiga:'Ligadurchschnitt',s35sub:'Von schlecht nach gut · der Abstand zum Ligadurchschnitt',rot:'Rot',saldo:'Saldo',s4:'Die Liga',s4sub:'Nach der Summe beider Werte sortiert',ver:'Videoclips ansehen',
       jug:'Spieler',rec:'Annahmen',real:'Ist',espc:'Erw.',dif:'Diff',pos:'Pos %',err:'Fehler %',
-      eq:'Team',pj:'Sp',sinDatos:'Noch keine Spiele verarbeitet',
+      eq:'Team',pj:'Sp',sinDatos:'Noch keine Spiele verarbeitet',sinPartidos:'Noch keine Spiele in der Saison',sinPartidosSub:'Der Bericht entsteht automatisch, sobald das erste Spiel geladen ist. Bis dahin kannst du die letzte Saison ansehen.',verAnterior:'← Frühere Saisons ansehen',
       cal:{'#':'# perfekt','+':'+ positiv','!':'! ok','-':'− schwach','/':'/ Überpass','=':'= Fehler'},
       liga:'Liga',nos:'Wir'}
 };
@@ -422,7 +422,18 @@ function pintar(){
   var D = window.INFORME_DATA;
   var cont = document.getElementById('cuerpo');
   if(!D || !D.equipos || !D.equipos.length){
-    cont.innerHTML = '<div class="vacio">'+t().sinDatos+'</div>'; return;
+    /* Sin partidos de esta temporada. Se explica por que, y se ofrece la
+       temporada anterior: al arrancar el año el informe esta vacio y sin este
+       mensaje parece que la pantalla esta rota. */
+    cont.innerHTML = '<div class="vacio" style="padding:48px 20px">'
+      + '<div style="font-size:32px;margin-bottom:12px">📈</div>'
+      + '<div style="font-size:15px;color:var(--txt);margin-bottom:6px">'
+      + t().sinPartidos + (D && D.temporada ? ' ' + D.temporada : '') + '</div>'
+      + '<div style="font-size:13px;color:var(--mut);max-width:380px;margin:0 auto;line-height:1.5">'
+      + t().sinPartidosSub + '</div>'
+      + '<a href="temporadas.html" class="back-btn" style="display:inline-block;margin-top:18px">'
+      + t().verAnterior + '</a></div>';
+    return;
   }
   var mio = null;
   D.equipos.forEach(function(e){ if(e.equipo === D.propio) mio = e; });
