@@ -92,6 +92,76 @@ def equipos_del_partido(txt):
         return largos[0].split('(')[0].strip(), largos[1].split('(')[0].strip()
 
 
+def fecha_del_partido(txt, ruta):
+    """La fecha del partido, en AAAA-MM-DD.
+
+    Sale SIEMPRE de [3MATCH], que la trae como DD/MM/AAAA. El nombre del
+    archivo NO sirve: lo escribe el que baja el partido copiando esa misma
+    fecha con los numeros en otro orden, asi que "2025-10-11" es el 10 de
+    NOVIEMBRE y no el 11 de octubre. Leerla de ahi daba vuelta el dia y el
+    mes, y partidos de enero terminaban contados como de noviembre —incluso
+    aparecian meses 21, que no existen—.
+    """
+    m = re.search(r'\[3MATCH\][^\n]*\n\s*(\d{1,2})/(\d{1,2})/(\d{4})', txt)
+    if m:
+        d, mes, anio = int(m.group(1)), int(m.group(2)), m.group(3)
+        if 1 <= mes <= 12 and 1 <= d <= 31:
+            return '%s-%02d-%02d' % (anio, mes, d)
+
+    # En muchos archivos ese campo viene VACIO —58 de 97 en un club real— y el
+    # unico dato es el nombre. Ahi la fecha esta escrita AAAA-DD-MM, con el dia
+    # antes del mes, porque quien los baja copia el orden de adentro.
+    m = re.search(r'(\d{4})-(\d{1,2})-(\d{1,2})', os.path.basename(ruta))
+    if m:
+        anio, a, b = m.group(1), int(m.group(2)), int(m.group(3))
+        # el que no puede ser mes, es el dia
+        if b <= 12 and a > 12:
+            d, mes = a, b
+        elif a <= 12 and b > 12:
+            d, mes = b, a
+        else:
+            d, mes = a, b        # ambos podrian: se respeta AAAA-DD-MM
+        if 1 <= mes <= 12 and 1 <= d <= 31:
+            return '%s-%02d-%02d' % (anio, mes, d)
+    return ''
+
+
+def es_de_la_temporada(fecha, carpeta, pedida):
+    """Si este partido entra en la temporada que se esta procesando.
+
+    Sin esto el informe tomaba TODOS los .dvw de la carpeta. Y como en una
+    carpeta conviven la temporada que termino y la que arranca, el informe
+    mostraba los numeros del año pasado como si fueran los de ahora: un club
+    sin partidos jugados veia un informe completo de la temporada anterior.
+
+    La temporada de cada partido sale de config_club, que es donde vive el
+    calendario de cada torneo. Sin configuracion no se filtra nada y todo
+    sigue como antes.
+    """
+    if not pedida or not fecha:
+        return True
+    try:
+        import config_club as cc
+        if not cc.torneos():
+            return True
+        t = cc.temporada_de(fecha, '', carpeta)
+        if t is None:
+            return True
+        tor = cc.resolver_torneo('', carpeta)
+        cfg = cc.torneos().get(tor) or {}
+        etiqueta = ('%d/%02d' % (int(t), (int(t) + 1) % 100)) if cfg.get('cruza') else str(t)
+        return _mismo(etiqueta, pedida)
+    except Exception:
+        return True
+
+
+def _mismo(a, b):
+    """Compara dos etiquetas de temporada sin importar como esten escritas:
+    '2025/26', '25-26' y '2025-26' son la misma."""
+    n = lambda x: re.sub(r'[^0-9]', '', str(x))[-4:]
+    return n(a) == n(b)
+
+
 # ── El corazon: recorrer los rallies ────────────────────────────────────────
 CAL = ['#', '+', '!', '-', '/', '=']
 
@@ -603,6 +673,7 @@ def main():
     archivos = sorted(glob.glob(os.path.join(a.dvw_dir, '*.dvw')))
     leidos = 0
     inferidos = [0]   # partidos donde el puesto no venia declarado
+    fuera = [0]       # partidos de otra temporada
 
     for ruta in archivos:
         try:
@@ -611,6 +682,10 @@ def main():
             continue
         local, visit = equipos_del_partido(txt)
         if not local or not visit:
+            continue
+        # solo los de la temporada que se esta procesando
+        if not es_de_la_temporada(fecha_del_partido(txt, ruta), a.dvw_dir, a.temporada):
+            fuera[0] += 1
             continue
         rl = rallies(txt)
         if not rl:
@@ -629,8 +704,17 @@ def main():
         leidos += 1
 
     if not leidos:
-        print('[informe] no pude leer ningun .dvw de %s' % a.dvw_dir)
-        return 1
+        if fuera[0]:
+            print('[informe] los %d partidos de la carpeta son de otra temporada: '
+                  'todavia no hay datos de %s' % (fuera[0], a.temporada))
+        else:
+            print('[informe] no pude leer ningun .dvw de %s' % a.dvw_dir)
+        # sin partidos se escribe un archivo vacio, para que la pantalla lo diga
+        with open(a.out, 'w', encoding='utf-8') as f:
+            f.write('window.INFORME_DATA = ' + json.dumps(
+                {'temporada': a.temporada, 'propio': propio or '', 'equipos': [],
+                 'detalle': None, 'nombres': {}, 'referencia': {}}, ensure_ascii=False) + ';\n')
+        return 0
 
     if not propio or propio not in por_equipo:
         # el que mas partidos tenga: es el club del que son estos .dvw
@@ -641,7 +725,9 @@ def main():
         f.write('window.INFORME_DATA = ' + json.dumps(datos, ensure_ascii=False) + ';\n')
 
     p = next((e for e in datos['equipos'] if e['equipo'] == propio), None)
-    print('[informe] %d partidos · %d equipos -> %s' % (leidos, len(por_equipo), a.out))
+    print('[informe] %d partidos · %d equipos -> %s%s'
+          % (leidos, len(por_equipo), a.out,
+             ('  (%d de otra temporada, fuera)' % fuera[0]) if fuera[0] else ''))
     if inferidos[0]:
         print('[informe] aviso: en %d partidos el .dvw no declaraba el puesto de los'
               ' jugadores; el armador se dedujo de las acciones de armado.' % inferidos[0])

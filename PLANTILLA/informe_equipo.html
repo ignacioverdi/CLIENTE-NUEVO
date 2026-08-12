@@ -131,7 +131,7 @@ var T = {
       s2sub:'Cambio de saque según cómo se recibió, contra el promedio de la liga',
       s3:'Recepción, jugador por jugador',
       s3sub:'Real contra esperado: quién saca más de lo que su recepción da',
-      hall:'Lo que hay que mirar',hallsub:'Ordenado por lo que pesa en puntos por partido · el sistema lo calcula solo',ptspp:'pts/partido',s5:'Ataque por fase',s5sub:'Atacar tras recibir no es lo mismo que atacar en desorden: son dos habilidades distintas',s6:'Ataque según con qué recepción se llegó',s6sub:'Cuánto se aprovecha cada calidad de pase',s7:'Saque por tipo',s7sub:'Qué rinde más: potencia o flotado',fase:'Fase',eficacia:'Eficacia',ptos:'Puntos',errs:'Errores',bloq:'Bloq.',tipo:'Tipo',aces:'Aces',s35:'Rotación por rotación',s35sub:'Dónde el equipo gana y dónde se le complica · P1 es el armador en zona 1',rot:'Rot',saldo:'Saldo',s4:'La liga',s4sub:'Ordenada por la suma de las dos métricas',ver:'Ver los cortes de video',
+      hall:'Lo que hay que mirar',hallsub:'Ordenado por lo que pesa en puntos por partido · el sistema lo calcula solo',ptspp:'pts/partido',s5:'Ataque por fase',s5sub:'Atacar tras recibir no es lo mismo que atacar en desorden: son dos habilidades distintas',s6:'Ataque según con qué recepción se llegó',s6sub:'Cuánto se aprovecha cada calidad de pase',s7:'Saque por tipo',s7sub:'Qué rinde más: potencia o flotado',fase:'Fase',eficacia:'Eficacia',ptos:'Puntos',errs:'Errores',bloq:'Bloq.',tipo:'Tipo',aces:'Aces',s35:'Rotación por rotación',promLiga:'promedio de la liga',s35sub:'Ordenadas de peor a mejor · la diferencia contra el promedio de la liga',rot:'Rot',saldo:'Saldo',s4:'La liga',s4sub:'Ordenada por la suma de las dos métricas',ver:'Ver los cortes de video',
       jug:'Jugador',rec:'Recep.',real:'Real',espc:'Esp.',dif:'Dif',pos:'Pos %',err:'Err %',
       eq:'Equipo',pj:'PJ',sinDatos:'Todavía no hay partidos procesados',
       cal:{'#':'# perfecta','+':'+ positiva','!':'! regular','-':'− mala','/':'/ sobrepase','=':'= error'},
@@ -146,7 +146,7 @@ var T = {
       s2sub:'Sideout by reception quality, against the league average',
       s3:'Reception, player by player',
       s3sub:'Actual against expected: who gets more than their pass gives',
-      hall:'What to look at',hallsub:'Sorted by what it costs in points per match · calculated automatically',ptspp:'pts/match',s5:'Attack by phase',s5sub:'Attacking after a pass is not the same as attacking out of system',s6:'Attack by reception quality',s6sub:'How much each pass quality is turned into points',s7:'Serve by type',s7sub:'What works better: power or float',fase:'Phase',eficacia:'Efficiency',ptos:'Points',errs:'Errors',bloq:'Blocked',tipo:'Type',aces:'Aces',s35:'Rotation by rotation',s35sub:'Where the team wins and where it struggles · P1 is setter in zone 1',rot:'Rot',saldo:'Net',s4:'The league',s4sub:'Sorted by the sum of both metrics',ver:'Watch the video clips',
+      hall:'What to look at',hallsub:'Sorted by what it costs in points per match · calculated automatically',ptspp:'pts/match',s5:'Attack by phase',s5sub:'Attacking after a pass is not the same as attacking out of system',s6:'Attack by reception quality',s6sub:'How much each pass quality is turned into points',s7:'Serve by type',s7sub:'What works better: power or float',fase:'Phase',eficacia:'Efficiency',ptos:'Points',errs:'Errors',bloq:'Blocked',tipo:'Type',aces:'Aces',s35:'Rotation by rotation',promLiga:'league average',s35sub:'Sorted worst to best · the gap against the league average',rot:'Rot',saldo:'Net',s4:'The league',s4sub:'Sorted by the sum of both metrics',ver:'Watch the video clips',
       jug:'Player',rec:'Recept.',real:'Actual',espc:'Exp.',dif:'Diff',pos:'Pos %',err:'Err %',
       eq:'Team',pj:'M',sinDatos:'No matches processed yet',
       cal:{'#':'# perfect','+':'+ positive','!':'! ok','-':'− poor','/':'/ overpass','=':'= error'},
@@ -161,7 +161,7 @@ var T = {
       s2sub:'Sideout nach Annahmequalität, gegen den Ligadurchschnitt',
       s3:'Annahme, Spieler für Spieler',
       s3sub:'Ist gegen Erwartung: wer mehr holt, als seine Annahme hergibt',
-      hall:'Worauf zu achten ist',hallsub:'Nach Punkten pro Spiel sortiert · automatisch berechnet',ptspp:'Pkt/Spiel',s5:'Angriff nach Phase',s5sub:'Angriff nach Annahme ist nicht dasselbe wie Angriff aus dem Spiel heraus',s6:'Angriff nach Annahmequalität',s6sub:'Wie viel aus jeder Annahmequalität gemacht wird',s7:'Aufschlag nach Art',s7sub:'Was bringt mehr: Sprung oder Flatter',fase:'Phase',eficacia:'Effizienz',ptos:'Punkte',errs:'Fehler',bloq:'Geblockt',tipo:'Art',aces:'Asse',s35:'Rotation für Rotation',s35sub:'Wo das Team gewinnt und wo es schwer wird · P1 ist Zuspieler auf Position 1',rot:'Rot',saldo:'Saldo',s4:'Die Liga',s4sub:'Nach der Summe beider Werte sortiert',ver:'Videoclips ansehen',
+      hall:'Worauf zu achten ist',hallsub:'Nach Punkten pro Spiel sortiert · automatisch berechnet',ptspp:'Pkt/Spiel',s5:'Angriff nach Phase',s5sub:'Angriff nach Annahme ist nicht dasselbe wie Angriff aus dem Spiel heraus',s6:'Angriff nach Annahmequalität',s6sub:'Wie viel aus jeder Annahmequalität gemacht wird',s7:'Aufschlag nach Art',s7sub:'Was bringt mehr: Sprung oder Flatter',fase:'Phase',eficacia:'Effizienz',ptos:'Punkte',errs:'Fehler',bloq:'Geblockt',tipo:'Art',aces:'Asse',s35:'Rotation für Rotation',promLiga:'Ligadurchschnitt',s35sub:'Von schlecht nach gut · der Abstand zum Ligadurchschnitt',rot:'Rot',saldo:'Saldo',s4:'Die Liga',s4sub:'Nach der Summe beider Werte sortiert',ver:'Videoclips ansehen',
       jug:'Spieler',rec:'Annahmen',real:'Ist',espc:'Erw.',dif:'Diff',pos:'Pos %',err:'Fehler %',
       eq:'Team',pj:'Sp',sinDatos:'Noch keine Spiele verarbeitet',
       cal:{'#':'# perfekt','+':'+ positiv','!':'! ok','-':'− schwach','/':'/ Überpass','=':'= Fehler'},
@@ -208,6 +208,42 @@ function kpi(lbl, real, esp, color, pieAlto, pieBajo){
    num y sk, asi que no hace falta nada nuevo del otro lado. */
 function verCortes(num){
   try{ window.open('cortes.html?num='+encodeURIComponent(num)+'&sk=Recepcion','_blank'); }catch(e){}
+}
+
+function distanciaLiga(pc){
+  /* La distancia contra la liga. Dos barras al lado obligan a medir con el
+     ojo cual es mas alta; una linea que une los dos valores hace que la
+     DIFERENCIA sea lo que se ve —su largo— y el color dice de que lado
+     estas. */
+  var usa = pc.filter(function(x){ return x.liga !== null && x.n >= 5; });
+  if(!usa.length) return '';
+  var vals = [];
+  usa.forEach(function(x){ vals.push(x.so, x.liga); });
+  var min = Math.max(0, Math.min.apply(null, vals) - 8);
+  var max = Math.min(100, Math.max.apply(null, vals) + 8);
+  var X0 = 140, X1 = 505, alto = 34 + usa.length * 42;
+  var px = function(v){ return X0 + (v - min) / (max - min) * (X1 - X0); };
+
+  var g = '';
+  usa.forEach(function(x, i){
+    var y = 26 + i * 42, a = px(x.so), b = px(x.liga);
+    var sube = x.so >= x.liga, col = sube ? '#22c55e' : '#f97316';
+    g += '<text x="6" y="' + (y+5) + '" font-size="13" fill="#94a3b8">'
+       + (t().cal[x.cal] || x.cal) + '</text>'
+       + '<line x1="' + X0 + '" y1="' + y + '" x2="' + X1 + '" y2="' + y + '" stroke="rgba(148,163,184,.16)"/>'
+       + '<line x1="' + b + '" y1="' + y + '" x2="' + a + '" y2="' + y + '" stroke="' + col + '" stroke-width="3"/>'
+       + '<circle cx="' + b + '" cy="' + y + '" r="5" fill="#0f1020" stroke="#94a3b8" stroke-width="2"/>'
+       + '<circle cx="' + a + '" cy="' + y + '" r="6" fill="' + col + '"/>'
+       + '<text x="' + (a + (sube ? 13 : -13)) + '" y="' + (y+5) + '" font-size="13" font-weight="700" fill="'
+       + col + '" text-anchor="' + (sube ? 'start' : 'end') + '">' + Math.round(x.so) + '%</text>'
+       + '<text x="' + (X1+50) + '" y="' + (y+5) + '" font-size="11" fill="#475569" text-anchor="end">n=' + x.n + '</text>';
+  });
+  g += '<circle cx="' + (X0+6) + '" cy="' + (alto-10) + '" r="4" fill="#0f1020" stroke="#94a3b8" stroke-width="2"/>'
+     + '<text x="' + (X0+16) + '" y="' + (alto-6) + '" font-size="11" fill="#475569">' + t().liga + '</text>'
+     + '<circle cx="' + (X0+78) + '" cy="' + (alto-10) + '" r="5" fill="#94a3b8"/>'
+     + '<text x="' + (X0+88) + '" y="' + (alto-6) + '" font-size="11" fill="#475569">' + t().nos + '</text>';
+  return '<div class="panel"><svg viewBox="0 0 560 ' + alto + '" xmlns="http://www.w3.org/2000/svg" '
+    + 'style="width:100%;height:auto">' + g + '</svg></div>';
 }
 
 function tablaJugadores(js){
@@ -291,6 +327,53 @@ function tablaSaque(ss){
   return h + '</tbody></table></div>';
 }
 
+function promedioLiga(D){
+  /* El cero de las barras: el cambio de saque promedio de todos los equipos.
+     Se calcula con los datos cargados, no con un numero de otro campeonato. */
+  var v = (D.equipos || []).map(function(e){ return e.so; }).filter(function(x){ return x !== null; });
+  if(!v.length) return 60;
+  return Math.round(v.reduce(function(a,b){ return a+b; }, 0) / v.length * 10) / 10;
+}
+
+function barrasRotacion(rs, ref){
+  /* ══ Las rotaciones, ordenadas de peor a mejor ═══════════════════════════
+     Un hexagono se ve lindo pero obliga a comparar AREAS, y el ojo humano las
+     mide mal. Con barras se comparan LONGITUDES, que se leen bien, y al
+     ordenarlas el problema queda arriba de todo: no hay que buscarlo.
+     El cero es el promedio de la liga: a la izquierda por debajo, a la
+     derecha por encima. */
+  if(!rs || rs.length < 3) return '';
+  var lista = rs.filter(function(r){ return r.so !== null; }).map(function(r){
+    return {rot:r.rot, so:r.so, n:r.so_n, dif:Math.round((r.so - ref) * 10) / 10};
+  });
+  if(!lista.length) return '';
+  lista.sort(function(a,b){ return a.dif - b.dif; });
+
+  var maxAbs = Math.max.apply(null, lista.map(function(x){ return Math.abs(x.dif); })) || 1;
+  var CX = 292, ANCHO = 185, alto = 30 + lista.length * 34;
+  var esc = ANCHO / maxAbs;
+
+  var g = '<line x1="' + CX + '" y1="10" x2="' + CX + '" y2="' + (alto-22) + '" '
+        + 'stroke="rgba(148,163,184,.45)" stroke-width="1.5"/>'
+        + '<text x="' + CX + '" y="' + (alto-6) + '" text-anchor="middle" font-size="11" fill="#475569">'
+        + t().promLiga + ' · ' + ref.toFixed(1) + '%</text>';
+
+  lista.forEach(function(x, i){
+    var y = 18 + i * 34, w = Math.abs(x.dif) * esc;
+    var neg = x.dif < 0, col = neg ? '#f97316' : '#22c55e';
+    var x0 = neg ? CX - w : CX;
+    g += '<text x="24" y="' + (y+14) + '" font-size="15" font-weight="700" fill="#e2e8f0">' + x.rot + '</text>'
+       + '<text x="60" y="' + (y+14) + '" font-size="11" fill="#475569">n=' + x.n + '</text>'
+       + '<rect x="' + x0 + '" y="' + y + '" width="' + Math.max(2,w) + '" height="20" rx="3" fill="' + col + '"/>'
+       + '<text x="' + (neg ? x0-8 : x0+w+8) + '" y="' + (y+15) + '" text-anchor="' + (neg?'end':'start') + '" '
+       + 'font-size="14" font-weight="800" fill="' + col + '">' + (x.dif>0?'+':'') + x.dif + '</text>'
+       + '<text x="' + (neg ? x0-54 : x0+w+52) + '" y="' + (y+15) + '" text-anchor="' + (neg?'end':'start') + '" '
+       + 'font-size="11" fill="#475569">' + x.so.toFixed(1) + '%</text>';
+  });
+  return '<div class="panel"><svg viewBox="0 0 560 ' + alto + '" xmlns="http://www.w3.org/2000/svg" '
+    + 'style="width:100%;height:auto">' + g + '</svg></div>';
+}
+
 function tablaRotaciones(rs){
   if(!rs || !rs.length) return '';
   /* Se pinta la barra proporcional al valor: de un vistazo se ve en que
@@ -362,8 +445,7 @@ function pintar(){
   var pc = (D.detalle && D.detalle.por_calidad) || [];
   if(pc.length){
     h += '<div class="sec">'+t().s2+'</div><div class="sec-sub">'+t().s2sub+'</div>'
-       + '<div class="panel"><div class="chart-box"><canvas id="gCal" role="img" aria-label="'
-       + t().s2sub + '"></canvas></div></div>';
+       + distanciaLiga(pc);
   }
 
   var js = (D.detalle && D.detalle.jugadores) || [];
@@ -375,7 +457,8 @@ function pintar(){
   var rs = (D.detalle && D.detalle.rotaciones) || [];
   if(rs.length){
     h += '<div class="sec">'+t().s35+'</div><div class="sec-sub">'+t().s35sub+'</div>'
-       + '<div class="panel">' + tablaRotaciones(rs) + '</div>';
+       + barrasRotacion(rs, promedioLiga(D))
+       + '<div class="panel" style="margin-top:10px">' + tablaRotaciones(rs) + '</div>';
   }
 
   var at = (D.detalle && D.detalle.ataque) || [];
@@ -402,7 +485,6 @@ function pintar(){
 
   cont.innerHTML = h;
 
-  if(pc.length) grafCalidad(pc);
   if(apr.length) grafAtaque(apr);
 }
 
@@ -425,35 +507,6 @@ function grafAtaque(apr){
   });
 }
 
-function grafCalidad(pc){
-  var el = document.getElementById('gCal'); if(!el || typeof Chart === 'undefined') return;
-  if(CHART){ CHART.destroy(); CHART = null; }
-  var usa = pc.filter(function(x){ return x.liga !== null && x.n >= 5; });
-  if(!usa.length) usa = pc;
-  CHART = new Chart(el, {
-    type:'bar',
-    data:{
-      labels: usa.map(function(x){ return (t().cal[x.cal] || x.cal); }),
-      datasets:[
-        { label:t().nos,  data:usa.map(function(x){ return x.so; }),
-          backgroundColor:'#1baf7a', borderRadius:4, maxBarThickness:22 },
-        { label:t().liga, data:usa.map(function(x){ return x.liga; }),
-          backgroundColor:'#5f5e5a', borderRadius:4, maxBarThickness:22 }
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:true, labels:{ color:'#94a3b8', boxWidth:10, boxHeight:10,
-                  font:{family:'Barlow Condensed', size:13} } },
-        tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+c.parsed.y.toFixed(1)+'%'; } } } },
-      scales:{
-        y:{ beginAtZero:true, max:100, ticks:{ color:'#64748b', callback:function(v){ return v+'%'; } },
-            grid:{ color:'rgba(148,163,184,.12)' } },
-        x:{ ticks:{ color:'#64748b' }, grid:{ display:false } }
-      }
-    }
-  });
-}
 
 /* al cambiar de idioma se vuelve a dibujar: los textos estan adentro */
 window.addEventListener('vb-lang', pintar);
