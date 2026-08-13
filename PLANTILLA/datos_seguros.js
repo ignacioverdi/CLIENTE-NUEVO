@@ -12,7 +12,14 @@
   var GUARDADA = 'club_llave';
 
   function llaveLocal(){
-    try{ return localStorage.getItem(GUARDADA) || ''; }catch(e){ return ''; }
+    try{
+      /* si paso el plazo sin confirmar contra el servidor, se descarta */
+      if(typeof llaveVencida === 'function' && llaveVencida()){
+        window.VB_LLAVE_VENCIDA = true;
+        return '';
+      }
+      return localStorage.getItem(GUARDADA) || '';
+    }catch(e){ return ''; }
   }
 
   /* SHA-256 sincronico y compacto (el mismo que usa el cifrador en Python) */
@@ -110,10 +117,40 @@
 
   /* Guarda la llave que llega de Firebase. Si es la primera vez, recarga
      para que las paginas arranquen ya con los datos abiertos. */
+  /* ══ CUANTO DURA LA LLAVE GUARDADA ═══════════════════════════════════════
+     La llave se guarda en el dispositivo para que la app funcione sin
+     internet: en el gimnasio muchas veces no hay señal, y ese es el modo de
+     uso normal, no la excepcion.
+
+     Pero guardada para siempre significa que un club que dejo de pagar sigue
+     usando todo mientras no borre los datos del navegador. Podrian ser meses.
+
+     El equilibrio: la llave vale VB_DIAS_LLAVE dias desde la ultima vez que
+     el servidor la confirmo. Sin internet la app sigue funcionando todo ese
+     tiempo; con internet se renueva sola y el usuario nunca se entera. Pasado
+     el plazo sin poder confirmar, deja de abrir los datos.
+
+     30 dias es un buen punto: cubre de sobra una gira o un mes sin conexion,
+     y acota la ventana de uso sin pagar a un mes. */
+  var VB_DIAS_LLAVE = 30;
+  var DESDE = 'club_llave_desde';
+
+  function llaveVencida(){
+    try{
+      var d = parseInt(localStorage.getItem(DESDE) || '0', 10);
+      if(!d) return false;              /* de antes de esta version: se respeta */
+      return (Date.now() - d) > VB_DIAS_LLAVE * 86400000;
+    }catch(e){ return false; }
+  }
+
   window.guardarLlave = function(llave){
     if(!llave) return;
     var antes = llaveLocal();
-    try{ localStorage.setItem(GUARDADA, llave); }catch(e){}
+    try{
+      localStorage.setItem(GUARDADA, llave);
+      /* cada confirmacion del servidor renueva el plazo */
+      localStorage.setItem(DESDE, String(Date.now()));
+    }catch(e){}
     if(!antes) location.reload();
   };
 
@@ -146,6 +183,9 @@
       _cartel('<b>La suscripción venció el ' + window.VB_PLAN_VENCIDO + '.</b> '
         + 'Los datos del club quedan sin acceso hasta renovarla. '
         + 'Escribinos y lo resolvemos en el momento.', '#b91c1c');
+    } else if(window.VB_LLAVE_VENCIDA){
+      _cartel('<b>Hace más de 30 días que la app no se conecta.</b> '
+        + 'Abrila una vez con internet y vuelve a funcionar sin conexión.', '#b45309');
     } else if(window.VB_PLAN_VENCE_EN !== undefined){
       var d = window.VB_PLAN_VENCE_EN;
       _cartel('La suscripción vence en <b>' + d + (d === 1 ? ' día' : ' días')
