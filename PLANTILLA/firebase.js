@@ -106,43 +106,48 @@ function _fbSincronizarRol(){
 function _fbTraerLlave(){
   if(typeof guardarLlave !== 'function') return Promise.resolve();
   try{ if(localStorage.getItem('club_llave')) return Promise.resolve(); }catch(e){}
+
   return _fbSufijo().then(function(q){
-    /* ══ El plan del club ═══════════════════════════════════════════════
-       Se lee ANTES de la llave a proposito. Los datos del club estan
-       cifrados y la llave la sirve este servidor: si la suscripcion vencio,
-       no se entrega y la app abre pero no puede leer nada.
+    /* ══ Primero la llave, despues el plan ═══════════════════════════════
+       El orden importa. Antes se leia el plan primero y la llave despues,
+       encadenados: si la lectura del plan fallaba —porque el club no lo
+       tiene cargado, o por una regla— la cadena se cortaba ANTES de pedir
+       la llave y la app quedaba sin datos aunque estuviera todo pago.
 
-       Es el unico control que no se puede sortear desde el navegador,
-       porque la llave nunca estuvo del lado del cliente. Lo demas —limites,
-       roles— se puede discutir; esto no.
-
-       Sin fecha de vencimiento cargada no pasa nada: los clubes que no
-       tienen plan configurado siguen funcionando igual. */
-    return fetch(fbURL('plan/vence', q))
+       Ahora se piden por separado. La llave siempre se pide; el plan se
+       consulta aparte y, si vencio, se borra lo que se acaba de guardar.
+       Un problema leyendo el plan no puede dejar sin datos a un cliente
+       que esta al dia. */
+    var pedirLlave = fetch(fbURL('llave', q))
       .then(function(r){ return r.json(); })
-      .catch(function(){ return null; })
-      .then(function(vence){
-        if(typeof vence === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(vence)){
-          var hoy = new Date();
-          var h = hoy.getFullYear() + '-' +
-                  String(hoy.getMonth()+1).padStart(2,'0') + '-' +
-                  String(hoy.getDate()).padStart(2,'0');
-          if(h > vence){
-            window.VB_PLAN_VENCIDO = vence;
-            try{ localStorage.removeItem('club_llave'); }catch(e){}
-            return;   // sin llave: los datos quedan ilegibles
-          }
-          /* aviso los ultimos 15 dias, para que no los agarre de sorpresa */
-          try{
-            var d = (new Date(vence) - new Date(h)) / 86400000;
-            if(d >= 0 && d <= 15) window.VB_PLAN_VENCE_EN = Math.round(d);
-          }catch(e){}
-        }
-        return fetch(fbURL('llave', q))
-          .then(function(r){ return r.json(); })
-          .then(function(k){ if(typeof k === 'string' && k.length >= 32) guardarLlave(k); })
-          .catch(function(){});
-      });
+      .then(function(k){ if(typeof k === 'string' && k.length >= 32) guardarLlave(k); })
+      .catch(function(){});
+
+    var pedirPlan = fetch(fbURL('plan/vence', q))
+      .then(function(r){ return r.json(); })
+      .catch(function(){ return null; });
+
+    return Promise.all([pedirLlave, pedirPlan]).then(function(r){
+      var vence = r[1];
+      if(typeof vence !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(vence)) return;
+      var hoy = new Date();
+      var h = hoy.getFullYear() + '-' +
+              String(hoy.getMonth()+1).padStart(2,'0') + '-' +
+              String(hoy.getDate()).padStart(2,'0');
+      if(h > vence){
+        window.VB_PLAN_VENCIDO = vence;
+        try{
+          localStorage.removeItem('club_llave');
+          localStorage.removeItem('club_llave_desde');
+        }catch(e){}
+        return;
+      }
+      /* aviso los ultimos 15 dias, para que no los agarre de sorpresa */
+      try{
+        var d = (new Date(vence) - new Date(h)) / 86400000;
+        if(d >= 0 && d <= 15) window.VB_PLAN_VENCE_EN = Math.round(d);
+      }catch(e){}
+    });
   });
 }
 
