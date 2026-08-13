@@ -27,7 +27,15 @@
 //  Cuando vuelve la señal se sube desde la app como siempre.
 // ============================================================================
 
-var VERSION = '{{club}}-v1';
+// ── LA VERSION ──────────────────────────────────────────────────────────────
+// Estaba fija en "v1" y nunca cambiaba, asi que el navegador no se enteraba de
+// que habia algo nuevo: un arreglo publicado podia tardar dias en llegar, o no
+// llegar nunca hasta que alguien borrara los datos a mano.
+//
+// PUBLICAR_EN_GITHUB.bat reemplaza {{FECHA_PUBLICACION}} por el momento de
+// cada publicacion. Al cambiar ese texto cambia el archivo, el navegador lo
+// detecta como distinto, tira la caja vieja y se queda con la nueva.
+var VERSION = '{{club}}-{{FECHA_PUBLICACION}}';
 var CAJA    = 'panel-' + VERSION;
 
 // Lo que hace falta para scoutear. El panel no depende de ningún archivo de
@@ -39,6 +47,9 @@ var DEL_PANEL = [
 ];
 
 self.addEventListener('install', function (e) {
+  // skipWaiting hace que la version nueva tome el control sin esperar a que
+  // se cierren todas las pestañas. Sin esto, el usuario sigue con la vieja
+  // hasta que cierra el navegador por completo.
   self.skipWaiting();
   e.waitUntil(
     caches.open(CAJA).then(function (c) {

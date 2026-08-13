@@ -180,7 +180,11 @@ print('     %s' % ('bien' if not falta else '%d problemas' % falta))
 # ── 7 · marcas sin definir ──────────────────────────────────────────────────
 print('  6) Marcas {{...}} que el alta no sabe reemplazar')
 CONOCIDAS = {'CLUB', 'Club', 'club', 'CLUB_COMPLETO', 'CLUB_REPO', 'CLUB_SLUG',
-             'LIGA', 'Liga', 'liga', 'PAIS', 'FIREBASE_URL', 'FIREBASE_KEY', 'DOMINIO'}
+             'LIGA', 'Liga', 'liga', 'PAIS', 'FIREBASE_URL', 'FIREBASE_KEY', 'DOMINIO',
+             # Esta no la reemplaza el alta sino PUBLICAR_EN_GITHUB.bat, en cada
+             # publicacion: es la que hace que el navegador se entere de que hay
+             # una version nueva de la app.
+             'FECHA_PUBLICACION'}
 raras = {}
 for p in paginas + scripts:
     for m in re.finditer(r'\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}', leer(p)):
@@ -248,7 +252,7 @@ if os.path.exists(alta):
         for m in re.finditer(r'\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}', leer(p2)):
             usadas.add(m.group(1))
     for u in sorted(usadas):
-        if re.match(r'RIVAL\d+$', u):
+        if re.match(r'RIVAL\d+$', u) or u == 'FECHA_PUBLICACION':
             continue
         if ("'{{%s}}'" % u) not in ta and ('"{{%s}}"' % u) not in ta:
             sin_reemplazo.append(u)
