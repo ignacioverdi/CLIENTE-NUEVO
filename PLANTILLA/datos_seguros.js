@@ -120,4 +120,42 @@
   window.olvidarLlave = function(){
     try{ localStorage.removeItem(GUARDADA); }catch(e){}
   };
+
+  /* ══ El aviso del plan ═══════════════════════════════════════════════════
+     Si la suscripcion vencio, la llave no llega y las pantallas quedan
+     vacias. Sin explicacion eso parece un error del sistema y el cliente
+     llama enojado; con el cartel entiende que tiene que renovar.
+
+     Va aca porque este archivo lo carga TODA pantalla que muestre datos: se
+     escribe una vez y aparece en las 53. */
+  function _cartel(html, color){
+    if(document.getElementById('vb-plan-aviso')) return;
+    var d = document.createElement('div');
+    d.id = 'vb-plan-aviso';
+    d.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;'
+      + 'background:' + color + ';color:#fff;padding:11px 16px;font-size:14px;'
+      + 'text-align:center;font-family:system-ui,sans-serif;line-height:1.4;'
+      + 'box-shadow:0 -2px 14px rgba(0,0,0,.35)';
+    d.innerHTML = html;
+    document.body.appendChild(d);
+  }
+
+  function _avisarPlan(){
+    if(!document.body) return;
+    if(window.VB_PLAN_VENCIDO){
+      _cartel('<b>La suscripción venció el ' + window.VB_PLAN_VENCIDO + '.</b> '
+        + 'Los datos del club quedan sin acceso hasta renovarla. '
+        + 'Escribinos y lo resolvemos en el momento.', '#b91c1c');
+    } else if(window.VB_PLAN_VENCE_EN !== undefined){
+      var d = window.VB_PLAN_VENCE_EN;
+      _cartel('La suscripción vence en <b>' + d + (d === 1 ? ' día' : ' días')
+        + '</b>. Escribinos para renovarla.', '#b45309');
+    }
+  }
+  /* se revisa un rato despues, cuando ya llego la respuesta del servidor */
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(_avisarPlan, 2500); });
+  } else {
+    setTimeout(_avisarPlan, 2500);
+  }
 })();
