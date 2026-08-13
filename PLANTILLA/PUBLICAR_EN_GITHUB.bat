@@ -17,19 +17,17 @@ echo.
 REM ===================================================================
 REM   SELLAR LA VERSION ANTES DE SUBIR
 REM
-REM   El service worker guarda la app para que funcione sin conexion. Si su
-REM   texto no cambia, el navegador no se entera de que hay algo nuevo y el
-REM   cliente sigue con la version vieja aunque se haya publicado: un arreglo
-REM   podia tardar dias en llegar, o no llegar nunca.
+REM   El service worker guarda la app para que ande sin conexion. Si su texto
+REM   no cambia, el navegador no se entera de que hay algo nuevo y el cliente
+REM   sigue con la version vieja aunque se haya publicado.
 REM
 REM   Escribiendo aca la fecha y hora de cada publicacion, el archivo cambia
-REM   siempre y el navegador lo detecta solo.
+REM   siempre y el navegador lo detecta solo. Lo hace un script de Python,
+REM   que ya hace falta para todo lo demas: intentarlo con comillas dentro de
+REM   comillas en un .bat es una fuente segura de errores.
 REM ===================================================================
-for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd-HHmm"') do set "SELLO=%%i"
-if exist "sw.js" (
-    powershell -NoProfile -Command ^
-      "$p='sw.js'; $t=Get-Content -Raw -Encoding UTF8 $p; $t=[regex]::Replace($t, \"(var VERSION = '[^']*?)-(?:\\{\\{FECHA_PUBLICACION\\}\\}|\\d{8}-\\d{4})'\", ('${1}-%SELLO%''')); Set-Content -Encoding UTF8 -NoNewline $p $t"
-    echo  Version de la app: %SELLO%
+if exist "sw.js" if exist "sellar_version.py" (
+    python sellar_version.py
     echo.
 )
 
