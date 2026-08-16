@@ -53,8 +53,14 @@ DATOS = re.compile(
 # Estos EMPIEZAN como un dato pero son programa
 PROGRAMA = {'datos_seguros.js', 'nla_stats_template.html'}
 
-# El club puede tener versiones propias mejores que la plantilla
-DEL_CLUB = {'sw.js', 'procesar.py'}
+# El club puede tener versiones propias mejores que la plantilla.
+#
+# sw.js SALIO de esta lista: es el que hace que la app se guarde para andar sin
+# conexion, y desde que lleva la version sellada en cada publicacion tiene que
+# viajar SIEMPRE del kit al club. Protegido, un arreglo del service worker no
+# llegaba nunca y habia que copiarlo a mano en cada cliente —justo el archivo
+# del que depende que los demas arreglos lleguen—.
+DEL_CLUB = {'procesar.py'}
 
 # Documentacion interna: no viaja al cliente. Misma lista que ACTUALIZAR_KIT.
 FUERA = {
@@ -136,6 +142,11 @@ def deducir(destino, slug):
         m = re.search(patron, t)
         return m.group(grupo) if m else ''
 
+    # El color del club: el que ya esta escrito en sus pantallas. Se busca en
+    # el index, que es donde el alta lo dejo. Sin esto, cada actualizacion le
+    # devolvia los colores del club de origen.
+    cfg['COLOR'] = buscar('index.html', r"--club\s*:\s*(#[0-9a-fA-F]{6})") \
+                or buscar('index.html', r"--red\s*:\s*(#[0-9a-fA-F]{6})") or ''
     cfg['FIREBASE_URL'] = buscar('firebase.js', r"FB_URL\s*=\s*'([^']+)'")
     cfg['FIREBASE_KEY'] = buscar('firebase.js', r"(AIzaSy[0-9A-Za-z_\-]{30,})")
     cfg['DOMINIO']      = buscar('manifest.json', r'"start_url"\s*:\s*"https?://([^/"]+)') \
@@ -161,6 +172,21 @@ def deducir(destino, slug):
             pass
     cfg.setdefault('RIVALES', '')
     return cfg
+
+
+def _acento_de(hexcol):
+    """Un segundo color que combine con el del club: el mismo tono, aclarado.
+
+    La plantilla usa un dorado para los acentos; con esto cada club tiene los
+    suyos y no los de otro.
+    """
+    try:
+        h = hexcol.lstrip('#')
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        f = 0.55
+        return '#%02x%02x%02x' % (int(r + (255-r)*f), int(g + (255-g)*f), int(b + (255-b)*f))
+    except Exception:
+        return '#e6a743'
 
 
 def marcas(cfg):
@@ -275,6 +301,38 @@ for slug in objetivo:
         print('     .gitignore: agregado %s' % ', '.join(faltan))
 
     # ── copia de seguridad ──────────────────────────────────────────────────
+    # Antes se acumulaban sin limite: despues de unas semanas eran decenas de
+    # carpetas ocupando cientos de megas. Se conservan las 2 mas nuevas, que
+    # es lo unico que sirve —si un cambio salio mal, el archivo de antes esta
+    # ahi—; las anteriores se borran solas.
+    #
+    # Nunca se toca una que tenga DATOS adentro: los respaldos son de
+    # programa, y si aparecio un dato ahi es que algo se guardo donde no
+    # correspondia y hay que mirarlo antes de borrar nada.
+    try:
+        import re as _re, shutil as _sh
+        # Por archivos concretos, no por prefijos: "datos_seguros.js" es el
+        # descifrador y "scouting_rival.html" una pantalla —los dos son
+        # programa— y un filtro por prefijo los tomaba como datos.
+        _prog = {'datos_seguros.js', 'objetivos_config.js', 'datos_ejercicios.js'}
+        _valioso = _re.compile(
+            r'(datos_(partidos|equipo|baterias|informe|video|bloqueo|recepcion|'
+            r'armadores|entrenamientos|historial|nla|prep_fisica|voley|gameplan|'
+            r'club|videos)|liga_data|plan_partido_data|scouting_rival\.js|'
+            r'mapa_videos|nla_players_db|LLAVE|CLAVES|config_club|_CONFIG|'
+            r'\.dvw$|\.enc$|plantel_)', _re.I)
+        _viejos = sorted([d for d in os.listdir(destino)
+                          if d.startswith('_ANTES-')
+                          and os.path.isdir(os.path.join(destino, d))], reverse=True)
+        for _d in _viejos[1:]:          # se deja 1: con la que se crea ahora quedan 2
+            _p = os.path.join(destino, _d)
+            _tiene_datos = any(a not in _prog and _valioso.search(a)
+                               for _r, _, _as in os.walk(_p) for a in _as)
+            if not _tiene_datos:
+                _sh.rmtree(_p, ignore_errors=True)
+    except Exception:
+        pass                            # limpiar es un extra: nunca frena la actualizacion
+
     sello = datetime.datetime.now().strftime('%Y%m%d-%H%M')
     respaldo = os.path.join(destino, '_ANTES-' + sello)
     os.makedirs(respaldo, exist_ok=True)
@@ -291,6 +349,18 @@ for slug in objetivo:
             continue
         for k, v in marcas(cfg):
             t = t.replace(k, v)
+
+        # ── Los colores del club ────────────────────────────────────────
+        # La plantilla trae el rojo y el dorado del club de origen en decenas
+        # de lugares. El alta los reemplaza, pero el actualizador no: un club
+        # ya creado se quedaba con fondos rojos y amarillos que no son suyos
+        # cada vez que se le actualizaba una pantalla.
+        _col = (cfg.get('COLOR') or '').strip()
+        if _col.startswith('#') and len(_col) == 7:
+            _ac = _acento_de(_col)
+            t = t.replace('#e8192c', _col).replace('#E8192C', _col)
+            t = t.replace('#e6a743', _ac).replace('#E6A743', _ac)
+            t = t.replace('#f59e0b', _ac).replace('#F59E0B', _ac)
 
         if os.path.exists(fd):
             try:

@@ -87,7 +87,10 @@
 <script src="firebase.js" onerror="void 0"></script>
 <script src="lang.js" onerror="void 0"></script>
 <script src="correcciones_tecnicas.js" onerror="void 0"></script>
-<script src="plantel_club.js" onerror="void 0"></script>
+<!-- El plantel sale de datos_equipo.js, que arma HACER_TODO con los .dvw.
+     Antes se pedia plantel_club.js, un archivo que NO EXISTE en la plantilla:
+     la pantalla quedaba vacia en todos los clubes nuevos. -->
+<script src="datos_equipo.js.enc" onerror="void 0"></script>
 <script src="datos_club.js.enc" onerror="void 0"></script>
 <!-- Abre todo lo registrado arriba. Va al final: un .enc cargado
      despues de esta linea no lo abre nadie. -->
@@ -140,6 +143,13 @@
   var DATA={items:[]};
 
   function roster(){
+    /* Primero el plantel real del club, que arma HACER_TODO desde los .dvw.
+       Lo demas queda como respaldo para los clubes que todavia tengan el
+       archivo viejo. */
+    var _eq = (window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores) || null;
+    if(_eq && _eq.length) return _eq.map(function(j){
+      return {num:j.num, nombre:j.nombre, pos:j.pos};
+    });
     var raw=(typeof PLANTEL_CLUB!=='undefined'&&PLANTEL_CLUB)||window.PLANTEL_CLUB||(typeof ((window.PLANTEL_CLUB&&window.PLANTEL_CLUB.jugadores)||window.CASLA_JUGADORES||[])!=='undefined'&&((window.PLANTEL_CLUB&&window.PLANTEL_CLUB.jugadores)||window.CASLA_JUGADORES||[]))||((window.PLANTEL_CLUB&&window.PLANTEL_CLUB.jugadores)||window.CASLA_JUGADORES||[])||null;
     var r=Array.isArray(raw)?raw:((raw&&(raw.jugadores||raw.lista))||[]);
     return (r||[]).map(function(p){

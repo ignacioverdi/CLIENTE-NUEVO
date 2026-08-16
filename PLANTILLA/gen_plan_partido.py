@@ -162,11 +162,23 @@ def build(fuentes, out_dir, filter_temp=None, db_path=None):
         if pm:
             for l in pm.group(1).strip().splitlines():
                 f=l.split(';')
-                if len(f)<13: continue
+                if len(f)<13: continue   # 13 campos minimo; el puesto esta en el 14
                 try: num=int(f[1])
                 except: continue
                 D['names'][num]=f[9]
-                if f[12].strip()=='L': D['lib'].add(num)
+                # ── El puesto de cada jugadora ──────────────────────────
+                # Estaba mirando el campo 12 buscando la letra "L". El puesto
+                # vive en el campo 13 y va en NUMEROS:
+                #     1 libero · 2 punta · 3 opuesto · 4 central · 5 armador
+                # Con el campo equivocado no se reconocia ningun libero y las
+                # atacantes salian con el puesto que no era —casi todas como
+                # centrales— aunque el archivo lo declarara bien.
+                rol = f[13].strip() if len(f) > 13 else ''
+                if rol == '1' or (len(f) > 12 and f[12].strip().upper() == 'L'):
+                    D['lib'].add(num)
+                D.setdefault('rol', {})[num] = {
+                    '1':'LIBERO', '2':'PUNTA', '3':'OPUESTO',
+                    '4':'CENTRAL', '5':'ARMADOR'}.get(rol, '')
         i=t.find('[3SCOUT]\n'); scout=t[i+9:t.find('\n[3',i+9)].strip().split('\n')
         curset=None; lastsv=('',''); recv=False; rq=''; rby=0; recz=''; rally=0; last_opp_atk=''
         for line in scout:
@@ -290,6 +302,19 @@ def build(fuentes, out_dir, filter_temp=None, db_path=None):
     # --- construir PP_DATA ---
     CB={'punta':{'X5','V5','X6','V6','XP'},'central':{'X1','X2','X7','XM'},'opuesto':{'X5','V5','X6','V6','X8','V8'}}
     def classify(D,num):
+        # ══ Primero el puesto DECLARADO ═══════════════════════════════════
+        # El .dvw lo trae en la lista de plantel y es el dato del scout, no
+        # una deduccion. Antes se ignoraba y todo salia de las combinaciones
+        # de ataque: en un partido con pocas acciones eso etiqueta a casi
+        # todas como centrales, aunque el archivo diga otra cosa.
+        #
+        # La deduccion sigue abajo, para los archivos que NO declaran el
+        # puesto —los que se bajan de VolleyMetrics vienen asi—.
+        _dec = (D.get('rol') or {}).get(num, '')
+        if _dec:
+            return {'LIBERO':'L\u00edbero', 'ARMADOR':'Armador',
+                    'CENTRAL':'Central', 'OPUESTO':'Opuesto',
+                    'PUNTA':'Punta'}.get(_dec, _dec.capitalize())
         if num in D['lib_set']: return 'L\u00edbero'
         combos=Counter(a[0] for a in D['atk'].get(str(num),[]))
         tot=sum(combos.values()); sets=D['set'].get(str(num),0)
@@ -328,8 +353,21 @@ def build(fuentes, out_dir, filter_temp=None, db_path=None):
         receiv =sorted([n for n in pos if cnt('rec',n)>=1],key=lambda n:-cnt('rec',n))
         defen  =sorted([n for n in pos if cnt('dig',n)>=1],key=lambda n:-cnt('dig',n))
         def rol_atk(n):
-            p=pos.get(n,'')
-            return 'central' if p=='Central' else 'opuesto' if p=='Opuesto' else 'punta'
+            # Antes solo distinguia central, opuesto y punta: la armadora y la
+            # libero caian en "punta" por descarte. La armadora ataca poco pero
+            # ataca, asi que aparecia en la lista con el puesto equivocado.
+            # ── Los roles que la pantalla sabe dibujar ──────────────────
+            # Solo existen 'punta', 'central' y 'opuesto' como filas de
+            # atacantes. Devolver 'armador' o 'libero' hacia que la pantalla
+            # buscara una configuracion que no existe, REVENTARA el bucle y
+            # dejara sin dibujar TODAS las tarjetas siguientes: por eso se
+            # veia el acumulado del equipo y ninguna jugadora.
+            #
+            # La armadora ataca poco pero ataca, asi que va con las opuestas,
+            # que es donde suele rematar cuando le toca.
+            p = pos.get(n, '')
+            return {'Central':'central', 'Opuesto':'opuesto', 'Punta':'punta',
+                    'Armador':'opuesto', 'L\u00edbero':'punta'}.get(p, 'punta')
         players=[]
         def add(pfx,num,role,data,read):
             players.append({"id":pfx+str(num),"num":num,"name":apellido(D['names'].get(str(num),'')),

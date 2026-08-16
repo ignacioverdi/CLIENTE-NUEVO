@@ -1,17 +1,17 @@
 # Datos del club que estas dando de alta.
 # Los comentarios van en su propio renglon, empezando con #
-NOMBRE = Casla
-NOMBRE_COMPLETO = CLUB ATLETICO SAN LORENZO DE ALMAGRO
-PIN = 1908
+NOMBRE = GELP
+NOMBRE_COMPLETO = CLUB GIMNASIA Y ESGRIMA DE LA PLATA
+PIN = 1887
 # Color: escribi AUTO para sacarlo del escudo, o pone uno propio como #0d3b8f
 COLOR = AUTO
 # Cuenta del entrenador (se crea sola)
-ENTRENADOR_MAIL = demo@casla.com
-ENTRENADOR_CLAVE = casla2026
+ENTRENADOR_MAIL = demo@gelp.com
+ENTRENADOR_CLAVE = gelp2026
 # Su liga y su pais
-LIGA = DHM
+LIGA = Liga Femenina
 PAIS = Argentina
 # Los rivales, separados por coma
-RIVALES = Untref, Ciudad, Ferro, Hacoaj, Velez, Defensores, Lomas, UBA, Campana, Boca, River
+RIVALES = Banco Provincia
 # Opcional: si lo dejas vacio se arma solo con el nombre
 REPO =

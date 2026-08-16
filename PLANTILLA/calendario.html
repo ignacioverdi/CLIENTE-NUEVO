@@ -189,7 +189,9 @@
       <span id="cal-sub-txt">🔄 Suscribirme al calendario</span>
     </button>
     <button class="add-btn" id="add-btn" onclick="openForm()" data-solo-editor>+ Agregar</button>
-    <button class="import-btn" id="import-btn" onclick="importFixture()" data-solo-editor>⬇️ Importar fixture 2026/27 (14 partidos)</button>
+    <!-- El boton se esconde solo si no hay fixture cargado: ofrecer importar
+         14 partidos que no existen confunde y hace pensar que algo fallo. -->
+    <button class="import-btn" id="import-btn" onclick="importFixture()" data-solo-editor style="display:none">⬇️ Importar fixture</button>
     <button class="import-btn" id="import-gym-btn" onclick="importGym()" data-solo-editor style="display:none">🏋️ Gimnasio (Lun/Mié/Vie · sep–abr)</button>
     <button class="import-btn" id="import-xmas-btn" onclick="importHolidays()" data-solo-editor style="display:none">🎄 Christmas Holidays (20–25 dic)</button>
     <button class="import-btn" id="import-volley-btn" onclick="importVolley()" data-solo-editor style="display:none">🏐 Vóley (01/09 – 30/04, sin vacaciones)</button>
@@ -263,10 +265,10 @@
     document.getElementById('tab-partidos').classList.toggle('on',t==='partidos');
     document.getElementById('tab-entrenamientos').classList.toggle('on',t==='entrenamientos');
     var ib=document.getElementById('import-btn'); if(ib) ib.style.display=(t==='partidos')?'':'none';
-    var ig=document.getElementById('import-gym-btn'); if(ig) ig.style.display=(t==='entrenamientos')?'':'none';
-    var ix=document.getElementById('import-xmas-btn'); if(ix) ix.style.display=(t==='entrenamientos')?'':'none';
-    var iv=document.getElementById('import-volley-btn'); if(iv) iv.style.display=(t==='entrenamientos')?'':'none';
-    var iff=document.getElementById('import-filzbach-btn'); if(iff) iff.style.display=(t==='entrenamientos')?'':'none';
+    /* Los cuatro botones de rutinas quedaron escondidos: cargaban los
+       entrenamientos del club que escribio el sistema —su gimnasio los
+       lunes, sus vacaciones de Navidad, su cancha de Filzbach—. Un cliente
+       los veia como si fueran suyos. Cada club carga los propios con el +. */
     document.getElementById('form-wrap').innerHTML='';
     render();
   }
@@ -343,8 +345,20 @@
   // Cualquier cliente los veia como si fueran suyos. Cada club carga los
   // propios desde la pantalla del calendario.
   var FIXTURE=[];
+  /* si el club cargo un fixture propio, recien ahi aparece el boton */
+  try{
+    if(FIXTURE.length){
+      var _b=document.getElementById('import-btn');
+      if(_b) _b.style.display='';
+    }
+  }catch(e){}
   function importFixture(){ if(window.VB_esEditor&&!VB_esEditor())return;
-    if(!confirm('¿Agregar los 14 partidos del fixture 2026/27 al calendario?')) return;
+    if(!FIXTURE.length){
+      alert('Todavia no hay un fixture cargado para importar.\n\n'
+          + 'Agrega los partidos con el boton + y quedan guardados para todo el equipo.');
+      return;
+    }
+    if(!confirm('¿Agregar los ' + FIXTURE.length + ' partidos del fixture al calendario?')) return;
     var arr=(data.partidos||[]).slice(), added=0;
     FIXTURE.forEach(function(m){
       var dup=arr.some(function(x){ return x.fecha===m.fecha && (x.rival||'')===m.rival && (x.condicion||'')===m.condicion; });

@@ -134,7 +134,10 @@
   </div>
 </div>
 
-<script src="plantel_club.js" onerror="void 0"></script>
+<script src="datos_equipo.js.enc" onerror="void 0"></script>
+<!-- abrirDatos descifra lo que se acaba de cargar. Sin esta linea el archivo
+     llega pero queda ilegible, y la pantalla se ve vacia igual. -->
+<script>abrirDatos();</script>
 <script>
 /* ============================================================================
    CAPA DE DATOS  —  local + nube (Firebase) usando el mismo fbSet/fbGet que ya
@@ -206,7 +209,14 @@ function feedback(p){
   return       {t:'🔴 Alerta — posible fatiga, priorizar recuperación.', c:'var(--red)'};
 }
 function todayISO(){ var d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
-function roster(){ return (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores) || []; }
+function roster(){
+  /* El plantel sale de datos_equipo.js, que arma HACER_TODO con los .dvw.
+     Antes se pedia plantel_club.js, un archivo que NO EXISTE en la plantilla:
+     la pantalla quedaba sin jugadoras en todos los clubes nuevos. */
+  var e = (window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores) || null;
+  if(e && e.length) return e;
+  return (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores) || [];
+}
 function pname(j){ return (j.ap||'') + (j.nombre?' '+j.nombre.charAt(0)+'.':''); }
 
 /* ---- construir sliders ---- */

@@ -19,6 +19,70 @@ window.OBJETIVOS_CONFIG={metas:{
 window.currentObjPartido = window.currentObjPartido || 'acumulado';
 window.currentObjTipo = window.currentObjTipo || 'partido'; // 'partido' or 'entrenamiento'
 
+/* ══ LOS OBJETIVOS LOS PONE CADA CLUB ══════════════════════════════════════
+   Los numeros de arriba son los que se cargaron al armar el sistema: el 3% de
+   error de saque, el 36% de recepcion positiva. Sirven como punto de partida,
+   pero cada equipo tiene su nivel y su idea de juego, y con valores ajenos los
+   colores no dicen nada: todo verde o todo rojo.
+
+   El cuerpo tecnico los cambia desde el dashboard y quedan guardados en la
+   base del club. Lo que se guarda ahi PISA a lo de este archivo.
+
+   Al mover el objetivo se recalculan tambien los tramos intermedios, para que
+   la escala de colores siga teniendo sentido sin tener que cargar cuatro
+   numeros por cada indicador. */
+window.OBJ_CLUB = {};
+
+function objAplicarClub(guardados){
+  if(!guardados) return;
+  Object.keys(guardados).forEach(function(id){
+    var m = window.OBJETIVOS_CONFIG.metas[id];
+    var v = parseFloat(guardados[id]);
+    if(!m || isNaN(v)) return;
+    var ancho = (m.g2 - m.y) || 10;      /* cuanto separaba el objetivo del piso */
+    var paso  = (m.g2 - m.g1) || (ancho / 3);
+    m.obj = v;
+    m.g2  = v;
+    m.g1  = v - paso;
+    m.y   = v - ancho;
+    /* la etiqueta muestra el objetivo real, no el de fabrica */
+    m.label = String(m.label).replace(/\(-?[\d.]+%?\)/, '(' + v + '%)');
+  });
+  window.OBJ_CLUB = guardados;
+}
+
+/* se leen apenas hay conexion; sin ella quedan los de fabrica */
+(function(){
+  try{
+    if(typeof fbGet === 'function'){
+      fbGet('objetivos', function(v){
+        if(v && typeof v === 'object'){
+          objAplicarClub(v);
+          try{ window.dispatchEvent(new Event('vb-objetivos')); }catch(e){}
+        }
+      });
+    } else {
+      var l = localStorage.getItem('obj_club');
+      if(l) objAplicarClub(JSON.parse(l));
+    }
+  }catch(e){}
+})();
+
+function objGuardar(id, valor){
+  var v = parseFloat(valor);
+  if(isNaN(v)) return false;
+  window.OBJ_CLUB[id] = v;
+  objAplicarClub({});                     /* para no re-aplicar dos veces */
+  var uno = {}; uno[id] = v;
+  objAplicarClub(uno);
+  try{
+    localStorage.setItem('obj_club', JSON.stringify(window.OBJ_CLUB));
+    if(typeof fbSet === 'function') fbSet('objetivos/' + id, v);
+  }catch(e){}
+  try{ window.dispatchEvent(new Event('vb-objetivos')); }catch(e){}
+  return true;
+}
+
 function objClassify(id,val){
   var m=window.OBJETIVOS_CONFIG.metas[id];
   if(val>=m.g2) return{color:'#22c55e',bg:'rgba(34,197,94,.1)',   border:'rgba(34,197,94,.35)',  label:'Objetivo'};

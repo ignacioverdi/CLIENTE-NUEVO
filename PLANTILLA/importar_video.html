@@ -97,6 +97,9 @@
      ano solo: "2026" en vez de "26-27". Los de arriba cubren las ligas
      que cruzan de ano; estos, las que no. Los que no existen los
      descarta el onerror, asi que no molesta pedir de mas. -->
+<!-- liga_data trae los partidos ya procesados: asi se puede asociar el
+     primer video sin tener ninguno cargado todavia. -->
+<script src="liga_data.js.enc" onerror="void 0"></script>
 <script src="datos_video_2025.js.enc?v=3" onerror="void 0"></script>
 <script src="datos_video_2026.js.enc?v=3" onerror="void 0"></script>
 <script src="datos_video_2027.js.enc?v=3" onerror="void 0"></script>
@@ -118,6 +121,27 @@
     var LSK = 'nafels_video_map_draft_'+MODO;
     var draft = {};
     try{ draft = JSON.parse(localStorage.getItem(LSK)||'{}'); }catch(e){}
+    /* ══ Los partidos a los que se les puede poner video ══════════════════
+       Salian SOLO de VIDEO_DATA, que se genera A PARTIR de los videos ya
+       cargados. Un club nuevo entraba a esta pantalla y no veia ningun
+       partido: para cargar el primer video hacia falta tener un video
+       cargado.
+
+       Ahora, si esa lista viene vacia, se arma con los partidos que ya
+       procesaron los .dvw —que estan en liga_data.js—. Asi el primer video
+       se puede asociar desde el dia uno. */
+    if(!Object.keys(VD).length && MODO !== 'ent'){
+      try{
+        var _t = (window.LIGA_DATA && LIGA_DATA.teams) || {};
+        Object.keys(_t).forEach(function(slug){
+          (_t[slug].matches || []).forEach(function(m){
+            var _c = m.code || ('P' + (m.date || '') + '-' + slug);
+            if(!_c || VD[_c]) return;
+            VD[_c] = {date: m.date || '', rival: m.rival || '', acciones: []};
+          });
+        });
+      }catch(e){}
+    }
     var codes = Object.keys(VD).sort(function(a,b){ return (VD[a].date||'') < (VD[b].date||'') ? -1 : 1; });
     var list = document.getElementById('list');
     document.getElementById('ntot').textContent = codes.length;

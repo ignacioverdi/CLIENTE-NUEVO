@@ -414,7 +414,10 @@ const ROLECFG={
  defense:{court:2,evIdx:3,tIdx:5,vIdx:6,tagIdx:0,stats:'dig',pal:'green',
    filters:[{lab:'Tipo',idx:7,opts:[["all","Todas"]],dyn:'combo'},{lab:'Ataque desde',idx:1,opts:DAZ},{lab:'Momento',idx:4,opts:SMO,range:true},{lab:'Resultado',idx:3,opts:DGS}],
    dir:null,tiles:['Efic','#+','/=','Potencia','Flotado','N','Perfecta','Cubre','Mala'],hl:[0,1]},
- bloqueo:{court:1,evIdx:2,tIdx:3,vIdx:4,tagIdx:0,stats:'blk',pal:'blue',
+ /* Cada fundamento con su gama, para distinguirlos de un vistazo:
+    ataque rojo · saque azul · recepcion amarillo · defensa verde ·
+    bloqueo violeta. El bloqueo estaba en azul y se confundia con el saque. */
+ bloqueo:{court:1,evIdx:2,tIdx:3,vIdx:4,tagIdx:0,stats:'blk',pal:'arm',
    filters:[{lab:"Combo",idx:0,opts:[["all","Todas"]],dyn:"combo"},{lab:"Fase",idx:5,opts:FASE},{lab:"Zona",idx:1,opts:[["all","Todas"],["4","z4 (punta)"],["3","z3 (central)"],["2","z2 (opuesto)"],["8","z8 (pipe)"],["9","z9 (zaguero)"]]},{lab:"Resultado",idx:2,opts:BLS}],
    dir:null,tiles:['Efic','Positivos','Err/Tocado','\u2014','\u2014','Bloqueos','Kills','Toques','Malos'],hl:[0,5]}
 };
@@ -480,6 +483,28 @@ function renderArmador(){
   armTeam=(slug&&GPL.teams&&GPL.teams[slug])?GPL.teams[slug]:null;
   if(!armTeam||!(armTeam.setters&&armTeam.setters.length)){sec.classList.add("hidden");return;}
   sec.classList.remove("hidden");
+  /* ══ La fase inicial ═══════════════════════════════════════════════════
+     Arrancaba SIEMPRE en side-out. Con una temporada entera da igual —
+     siempre hay armados en esa fase—, pero con pocos partidos puede no
+     haber ninguno y las seis rotaciones aparecen en cero: la pantalla se ve
+     rota aunque los datos esten completos.
+
+     Ahora se mira que hay antes de elegir: si en side-out no hay nada, se
+     abre en la fase que si tenga. Una sola vez, para no pisar lo que el
+     entrenador elija despues. */
+  if(!window._armFaseVista){
+    window._armFaseVista = true;
+    try{
+      var _s = (armTeam.setters[0] && armTeam.setters[0].s) || [];
+      var _so = 0, _tr = 0;
+      for(var _i=0; _i<_s.length; _i++){ if(_s[_i][4]===0) _so++; else _tr++; }
+      if(_so === 0 && _tr > 0) armPhase = "TR";
+      else if(_so === 0 && _tr === 0) armPhase = "all";
+      /* el desplegable tiene que mostrar la fase que se eligio */
+      var _sel = document.getElementById("armfase");
+      if(_sel) _sel.value = armPhase;
+    }catch(e){}
+  }
   var _fs=document.getElementById("focusSel");var _foc=(_fs&&_fs.value&&_fs.value!=="all")?_fs.value:"";
   var _asel=document.getElementById("armsetsel");
   if(_foc){
@@ -573,7 +598,7 @@ function ppVid(code){
 function readKey(pid){return "ppread:"+(typeof TEAM!=="undefined"?TEAM:"")+":"+pid;}
 function readVal(p){try{var v=localStorage.getItem(readKey(p.id));if(v!==null)return v;}catch(e){}return p.read||"";}
 function saveRead(el){try{localStorage.setItem(readKey(el.getAttribute("data-pid")),el.innerHTML);}catch(e){}}
-function buildSection(p){var cfg=ROLECFG[p.role];
+function buildSection(p){var cfg=ROLECFG[p.role]; if(!cfg) return '';
   var fh=cfg.filters.map(function(fl,i){return filtCtrl(p.id+'-f'+i,fl,'',filterOpts(p,fl));}).join('');
   if(cfg.stats==='atk'||cfg.stats==='srv'||cfg.stats==='dig'){fh+='<div class="fgroup"><label title="Mín. pelotas">Mín.</label><input type="number" min="0" value="0" id="'+p.id+'-min" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;font-family:inherit;font-weight:700"></div>';}
   return '<div class="player" data-num="'+p.num+'" data-pid="'+p.id+'"><div class="phead"><div class="pnum">'+p.num+'</div><div class="pname">'+p.name+'</div><div class="prole">'+(p.pos||p.role)+'</div><div class="pmeta">'+p.total+U(p.role)+'</div><button class="vtodo" onclick="openZone(\''+p.id+'\',\'*\')" title="Ver todos los videos juntos, de todas las zonas">&#9654; Ver todo</button></div>'
@@ -582,6 +607,11 @@ function buildSection(p){var cfg=ROLECFG[p.role];
    +'<div class="stats">'+tiles3(p,cfg)+'</div></div>'+'<div class="read" contenteditable="true" spellcheck="false" data-pid="'+p.id+'" data-ph="Escribí tu análisis…" title="Click para editar" oninput="saveRead(this)">'+readVal(p)+'</div>'+'</div>';
 }
 function render(p){var cfg=ROLECFG[p.role];
+  /* Si el rol no existe en ROLECFG, esta tarjeta se saltea en vez de tumbar
+     el bucle entero. Un solo rol desconocido dejaba sin dibujar TODAS las
+     tarjetas siguientes y la pantalla se veia vacia aunque los datos
+     estuvieran completos. */
+  if(!cfg) return;
   var vals=cfg.filters.map(function(fl,i){return readFilt(p.id+'-f'+i,fl);});
   var f=p.data.filter(function(a){return MSEL.has(a[cfg.vIdx])&&passes(a,cfg,vals);}),n=f.length;
   var z={"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0},vz={};

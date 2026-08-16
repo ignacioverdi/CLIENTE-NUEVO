@@ -109,7 +109,10 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 <script src="datos_video_ent_27-28.js.enc" onerror="void 0"></script>
 <script src="datos_video_ent_28-29.js.enc" onerror="void 0"></script>
   
-  <script src="datos_video.js.enc" onerror="void 0"></script>
+  <!-- liga_data trae las defensas leidas de los .dvw: asi el mapa funciona
+     aunque todavia no haya videos cargados. -->
+<script src="liga_data.js.enc" onerror="void 0"></script>
+<script src="datos_video.js.enc" onerror="void 0"></script>
 <!-- Los torneos que empiezan y terminan el mismo ano se etiquetan con el
      ano solo: "2026" en vez de "26-27". Los que no existen los descarta
      el onerror. -->
@@ -356,6 +359,39 @@ function _videoTodo(){
       if(!M) return;
       Object.keys(M).forEach(function(k){ VD[k] = M[k]; });
     });
+  }catch(e){}
+
+  /* ══ Sin video: se arma desde liga_data ═══════════════════════════════
+     Este mapa se alimentaba SOLO del archivo de video, que existe recien
+     cuando alguien carga los videos de los partidos. Los demas mapas
+     —ataque, saque, recepcion— leen liga_data.js y funcionan igual sin
+     video: no habia razon para que este fuera la excepcion.
+
+     Las defensas estan en los .dvw y ya viajan en liga_data. Lo unico que
+     se pierde sin video es el corte para ver la jugada; los numeros y las
+     zonas se muestran igual. */
+  try{
+    if(!Object.keys(VD).length && window.LIGA_DATA && LIGA_DATA.teams){
+      var _sint = {};
+      Object.keys(LIGA_DATA.teams).forEach(function(slug){
+        var _t = LIGA_DATA.teams[slug] || {};
+        var _dig = _t.dig || {};
+        Object.keys(_dig).forEach(function(num){
+          var _j = _dig[num] || {};
+          (_j.d || _j.data || []).forEach(function(a){
+            var _mid = 'liga-' + slug;
+            _sint[_mid] = _sint[_mid] || {acciones: [], equipo: _t.name || slug};
+            _sint[_mid].acciones.push({
+              sk: 'Defensa', num: +num, jugador: _j.name || ('#' + num),
+              equipo: _t.name || slug,
+              zona: a[2] || a[1] || '', zona_origen: a[1] || '',
+              ev: a[3] || a[2] || '', t: 0
+            });
+          });
+        });
+      });
+      VD = _sint;
+    }
   }catch(e){}
   return VD;
 }

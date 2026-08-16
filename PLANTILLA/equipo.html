@@ -142,7 +142,20 @@ function render(){
     }
 
     fotoWrap.innerHTML += '<div class="jug-num-overlay" style="color:' + color + '">#' + j.num + '</div>';
-    fotoWrap.innerHTML += '<div class="jug-pos-overlay" style="background:rgba(0,0,0,.6);color:' + color + ';border:1px solid ' + color + '33">' + j.pos + '</div>';
+    /* ══ El puesto, editable por el staff ═══════════════════════════════
+       Los puestos salen de lo que declara cada .dvw, y ahi el scout no
+       siempre los carga: quedan jugadoras sin puesto o con uno equivocado.
+       Eso despues aparece en su perfil, en el plan de partido y en el
+       informe, y no habia forma de corregirlo desde la app.
+
+       Ahora el cuerpo tecnico lo cambia con un toque. Se guarda en la base
+       del club y desde ahi manda sobre lo que digan los partidos: nadie
+       tiene que abrir un archivo ni correr nada. El jugador solo lo ve. */
+    var _pos = (window.PLANTEL_FIX && window.PLANTEL_FIX[String(j.num)]) || j.pos || '';
+    color = POS_COLOR[_pos] || '#64748b';
+    fotoWrap.style.borderBottom = '2px solid ' + color;
+    fotoWrap.innerHTML += '<div class="jug-pos-overlay" data-num="' + j.num + '" style="background:rgba(0,0,0,.6);color:' + color + ';border:1px solid ' + color + '33">'
+      + (_pos || '+ puesto') + '</div>';
 
     card.appendChild(fotoWrap);
 
@@ -180,7 +193,66 @@ function render(){
   });
 }
 
-render();
+/* ══ CORREGIR EL PUESTO DESDE LA APP ══════════════════════════════════════
+   Se toca la etiqueta del puesto y se elige el correcto. Queda guardado en la
+   base del club, en playbook aparte: los .dvw se siguen procesando igual y
+   esto manda sobre lo que ellos digan.
+
+   Solo el cuerpo tecnico puede: para un jugador la etiqueta no responde. */
+var PUESTOS = ['ARMADOR', 'PUNTA', 'CENTRAL', 'OPUESTO', 'LIBERO'];
+window.PLANTEL_FIX = {};
+
+function puedeEditarPlantel(){
+  try{ return (typeof VB_PUEDE_EDITAR === 'undefined') || VB_PUEDE_EDITAR; }catch(e){ return true; }
+}
+
+function cargarCorrecciones(cb){
+  try{
+    if(typeof fbGet === 'function'){
+      fbGet('plantel_pos', function(v){
+        if(v && typeof v === 'object') window.PLANTEL_FIX = v;
+        cb();
+      });
+      return;
+    }
+    var l = localStorage.getItem('plantel_pos');
+    if(l) window.PLANTEL_FIX = JSON.parse(l);
+  }catch(e){}
+  cb();
+}
+
+function guardarPuesto(num, pos){
+  window.PLANTEL_FIX[String(num)] = pos;
+  try{
+    localStorage.setItem('plantel_pos', JSON.stringify(window.PLANTEL_FIX));
+    if(typeof fbSet === 'function') fbSet('plantel_pos/' + num, pos);
+  }catch(e){}
+  render();
+  conectarEdicion();
+}
+
+function conectarEdicion(){
+  if(!puedeEditarPlantel()) return;
+  document.querySelectorAll('.jug-pos-overlay').forEach(function(el){
+    el.style.cursor = 'pointer';
+    el.title = 'Tocá para cambiar el puesto';
+    el.addEventListener('click', function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      var num = el.getAttribute('data-num');
+      if(!num) return;
+      var actual = window.PLANTEL_FIX[String(num)] || el.textContent.trim();
+      var i = PUESTOS.indexOf(actual);
+      /* va rotando por los cinco puestos con cada toque: mas rapido que un
+         menu, y son solo cinco */
+      guardarPuesto(num, PUESTOS[(i + 1) % PUESTOS.length]);
+    });
+  });
+}
+
+cargarCorrecciones(function(){
+  render();
+  conectarEdicion();
+});
 </script>
 
 <style>

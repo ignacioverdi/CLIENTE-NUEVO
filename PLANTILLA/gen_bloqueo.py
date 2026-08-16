@@ -71,6 +71,135 @@ def load_video(path):
             idx=txt.find(mk,idx+1)
     return None
 
+def bloqueo_desde_dvw(out='datos_bloqueo.js'):
+    """Arma datos_bloqueo.js leyendo los .dvw, sin depender del video.
+
+    Mismo formato que la version con video, menos el tiempo del corte: sin
+    video no hay a que segundo saltar, asi que ese campo va vacio y la
+    pantalla muestra los numeros sin el boton de ver la jugada.
+    """
+    import glob as _g
+
+    carpetas = [d for d in os.listdir('.')
+                if os.path.isdir(d) and d.upper().startswith('DVW')
+                and 'ENTREN' not in d.upper()]
+    archivos = []
+    for c in carpetas:
+        archivos += _g.glob(os.path.join(c, '*.dvw'))
+    if not archivos:
+        return 0
+
+    try:
+        import config_club as _cc
+        TABLA = _cc.tabla_de_equipos() or {}
+    except Exception:
+        TABLA = {}
+
+    def corto(largo):
+        pl = re.sub(r'[^a-z0-9]', '', largo.lower())
+        for k, v in TABLA.items():
+            kk = re.sub(r'[^a-z0-9]', '', str(k).lower())
+            if kk and (kk == pl or kk in pl):
+                return re.sub(r'[^a-z0-9]', '', str(v).lower())
+        return re.sub(r'[^a-z0-9]', '', largo.split('(')[0].lower())[:18]
+
+    BLOCK = {}
+    for ruta in sorted(archivos):
+        try:
+            with open(ruta, 'rb') as f:
+                txt = f.read().decode('latin-1', 'replace').replace('\r\n', '\n')
+        except Exception:
+            continue
+
+        m = re.search(r'\[3TEAMS\](.*?)(?:\n\[3|\Z)', txt, re.S)
+        if not m:
+            continue
+        eqs = [l.split(';')[1].strip() for l in m.group(1).strip().split('\n')[:2]
+               if len(l.split(';')) > 1]
+        if len(eqs) < 2:
+            continue
+        slug = {'*': corto(eqs[0]), 'a': corto(eqs[1])}
+
+        nombres = {}
+        for lado, sec in (('*', '3PLAYERS-H'), ('a', '3PLAYERS-V')):
+            mm = re.search(r'\[' + sec + r'\](.*?)(?:\n\[3|\Z)', txt, re.S)
+            if not mm:
+                continue
+            for l in mm.group(1).strip().split('\n'):
+                c = l.split(';')
+                if len(c) > 9 and c[1].strip():
+                    nombres[(lado, c[1].strip().lstrip('0') or c[1].strip())] = c[9].strip()
+
+        ms = re.search(r'\[3SCOUT\](.*)', txt, re.S)
+        if not ms:
+            continue
+        # ── El identificador del partido ────────────────────────────────
+        # Tiene que ser EL MISMO que arma gen_plan_partido.py, o la pantalla
+        # descarta todo: filtra los bloqueos contra la lista de partidos
+        # seleccionados y ninguno coincide. Antes se usaba el nombre del
+        # archivo y por eso las zonas salian en cero aunque los bloqueos
+        # estuvieran cargados.
+        _fn = os.path.basename(ruta)
+        _mc = re.search(r'\b(\d{5,6})\b', _fn)
+        if _mc:
+            mid = _mc.group(1)
+        else:
+            _dm = re.search(r'(20\d\d-\d\d-\d\d)', _fn)
+            _b = _dm.group(1) if _dm else 'sinfecha'
+            import unicodedata as _u
+            _t = _u.normalize('NFKD', os.path.splitext(_fn)[0]).encode('ascii', 'ignore').decode()
+            _t = re.sub(r'[^A-Za-z0-9]+', '', _t).upper()[:12] or 'SIN'
+            mid = 'P' + _b + '-' + _t
+
+        combo = ''
+        zona = ''
+        fase = 'SO'
+        for linea in ms.group(1).split('\n'):
+            cod = linea.split(';')[0].strip()
+            if not cod:
+                continue
+            # el ataque de antes da la combinacion y la zona de origen
+            ma = re.match(r'^([*a])(\d\d)A(.)(.)', cod)
+            if ma:
+                resto = cod[6:].split('~')
+                combo = resto[0][:2] if resto and resto[0] else ''
+                # La zona sale del propio codigo: en "J1~36" el 3 es la zona
+                # desde donde se ataco. La tabla COMBO_ZONE solo sirve para la
+                # nomenclatura europea (X5, V6...); cada liga usa la suya —este
+                # club escribe G4, W2, J1— y con la tabla la zona quedaba vacia
+                # y el bloqueo no se podia repartir por zona de origen.
+                zona = ''
+                if len(resto) > 1 and resto[1] and resto[1][0].isdigit():
+                    zona = resto[1][0]
+                if not zona:
+                    zona = COMBO_ZONE.get(combo, '')
+                continue
+            mb = re.match(r'^([*a])(\d\d)B(.)(.)', cod)
+            if mb:
+                lado, num, ev = mb.group(1), mb.group(2).lstrip('0') or mb.group(2), mb.group(4)
+                eq = slug.get(lado, '')
+                if not eq:
+                    continue
+                BLOCK.setdefault(eq, {}).setdefault(
+                    num, {'name': nombres.get((lado, num), '#' + num), 'data': []}
+                )['data'].append([combo, zona, ev, '', mid, fase, 'partido'])
+
+    if not BLOCK:
+        return 0
+
+    OUT = {}
+    total = 0
+    for team, ps in BLOCK.items():
+        pl = [{'num': n, 'name': i['name'], 'role': 'bloqueo',
+               'total': len(i['data']), 'data': i['data']} for n, i in ps.items()]
+        pl.sort(key=lambda p: -p['total'])
+        OUT[team] = pl
+        total += sum(p['total'] for p in pl)
+    open(out, 'w', encoding='utf-8').write(
+        'window.PP_BLOCK=' + json.dumps(OUT, ensure_ascii=False, separators=(',', ':')) + ';')
+    return total
+
+
 def autodetect_video():
     cands=[f for f in glob.glob('datos_video*.js') if 'ent' not in f.lower()]
     # más reciente primero (por si hay uno por temporada + el fresco)
@@ -207,6 +336,19 @@ if __name__=='__main__':
         if _c: _ent=[_c[-1]]
     vp = _args[0] if len(_args)>0 else autodetect_video()
     if not vp or not os.path.isfile(vp):
-        print('[bloqueo] ERROR: no encontre datos_video*.js'); sys.exit(1)
+        # ══ Sin video: se lee de los .dvw ═══════════════════════════════
+        # El bloqueo se armaba SOLO desde el archivo de video, que existe
+        # recien cuando alguien carga los videos de los partidos. Un club
+        # nuevo abria la pestaña de bloqueo y la veia vacia, aunque sus .dvw
+        # tuvieran los bloqueos adentro —80 en un solo partido—.
+        #
+        # El video sigue siendo mejor: trae el segundo exacto de cada accion
+        # y permite ver el corte. Pero sin el, es preferible mostrar los
+        # numeros que no mostrar nada.
+        n = bloqueo_desde_dvw('datos_bloqueo.js')
+        if n:
+            print('[bloqueo] sin video: %d bloqueos leidos de los .dvw' % n)
+            sys.exit(0)
+        print('[bloqueo] no hay video ni .dvw con bloqueos'); sys.exit(1)
     _fuentes=[(vp,'partido')]+[(e,'entrenamiento') for e in _ent if os.path.exists(e)]
     build(_fuentes, _args[1] if len(_args)>1 else 'datos_bloqueo.js')

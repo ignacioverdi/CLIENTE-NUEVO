@@ -94,7 +94,16 @@ def equipos_de_los_datos(teams_data, actuales, propio):
         juntos.remove(propio)
         juntos.insert(0, propio)
     return juntos
-MAIN_TEAM = '{{Club}}'   # el equipo propio
+# ══ EL EQUIPO PROPIO ══════════════════════════════════════════════════════
+# Esta linea PISABA el valor que se lee de config_club veinte lineas mas
+# arriba. Con el marcador literal '{{Club}}' no coincide con ningun equipo
+# del .dvw, asi que se descartaban TODOS los partidos y datos_partidos.js
+# salia vacio: sin dashboard, sin analisis y sin plan de partido, aunque el
+# proceso dijera "LISTO".
+#
+# Ahora solo se usa si config_club no dijo nada.
+if 'MAIN_TEAM' not in dir() or not MAIN_TEAM or MAIN_TEAM.startswith('{{'):
+    MAIN_TEAM = '{{Club}}'   # el equipo propio
 
 # Posiciones oficiales del plantel CASLA (por número de camiseta).
 # Fuente única de verdad — coincide con EQUIPO_DEMO de jugador.html.
@@ -329,7 +338,7 @@ def parse_dvw_both(fpath, temporada):
         scout = content[idx+9:content.find('\n[3',idx+9)].strip().split('\n')
 
         atk=defaultdict(list); srv=defaultdict(list)
-        rec=defaultdict(list); sets=defaultdict(list); blk=defaultdict(list)
+        rec=defaultdict(list); sets=defaultdict(list); blk=defaultdict(list); dig=defaultdict(list)
         prev_srv_orig=0; current_atype=0
 
         for line in scout:
@@ -383,9 +392,15 @@ def parse_dvw_both(fpath, temporada):
             elif skill=='R': rec[pnum].append(action)
             elif skill=='E': sets[pnum].append(action)
             elif skill=='B': blk[pnum].append(action)
+            # La DEFENSA no se leia. Estaba en el .dvw como cualquier otra
+            # accion, pero nunca llegaba a la base: por eso el mapa de calor
+            # de defensa era el unico que exigia tener los videos cargados,
+            # mientras ataque, saque y recepcion funcionaban sin ellos.
+            elif skill=='D': dig[pnum].append(action)
 
         result[team]={'players':players,'atk':dict(atk),'srv':dict(srv),
-                      'rec':dict(rec),'sets':dict(sets),'blk':dict(blk)}
+                      'rec':dict(rec),'sets':dict(sets),'blk':dict(blk),
+                      'dig':dict(dig)}
     return result, date, home, away
 
 # ── UPDATE DATABASE ───────────────────────────────────────────────
@@ -406,6 +421,36 @@ def _parse_set_result(txt):
             if h>a: hs+=1
             elif a>h: as_+=1
     return [hs,as_] if (hs or as_) else None
+
+def _puestos_corregidos():
+    """Los puestos que el staff corrigio en la pantalla de Equipo.
+
+    Se leen de la base del club. Si no hay internet o la rama esta vacia, se
+    sigue con lo que digan los .dvw: la correccion es una mejora, nunca un
+    requisito.
+    """
+    MAPA = {'LIBERO': 'LIBERO', 'PUNTA': 'OUTSIDE', 'OPUESTO': 'OPPOSITE',
+            'CENTRAL': 'MIDDLE', 'ARMADOR': 'SETTER'}
+    out = {}
+    try:
+        import json as _j, io as _io, re as _re, urllib.request as _u
+        fb = _io.open('firebase.js', encoding='utf-8', errors='replace').read()
+        url = _re.search(r"FB_URL\s*=\s*'([^']+)'", fb)
+        rama = _re.search(r"FB_RAMA\s*=\s*'([^']*)'", fb)
+        if not url:
+            return out
+        pre = ('clubes/%s/' % rama.group(1)) if (rama and rama.group(1)) else ''
+        with _u.urlopen('%s/%splantel_pos.json' % (url.group(1).rstrip('/'), pre),
+                        timeout=10) as r:
+            d = _j.loads(r.read().decode('utf-8'))
+        if isinstance(d, dict):
+            for k, v in d.items():
+                if isinstance(v, str) and v.upper() in MAPA:
+                    out[str(int(k))] = MAPA[v.upper()]
+    except Exception:
+        pass
+    return out
+
 
 def update_database(dvw_dir, temporada, db_path='nla_players_db.json'):
     # Load existing DB
@@ -452,21 +497,24 @@ def update_database(dvw_dir, temporada, db_path='nla_players_db.json'):
             for num, p in data['players'].items():
                 ns = str(num)
                 if ns not in teams_data[team]:
-                    teams_data[team][ns] = {'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[]}
+                    teams_data[team][ns] = {'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[],'dig':[]}
                 if teams_data[team][ns]['info'] is None:
                     teams_data[team][ns]['info'] = {**p, 'team':team}
             for num, acts in data['atk'].items():
-                teams_data[team].setdefault(str(num),{'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[]})
+                teams_data[team].setdefault(str(num),{'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[],'dig':[]})
                 teams_data[team][str(num)]['atk'].extend(acts)
             for num, acts in data['srv'].items():
-                teams_data[team].setdefault(str(num),{'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[]})
+                teams_data[team].setdefault(str(num),{'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[],'dig':[]})
                 teams_data[team][str(num)]['srv'].extend(acts)
             for num, acts in data['rec'].items():
-                teams_data[team].setdefault(str(num),{'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[]})
+                teams_data[team].setdefault(str(num),{'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[],'dig':[]})
                 teams_data[team][str(num)]['rec'].extend(acts)
             for num, acts in data['blk'].items():
-                teams_data[team].setdefault(str(num),{'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[]})
+                teams_data[team].setdefault(str(num),{'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[],'dig':[]})
                 teams_data[team][str(num)]['blk'].extend(acts)
+            for num, acts in (data.get('dig') or {}).items():
+                _p = teams_data[team].setdefault(str(num),{'info':None,'atk':[],'srv':[],'rec':[],'sets':[],'blk':[],'dig':[]})
+                _p.setdefault('dig', []).extend(acts)
 
         games_log.append({'file':fname,'date':date,'home':home,'away':away,'temporada':temporada})
         added += 1
@@ -507,7 +555,11 @@ def filter_teams_data(teams_data, season):
         out[team] = {}
         for num, pd in players.items():
             npd = {'info': pd.get('info')}
-            for key in ('atk', 'srv', 'rec', 'sets', 'blk'):
+            # 'dig' es la DEFENSA. Faltaba en esta lista, asi que el filtro
+            # de temporada la descartaba: llegaba a la base pero nunca a
+            # liga_data.js, y por eso el mapa de calor de defensa era el unico
+            # que exigia tener los videos cargados.
+            for key in ('atk', 'srv', 'rec', 'sets', 'blk', 'dig'):
                 npd[key] = [a for a in pd.get(key, []) if str(a.get('temporada')) == season]
             out[team][num] = npd
     return out
@@ -661,8 +713,15 @@ def detectar_armadores(content, pfx, setter_count=2, extra_liberos=None, positio
     for n in armadores_rol + otros:
         if n not in result:
             result.append(n)
-        if len(result) >= setter_count: break
-    return result[:setter_count]
+        # Antes cortaba en 2. Un plantel puede tener tres armadoras y la
+        # tercera desaparecia de las pantallas —ni en el dashboard ni en el
+        # plan de partido—, asi que no se veia el orden de juego real.
+        #
+        # Ahora entran todas las que armen de verdad. El orden es por
+        # cantidad de armados: la primera es la titular, la segunda la
+        # primera suplente, y asi. Ese orden ES la informacion.
+        if len(result) >= max(setter_count, 6): break
+    return result
 def parse_setter_rallies(content, pfx, rival_pfx, is_home, setter_num, date, rival, mcode=''):
     """Extrae los rallies de armado de un setter específico."""
     content = content.replace('\r\n','\n')
@@ -764,7 +823,14 @@ def collect_setter_rallies(dvw_dir, team_norm_map, main_teams, teams_data=None):
             team_libs = liberos_by_team.get(team, set())
             psec = '[3PLAYERS-H]' if pfx=='*' else '[3PLAYERS-V]'
             team_pos = _get_positions(content, psec)
-            setters = detectar_armadores(content, pfx, 2, team_libs, team_pos)
+            # ── Cuantos armadores se guardan ────────────────────────────
+            # Estaba fijo en 2: un club con tres armadoras veia solo a dos, y
+            # la tercera desaparecia del dashboard y del plan de partido.
+            #
+            # Con 4 entran todos los casos reales. La lista va ordenada por
+            # cantidad de armados, asi el orden ya dice quien es titular,
+            # quien la primera suplente y quien juega menos.
+            setters = detectar_armadores(content, pfx, 4, team_libs, team_pos)
             for sn in setters:
                 setters_detected.setdefault(team, set()).add(sn)
                 r = parse_setter_rallies(content, pfx, rpfx, ishome, sn, date, rival, code)
@@ -809,11 +875,20 @@ def build_liga_data(teams_data, combos, output_dir='.', setters=None, rallies=No
         _gidx={dk:i for i,dk in enumerate(_gseen)}
         _games_list=[{'i':i,'date':d,'rival':rv,'r':_res_for(d,team,rv)} for i,(d,rv) in enumerate(_gseen)]
         def _gi(a): return _gidx.get((a.get('date',''),a.get('rival','')),0)
-        atk_p,srv_p,rec_p={},{},{}
+        # dig_p: la DEFENSA. No se guardaba, y por eso el mapa de calor de
+        # defensa era el unico que necesitaba el video cargado —los demas leen
+        # de aca—. Las acciones estan en el .dvw como cualquier otra.
+        atk_p,srv_p,rec_p,dig_p={},{},{},{}
         for ns,pd in td.items():
             info=pd.get('info') or {}; name=info.get('name',ns); num=int(ns)
             ape=info.get('apellido','') or (name.rsplit(' ',1)[0] if ' ' in name else name)
             atk,srv,rec=pd.get('atk',[]),pd.get('srv',[]),pd.get('rec',[])
+            dig=pd.get('dig',[]) or pd.get('def',[])
+            if dig:
+                dig_p[ns]={'name':name,'apellido':ape,'num':num,
+                    'd':[[ridx.get(a.get('rival',''),0),_gi(a),a.get('set_num',1),1,
+                           RES_IDX.get(a.get('effect','='),4),a.get('orig',0),a.get('dest',0)]
+                          for a in dig]}
             if atk: atk_p[ns]={'name':name,'num':num,'a':[[ridx.get(a.get('rival',''),0),_gi(a),a.get('set_num',1),1,a.get('atype',0),COMBO_IDX.get(a.get('combo',''),-1),RES_IDX.get(a.get('effect','='),4),a.get('orig',0),a.get('dest',0),6,-1] for a in atk]}
             if srv:
                 stl=list(dict.fromkeys('S'+a.get('stype','Q') for a in srv)) or ['SQ']; sidx={s:i for i,s in enumerate(stl)}
@@ -843,8 +918,46 @@ def build_liga_data(teams_data, combos, output_dir='.', setters=None, rallies=No
         setters_list.sort(key=lambda x:-x['total'])
         # Roster de posiciones — jerarquía: setter→libero→central→outside/opposite
         roster={}
+        # ══ El plantel confirmado por el club manda ═══════════════════════
+        # Los puestos se deducen de como juega cada una, y eso falla: una
+        # jugadora con pocas acciones queda como 'OTRO', y una punta que
+        # recibio mucho puede quedar como libero. El club lo confirma una vez
+        # en plantel_oficial.json y desde ahi vale eso.
+        # Los puestos que el cuerpo tecnico corrigio DESDE LA APP, en la
+        # pantalla de Equipo. Viven en la base del club, asi que los toma
+        # tanto este motor como el robot que procesa los partidos subidos.
+        # Nadie tiene que abrir un archivo ni correr nada a mano.
+        _OFICIAL = _puestos_corregidos()
+
+        # ══ Lo que DECLARA el .dvw ════════════════════════════════════════
+        # El scout carga el puesto de cada jugadora en el archivo. Ese dato se
+        # estaba ignorando y todo salia de deducir como juega cada una, que
+        # falla con pocos partidos: una libero con 17 recepciones quedaba como
+        # 'OTRO' y desaparecia de la pantalla de recepcion.
+        #
+        # El orden es: lo que corrigio el club en la app, despues lo que
+        # declara el archivo, y recien al final la deduccion.
+        # El puesto viaja en info['pos'], con la abreviatura del propio motor:
+        # L libero · OH punta · OPP opuesto · MB central · S armador.
+        _SIGLA = {'L': 'LIBERO', 'OH': 'OUTSIDE', 'OPP': 'OPPOSITE',
+                  'MB': 'MIDDLE', 'S': 'SETTER'}
+        _DECL = {}
+        try:
+            for _ns, _pd in td.items():
+                _r = ((_pd.get('info') or {}).get('pos') or '').strip().upper()
+                if _r in _SIGLA:
+                    _DECL[str(_ns)] = _SIGLA[_r]
+        except Exception:
+            pass
+
         team_setters = set(str(s['num']) for s in setters_list)
         for ns0, pd0 in td.items():
+            if str(ns0) in _OFICIAL and _OFICIAL[str(ns0)]:
+                roster[str(ns0)] = _OFICIAL[str(ns0)]
+                continue
+            if str(ns0) in _DECL:
+                roster[str(ns0)] = _DECL[str(ns0)]
+                continue
             atk0 = pd0.get('atk',[]); rec0 = len(pd0.get('rec',[]))
             nser = str(ns0)
             if nser in team_setters: roster[nser]='SETTER'; continue
@@ -859,7 +972,7 @@ def build_liga_data(teams_data, combos, output_dir='.', setters=None, rallies=No
             if rec0 >= 20: roster[nser]='OUTSIDE'
             elif rec0 <= 8: roster[nser]=('OUTSIDE' if punta>opp else 'OPPOSITE')
             else: roster[nser]=('OUTSIDE' if punta>=opp else 'OPPOSITE')
-        LIGA['teams'][team.lower().replace(' ','_')]={'name':team,'rivals':rivals,'games':_games_list,'atk':atk_p,'srv':srv_p,'rec':rec_p,'setters':setters_list,'setter':setters_list[0] if setters_list else None,'roster':roster,'matches':matches}
+        LIGA['teams'][team.lower().replace(' ','_')]={'name':team,'rivals':rivals,'games':_games_list,'atk':atk_p,'srv':srv_p,'rec':rec_p,'dig':dig_p,'setters':setters_list,'setter':setters_list[0] if setters_list else None,'roster':roster,'matches':matches}
     with open(os.path.join(output_dir,'liga_data.js'),'w',encoding='utf-8') as f:
         f.write('window.LIGA_DATA = '+json.dumps(LIGA,ensure_ascii=False)+';\n')
     return len(LIGA['teams'])
@@ -1819,6 +1932,24 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
         nums_presentes=set(int(n) for n in bat_acum if n!='__EQUIPO__')
         # Mapa posición PT/PUNTA/etc → etiqueta del perfil
         POS_MAP={'MIDDLE':'CENTRAL','OUTSIDE':'PUNTA','OPPOSITE':'OPUESTO','SETTER':'ARMADOR','LIBERO':'LIBERO'}
+        # El roster del club, que ya resolvio el puesto de cada jugadora con lo
+        # que corrigio el club, lo que declara el .dvw y recien despues la
+        # deduccion. Es la unica fuente: antes cada parte del motor calculaba
+        # el puesto por su cuenta y daban resultados distintos.
+        # Se lee del liga_data.js que se acaba de escribir: aca LIGA es de otra
+        # funcion y no esta disponible.
+        _roster_club = {}
+        try:
+            _lg = os.path.join(output_dir, 'liga_data.js')
+            if os.path.exists(_lg):
+                _t = open(_lg, encoding='utf-8', errors='replace').read()
+                _m = re.search(r'=\s*(\{.*\})\s*;', _t, re.S)
+                if _m:
+                    _d = json.loads(_m.group(1))
+                    _mine = MAIN_TEAM.lower().replace(' ', '_')
+                    _roster_club = ((_d.get('teams') or {}).get(_mine) or {}).get('roster') or {}
+        except Exception:
+            _roster_club = {}
         # Detectar posición por su perfil de juego en el acumulado
         def _detectar_pos(num):
             P=bat_acum.get(f"{num:02d}") or bat_acum.get(str(num))
@@ -1836,7 +1967,17 @@ def generate_team_pages_data(dvw_dir, team_name, output_dir='.', temporada='2025
             sT=P.get('S',{}).get('T',0)
             rT=P.get('R',{}).get('T',0)
             aT=sum(P.get(g,{}).get('T',0) for g in ['cent','rap','alta'])
-            pos_det=CASLA_POS_OFICIAL.get(num) or _detectar_pos(num)
+            # ── El puesto de cada jugadora ──────────────────────────────
+            # Usaba la tabla del club de origen y, si no estaba, deducia como
+            # juega cada una. Para cualquier otro club eso daba puestos
+            # inventados: una libero salia como opuesta y desaparecia de la
+            # pantalla de recepcion, que solo muestra puntas y liberos.
+            #
+            # Ahora manda el roster, que ya resolvio el puesto con lo que
+            # corrigio el club, lo que declara el .dvw y recien despues la
+            # deduccion.
+            _rr = POS_MAP.get(_roster_club.get(str(num), ''))
+            pos_det = _rr or CASLA_POS_OFICIAL.get(num) or _detectar_pos(num)
             _canch=to_canchitas(P) if P else {'saques':[],'ataques':[],'recepcion':{}}
             partidos_jug.append({'num':num,'nombre':nm,'pos':pos_det,
                 'color':POS_COLOR.get(pos_det,'#64748b'),'info':{},
@@ -1924,7 +2065,7 @@ if __name__ == '__main__':
     _temps = set()
     for _t in NLA_TEAMS:
         for _pd in teams_data.get(_t, {}).values():
-            for _k in ('atk','srv','rec','blk'):
+            for _k in ('atk','srv','rec','blk','dig'):
                 for _a in _pd.get(_k, []) or []:
                     _tt = _a.get('temporada')
                     if _tt: _temps.add(str(_tt))

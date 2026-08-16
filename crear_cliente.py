@@ -207,11 +207,63 @@ if input('\n  Doy de alta este club? (s/n): ').strip().lower() not in ('s', 'si'
 
 # ── 2. copiar la plantilla y ponerle la marca ──────────────────────────────
 paso(1, 'Armando la carpeta del club...')
+# ══ Rehacer un alta NO borra lo del club ══════════════════════════════════
+# Antes se borraba la carpeta entera y con ella se iban los .dvw, la LLAVE.txt
+# y el config_club.json. Un alta repetida —para cambiar el color, por ejemplo—
+# dejaba al club sin sus partidos y sin acceso a sus datos, y no hay forma de
+# recuperar un .dvw que no este respaldado en otro lado.
+#
+# Ahora se actualiza el PROGRAMA y se respeta todo lo que es del club.
+SUYO = ('LLAVE.txt', 'config_club.json', '_CONFIG.txt', 'CLAVES.txt')
+rescatado = {}
 if os.path.isdir(DESTINO):
-    if input('     Ya existe esa carpeta. La reemplazo? (s/n): ').strip().lower() not in ('s','si','sí','y'):
-        sys.exit(0)
+    print('     Ese club ya existe: actualizo el programa y respeto sus datos.')
+    for n in SUYO:
+        r = os.path.join(DESTINO, n)
+        if os.path.exists(r):
+            try:
+                rescatado[n] = open(r, 'rb').read()
+            except Exception:
+                pass
+    # las carpetas de datos que no se tocan
+    guardar = [d for d in os.listdir(DESTINO)
+               if os.path.isdir(os.path.join(DESTINO, d))
+               and (d.upper().startswith('DVW') or d in ('.git', 'temporadas', 'liga_data'))]
+    tmp = DESTINO + '__datos'
+    if os.path.isdir(tmp):
+        borrar_carpeta(tmp)
+    os.makedirs(tmp)
+    for d in guardar:
+        shutil.move(os.path.join(DESTINO, d), os.path.join(tmp, d))
+    # los archivos de datos generados, que tampoco se pisan
+    for a in os.listdir(DESTINO):
+        ra = os.path.join(DESTINO, a)
+        if os.path.isfile(ra) and (a.startswith('datos_') or a.endswith('.enc')
+                                   or a.endswith('_players_db.json')
+                                   or a in ('liga_data.js', 'plan_partido_data.js',
+                                            'scouting_rival.js', 'mapa_videos.js')):
+            shutil.move(ra, os.path.join(tmp, a))
     borrar_carpeta(DESTINO)
-shutil.copytree(PLANT, DESTINO)
+    shutil.copytree(PLANT, DESTINO)
+    # y se devuelve todo a su lugar
+    for x in os.listdir(tmp):
+        origen = os.path.join(tmp, x)
+        destino_x = os.path.join(DESTINO, x)
+        if os.path.exists(destino_x):
+            if os.path.isdir(destino_x):
+                borrar_carpeta(destino_x)
+            else:
+                os.remove(destino_x)
+        shutil.move(origen, destino_x)
+    borrar_carpeta(tmp)
+    for n, contenido in rescatado.items():
+        open(os.path.join(DESTINO, n), 'wb').write(contenido)
+    if rescatado:
+        print('     conservados: ' + ', '.join(sorted(rescatado)))
+    if guardar:
+        print('     conservadas las carpetas: ' + ', '.join(guardar))
+else:
+    shutil.copytree(PLANT, DESTINO)
 
 # la liga y los rivales salen de MARCA.txt
 LIGA    = marca.get('LIGA', 'LIGA').strip()
@@ -244,6 +296,33 @@ REEMPLAZOS = {
 for i in range(1, 19):
     REEMPLAZOS['{{RIVAL%d}}' % i] = RIVALES[i-1] if i <= len(RIVALES) else 'Rival%d' % i
 FONDO = fondo_tenido(COLOR) if fondo_tenido else None
+
+
+def _acento(hexcol):
+    """Un segundo color que combine con el del club.
+
+    Se toma el del escudo y se lo aclara, manteniendo su tono. Asi un club
+    azul tiene acentos azules claros en vez del dorado de la plantilla, que
+    no es de nadie.
+
+    Si el color es muy oscuro —como el #0d0d5b de Gimnasia— se lo sube lo
+    suficiente para que se lea sobre el fondo negro.
+    """
+    try:
+        h = hexcol.lstrip('#')
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        # se aclara hacia el blanco, sin llegar a lavarlo
+        f = 0.55
+        r = int(r + (255 - r) * f)
+        g = int(g + (255 - g) * f)
+        b = int(b + (255 - b) * f)
+        return '#%02x%02x%02x' % (r, g, b)
+    except Exception:
+        return '#e6a743'
+
+
+ACENTO = _acento(COLOR)
+print('  Acento:    ' + ACENTO)
 TEXTO = ('.html', '.js', '.py', '.bat', '.json', '.md', '.txt', '.yml', '.yaml', '.css',
          '.ps1', '.cmd', '.sh', '.xml', '.svg', '.webmanifest')
 SIN_EXTENSION = {'license', 'gitignore', '.gitignore', 'readme', 'procfile', '.gitattributes'}
@@ -269,6 +348,13 @@ for raiz, _, archivos in os.walk(DESTINO):
         n = re.sub(r'(--club\s*:\s*)#[0-9a-fA-F]{3,8}', r'\g<1>' + COLOR, n)
         n = re.sub(r'(--red\s*:\s*)#[0-9a-fA-F]{3,8}',  r'\g<1>' + COLOR, n)
         n = n.replace('#e8192c', COLOR).replace('#E8192C', COLOR)
+        # ── El color de acento ──────────────────────────────────────────
+        # La plantilla usa un dorado (#e6a743) en 29 lugares del inicio y un
+        # ambar (#f59e0b) en varios mas. Antes solo se reemplazaba el rojo,
+        # asi que un club azul y blanco quedaba con fondos rojos y amarillos
+        # que no son suyos: lo primero que se ve al abrir la app.
+        n = n.replace('#e6a743', ACENTO).replace('#E6A743', ACENTO)
+        n = n.replace('#f59e0b', ACENTO).replace('#F59E0B', ACENTO)
         # el fondo toma un dejo del color del club
         if FONDO:
             n = re.sub(r'(--bg\s*:\s*)#(07080[fF]|0a0f1a|0D0E1A|0d0e1a)', r'\g<1>' + FONDO, n)
