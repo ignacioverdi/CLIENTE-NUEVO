@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unir videos · {{CLUB}}</title>
+<!--
+===============================================================================
+  unir_video.html — VARIAS PARTES, UN SOLO VIDEO
+-------------------------------------------------------------------------------
+  Muchas camaras cortan la grabacion cada 20 o 30 minutos, o cada 4 GB. Un
+  partido queda en cuatro o cinco archivos.
+
+  Para que los cortes de video funcionen hace falta UN solo archivo: cada
+  accion guarda el minuto en que ocurrio, y si el partido esta partido en
+  cuatro, esos minutos apuntan al lugar equivocado.
+
+  ── POR QUE NO SE UNE ACA MISMO ─────────────────────────────────────────────
+  Se intento y no da. Unir video en el navegador exige cargarlo entero en
+  memoria: un partido son varios gigas y el limite del navegador son unos 2.
+  Y lo peor es que no falla con un error: se queda intentando para siempre.
+
+  Por eso se hace con un programa que corre en la computadora, donde el video
+  se procesa en el disco y no hay limite. Se descarga desde aca, una sola vez.
+===============================================================================
+-->
+<style>
+  :root{
+    --bg:#0a0c18; --card:#12142a; --card2:#171a33; --border:rgba(255,255,255,.10);
+    --txt:#e2e8f0; --muted:#94a3b8; --muted2:#8395ac;
+    --ok:#22c55e; --ac:#f472b6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+       font-family:'Barlow Condensed',system-ui,sans-serif;font-size:15px;line-height:1.55}
+  .wrap{max-width:780px;margin:0 auto;padding:18px 16px 60px}
+  h1{font-size:25px;font-weight:800;letter-spacing:1px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:22px}
+
+  .btn{padding:9px 16px;border-radius:9px;border:1px solid var(--border);
+       background:var(--card2);color:var(--txt);font-family:inherit;
+       font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.5px;
+       text-decoration:none;display:inline-block}
+  .btn:hover{background:rgba(255,255,255,.07)}
+
+  .bajar{display:block;text-align:center;background:var(--ok);border:none;
+         border-radius:13px;padding:17px 20px;color:#04210f;font-family:inherit;
+         font-size:17px;font-weight:800;letter-spacing:.5px;cursor:pointer;
+         text-decoration:none;margin-bottom:6px;transition:filter .15s}
+  .bajar:hover{filter:brightness(1.08)}
+  .bajo{text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:22px}
+
+  .caja{background:var(--card);border:1px solid var(--border);border-radius:13px;
+        padding:18px 20px;margin-bottom:14px}
+  .caja h2{margin:0 0 12px;font-size:13px;letter-spacing:1.6px;
+           text-transform:uppercase;color:var(--ac)}
+  .paso{display:flex;gap:13px;margin-bottom:15px;align-items:flex-start}
+  .paso:last-child{margin-bottom:0}
+  .num{flex:none;width:26px;height:26px;border-radius:50%;
+       background:rgba(244,114,182,.13);border:1px solid rgba(244,114,182,.3);
+       color:var(--ac);display:flex;align-items:center;justify-content:center;
+       font-weight:800;font-size:13px}
+  .paso b{display:block;margin-bottom:2px}
+  .paso span{color:var(--muted);font-size:13.5px}
+  code{background:rgba(255,255,255,.07);padding:1px 6px;border-radius:5px;
+       font-family:ui-monospace,monospace;font-size:12.5px}
+  .nota{border-radius:11px;padding:13px 16px;font-size:13.5px;margin-top:14px}
+  .verde{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.22);color:#86efac}
+  a{color:var(--ac)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a href="index.html" class="btn" style="margin-bottom:14px">&larr; VOLVER</a>
+
+  <h1>UNIR VIDEOS</h1>
+  <div class="sub">¿La cámara cortó el partido en varios archivos? Este programa
+    los une en uno solo, sin perder calidad. Después lo subís a donde quieras:
+    YouTube, VolleyMetrics, lo que uses.</div>
+
+  <a href="UNIR_VIDEO.py" download class="bajar">⬇ &nbsp;DESCARGAR EL PROGRAMA</a>
+  <div class="bajo">Se baja una sola vez · pesa menos de 30 KB</div>
+
+  <div class="caja">
+    <h2>Cómo se usa</h2>
+
+    <div class="paso">
+      <div class="num">1</div>
+      <div>
+        <b>Buscá el archivo que se descargó</b>
+        <span>Se llama <code>UNIR_VIDEO.py</code> y está en tu carpeta de
+          <b>Descargas</b>. Conviene moverlo al Escritorio: lo vas a usar cada
+          vez que la cámara corte un partido.</span>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="num">2</div>
+      <div>
+        <b>Abrilo con doble clic</b>
+        <span>Se abre una ventana negra con texto. Es normal: así se ven estos
+          programas.
+          <br><br>
+          <b style="color:var(--txt)">Si no se abre</b> y en cambio te pregunta
+          con qué programa abrirlo, te falta Python. Se baja gratis de
+          <a href="https://www.python.org/downloads/" target="_blank">python.org</a>
+          — al instalarlo, marcá la casilla que dice
+          <i>"Add Python to PATH"</i>.</span>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="num">3</div>
+      <div>
+        <b>La primera vez: descarga el motor</b>
+        <span>Te va a decir que necesita bajar unos 80 MB y te pregunta si
+          seguir. Escribí <code>s</code> y Enter.
+          <br><br>
+          Es ffmpeg, el motor que usan casi todos los programas de video. Se
+          baja una sola vez y queda guardado.</span>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="num">4</div>
+      <div>
+        <b>Arrastrá las partes, en orden</b>
+        <span>Abrí la carpeta donde están los videos, agarrá el primero con el
+          mouse y <b>soltalo dentro de la ventana negra</b>. Se escribe la ruta
+          sola. Apretá Enter.
+          <br><br>
+          Repetí con la segunda parte, la tercera, y así. Cuando termines,
+          Enter solo —sin escribir nada— para seguir.
+          <br><br>
+          <b style="color:var(--txt)">El orden importa</b>: primero la parte
+          que arranca el partido.</span>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="num">5</div>
+      <div>
+        <b>Revisá lo que te muestra</b>
+        <span>Te lista cada parte con su duración y cuánto va a durar el
+          resultado. Si falta una o están desordenadas, lo ves ahí y podés
+          cerrar sin hacer nada.
+          <br><br>
+          Si está bien, escribí <code>s</code> y Enter.</span>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="num">6</div>
+      <div>
+        <b>Esperá a que termine</b>
+        <span>Vas a ver el avance: <code>Uniendo... 47%</code>. No cierres la
+          ventana hasta que diga <b>LISTO</b>.</span>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="num">7</div>
+      <div>
+        <b>El video queda al lado de los originales</b>
+        <span>En la misma carpeta, con <code>_completo</code> en el nombre. Por
+          ejemplo: <code>GELP_vs_Velez_completo.mp4</code>.
+          <br><br>
+          Las partes originales <b>no se tocan</b>: quedan como estaban.</span>
+      </div>
+    </div>
+
+    <div class="paso">
+      <div class="num">8</div>
+      <div>
+        <b>Subilo y pegá el link</b>
+        <span>A YouTube como "No listado", o a donde uses. El link va en
+          <a href="importar_video.html">Cargar videos</a>, y ahí cada acción
+          del partido queda enganchada a su minuto exacto.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="caja">
+    <h2>Así se ve mientras trabaja</h2>
+    <div style="background:#05070f;border:1px solid var(--border);border-radius:9px;
+      padding:13px 15px;font-family:ui-monospace,monospace;font-size:12px;
+      color:#94a3b8;line-height:1.7;overflow-x:auto;white-space:pre">
+  UNIR LAS PARTES DE UN PARTIDO
+
+  Arrastra las partes del partido, una por una, y Enter en cada una.
+  Cuando termines, Enter solo.
+
+  1) C:\Videos\GELP_vs_Velez_1.mp4
+  2) C:\Videos\GELP_vs_Velez_2.mp4
+  3)
+
+  LAS PARTES
+     GELP_vs_Velez_1.mp4          28:14    940 MB
+        h264 · 1920x1080
+     GELP_vs_Velez_2.mp4          31:02   1020 MB
+        h264 · 1920x1080
+
+     En total: 59:16  ·  1960 MB
+
+     Son del mismo formato: las pego SIN volver a comprimir.
+     Tarda segundos y no se pierde nada de calidad.
+
+  Uno las partes? (s/n): <span style="color:#22c55e">s</span>
+
+  Uniendo... 100%  (59:16 de 59:16)
+
+     LISTO
+     GELP_vs_Velez_completo.mp4
+     59:16  ·  1960 MB</div>
+  </div>
+
+  <div class="nota verde">
+    <b>Si las partes son de la misma cámara</b> —lo normal cuando es una
+    grabación cortada— se pegan sin volver a comprimir: tarda segundos y no se
+    pierde nada de calidad. Si vienen de cámaras distintas hay que unificarlas
+    y eso tarda más; el programa te avisa antes de empezar.
+  </div>
+
+  <div class="caja" style="margin-top:20px">
+    <h2>Si algo no sale</h2>
+
+    <div style="font-size:13.5px">
+      <b>No se abre el programa, me pregunta con qué abrirlo</b>
+      <div style="color:var(--muted);margin:2px 0 12px">
+        Falta Python. Se baja gratis de
+        <a href="https://www.python.org/downloads/" target="_blank">python.org</a>.
+        Al instalarlo marcá <i>"Add Python to PATH"</i>, que viene sin marcar.
+      </div>
+
+      <b>La ventana se cierra sola apenas la abro</b>
+      <div style="color:var(--muted);margin:2px 0 12px">
+        Suele ser lo mismo: Python no está instalado del todo. Probá
+        reinstalarlo marcando esa casilla.
+      </div>
+
+      <b>Arrastro el video y no pasa nada</b>
+      <div style="color:var(--muted);margin:2px 0 12px">
+        Tenés que soltarlo <b>adentro</b> de la ventana negra, sobre el texto.
+        Si no funciona, escribí la ruta a mano: hacé clic derecho en el video →
+        Propiedades, y copiá la ubicación.
+      </div>
+
+      <b>Dice que las partes no tienen el mismo formato</b>
+      <div style="color:var(--muted);margin:2px 0 12px">
+        Pasa cuando se grabó con cámaras distintas, o cuando una parte se editó
+        antes. Se pueden unir igual, pero tarda: un partido largo puede llevar
+        veinte minutos o más.
+      </div>
+
+      <b>El video unido dura menos de lo que debería</b>
+      <div style="color:var(--muted);margin:2px 0 12px">
+        El programa te avisa si eso pasa. Suele ser una parte dañada o
+        incompleta. Probá abrir cada archivo por separado para ver cuál es.
+      </div>
+
+      <b>Tarda mucho</b>
+      <div style="color:var(--muted);margin:2px 0 0">
+        Si dice "las pego SIN volver a comprimir" tendría que ser cuestión de
+        segundos. Si está recomprimiendo, es normal que tarde: dejalo trabajar
+        y no cierres la ventana.
+      </div>
+    </div>
+  </div>
+
+  <div class="caja">
+    <h2>Por qué no se hace acá mismo</h2>
+    <div style="color:var(--muted);font-size:13.5px">
+      Unir video exige cargarlo entero en memoria. Un partido son varios gigas
+      y el navegador tiene un límite de unos 2 GB: no entra, y lo peor es que
+      no falla con un error — se queda intentando para siempre.
+      <br><br>
+      En la computadora el video se procesa en el disco y no hay límite. Es
+      cuestión de segundos y no falla.
+    </div>
+  </div>
+
+</div>
+
+<script src="categorias_club.js"></script>
+<script src="selector_categoria.js"></script>
+<script src="firebase.js"></script>
+<script src="firebase_por_categoria.js"></script>
+<script src="lang.js" onerror="void 0"></script>
+
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario -->
+<script src="ayuda.js"></script>
+</body>
+</html>

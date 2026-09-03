@@ -11,7 +11,7 @@ Uso:  python gen_bloqueo.py            (auto)
       python gen_bloqueo.py video.js   (forzar archivo)
 Salida: datos_bloqueo.js  ->  window.PP_BLOCK
 """
-import os, re, sys, json, glob
+import os, re, sys, json, glob, io
 
 # ── combo -> zona de origen del ataque (universal, de game_plan.html + reglas Nacho) ──
 COMBO_ZONE = {
@@ -71,6 +71,100 @@ def load_video(path):
             idx=txt.find(mk,idx+1)
     return None
 
+def _puestos_del_club():
+    """El puesto de cada jugadora, leido de liga_data.js.
+
+    Es el mismo que usa el resto del sistema, asi el bloqueo se agrupa igual
+    que el ataque y no con un criterio propio.
+    """
+    MAPA = {'OUTSIDE': 'Punta', 'MIDDLE': 'Central', 'OPPOSITE': 'Opuesto',
+            'SETTER': 'Armador', 'LIBERO': 'L\u00edbero'}
+    out = {}
+    try:
+        with open('liga_data.js', encoding='utf-8', errors='replace') as _f:
+            t = _f.read()
+        d = json.loads(re.search(r'=\s*(\{.*\})\s*;', t, re.S).group(1))
+        # Un puesto por EQUIPO: los dorsales se repiten entre clubes, y
+        # juntando todo en una tabla la #2 de un equipo pisaba a la #2 del
+        # otro. La central de GELP salia como armadora porque en el rival ese
+        # dorsal es de la armadora.
+        # La clave se guarda SIN separadores. liga_data usa "banco_provincia"
+        # y este archivo "bancoprovincia": comparando tal cual, el rival nunca
+        # encontraba su roster y sus jugadoras quedaban sin puesto —o sea,
+        # sin fila donde dibujarse—.
+        import re as _re2
+        for _slug, _eq in (d.get('teams') or {}).items():
+            _t = {}
+            for num, rol in (_eq.get('roster') or {}).items():
+                if rol in MAPA:
+                    _t[str(num)] = MAPA[rol]
+            out[_re2.sub(r'[^a-z0-9]', '', str(_slug).lower())] = _t
+    except Exception:
+        pass
+    return out
+
+
+def _sumar_tiempos_del_video(vp, out='datos_bloqueo.js'):
+    """Le pone a cada bloqueo el segundo del video, si hay video.
+
+    Los NUMEROS ya salieron del .dvw. Esto solo agrega el momento en que
+    ocurrio cada jugada, para que el doble-click abra el clip.
+
+    Si no hay video, o si un partido no lo tiene, las acciones quedan igual:
+    se ven en el mapa y se pueden filtrar, pero sin clip que reproducir. Eso
+    la pantalla ya lo avisa.
+    """
+    if not vp or not os.path.isfile(vp):
+        return
+    try:
+        VD = load_video(vp) or {}
+        ms = VD.get('matches') or {}
+        if not ms:
+            return
+
+        # (partido, dorsal, cuantos van) -> segundo
+        tiempos = {}
+        for cod, m in ms.items():
+            visto = {}
+            for a in (m.get('actions') or []):
+                if a.get('skill') != 'B':
+                    continue
+                num = str(a.get('num') or '').lstrip('0') or str(a.get('num'))
+                k = (cod, num)
+                visto[k] = visto.get(k, 0) + 1
+                tiempos[(cod, num, visto[k])] = a.get('t')
+
+        if not tiempos:
+            return
+
+        txt = io.open(out, encoding='utf-8', errors='replace').read()
+        m = re.search(r'=\s*(\{.*\})\s*;', txt, re.S)
+        if not m:
+            return
+        datos = json.loads(m.group(1))
+
+        puestos = 0
+        for _eq, jug in datos.items():
+            for j in jug:
+                num = str(j.get('num') or '').lstrip('0')
+                cuenta = {}
+                for a in (j.get('data') or []):
+                    cod = a[4] if len(a) > 4 else ''
+                    cuenta[cod] = cuenta.get(cod, 0) + 1
+                    t = tiempos.get((cod, num, cuenta[cod]))
+                    if t is not None and len(a) > 3:
+                        a[3] = t
+                        puestos += 1
+
+        io.open(out, 'w', encoding='utf-8').write(
+            'window.PP_BLOCK=' + json.dumps(datos, ensure_ascii=False,
+                                            separators=(',', ':')) + ';')
+        if puestos:
+            print('[bloqueo] %d con su minuto de video' % puestos)
+    except Exception:
+        pass      # sin tiempos igual funciona: solo no se abre el clip
+
+
 def bloqueo_desde_dvw(out='datos_bloqueo.js'):
     """Arma datos_bloqueo.js leyendo los .dvw, sin depender del video.
 
@@ -95,13 +189,22 @@ def bloqueo_desde_dvw(out='datos_bloqueo.js'):
     except Exception:
         TABLA = {}
 
+    def _sinacento(t):
+        import unicodedata as _u
+        return _u.normalize('NFKD', t or '').encode('ascii', 'ignore').decode()
+
     def corto(largo):
-        pl = re.sub(r'[^a-z0-9]', '', largo.lower())
+        # El identificador tiene que ser EL MISMO que arma liga_data, o la
+        # pantalla no encuentra el bloqueo del rival. Antes se cortaba a 18
+        # caracteres y no se sacaban los acentos: "Club Atlético Velez
+        # Sarsfield" quedaba como "clubatlticovelezsa" y no coincidia con
+        # nada.
+        pl = re.sub(r'[^a-z0-9]', '', _sinacento(largo).lower())
         for k, v in TABLA.items():
-            kk = re.sub(r'[^a-z0-9]', '', str(k).lower())
+            kk = re.sub(r'[^a-z0-9]', '', _sinacento(str(k)).lower())
             if kk and (kk == pl or kk in pl):
-                return re.sub(r'[^a-z0-9]', '', str(v).lower())
-        return re.sub(r'[^a-z0-9]', '', largo.split('(')[0].lower())[:18]
+                return re.sub(r'[^a-z0-9]', '', _sinacento(str(v)).lower())
+        return re.sub(r'[^a-z0-9]', '', _sinacento(largo.split('(')[0]).lower())
 
     BLOCK = {}
     for ruta in sorted(archivos):
@@ -187,10 +290,17 @@ def bloqueo_desde_dvw(out='datos_bloqueo.js'):
     if not BLOCK:
         return 0
 
+    _PUESTOS = _puestos_del_club()
     OUT = {}
     total = 0
     for team, ps in BLOCK.items():
+        # 'pos' es el puesto de cada jugadora. Sin el, la pantalla no puede
+        # separar el bloqueo por posicion —puntas, centrales, opuestos— y
+        # todas quedan mezcladas en una sola lista, cuando un central y una
+        # punta bloquean cosas distintas.
+        _pt = _PUESTOS.get(re.sub(r'[^a-z0-9]', '', str(team).lower()), {})
         pl = [{'num': n, 'name': i['name'], 'role': 'bloqueo',
+               'pos': _pt.get(str(n), ''),
                'total': len(i['data']), 'data': i['data']} for n, i in ps.items()]
         pl.sort(key=lambda p: -p['total'])
         OUT[team] = pl
@@ -288,7 +398,19 @@ def build(fuentes, out='datos_bloqueo.js'):
             if atk and bestdt<=3 and atk.get('x'):
                 combo=str(atk.get('x')).upper(); rz=zone_of(combo)
             else:
-                combo=''; rz='3'                       # bloqueo sin ataque claro
+                # ══ La zona sale del .dvw, no de una suposicion ═══════════
+                # Antes, cuando no se encontraba el ataque asociado, se ponia
+                # zona 3 para todos. Con un archivo de video que no trae ese
+                # vinculo, TODOS los bloqueos del equipo terminaban en el
+                # medio de la red: el mapa mostraba una columna y nada mas.
+                #
+                # Pero la zona ya viene en el codigo del bloqueo:
+                #     *04BT#~~~~2   ->  zona 2
+                #     *12BH#~~~~4   ->  zona 4
+                # Se usa esa. Solo si el codigo tampoco la trae se cae en 3,
+                # que es donde bloquea el central.
+                combo = ''
+                rz = str(a.get('oz') or a.get('dz') or '') or '3'
             # fase (SO/TR) por contexto del rally del equipo atacado
             Y=atk.get('tm') if atk else None
             gR=near(rec.get(Y,[]),t); gD=near(dfn.get(Y,[]),t)
@@ -308,9 +430,13 @@ def build(fuentes, out='datos_bloqueo.js'):
             BLOCK.setdefault(key,{}).setdefault(num,{'name':a.get('name'),'data':[]})['data'].append(
                 [combo, rz, a.get('ev'), t, mid, ph, TIPO_DE.get(mid,'partido')])
 
+    _PUE = _puestos_del_club()
     OUT={}
     for team,ps in BLOCK.items():
-        pl=[{'num':n,'name':i['name'],'role':'bloqueo','total':len(i['data']),'data':i['data']} for n,i in ps.items()]
+        # el puesto, para que la pantalla pueda agrupar por posicion
+        _pt2 = _PUE.get(re.sub(r'[^a-z0-9]', '', str(team).lower()), {})
+        pl=[{'num':n,'name':i['name'],'role':'bloqueo','pos':_pt2.get(str(n),''),
+             'total':len(i['data']),'data':i['data']} for n,i in ps.items()]
         pl.sort(key=lambda p:-p['total'])
         OUT[team]=pl
     open(out,'w',encoding='utf-8').write('window.PP_BLOCK='+json.dumps(OUT,ensure_ascii=False,separators=(',',':'))+';')
@@ -335,6 +461,30 @@ if __name__=='__main__':
         _c=sorted([f for f in glob.glob('datos_video_ent*.js') if 'ent' in f.lower()])
         if _c: _ent=[_c[-1]]
     vp = _args[0] if len(_args)>0 else autodetect_video()
+
+    # ══ El video puede tener MENOS partidos que los .dvw ═════════════════════
+    # ══ LOS NUMEROS SALEN DEL .dvw. SIEMPRE. ═══════════════════════════════
+    # El .dvw es lo que scouteo el entrenador: ahi esta cada accion con su
+    # zona, su valoracion y quien la hizo. Es la fuente, y no depende de que
+    # alguien haya cargado un video.
+    #
+    # El archivo de video sirve para OTRA cosa: guarda en que segundo ocurrio
+    # cada jugada, para poder abrir el clip. Eso y nada mas.
+    #
+    # Antes se leia del video cuando estaba disponible, y eso traia problemas
+    # que costaron dias: bloqueos con la zona equivocada porque el video no la
+    # guardaba, equipos enteros sin datos porque el video tenia menos partidos,
+    # y numeros que no coincidian con el .dvw. Todo por leer de una copia en
+    # vez del original.
+    #
+    # Ahora el bloqueo sale siempre de los .dvw. El video solo aporta el
+    # segundo del corte, que se busca despues por partido y jugadora.
+    n = bloqueo_desde_dvw('datos_bloqueo.js')
+    if n:
+        print('[bloqueo] %d bloqueos leidos de los .dvw' % n)
+        _sumar_tiempos_del_video(vp, 'datos_bloqueo.js')
+        sys.exit(0)
+
     if not vp or not os.path.isfile(vp):
         # ══ Sin video: se lee de los .dvw ═══════════════════════════════
         # El bloqueo se armaba SOLO desde el archivo de video, que existe

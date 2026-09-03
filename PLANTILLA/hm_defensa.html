@@ -61,6 +61,7 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -98,6 +99,14 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
   <div class="content" id="content"><div class="nodata">Elegí un jugador para ver su defensa</div></div>
 </div>
 
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
   <!-- Los datos de los entrenamientos. Sin estos las tablas salen vacias
        aunque el motor ya los haya generado. -->
@@ -142,6 +151,52 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
       if(MODO !== 'entrenamiento' && P) Object.keys(P).forEach(function(k){ VD[k]=P[k]; });
       if(MODO !== 'partido' && E) Object.keys(E).forEach(function(k){ VD[k]=E[k]; });
     }catch(e){}
+
+    /* ══ Sin video: se arma desde liga_data ═══════════════════════════════
+       Este mapa se alimentaba SOLO del archivo de video, que existe recien
+       cuando alguien carga los videos. Los demas mapas —ataque, saque,
+       recepcion— leen liga_data.js y andan igual sin video: no habia razon
+       para que este fuera la excepcion.
+
+       Las defensas ya viajan en liga_data. Se arma el mismo formato que usa
+       el resto de la pantalla: {sk, tm, num, ev, oz, dz}, con tm en el SLUG
+       del equipo, que es contra lo que compara. Lo unico que falta sin video
+       es el corte para ver la jugada. */
+    try{
+      /* Se completan los partidos que FALTEN, no solo cuando la lista esta
+         vacia: con un partido con video y otros sin el, la condicion anterior
+         no se cumplia y esos otros quedaban afuera. */
+      if(MODO !== 'entrenamiento' && window.LIGA_DATA && LIGA_DATA.teams){
+        /* El orden TIENE que ser el mismo que usa el motor al guardar
+           (RES_IDX en update_db): # / + ! = -
+           Con otro orden, un + se lee como ! y las defensas buenas aparecen
+           todas como regulares: 16 acciones y 0% en todo. */
+        var _EV = ['#','/','+','!','=','-'];
+        var _T = LIGA_DATA.teams;
+        Object.keys(_T).forEach(function(slug){
+          var _t = _T[slug] || {}, _nom = _t.name || slug;
+          var _ms = _t.matches || [];
+          Object.keys(_t.dig || {}).forEach(function(num){
+            var _j = _t.dig[num] || {};
+            (_j.d || []).forEach(function(a){
+              /* a = [rival, partido, set, 1, efecto, origen, destino] */
+              var _m = _ms[a[1]] || {};
+              var _cod = _m.code || ('P' + (_m.date || '') + '-' + slug);
+              if(!VD[_cod]){
+                VD[_cod] = {date:_m.date || '', home:_nom, away:_m.rival || '',
+                            actions: []};
+              }
+              VD[_cod].actions.push({
+                /* 'name' es el que muestra el desplegable: sin el, la lista
+                   decia "#6 · undefined". Viene del propio liga_data. */
+                sk:'Defensa', tm:slug, num:+num, name:(_j.name || ('#' + num)),
+                ev:_EV[a[4]] || '!', oz:a[5] || 0, dz:a[6] || 0
+              });
+            });
+          });
+        });
+      }
+    }catch(e){}
     return VD;
   }
 
@@ -154,7 +209,12 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 
   var VD = _cortesDelModo();
   var EQ=(new URLSearchParams(location.search).get('equipo')||'{{CLUB_SLUG}}').toLowerCase();
-  var RES_ORDER=['#','+','!','-','='];
+  /* El orden de valoracion de la defensa, de mejor a peor:
+         #  perfecta · +  buena · !  regular · -  mala · /  sobrepase · =  error
+     Faltaba el '/': una defensa que se va al campo rival es peor que una
+     mala pero no es un error, y sin esa categoria quedaba mezclada con las
+     demas o directamente no se contaba. */
+  var RES_ORDER=['#','+','!','-','/','='];
   var RES_LABEL={'#':'Perfecta','+':'Buena','!':'Regular','-':'Mala','=':'Error'};
   var RES_HEX={'#':'#22C55E','+':'#84CC16','!':'#EAB308','-':'#F97316','=':'#EF4444'};
 
@@ -168,7 +228,11 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
   var ALL=[];
   Object.keys(VD).forEach(function(c){ var m=VD[c]; (m.actions||[]).forEach(function(a){ if(a.sk==='Defensa' && a.tm===EQ){ var o={}; for(var k in a)o[k]=a[k]; o.opp=rivalOf(m); o.code=c; o.date=m.date||''; ALL.push(o); } }); });
   var PLAYERS={};
-  ALL.forEach(function(a){ if(!PLAYERS[a.num])PLAYERS[a.num]={num:a.num,name:a.name,acts:[]}; PLAYERS[a.num].acts.push(a); });
+  ALL.forEach(function(a){ var _n=parseInt(a.num,10); if(isNaN(_n)) _n=a.num;
+        /* El dorsal viene como "6" o "06" segun el .dvw. */
+        if(!PLAYERS[_n]) PLAYERS[_n]={num:_n,name:a.name,acts:[]};
+        else if((a.name||'').length>(PLAYERS[_n].name||'').length) PLAYERS[_n].name=a.name;
+        PLAYERS[_n].acts.push(a); });
   var RIVALS=[]; ALL.forEach(function(a){ if(RIVALS.indexOf(a.opp)<0)RIVALS.push(a.opp); }); RIVALS.sort();
   var NAME=EQ.toUpperCase();
   (function(){ for(var _k in VD){ var _m=VD[_k]; if(_m.home===EQ){ NAME=_m.homeName||NAME; break; } if(_m.away===EQ){ NAME=_m.awayName||NAME; break; } } })();
@@ -223,7 +287,12 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
       return true;
     });
   }
-  function eff(acts){ if(!acts.length)return null; var s=0; acts.forEach(function(a){ s+=(a.ev==='#'?1:a.ev==='+'?0.5:a.ev==='-'?-0.5:a.ev==='='?-1:0); }); return Math.round(s/acts.length*100); }
+  function eff(acts){ if(!acts.length)return null; var s=0; acts.forEach(function(a){ s+=(a.ev==='#'?1:a.ev==='+'?0.5:a.ev==='-'?-0.5:a.ev==='/'?-0.5:a.ev==='='?-1:0)
+      /* El orden de la defensa, de mejor a peor: # + ! - / =
+         El sobrepase (/) restaba 0 y quedaba igual que una defensa regular,
+         cuando en realidad es peor que una mala: la pelota se va al campo
+         rival sin control. Ahora pesa igual que la negativa, como en el
+         motor. */; }); return Math.round(s/acts.length*100); }
   function effColor(e){ return e===null?'#475569':e>=40?'#22C55E':e>=15?'#84CC16':e>=0?'#EAB308':e>=-25?'#F97316':'#EF4444'; }
   function pct(n,t){ return t>0?Math.round(n/t*100):0; }
 
@@ -361,41 +430,10 @@ function _videoTodo(){
     });
   }catch(e){}
 
-  /* ══ Sin video: se arma desde liga_data ═══════════════════════════════
-     Este mapa se alimentaba SOLO del archivo de video, que existe recien
-     cuando alguien carga los videos de los partidos. Los demas mapas
-     —ataque, saque, recepcion— leen liga_data.js y funcionan igual sin
-     video: no habia razon para que este fuera la excepcion.
-
-     Las defensas estan en los .dvw y ya viajan en liga_data. Lo unico que
-     se pierde sin video es el corte para ver la jugada; los numeros y las
-     zonas se muestran igual. */
-  try{
-    if(!Object.keys(VD).length && window.LIGA_DATA && LIGA_DATA.teams){
-      var _sint = {};
-      Object.keys(LIGA_DATA.teams).forEach(function(slug){
-        var _t = LIGA_DATA.teams[slug] || {};
-        var _dig = _t.dig || {};
-        Object.keys(_dig).forEach(function(num){
-          var _j = _dig[num] || {};
-          (_j.d || _j.data || []).forEach(function(a){
-            var _mid = 'liga-' + slug;
-            _sint[_mid] = _sint[_mid] || {acciones: [], equipo: _t.name || slug};
-            _sint[_mid].acciones.push({
-              sk: 'Defensa', num: +num, jugador: _j.name || ('#' + num),
-              equipo: _t.name || slug,
-              zona: a[2] || a[1] || '', zona_origen: a[1] || '',
-              ev: a[3] || a[2] || '', t: 0
-            });
-          });
-        });
-      });
-      VD = _sint;
-    }
-  }catch(e){}
   return VD;
 }
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>
 

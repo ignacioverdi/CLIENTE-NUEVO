@@ -38,9 +38,34 @@
     a.addEventListener('mouseover', function(){ a.style.background='rgba(232,25,44,.20)'; });
     a.addEventListener('mouseout',  function(){ a.style.background='rgba(232,25,44,.10)'; });
 
-    var slot = document.querySelector('.header-right') || document.querySelector('header');
-    if (slot){ slot.appendChild(a); }
-    else { a.style.position='fixed'; a.style.top='10px'; a.style.right='10px'; a.style.zIndex='99999'; document.body.appendChild(a); }
+    /* ── DONDE SE PONE EL BOTON ──────────────────────────────────────────
+       Antes buscaba .header-right o header, y si no los encontraba se pegaba
+       arriba a la derecha con position:fixed. Flotar significa NO ocupar
+       lugar: quedaba justo encima del selector de idiomas.
+
+       Ahora se busca tambien el contenedor de los idiomas, que existe en
+       todas las pantallas, y el boton se pone AL LADO. El modo flotante
+       queda como ultimo recurso, y corrido hacia abajo para no tapar nada. */
+    var slot = document.querySelector('.header-right')
+            || document.querySelector('.hdr-right')
+            || document.querySelector('#lang-wrap')
+            || document.querySelector('#vs-lang')
+            || document.querySelector('header');
+
+    if (slot){
+      if (slot.id === 'lang-wrap' || slot.id === 'vs-lang'){
+        if (slot.parentNode) slot.parentNode.insertBefore(a, slot.nextSibling);
+        else slot.appendChild(a);
+      } else {
+        slot.appendChild(a);
+      }
+    } else {
+      a.style.position='fixed';
+      a.style.top='58px';          /* debajo de los idiomas, no encima */
+      a.style.right='10px';
+      a.style.zIndex='9998';
+      document.body.appendChild(a);
+    }
 
     window.addEventListener('langchange', function(){ a.innerHTML = label(); });
   }

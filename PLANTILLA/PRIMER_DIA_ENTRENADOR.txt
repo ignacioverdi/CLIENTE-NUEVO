@@ -1,0 +1,198 @@
+═══════════════════════════════════════════════════════════════════════════════
+   TU PRIMER DIA CON LA APP
+   Volley-Stats
+═══════════════════════════════════════════════════════════════════════════════
+
+   Ya tenés tu app funcionando. Esto es lo que conviene hacer el primer día,
+   en orden. Son unos 20 minutos y después queda andando sola.
+
+   Todo lo que sigue se hace desde la app, en el navegador. No hay que
+   instalar nada en la computadora.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   1  ·  ENTRÁ Y MIRÁ
+═══════════════════════════════════════════════════════════════════════════════
+
+   Abrí el link que te pasamos y entrá con tu mail y tu clave.
+
+   Se entra una sola vez por dispositivo. Después queda abierto.
+
+   Date una vuelta por las pantallas. Vas a ver que muchas están vacías:
+   es normal, se llenan cuando cargues el primer partido.
+
+     >> ¿No sabés qué hace una pantalla?  Tocá el signo de pregunta que
+        está abajo a la derecha. Te la explica en dos minutos.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   2  ·  INSTALALA EN TU CELULAR
+═══════════════════════════════════════════════════════════════════════════════
+
+   Abrí el mismo link en el teléfono:
+
+       ANDROID   menú del navegador  >  "Agregar a la pantalla principal"
+       iPHONE    botón de compartir  >  "Agregar a inicio"
+
+   Queda como cualquier app, con el escudo del club.
+
+     >> Y funciona SIN INTERNET. Una vez instalada, en el gimnasio sin wifi
+        abre igual: los números, el plan del rival y los horarios están ahí.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   3  ·  CARGÁ TU PLANTEL
+═══════════════════════════════════════════════════════════════════════════════
+
+   Entrá a   ALTA DE JUGADORES
+
+   ── Si ya tenés un partido cargado ───────────────────────────────────────
+
+       Tocá "Traer el plantel de un partido" y elegí el archivo .dvw.
+
+       Se cargan solos todos los jugadores con su número y su nombre. Vos
+       solo completás el mail y la fecha de nacimiento de cada uno.
+
+   ── Si todavía no ────────────────────────────────────────────────────────
+
+       Cargalos a mano: una fila por jugador con el número de camiseta, el
+       mail y la fecha de nacimiento. La foto es opcional — se achica sola.
+
+   ── Si el club tiene varias categorías ───────────────────────────────────
+
+       Elegí arriba a cuál van ANTES de cargarlos. Cada categoría tiene su
+       propio plantel y no se mezclan.
+
+   Al terminar, la app te muestra un mensaje listo para copiar y pegar en el
+   grupo de WhatsApp. Ya trae el link, la clave de cada uno y el instructivo
+   para instalar la app.
+
+     >> Empezá con UN jugador y fijate que aparezca bien antes de cargar a
+        todos. Así, si algo no sale como esperabas, lo corregís enseguida.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   4  ·  CARGÁ EL CALENDARIO
+═══════════════════════════════════════════════════════════════════════════════
+
+   Entrá a   CALENDARIO
+
+   Cargá los partidos de la temporada, a mano con "+ Agregar" o de una vez
+   con "Importar fixture" si ya te lo preparamos.
+
+   Después tocá "⭐ Usar este fixture": eso hace que el próximo rival se vea
+   en toda la app.
+
+   En la misma pantalla van los entrenamientos, con el selector de arriba.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   5  ·  REVISÁ LOS OBJETIVOS DEL EQUIPO
+═══════════════════════════════════════════════════════════════════════════════
+
+   Entrá a   OBJETIVOS  desde el dashboard.
+
+   Son once metas por fundamento: saque, recepción, ataque, bloqueo. Las
+   barras se pintan verde, ámbar o rojo según cómo viene el equipo.
+
+   Vienen con valores de referencia. Ajustalos a lo que espera tu club: son
+   los que van a medir todo el año.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   DESPUES DE CADA PARTIDO
+═══════════════════════════════════════════════════════════════════════════════
+
+   Eso es todo lo del primer día. De ahí en más, la rutina es:
+
+       1. entrá a SUBIR PARTIDO y arrastrá el archivo .dvw
+       2. si tenés el video, pegá el link de YouTube en CARGAR VIDEOS
+       3. listo
+
+   En unos minutos están los mapas de calor, el plan del rival, las
+   estadísticas de cada jugador y los videos cortados acción por acción.
+
+     >> Si el partido lo scouteó otra persona con sus propios códigos,
+        pasalo antes por ASOCIAR CODIGOS. Se hace una vez y la app se
+        acuerda para la próxima.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   SI QUERES SCOUTEAR EN VIVO
+═══════════════════════════════════════════════════════════════════════════════
+
+   Entrá a   SCOUT EN VIVO   y tocá "Partido" para cargar los equipos.
+
+   Se tipea con el teclado, como en DataVolley, y las estadísticas se
+   calculan en el momento. El archivo que genera abre en DataVolley sin
+   convertir nada.
+
+   ── Con la cámara ────────────────────────────────────────────────────────
+
+       En un celular, abrí la pantalla CAMARA y creá la sala. Te da un
+       código.
+
+       Donde estés scouteando, tocá "Video" y poné ese código. Ahí elegís
+       cuántos segundos de retraso querés, de 0 a 25.
+
+       Con el retraso podés revisar la jugada que se te pasó sin parar el
+       partido.
+
+     >> Los dos aparatos tienen que estar en la misma red. Sin wifi en el
+        gimnasio, se pueden compartir datos desde un celular.
+
+     >> Tipeá la S cuando el jugador LANZA la pelota, no cuando la golpea.
+        Así los cortes de video quedan en el segundo justo.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   LO QUE TUS JUGADORES VAN A VER
+═══════════════════════════════════════════════════════════════════════════════
+
+   Cada uno entra con su cuenta y ve SOLO lo suyo:
+
+       · sus números, partido por partido y el acumulado
+       · sus once barras contra las del equipo
+       · sus videos, filtrados
+       · su rutina de gimnasio, con sus pesos
+       · el wellness: cómo llega cada día
+
+   Vos ves todo, de todos.
+
+     >> El wellness conviene cargarlo ANTES de entrenar, no después: sirve
+        para decidir la sesión, no para evaluarla.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   SI ALGO NO SALE
+═══════════════════════════════════════════════════════════════════════════════
+
+     ·  Tocá el signo de pregunta de la pantalla donde estés. Explica esa
+        pantalla, en el idioma que estés usando.
+
+     ·  ¿Publicaste algo y no lo ves?  Esperá un minuto y recargá.
+
+     ·  ¿Cambiaste el escudo y en el celular sigue el viejo?  Sacá la app de
+        la pantalla de inicio y volvé a agregarla. El ícono lo guarda el
+        teléfono, no la app.
+
+     ·  ¿Una categoría aparece vacía?  Es porque todavía no tiene partidos.
+        La app te lo dice: no está rota, está esperando el primero.
+
+     ·  Cualquier otra cosa, escribinos. Preferimos que preguntes a que
+        pierdas tiempo.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   EL RESUMEN
+═══════════════════════════════════════════════════════════════════════════════
+
+       1. entrá y date una vuelta
+       2. instalala en el celular
+       3. cargá el plantel
+       4. cargá el calendario
+       5. revisá los objetivos
+
+       Y después: subir el .dvw y el video. Nada más.
+
+═══════════════════════════════════════════════════════════════════════════════

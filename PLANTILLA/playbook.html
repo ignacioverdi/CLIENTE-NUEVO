@@ -271,8 +271,12 @@ h3{font-size:13px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut)
   </div>
 </div>
 
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
 <script src="datos_seguros.js" onerror="void 0"></script>
 <script src="firebase.js"></script>
+<script src="firebase_por_categoria.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════════
    El playbook vive en Firebase, en el nodo 'playbook'. Cada bloque se guarda
@@ -370,5 +374,6 @@ function arrancar(){
 if(typeof _fbListo !== 'undefined' && _fbListo && _fbListo.then) _fbListo.then(arrancar).catch(arrancar);
 else window.addEventListener('load', arrancar);
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>

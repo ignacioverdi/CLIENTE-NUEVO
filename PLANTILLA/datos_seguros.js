@@ -84,34 +84,115 @@
     return sha256(ent);
   }
 
-  function descifrar(b64, clave){
-    var bin=atob(b64), largo=bin.length;
-    var datos=new Uint8Array(largo);
-    for(var i=0;i<largo;i++) datos[i]=bin.charCodeAt(i);
-    var k=clave, bloque=0, pos=0;
-    while(pos<largo){
-      var ent=new Uint8Array(k.length+8);
-      ent.set(k); ent.set(contador(bloque), k.length);
-      var f=sha256(ent);
-      for(var j=0;j<32 && pos<largo;j++,pos++) datos[pos]^=f[j];
-      bloque++;
+  /* ── DESCIFRAR ─────────────────────────────────────────────────────────
+     El resultado es EXACTAMENTE el mismo que antes: mismo algoritmo, mismo
+     orden, mismos bytes. Lo unico que cambia es como se reparte el trabajo.
+
+     Antes: todo de un tiron. Con un archivo grande, el navegador quedaba
+     ocupado varios segundos y la pantalla no respondia.
+
+     Ahora: de a pedazos. Cada 16 KB se le devuelve el control al navegador
+     un instante, para que pueda dibujar y responder. */
+
+  var TROZO = 512;           /* bloques de 32 bytes = 16 KB por vuelta */
+
+  function bytesDe(b64){
+    var bin = atob(b64), largo = bin.length;
+    var datos = new Uint8Array(largo);
+    for(var i=0;i<largo;i++) datos[i] = bin.charCodeAt(i);
+    return datos;
+  }
+
+  function descifrarTramo(datos, clave, bloqueIni, cuantos){
+    var largo = datos.length;
+    var bloque = bloqueIni, pos = bloqueIni * 32, hechos = 0;
+    while(pos < largo && hechos < cuantos){
+      var ent = new Uint8Array(clave.length + 8);
+      ent.set(clave); ent.set(contador(bloque), clave.length);
+      var f = sha256(ent);
+      for(var j=0; j<32 && pos<largo; j++, pos++) datos[pos] ^= f[j];
+      bloque++; hechos++;
     }
+    return bloque;
+  }
+
+  function descifrar(b64, clave){
+    var datos = bytesDe(b64);
+    var total = Math.ceil(datos.length / 32);
+    descifrarTramo(datos, clave, 0, total);
     return new TextDecoder('utf-8').decode(datos);
   }
 
+  function descifrarDeAPoco(b64, clave, listo){
+    var datos = bytesDe(b64);
+    var total = Math.ceil(datos.length / 32);
+    var bloque = 0;
+    if(total <= TROZO){
+      descifrarTramo(datos, clave, 0, total);
+      listo(new TextDecoder('utf-8').decode(datos));
+      return;
+    }
+    (function seguir(){
+      bloque = descifrarTramo(datos, clave, bloque, TROZO);
+      if(bloque * 32 < datos.length){
+        setTimeout(seguir, 0);
+      } else {
+        listo(new TextDecoder('utf-8').decode(datos));
+      }
+    })();
+  }
+
   /* abre todo lo que haya llegado cifrado */
+  /* ── ABRIR LOS DATOS ───────────────────────────────────────────────────
+     Las pantallas siguen llamando abrirDatos() igual, y sigue devolviendo
+     true/false en el acto.
+
+     Lo que cambia: los archivos chicos se abren al instante como siempre;
+     los grandes se abren de a pedazos, sin congelar la pantalla, y avisan
+     al terminar con el evento 'datos-listos'. */
   window.abrirDatos = function(){
     var llave = llaveLocal();
     if(!llave || !window.__D) return false;
-    var abiertos = 0;
+
+    var abiertos = 0, pendientes = [];
+    var CHICO = 64 * 1024;
+
     for(var nombre in window.__D){
+      var b64 = window.__D[nombre];
+/* Una pantalla puede pedir que los archivos grandes se abran DE UNA
+         en vez de en segundo plano. Lo usa "Cargar videos", que es una
+         herramienta de escritorio: ahi un segundo de espera no molesta,
+         y a cambio la lista sale completa a la primera.
+
+         Las pantallas de los jugadores no ponen esa marca, asi que siguen
+         abriendo en segundo plano y no se les cuelga el telefono. */
+      if(b64 && b64.length > CHICO && !window.__DESCIFRAR_SINCRONO) { pendientes.push(nombre); continue; }
       try{
-        (0, eval)(descifrar(window.__D[nombre], claveArchivo(llave, nombre)));
+        (0, eval)(descifrar(b64, claveArchivo(llave, nombre)));
         abiertos++;
       }catch(e){
         try{ console.warn('[datos] no pude abrir', nombre); }catch(_){}
       }
     }
+
+    pendientes.forEach(function(nombre){
+      try{
+        descifrarDeAPoco(window.__D[nombre], claveArchivo(llave, nombre),
+          function(texto){
+            try{
+              (0, eval)(texto);
+              try{ window.dispatchEvent(new CustomEvent('datos-listos',
+                     {detail:{archivo:nombre}})); }catch(_){}
+            }catch(e){
+              try{ console.warn('[datos] no pude abrir', nombre); }catch(_){}
+            }
+          });
+        abiertos++;
+      }catch(e){
+        try{ console.warn('[datos] no pude abrir', nombre); }catch(_){}
+      }
+    });
+
     return abiertos > 0;
   };
 

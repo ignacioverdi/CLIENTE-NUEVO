@@ -71,8 +71,12 @@ input[type=file]{display:none}
 
 <input type="file" id="selector" accept="image/*">
 
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
 <script src="datos_seguros.js" onerror="void 0"></script>
 <script src="firebase.js"></script>
+<script src="firebase_por_categoria.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════════
    Los escudos se guardan en Firebase, en el nodo 'escudos', como imagen

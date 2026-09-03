@@ -74,7 +74,7 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
 .pos-MIDDLE{background:rgba(129,140,248,.15);color:#a5b4fc}
 .pos-SETTER{background:rgba(245,158,11,.15);color:#fcd34d}
 .eff-val{font-family:'Bebas Neue',sans-serif;font-size:14px}
-.pos-eff{color:#22c55e}.neg-eff{color:#ef4444}.neu-eff{color:#64748b}
+.pos-eff{color:#22c55e}.neg-eff{color:#ef4444}.neu-eff{color:#94a3b8}
 .no-data{text-align:center;padding:48px;color:var(--muted);font-size:13px;letter-spacing:1px}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:rgba(255,255,255,.02)}
@@ -88,16 +88,16 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
 #teams-table th:nth-child(2),#teams-table td:nth-child(2){text-align:left}
 #teams-table td.active-col,#teams-table th.active-col{background:rgba(59,130,246,.12)}
 #teams-table th.active-col{color:#93c5fd}
-#teams-table tbody tr.is-nafels{background:rgba(34,197,94,.09)}
-#teams-table tbody tr.is-nafels:hover{background:rgba(34,197,94,.14)}
-#teams-table tbody tr.is-nafels td{border-top:1px solid rgba(34,197,94,.25);border-bottom:1px solid rgba(34,197,94,.25)}
+#teams-table tbody tr.es-mi-club{background:rgba(34,197,94,.09)}
+#teams-table tbody tr.es-mi-club:hover{background:rgba(34,197,94,.14)}
+#teams-table tbody tr.es-mi-club td{border-top:1px solid rgba(34,197,94,.25);border-bottom:1px solid rgba(34,197,94,.25)}
 .t-name{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.5px;text-decoration:none}
-.t-rank{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#475569}
+.t-rank{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#8395ac}
 .t-rank.r1{color:#fcd34d}
 .tval{font-family:'Bebas Neue',sans-serif;font-size:21px;line-height:1}
-.ttot{font-size:10px;color:#64748b;margin-left:4px}
-.rank-legend{margin-top:12px;font-size:11px;color:#64748b;letter-spacing:.3px}
-.rank-legend .lg-tot{color:#475569}
+.ttot{font-size:10px;color:#94a3b8;margin-left:4px}
+.rank-legend{margin-top:12px;font-size:11px;color:#94a3b8;letter-spacing:.3px}
+.rank-legend .lg-tot{color:#8395ac}
 /* PLAYERS RANKING (sección 8) */
 .sub-pills{margin-top:-6px;margin-bottom:18px}
 .sub-pills .skill-pill{padding:5px 12px;font-size:11px;border-radius:7px}
@@ -106,15 +106,17 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
 #players-table th:nth-child(2),#players-table td:nth-child(2){text-align:left}
 #players-table td.active-col,#players-table th.active-col{background:rgba(99,102,241,.12)}
 #players-table th.active-col{color:#a5b4fc}
-#players-table tbody tr.is-nafels{background:rgba(34,197,94,.09)}
-#players-table tbody tr.is-nafels:hover{background:rgba(34,197,94,.14)}
-#players-table tbody tr.is-nafels td{border-top:1px solid rgba(34,197,94,.22);border-bottom:1px solid rgba(34,197,94,.22)}
+#players-table tbody tr.es-mi-club{background:rgba(34,197,94,.09)}
+#players-table tbody tr.es-mi-club:hover{background:rgba(34,197,94,.14)}
+#players-table tbody tr.es-mi-club td{border-top:1px solid rgba(34,197,94,.22);border-bottom:1px solid rgba(34,197,94,.22)}
 #players-table tbody tr:hover{background:rgba(255,255,255,.025)}
 </style>
 <!-- Puerta de entrada. Esta es la PLANTILLA: la tabla de liga se regenera
      desde aca en cada HACER_TODO, asi que el candado tiene que estar aqui
      o se pierde en la proxima corrida. -->
+<script src="selector_categoria.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -124,7 +126,7 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
 <div class="header">
   <div>
     <div class="subtitle">Volley {{CLUB}} — Análisis Liga</div>
-    <h1>NLA SUIZA — ESTADÍSTICAS</h1>
+    <h1>{{LIGA}} — ESTADÍSTICAS</h1>
   </div>
   <!-- La temporada la escribe el generador: estaba fija en 2025/26 y seguia
        diciendo eso aunque los datos ya fueran de la 26/27. -->
@@ -150,7 +152,8 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
     <select id="f-temporada"><option value="">Todas</option><!--__TEMPORADAS__--></select>
   </div>
   <div class="filter-group">
-    <span class="filter-label">Posición</span>
+    <span class="filter-label">Posición<label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#94a3b8;white-space:nowrap;margin-right:12px" title="Los rivales que se enfrentaron una sola vez, y los jugadores con muy pocas acciones, distorsionan el ranking"><input type="checkbox" id="f-liga" checked onchange="aplicarLiga(this.checked)" style="width:15px;height:15px;accent-color:#e6a743;cursor:pointer"> Solo la liga</label>
+</span>
     <select id="f-pos">
       <option value="">Todas</option>
       <option value="OUTSIDE">Punta</option>
@@ -177,7 +180,7 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
   <span class="results-count" id="results-count"></span>
 </div>
 <div class="panel active" id="panel-equipos">
-  <div class="section-title">RANKING EQUIPOS NLA — ELEGÍ UN FUNDAMENTO PARA ORDENAR</div>
+  <div class="section-title">RANKING DE EQUIPOS — ELEGÍ UN FUNDAMENTO PARA ORDENAR</div>
   <div class="skill-pills" id="skill-pills"></div>
   <div class="table-wrap">
     <table id="teams-table">
@@ -185,10 +188,10 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
       <tbody id="teams-tbody"></tbody>
     </table>
   </div>
-  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado. <span id="updated-label" style="color:#475569"></span></div>
+  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado. <span id="updated-label" style="color:#8395ac"></span></div>
 </div>
 <div class="panel" id="panel-jugadores">
-  <div class="section-title">RANKING JUGADORES NLA — ELEGÍ UN FUNDAMENTO</div>
+  <div class="section-title">RANKING DE JUGADORES — ELEGÍ UN FUNDAMENTO</div>
   <div class="skill-pills" id="player-skills"></div>
   <div class="skill-pills sub-pills" id="player-subs"></div>
   <div class="table-wrap">
@@ -245,9 +248,76 @@ document.getElementById('reset-btn').addEventListener('click',function(){
   render();
 });
 
+/* ══ LOS EQUIPOS DE LA LIGA ══════════════════════════════════════════════
+   En la tabla aparecian equipos de copa europea que se enfrentaron UNA vez
+   y no se vuelven a ver en la temporada. Eran 40 de 143 jugadores: casi un
+   tercio de la tabla, de rivales que ya no importan.
+
+   Se considera "de la liga" al equipo que jugo contra varios rivales
+   distintos. Un rival de copa jugo un solo partido, asi que queda afuera
+   solo, sin listas escritas a mano que haya que actualizar cada ano. */
+var _SOLO_LIGA = true;
+
+function equiposDeLiga(data){
+  var porEquipo = {};
+  data.forEach(function(p){
+    if(!porEquipo[p.team]) porEquipo[p.team] = 0;
+    porEquipo[p.team]++;
+  });
+  /* Un plantel de liga acumula acciones en muchos partidos; uno de copa,
+     las de uno solo. Se usa el volumen total de ataques del equipo. */
+  var vol = {};
+  data.forEach(function(p){
+    vol[p.team] = (vol[p.team] || 0) + (p.atk_tot || 0);
+  });
+  var vals = Object.keys(vol).map(function(k){ return vol[k]; })
+                   .sort(function(a,b){ return b-a; });
+  if(vals.length < 3) return null;
+  /* el corte: la mitad de la mediana de los equipos con mas volumen */
+  var medio = vals[Math.floor(vals.length / 2)];
+  var corte = medio * 0.45;
+  var ok = {};
+  Object.keys(vol).forEach(function(k){ if(vol[k] >= corte) ok[k] = true; });
+  return ok;
+}
+
+/* ══ MINIMO PARA ENTRAR AL RANKING ═══════════════════════════════════════
+   Asi lo resuelve la NCAA: para figurar en un ranking individual hay que
+   haber jugado lo suficiente. No se pondera ni se corrige el porcentaje —
+   simplemente, quien no llego al minimo no entra en ese ranking.
+
+   Sin esto, un jugador con 3 remates y 2 puntos aparecia arriba de uno con
+   400 remates: el numero es cierto pero no dice nada.
+
+   El minimo se calcula sobre la propia tabla, no es un numero fijo: es el
+   20% de lo que hizo el jugador con mas volumen en ese fundamento. Asi
+   funciona igual en una liga de 26 partidos que en un torneo de 3. */
+var _MIN_RANKING = true;
+
+function minimos(data){
+  var campos = ['atk_tot','srv_tot','rec_tot','blk_tot','def_tot','set_tot'];
+  var max = {};
+  campos.forEach(function(c){
+    var m = 0;
+    data.forEach(function(p){ if((p[c]||0) > m) m = p[c]||0; });
+    max[c] = m;
+  });
+  var min = {};
+  campos.forEach(function(c){ min[c] = Math.max(6, Math.round(max[c] * 0.20)); });
+  return min;
+}
+
+function llegaAlMinimo(p, campo, min){
+  if(!_MIN_RANKING || !campo || !min) return true;
+  if(!(campo in min)) return true;
+  return (p[campo] || 0) >= min[campo];
+}
+
 function filterP(data){
   var f=getF();
+  var deLiga = _SOLO_LIGA ? equiposDeLiga(data) : null;
   return data.filter(function(p){
+    if(deLiga && !f.team && !deLiga[p.team]) return false;
     if(f.team&&p.team!==f.team)return false;
     if(f.temporada&&p.temporada!==f.temporada&&p.temporada!=='all')return false;
     if(f.pos&&p.pos_label!==f.pos)return false;
@@ -264,16 +334,16 @@ function effC(v,rec){
 function effCls(v){return v==null?'neu-eff':v>0?'pos-eff':v<0?'neg-eff':'neu-eff';}
 
 function fmtEff(v,rec){
-  if(v==null)return '<span style="color:#334155">—</span>';
+  if(v==null)return '<span style="color:#7c8ba1">—</span>';
   var s=(v>=0?'+':'')+v.toFixed(1)+'%';
   return '<span class="eff-val" style="color:'+effC(v,rec)+'">'+s+'</span>';
 }
 function fmtPct(v){
-  if(v==null)return '<span style="color:#334155">—</span>';
+  if(v==null)return '<span style="color:#7c8ba1">—</span>';
   return '<span style="color:#94a3b8">'+v.toFixed(1)+'%</span>';
 }
 function fmtN(v){
-  if(!v)return '<span style="color:#334155">0</span>';
+  if(!v)return '<span style="color:#7c8ba1">0</span>';
   return '<span style="color:#cbd5e1;font-weight:600">'+v+'</span>';
 }
 
@@ -306,10 +376,51 @@ function buildSkillPills(){
 }
 
 function teamSeason(){var el=document.getElementById('f-temporada');var v=el?el.value:'';return v||SEASONS[SEASONS.length-1]||'';}
+/* ══ LOS EQUIPOS DE LA LIGA, EN LA TABLA DE EQUIPOS ══════════════════════
+   Mismo criterio que en la tabla de jugadores: un rival de copa jugo un
+   solo partido, asi que su volumen de juego es una fraccion del de los
+   equipos de la liga. Se detecta por eso y no por una lista de nombres,
+   que habria que actualizar cada temporada. */
+function equiposDeLigaT(lista){
+  var vol = {};
+  lista.forEach(function(t){
+    vol[t.team] = (vol[t.team] || 0) + (t.atk_tot || 0) + (t.srv_tot || 0);
+  });
+  var vals = Object.keys(vol).map(function(k){ return vol[k]; })
+                   .sort(function(a,b){ return b-a; });
+  if(vals.length < 3) return null;
+  var medio = vals[Math.floor(vals.length / 2)];
+  var corte = medio * 0.45;
+  var ok = {};
+  Object.keys(vol).forEach(function(k){ if(vol[k] >= corte) ok[k] = true; });
+  return ok;
+}
+
 function renderTeams(){
   var f=getF();
   var season=teamSeason();
-  var seasonTeams=TEAMS.filter(function(t){return t.temporada===season;});
+  /* Con "Todas" seleccionado el filtro quedaba vacio y ningun equipo
+     coincidia: la tabla se veia sin una sola fila. Ahora, si no se eligio
+     temporada, entran todos los equipos de todas. */
+  var _elT=document.getElementById('f-temporada');
+  var _todas=!(_elT&&_elT.value);
+  var seasonTeams=TEAMS.filter(function(t){return _todas||t.temporada===season;});
+  /* Si un equipo aparece en varias temporadas se muestra una sola vez, con
+     la mas reciente: si no, la tabla lista el mismo club repetido. */
+  if(_todas){
+    var _visto={};
+    seasonTeams=seasonTeams.slice().sort(function(a,b){
+      return String(b.temporada).localeCompare(String(a.temporada));
+    }).filter(function(t){
+      if(_visto[t.team]) return false;
+      _visto[t.team]=1; return true;
+    });
+  }
+  /* fuera los rivales de una sola vez, salvo que se los pida por nombre */
+  if(_SOLO_LIGA && !f.team){
+    var _ok = equiposDeLigaT(seasonTeams);
+    if(_ok) seasonTeams = seasonTeams.filter(function(t){ return _ok[t.team]; });
+  }
   var rows=seasonTeams.filter(function(t){return !f.team||t.team===f.team;});
   // ranking-frac por columna (dentro de la temporada)
   var fracByMetric={};
@@ -340,7 +451,7 @@ function renderTeams(){
   tbody.innerHTML=rows.map(function(t,i){
     var c=TEAM_COLORS[t.team]||'#3b82f6';
     var slug=t.team.toLowerCase().replace(/ /g,'_');
-    var isNaf=t.team==='{{Club}}';
+    var esMiClub=t.team==='{{Club}}';
     var cells=METRICS.map(function(m){
       var v=t[m.eff], tot=t[m.tot]||0;
       var col=v==null?'#475569':rankColor(fracByMetric[m.key][t.team]);
@@ -349,7 +460,7 @@ function renderTeams(){
         +'<span class="tval" style="color:'+col+'">'+val+'</span>'
         +'<span class="ttot">('+tot+')</span></td>';
     }).join('');
-    return '<tr class="'+(isNaf?'is-nafels':'')+'">'
+    return '<tr class="'+(esMiClub?'es-mi-club':'')+'">'
       +'<td><span class="t-rank'+(i===0?' r1':'')+'">'+(i+1)+'</span></td>'
       +'<td><span class="t-name" style="color:'+c+'">'+t.team.toUpperCase()+'</span><a class="gp-btn" href="game_plan.html?rival='+slug+'" title="Abrir game plan de '+t.team+'">📋 Plan</a></td>'
       +cells+'</tr>';
@@ -416,8 +527,12 @@ function renderPlayers(){
   var s=curSkill(), m=curMetric(), f=getF();
   var minA=parseInt(document.getElementById('f-min-atk').value)||0;
   // solo jugadores con datos en este fundamento (compara like-with-like)
-  var data=filterP(PLAYERS).filter(function(p){
-    return p[m.eff]!=null && (p[m.tot]||0)>=Math.max(minA,1);
+  var base = filterP(PLAYERS);
+  var minCalc = 0;
+  if(_MIN_RANKING){ var mm = minimos(base); minCalc = mm[m.tot] || 0; }
+  var piso = Math.max(minA, minCalc, 1);
+  var data=base.filter(function(p){
+    return p[m.eff]!=null && (p[m.tot]||0)>=piso;
   });
   data.sort(function(a,b){return (b[m.eff]) - (a[m.eff]);});
   document.getElementById('results-count').textContent=data.length+' jugadores · '+s.label+(s.subs?' ('+(curSkill().subs.filter(function(x){return x.key===(pSub[s.key]||'all');})[0].label)+')':'');
@@ -441,12 +556,12 @@ function renderPlayers(){
     var col=rankColor(frac);
     var ev=p[m.eff];
     var evs=((ev>0&&!m.rec)?'+':'')+ev.toFixed(1)+'%';
-    var isNaf=p.team==='{{CLUB}}';
+    var esMiClub=p.team==='{{CLUB}}';
     var rank=i+1;
     var sec=s.cols.map(function(c){return '<td>'+fmtPct(p[c.k])+'</td>';}).join('');
-    return '<tr class="'+(isNaf?'is-nafels':'')+'">'
+    return '<tr class="'+(esMiClub?'es-mi-club':'')+'">'
       +'<td><span class="t-rank'+(i===0?' r1':'')+'">'+rank+'</span></td>'
-      +'<td><span style="font-weight:700;color:#64748b">#'+p.num+'</span> <span style="color:#e2e8f0">'+p.name+'</span></td>'
+      +'<td><span style="font-weight:700;color:#94a3b8">#'+p.num+'</span> <span style="color:#e2e8f0">'+p.name+'</span></td>'
       +'<td><a href="game_plan.html?rival='+pslug+'" title="Abrir game plan de '+p.team+'" style="text-decoration:none;display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;background:'+tc+'22;color:'+tc+'">'+p.team+'</a><a class="gp-btn" href="game_plan.html?rival='+pslug+'" title="Abrir game plan de '+p.team+'">📋</a></td>'
       +'<td><span class="pos-badge pos-'+p.pos_label+'">'+p.pos_label+'</span></td>'
       +'<td class="active-col"><span class="tval" style="color:'+col+'">'+evs+'</span></td>'
@@ -476,6 +591,67 @@ function loadStats(){
 }
 loadStats();
 </script><script src="lang.js" onerror="void 0"></script>
+
+<!-- ══ El selector de categoria ══════════════════════════════════════════
+     Esta tabla lleva sus datos ADENTRO: cada categoria genera la suya en su
+     carpeta. Por eso el selector no redirige archivos como en las demas
+     pantallas, sino que lleva directo a la tabla de esa categoria.
+
+     Si el club tiene una sola categoria, no aparece nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script>
+(function(){
+  try{
+    var L = window.CATEGORIAS_CLUB || [];
+    if(L.length < 2) return;
+
+    /* en que categoria estamos: si la direccion tiene cat/XXX/, es esa */
+    var m = location.pathname.match(/\/cat\/([^\/]+)\//);
+    var aqui = m ? m[1].toUpperCase() : '';
+    var actual = L[0];
+    L.forEach(function(c){
+      if(String(c).replace(/[^A-Za-z0-9]/g,'').toUpperCase() === aqui) actual = c;
+    });
+
+    var sel = document.createElement('select');
+    sel.title = 'Categoría';
+    sel.style.cssText = 'background:#12132a;color:#e2e8f0;border:1px solid rgba(255,255,255,.14);'
+      + 'border-radius:8px;padding:5px 9px;font-family:inherit;font-size:12px;'
+      + 'font-weight:700;cursor:pointer;letter-spacing:.5px';
+    sel.innerHTML = L.map(function(c){
+      return '<option value="'+c+'"'+(c===actual?' selected':'')+'>'+c+'</option>';
+    }).join('');
+
+    sel.addEventListener('change', function(){
+      var n = String(sel.value).replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+      var base = location.pathname.replace(/\/cat\/[^\/]+\//, '/');
+      location.href = (n === String(L[0]).replace(/[^A-Za-z0-9]/g,'').toUpperCase())
+        ? base
+        : base.replace(/\/([^\/]+)$/, '/cat/' + n + '/$1');
+    });
+
+    var caja = document.createElement('div');
+    caja.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:9998;'
+      + 'background:rgba(10,12,24,.94);border:1px solid rgba(255,255,255,.14);'
+      + 'border-radius:10px;padding:5px 7px;display:flex;align-items:center;gap:6px;'
+      + 'box-shadow:0 6px 20px rgba(0,0,0,.5)';
+    var et = document.createElement('span');
+    et.textContent = 'CATEGORÍA';
+    et.style.cssText = 'font-size:9px;letter-spacing:1.5px;color:#94a3b8';
+    caja.appendChild(et); caja.appendChild(sel);
+    document.body.appendChild(caja);
+  }catch(e){}
+})();
+</script>
+<script>
+function aplicarLiga(v){
+  _SOLO_LIGA = !!v; _MIN_RANKING = !!v;
+  try { renderPlayers(); } catch(e){}
+  try { renderTeams(); } catch(e){}
+}
+window.aplicarLiga = aplicarLiga;
+</script>
+<script src="ayuda.js"></script>
 </body></html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

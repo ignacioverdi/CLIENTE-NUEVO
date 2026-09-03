@@ -24,6 +24,48 @@ ESTRUCTURA DE ARCHIVOS:
 import os, re, json, argparse, shutil
 from collections import defaultdict, Counter
 
+
+# ── NOMBRES CORTOS DE LOS CLUBES ──────────────────────────────────────────
+# Los .dvw traen el nombre completo del club. En pantalla no entra y se lee
+# mal, asi que se guarda el nombre corto: el que usa todo el mundo.
+NOMBRE_CORTO = {
+    'club social, deportivo y cultural argentino de castelar': 'Castelar',
+    'club atletico san lorenzo de almagro':                    'San Lorenzo',
+    'club atletico boca juniors':                              'Boca',
+    'club atletico river plate':                               'River',
+    'club atletico velez sarsfield':                           'Velez',
+    'club ferro carril oeste':                                 'Ferro',
+    'club gimnasia y esgrima la plata':                        'GELP',
+    'club estudiantes de la plata':                            'Estudiantes',
+    'club banco provincia':                                    'Banco Provincia',
+    'universidad nacional de la matanza':                      'UNLaM',
+    'universidad nacional de tres de febrero':                 'Untref',
+    'instituto educativo san gregorio "el iluminador"':        'San Gregorio',
+    'instituto educativo san gregorio el iluminador':          'San Gregorio',
+}
+
+
+def _sin_tildes(t):
+    import unicodedata
+    return ''.join(c for c in unicodedata.normalize('NFD', t)
+                   if unicodedata.category(c) != 'Mn')
+
+
+def nombre_corto(nombre):
+    """El nombre corto del club, o el original si no esta en la tabla."""
+    if not nombre:
+        return nombre
+    clave = _sin_tildes(nombre.strip().lower())
+    for k, v in NOMBRE_CORTO.items():
+        if _sin_tildes(k) == clave:
+            return v
+    # No esta en la tabla: al menos se saca el "Club " del principio
+    limpio = re.sub(r'^(club|instituto educativo|universidad nacional de la|'
+                    r'universidad nacional de|universidad nacional)\s+',
+                    '', nombre.strip(), flags=re.I)
+    return limpio.strip() or nombre
+
+
 def _sumar_al_historial(entrenamientos, output_dir='.'):
     """Suma las sesiones al historial que leen las pantallas.
 
@@ -782,7 +824,7 @@ def collect_setter_rallies(dvw_dir, team_norm_map, main_teams, teams_data=None):
             team_libs = liberos_by_team.get(team, set())
             psec = '[3PLAYERS-H]' if pfx=='*' else '[3PLAYERS-V]'
             team_pos = _get_positions(content, psec)
-            setters = detectar_armadores(content, pfx, 2, team_libs, team_pos)
+            setters = detectar_armadores(content, pfx, 3, team_libs, team_pos)
             for sn in setters:
                 setters_detected.setdefault(team, set()).add(sn)
                 r = parse_setter_rallies(content, pfx, rpfx, ishome, sn, date, rival)
@@ -860,7 +902,7 @@ def build_liga_data(teams_data, combos, output_dir='.', setters=None, rallies=No
             if rec0 >= 20: roster[nser]='OUTSIDE'
             elif rec0 <= 8: roster[nser]=('OUTSIDE' if punta>opp else 'OPPOSITE')
             else: roster[nser]=('OUTSIDE' if punta>=opp else 'OPPOSITE')
-        LIGA['teams'][team.lower().replace(' ','_')]={'name':team,'rivals':rivals,'atk':atk_p,'srv':srv_p,'rec':rec_p,'setters':setters_list,'setter':setters_list[0] if setters_list else None,'roster':roster,'matches':matches}
+        LIGA['teams'][team.lower().replace(' ','_')]={'name':nombre_corto(team),'rivals':rivals,'atk':atk_p,'srv':srv_p,'rec':rec_p,'setters':setters_list,'setter':setters_list[0] if setters_list else None,'roster':roster,'matches':matches}
     with open(os.path.join(output_dir,'liga_data_entrenamientos.js'),'w',encoding='utf-8') as f:
         f.write('window.LIGA_DATA_ENT = '+json.dumps(LIGA,ensure_ascii=False)+';\n')
     return len(LIGA['teams'])
@@ -893,7 +935,7 @@ def _build_armador_page(team, slug, display, rivals_list, SUBS, template_dir, ou
         return 0  # 'early' por defecto (no usamos momento)
     setters_raw = {}
     # top-2 por volumen
-    ranked = sorted(rallies.items(), key=lambda x:-len(x[1]))[:2]
+    ranked = sorted(rallies.items(), key=lambda x:-len(x[1]))[:3]
     for sn, rl in ranked:
         rows = []
         for r in rl:
@@ -1510,7 +1552,7 @@ def build_one_setter(name, num, rallies):
 
 def build_armador_data(setters_rallies, setter_names):
     # setters_rallies: {num: [rallies]}, setter_names: {num: name}
-    ranked=sorted(setters_rallies.items(), key=lambda x:-len(x[1]))[:2]
+    ranked=sorted(setters_rallies.items(), key=lambda x:-len(x[1]))[:3]
     res={'titular':None,'suplente':None}
     if len(ranked)>=1:
         n,rl=ranked[0]; res['titular']=build_one_setter(setter_names.get(n,str(n)),n,rl)
@@ -1565,7 +1607,7 @@ def build_transicion_one(rallies):
     return {'rots':rots,'debil':sorted_e[0],'fuerte':sorted_e[-1]}
 
 def build_transicion_data(setters_rallies, setter_names):
-    ranked=sorted(setters_rallies.items(), key=lambda x:-len(x[1]))[:2]
+    ranked=sorted(setters_rallies.items(), key=lambda x:-len(x[1]))[:3]
     res={'titular':None,'suplente':None}
     if len(ranked)>=1:
         n,rl=ranked[0]; tr=build_transicion_one(rl)

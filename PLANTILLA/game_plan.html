@@ -5,7 +5,7 @@
 <!-- Migracion interna de etiquetas casla_* -> vb_* (transparente: conserva sesion, notas y datos) -->
 <script>(function(){try{function m(s){for(var i=s.length-1;i>=0;i--){var k=s.key(i);if(k&&k.indexOf("casla_")===0){var n="vb_"+k.slice(6);if(s.getItem(n)===null)s.setItem(n,s.getItem(k));}}}m(localStorage);m(sessionStorage);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>GAME PLAN — AMRISWIL · {{CLUB}}</title>
+<title>GAME PLAN — {{CLUB}}</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -257,7 +257,7 @@ select, select option {
 
   /* Links activos y visibles */
   a { color: #818cf8 !important; text-decoration: underline !important; }
-  a[href]:after { content: " (" attr(href) ")"; font-size: 7px; color: #475569; word-break: break-all; }
+  a[href]:after { content: " (" attr(href) ")"; font-size: 7px; color: #8395ac; word-break: break-all; }
 
   /* Grid de canchitas ajustado para A4 */
   .canchitas-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
@@ -276,9 +276,18 @@ select, select option {
 <!-- El descifrador. Esta pantalla pedia los datos cifrados pero no lo
      cargaba, asi que nunca se abrian: la seccion salia vacia sin ningun
      error. Va SIEMPRE antes que los .enc. -->
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
 <script src="liga_data.js.enc"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <script src="mapa_videos.js.enc" onerror="window.MAPA_VIDEOS=window.MAPA_VIDEOS||{}"></script>
 <script src="datos_recepcion.js.enc" onerror="void 0"></script>
 <!-- Abre todo lo que se registro arriba. Va al final: un .enc cargado
@@ -300,7 +309,7 @@ select, select option {
     <div style="font-size:10px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-top:1px">Análisis táctico de rivales — Volley {{Club}}</div>
   </div>
   <div>
-    <div class="rival-name" id="rival-nombre">AMRISWIL</div>
+    <div class="rival-name" id="rival-nombre">Elegí el rival</div>
     <div class="match-info" id="match-info">{{LIGA}} 2026/27 · temporada en curso</div>
     <select id="rival-select" class="rival-select" title="Elegir equipo rival"></select>
   </div>
@@ -311,7 +320,7 @@ select, select option {
 <main class="main" id="main-content">
   <!-- ARMADOR -->
   <div style="margin-top:40px;padding-top:28px;border-top:1px solid rgba(255,255,255,.06)">
-    <div style="font-size:10px;color:#475569;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+    <div style="font-size:10px;color:#8395ac;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px">
       ANÁLISIS DEL ARMADOR RIVAL
       <div style="flex:1;height:1px;background:rgba(255,255,255,.06)"></div>
     </div>
@@ -323,10 +332,10 @@ select, select option {
   <div style="margin-top:32px" id="seccion-recepcion">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:#e2e8f0;margin-bottom:16px">
       RECEPCIÓN DEL RIVAL
-      <span style="font-size:11px;font-family:'Barlow Condensed',sans-serif;color:#475569;letter-spacing:1px;margin-left:12px;font-weight:400">Cómo reciben · dónde atacar</span>
+      <span style="font-size:11px;font-family:'Barlow Condensed',sans-serif;color:#8395ac;letter-spacing:1px;margin-left:12px;font-weight:400">Cómo reciben · dónde atacar</span>
     </div>
     <div id="rec-rival-content">
-      <div style="color:#475569;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;padding:24px;border:1px solid rgba(255,255,255,.06);border-radius:12px;text-align:center">
+      <div style="color:#8395ac;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;padding:24px;border:1px solid rgba(255,255,255,.06);border-radius:12px;text-align:center">
         Sin datos de recepción rival cargados
       </div>
     </div>
@@ -337,7 +346,7 @@ select, select option {
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
       <div style="width:4px;height:28px;background:linear-gradient(180deg,#e8192c,transparent);border-radius:2px;flex-shrink:0"></div>
       <div>
-        <div style="font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase">Planificación táctica</div>
+        <div style="font-size:9px;color:#8395ac;letter-spacing:2px;text-transform:uppercase">Planificación táctica</div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:#fff">CÓMO VAMOS A JUGAR</div>
       </div>
     </div>
@@ -1010,7 +1019,7 @@ function abrirModalDefensa(item, jugador, def){
   var lec=def.lectura||{};
   var head='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
     +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:24px;letter-spacing:1px;color:'+(jugador.color||'#e8192c')+'">DEFENSA vs '+item.cod+'</div>'
-    +'<div style="cursor:pointer;font-size:26px;color:#64748b;line-height:1" onclick="cerrarModalDefensa()">&times;</div></div>'
+    +'<div style="cursor:pointer;font-size:26px;color:#94a3b8;line-height:1" onclick="cerrarModalDefensa()">&times;</div></div>'
     +'<div style="font-size:13px;color:#94a3b8;margin-bottom:12px">'+(jugador.nombre||'')+'</div>';
 
   if(opciones){
@@ -1025,7 +1034,7 @@ function abrirModalDefensa(item, jugador, def){
     box.innerHTML=head+avisoTendencia+sel
       +'<img id="def-img" src="'+imgUrl+'" style="width:100%;border-radius:10px;display:block" '
       +'onerror="this.style.display=\'none\';document.getElementById(\'def-img-fallback\').style.display=\'block\'"/>'
-      +'<div id="def-img-fallback" style="display:none;color:#64748b;padding:20px;text-align:center">Imagen no disponible. Subila a la carpeta /imagenes/ del repo.</div>';
+      +'<div id="def-img-fallback" style="display:none;color:#94a3b8;padding:20px;text-align:center">Imagen no disponible. Subila a la carpeta /imagenes/ del repo.</div>';
     ov.appendChild(box);
     document.body.appendChild(ov);
     var selEl=document.getElementById('def-img-sel');
@@ -1482,7 +1491,7 @@ function renderJugador(j,idx){
   });
   if(!algo){
     var none=document.createElement('div');
-    none.style.cssText='font-size:11px;color:#64748b;font-style:italic;';
+    none.style.cssText='font-size:11px;color:#94a3b8;font-style:italic;';
     none.textContent='Sin datos suficientes para análisis automático.';
     tac.appendChild(none);
   }
@@ -1621,7 +1630,7 @@ function renderPanelRecepcion(j, container){
   container.innerHTML = '';
   var rec = j.recepcion;
   if(!rec || (!rec.flotado && !rec.potencia)){
-    container.innerHTML='<div style="color:#475569;padding:28px;text-align:center;font-family:Barlow Condensed,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase">Sin datos de recepción</div>';
+    container.innerHTML='<div style="color:#8395ac;padding:28px;text-align:center;font-family:Barlow Condensed,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase">Sin datos de recepción</div>';
     return;
   }
 
@@ -1635,12 +1644,12 @@ function renderPanelRecepcion(j, container){
     return '<div class="zone-card" style="background:'+bgc(e)+';border:1px solid '+bdc(e)+';border-radius:8px;padding:7px 5px">'
       +'<div style="font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-align:center;color:'+ec(e)+';margin-bottom:3px">'+label+'</div>'
       +'<div style="font-family:Bebas Neue,sans-serif;font-size:18px;font-weight:900;text-align:center;line-height:1;color:'+ec(e)+';margin-bottom:1px">'+e+'%</div>'
-      +'<div style="font-size:8px;text-align:center;color:#475569;margin-bottom:3px">efectividad</div>'
+      +'<div style="font-size:8px;text-align:center;color:#8395ac;margin-bottom:3px">efectividad</div>'
       +'<div style="height:3px;border-radius:2px;background:rgba(255,255,255,.08);margin:0 2px 4px"><div style="width:'+vol+'%;height:3px;border-radius:2px;background:'+typeColor+'"></div></div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px">'
-      +'<div style="text-align:center"><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px">Total</div><div style="font-size:10px;font-weight:800;line-height:1.3;color:#e2e8f0">'+t+'</div></div>'
-      +'<div style="text-align:center"><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px"># +</div><div style="font-size:10px;font-weight:800;line-height:1.3;color:#22c55e">'+p+'%</div></div>'
-      +'<div style="text-align:center"><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px">/ =</div><div style="font-size:10px;font-weight:800;line-height:1.3;color:#ef4444">'+n+'%</div></div>'
+      +'<div style="text-align:center"><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px">Total</div><div style="font-size:10px;font-weight:800;line-height:1.3;color:#e2e8f0">'+t+'</div></div>'
+      +'<div style="text-align:center"><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px"># +</div><div style="font-size:10px;font-weight:800;line-height:1.3;color:#22c55e">'+p+'%</div></div>'
+      +'<div style="text-align:center"><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px">/ =</div><div style="font-size:10px;font-weight:800;line-height:1.3;color:#ef4444">'+n+'%</div></div>'
       +'</div></div>';
   }
 
@@ -1661,10 +1670,10 @@ function renderPanelRecepcion(j, container){
       + zoneCard(desde.p1||{},'Pos 1',maxTot,typeColor)
       +'</div>'
       +'<div style="display:grid;grid-template-columns:repeat(4,1fr);padding:5px 10px 7px;border-top:1px solid rgba(255,255,255,.06)">'
-      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#e2e8f0;font-family:Barlow Condensed,sans-serif">'+( total.tot||0)+'</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">saques</div></div>'
-      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:'+ec(total.eff||0)+';font-family:Barlow Condensed,sans-serif">'+( total.eff||0)+'%</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">EFF</div></div>'
-      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#22c55e;font-family:Barlow Condensed,sans-serif">'+( total.pos||0)+'%</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px"># +</div></div>'
-      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#ef4444;font-family:Barlow Condensed,sans-serif">'+( total.neg||0)+'%</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">/ =</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#e2e8f0;font-family:Barlow Condensed,sans-serif">'+( total.tot||0)+'</div><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">saques</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:'+ec(total.eff||0)+';font-family:Barlow Condensed,sans-serif">'+( total.eff||0)+'%</div><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">EFF</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#22c55e;font-family:Barlow Condensed,sans-serif">'+( total.pos||0)+'%</div><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px;margin-top:1px"># +</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#ef4444;font-family:Barlow Condensed,sans-serif">'+( total.neg||0)+'%</div><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">/ =</div></div>'
       +'</div>';
     return el;
   }
@@ -2091,7 +2100,7 @@ function gpVidRender(){
     var _vid=gpVidUrl(c.code), _play=(c.t_atk>0&&!!_vid);
     var chk=(gpV.readonly||!_play)?'<span style="width:16px;display:inline-block;flex:none"></span>':'<input type="checkbox" '+(c._sel?'checked':'')+' style="width:16px;height:16px;accent-color:#22c55e">';
     var _nm=gpPlayerName(c.num), _who=c.num?('#'+c.num+(_nm?' '+_nm:'')):'';
-    var _tag=_play?'<span style="color:#22c55e;font-size:11px;margin-left:4px">▶ video</span>':(c.t_atk>0?'<span style="color:#64748b;font-size:10px;margin-left:4px">sin link</span>':'<span style="color:#475569;font-size:10px;margin-left:4px">sin sync</span>');
+    var _tag=_play?'<span style="color:#22c55e;font-size:11px;margin-left:4px">▶ video</span>':(c.t_atk>0?'<span style="color:#94a3b8;font-size:10px;margin-left:4px">sin link</span>':'<span style="color:#8395ac;font-size:10px;margin-left:4px">sin sync</span>');
     var _tm=c.t_atk>0?(gpMmss(c.t_start)+'→'+gpMmss(c.t_atk)):'—';
     row.style.opacity=_play?'1':'.5';
     row.innerHTML=chk+'<span style="font-weight:900;width:16px;text-align:center;color:'+gpEvColor(c.ev)+'">'+c.ev+'</span><span style="flex:1">'+(_who?'<b style="color:#f1f5f9">'+_who+'</b> · ':'')+c.combo+' · '+c.orig+'→'+c.dest+'<span style="color:#52617a;font-size:11px"> · '+(c.date||'')+'</span></span><span style="color:#7689a1;font-size:12px;font-variant-numeric:tabular-nums">'+_tm+'</span>'+_tag;
@@ -2182,7 +2191,7 @@ function renderArmador(){
     circle.style.cssText='width:48px;height:48px;border-radius:50%;border:2px solid '+color+';background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;font-size:17px;color:'+color+';flex-shrink:0';
     circle.textContent=arm.nombre.split(' ')[0];
     var nameDiv=document.createElement('div');
-    nameDiv.innerHTML='<div style="font-size:8px;color:#475569;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">ARMADOR '+tipo.toUpperCase()+'</div><div style="font-family:Bebas Neue,sans-serif;font-size:18px;letter-spacing:2px;color:'+color+'">'+arm.nombre+'</div>';
+    nameDiv.innerHTML='<div style="font-size:8px;color:#8395ac;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">ARMADOR '+tipo.toUpperCase()+'</div><div style="font-family:Bebas Neue,sans-serif;font-size:18px;letter-spacing:2px;color:'+color+'">'+arm.nombre+'</div>';
     hdr.appendChild(circle); hdr.appendChild(nameDiv);
 
     // Pills P1-P6 + SO + TR
@@ -2199,7 +2208,7 @@ function renderArmador(){
       ev.style.cssText='font-family:Bebas Neue,sans-serif;font-size:15px;color:'+effC+';line-height:1';
       ev.textContent=p.eff!==null&&p.eff!==undefined?p.eff+'%':'—';
       var tv=document.createElement('div');
-      tv.style.cssText='font-size:7px;color:#475569';
+      tv.style.cssText='font-size:7px;color:#8395ac';
       tv.textContent=(p.tot||0)+' acc';
       pill.appendChild(lv); pill.appendChild(ev); pill.appendChild(tv);
       // SO y TR: doble click abre modal con distribución por rotación
@@ -2227,7 +2236,7 @@ function renderArmador(){
       var recRow=document.createElement('div');
       recRow.style.cssText='padding:10px 18px;display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap';
       var recLbl=document.createElement('div');
-      recLbl.style.cssText='font-size:8px;color:#475569;letter-spacing:2px;text-transform:uppercase;margin-right:4px;flex-shrink:0';
+      recLbl.style.cssText='font-size:8px;color:#8395ac;letter-spacing:2px;text-transform:uppercase;margin-right:4px;flex-shrink:0';
       recLbl.textContent='EFF/RECEPCIÓN';
       recRow.appendChild(recLbl);
       arm.recepcion.forEach(function(r){
@@ -2238,7 +2247,7 @@ function renderArmador(){
         v.style.cssText='font-family:Bebas Neue,sans-serif;font-size:14px;color:'+ec2;
         v.textContent=r.eff!==null?r.eff+'%':'—';
         var l=document.createElement('div');
-        l.style.cssText='font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap';
+        l.style.cssText='font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap';
         l.textContent=r.label;
         item.appendChild(v); item.appendChild(l); recRow.appendChild(item);
       });
@@ -2252,9 +2261,9 @@ function renderArmador(){
 
     var fbar=document.createElement('div');
     fbar.style.cssText='display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding:12px 18px 2px';
-    var phaseLbl=document.createElement('span'); phaseLbl.style.cssText='font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase'; phaseLbl.textContent='Fase';
+    var phaseLbl=document.createElement('span'); phaseLbl.style.cssText='font-size:9px;color:#8395ac;letter-spacing:2px;text-transform:uppercase'; phaseLbl.textContent='Fase';
     var phaseWrap=document.createElement('div'); phaseWrap.style.cssText='display:inline-flex;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:2px;gap:2px;margin-left:5px';
-    var recLbl=document.createElement('span'); recLbl.style.cssText='font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase'; recLbl.textContent='Recepción';
+    var recLbl=document.createElement('span'); recLbl.style.cssText='font-size:9px;color:#8395ac;letter-spacing:2px;text-transform:uppercase'; recLbl.textContent='Recepción';
     var recWrap=document.createElement('div'); recWrap.style.cssText='display:inline-flex;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:2px;gap:2px;margin-left:5px';
     var phaseBtns={}, recBtns={};
     function gpStyleBtn(b,on,col){ b.style.background=on?col:'transparent'; b.style.color=on?'#0a0e15':'#94a3b8'; }
@@ -2271,7 +2280,7 @@ function renderArmador(){
       recWrap.appendChild(b); recBtns[o[0]]=b;
     });
     // ── Recepción desde (banda de zona: Z1=1+9+2 / Z6=6+8+3 / Z5=5+7+4) ──
-    var rzLbl=document.createElement('span'); rzLbl.style.cssText='font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase'; rzLbl.textContent='Recep. desde';
+    var rzLbl=document.createElement('span'); rzLbl.style.cssText='font-size:9px;color:#8395ac;letter-spacing:2px;text-transform:uppercase'; rzLbl.textContent='Recep. desde';
     var rzWrap=document.createElement('div'); rzWrap.style.cssText='display:inline-flex;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:2px;gap:2px;margin-left:5px';
     var rzBtns={};
     [['','Todas'],['r1','Z1'],['r6','Z6'],['r5','Z5']].forEach(function(o){
@@ -2281,7 +2290,7 @@ function renderArmador(){
       rzWrap.appendChild(b); rzBtns[o[0]||'all']=b;
     });
     // ── Tipo de saque recibido (Flotado RM / Potencia RQ) — solo side-out ──
-    var stLbl=document.createElement('span'); stLbl.style.cssText='font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase'; stLbl.textContent='Saque';
+    var stLbl=document.createElement('span'); stLbl.style.cssText='font-size:9px;color:#8395ac;letter-spacing:2px;text-transform:uppercase'; stLbl.textContent='Saque';
     var stWrap=document.createElement('div'); stWrap.style.cssText='display:inline-flex;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:2px;gap:2px;margin-left:5px';
     var stBtns={};
     [['','Todas'],['M','Flotado'],['Q','Potencia']].forEach(function(o){
@@ -2291,7 +2300,7 @@ function renderArmador(){
       stWrap.appendChild(b); stBtns[o[0]||'all']=b;
     });
     // ── Receptor (jugador que recibe) ──
-    var rnLbl=document.createElement('span'); rnLbl.style.cssText='font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase'; rnLbl.textContent='Receptor';
+    var rnLbl=document.createElement('span'); rnLbl.style.cssText='font-size:9px;color:#8395ac;letter-spacing:2px;text-transform:uppercase'; rnLbl.textContent='Receptor';
     var rnSel=document.createElement('select'); rnSel.style.cssText='margin-left:5px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#cbd5e1;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;padding:6px 10px;border-radius:8px;cursor:pointer';
     (function(){
       var recv={}; ((setterRaw&&setterRaw.s)||[]).forEach(function(r){ if(r[16]>0) recv[r[16]]=(recv[r[16]]||0)+1; });
@@ -2319,7 +2328,7 @@ function renderArmador(){
     var paintMatchUI=function(){};
     var matchLbl=null, matchBox=null;
     if(gpMatches.length){
-      matchLbl=document.createElement('span'); matchLbl.style.cssText='font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase'; matchLbl.textContent='Partidos';
+      matchLbl=document.createElement('span'); matchLbl.style.cssText='font-size:9px;color:#8395ac;letter-spacing:2px;text-transform:uppercase'; matchLbl.textContent='Partidos';
       matchBox=document.createElement('div'); matchBox.style.cssText='position:relative;margin-left:5px;display:inline-block';
       var matchBtn=document.createElement('button');
       matchBtn.style.cssText='border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#cbd5e1;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;padding:6px 13px;border-radius:8px;cursor:pointer;white-space:nowrap';
@@ -2354,7 +2363,7 @@ function renderArmador(){
         var ck=document.createElement('input'); ck.type='checkbox'; ck.checked=true; ck.style.cssText='accent-color:#22c55e;cursor:pointer;width:14px;height:14px';
         ck.addEventListener('change',gpRecompMatches); gpChecks[m.i]=ck;
         var dd=(m.date||'').split('-'); var lab=(dd.length===3)?(dd[2]+' '+GP_MESES[parseInt(dd[1],10)||0]):(m.date||'');
-        var txt=document.createElement('span'); txt.innerHTML=lab+' <span style="color:#64748b">vs</span> '+m.rival;
+        var txt=document.createElement('span'); txt.innerHTML=lab+' <span style="color:#94a3b8">vs</span> '+m.rival;
         row.appendChild(ck); row.appendChild(txt); matchPanel.appendChild(row);
       });
       matchBtn.addEventListener('click',function(e){ e.stopPropagation(); matchPanel.style.display=(matchPanel.style.display==='none'?'block':'none'); });
@@ -2369,7 +2378,7 @@ function renderArmador(){
     panel.appendChild(fbar);
 
     var rotLbl=document.createElement('div');
-    rotLbl.style.cssText='font-size:8px;color:#475569;letter-spacing:3px;text-transform:uppercase;padding:8px 18px 5px';
+    rotLbl.style.cssText='font-size:8px;color:#8395ac;letter-spacing:3px;text-transform:uppercase;padding:8px 18px 5px';
     rotLbl.textContent='DISTRIBUCIÓN POR ROTACIÓN';
     panel.appendChild(rotLbl);
 
@@ -2388,7 +2397,7 @@ function renderArmador(){
         card.style.cssText='background:var(--card);display:flex;flex-direction:column';
         var rh=document.createElement('div');
         rh.style.cssText='padding:7px 11px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between';
-        rh.innerHTML='<div style="font-family:Bebas Neue,sans-serif;font-size:17px;color:'+color+'">'+key+'</div><div style="font-size:8px;color:#475569">'+dd.total+' acc</div>';
+        rh.innerHTML='<div style="font-family:Bebas Neue,sans-serif;font-size:17px;color:'+color+'">'+key+'</div><div style="font-size:8px;color:#8395ac">'+dd.total+' acc</div>';
         card.appendChild(rh);
         var cvW=document.createElement('div');
         cvW.style.cssText='padding:5px;background:rgba(0,0,0,.2)';
@@ -2425,7 +2434,7 @@ function renderArmador(){
         [{l:'EFF',v:dd.total?dd.eff+'%':'\u2014',c:ec3},{l:'TOT',v:dd.total,c:color},{l:'#%',v:dd.total?dd.pts_pct+'%':'\u2014',c:'#22c55e'}].forEach(function(st,si){
           var cs=document.createElement('div');
           cs.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;padding:5px 2px;'+(si<2?'border-right:1px solid var(--border)':'');
-          cs.innerHTML='<div style="font-family:Bebas Neue,sans-serif;font-size:13px;color:'+st.c+'">'+st.v+'</div><div style="font-size:6px;color:#475569;letter-spacing:.5px;text-transform:uppercase">'+st.l+'</div>';
+          cs.innerHTML='<div style="font-family:Bebas Neue,sans-serif;font-size:13px;color:'+st.c+'">'+st.v+'</div><div style="font-size:6px;color:#8395ac;letter-spacing:.5px;text-transform:uppercase">'+st.l+'</div>';
           stRow.appendChild(cs);
         });
         card.appendChild(stRow);
@@ -2437,7 +2446,7 @@ function renderArmador(){
     gpSync();
 
     if(arm.llamadas&&arm.llamadas.length){
-      var llamLbl=document.createElement('div');llamLbl.style.cssText='font-size:8px;color:#475569;letter-spacing:3px;text-transform:uppercase;padding:10px 18px 5px';llamLbl.textContent='DISTRIBUCIÓN POR LLAMADA (REC # o +) · TOCÁ UNA LLAMADA →';panel.appendChild(llamLbl);
+      var llamLbl=document.createElement('div');llamLbl.style.cssText='font-size:8px;color:#8395ac;letter-spacing:3px;text-transform:uppercase;padding:10px 18px 5px';llamLbl.textContent='DISTRIBUCIÓN POR LLAMADA (REC # o +) · TOCÁ UNA LLAMADA →';panel.appendChild(llamLbl);
       var llamGrid=document.createElement('div');llamGrid.style.cssText='display:flex;gap:6px;flex-wrap:wrap;padding:0 18px 14px';
       arm.llamadas.forEach(function(ll){
         var effC=ll.eff===null?'#475569':ll.eff>=50?'#22c55e':ll.eff>=25?'#fbbf24':ll.eff>=0?'#f97316':'#ef4444';
@@ -2447,13 +2456,13 @@ function renderArmador(){
         var topRow=document.createElement('div');topRow.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:5px';
         var callLbl=document.createElement('div');callLbl.style.cssText='font-family:Bebas Neue,sans-serif;font-size:16px;color:'+color;callLbl.textContent=ll.call;
         var effDiv=document.createElement('div');effDiv.style.cssText='font-family:Bebas Neue,sans-serif;font-size:16px;color:'+effC;effDiv.textContent=(ll.eff!==null?ll.eff+'%':'—');
-        var totDiv=document.createElement('div');totDiv.style.cssText='font-size:7px;color:#475569';totDiv.textContent=ll.tot+' arm.';
+        var totDiv=document.createElement('div');totDiv.style.cssText='font-size:7px;color:#8395ac';totDiv.textContent=ll.tot+' arm.';
         topRow.appendChild(callLbl);topRow.appendChild(effDiv);card2.appendChild(topRow);card2.appendChild(totDiv);
         if(ll.dist&&ll.dist.length){var zonesRow=document.createElement('div');zonesRow.style.cssText='display:flex;gap:4px;margin-top:5px;flex-wrap:wrap';ll.dist.slice(0,2).forEach(function(dz){var ptC2=dz.pct_p>=60?'#22c55e':dz.pct_p>=40?'#fbbf24':'#f97316';var zEl=document.createElement('div');zEl.style.cssText='font-size:9px;padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);white-space:nowrap';zEl.innerHTML='Z'+dz.zona+' <span style="color:'+ptC2+';font-weight:700">'+dz.pct_p+'%</span>';zonesRow.appendChild(zEl);});card2.appendChild(zonesRow);}
         llamGrid.appendChild(card2);});panel.appendChild(llamGrid);}
     var heatArmDiv=document.createElement('div');heatArmDiv.style.cssText='padding:0 18px 14px;display:flex;gap:8px;align-items:center';
     var heatArmLink=document.createElement('a');heatArmLink.href='hm_armador.html?equipo='+GP_RIVAL_SLUG;heatArmLink.target='_blank';heatArmLink.style.cssText='font-size:10px;font-weight:700;color:var(--muted);text-decoration:none;padding:5px 12px;border:1px solid var(--border);border-radius:8px;letter-spacing:.5px;white-space:nowrap;';heatArmLink.textContent='Ver heatmap armador →';
-    var heatArmNote=document.createElement('span');heatArmNote.style.cssText='font-size:9px;color:#475569';heatArmNote.textContent='Filtros completos: llamada, posición, SO/TR';
+    var heatArmNote=document.createElement('span');heatArmNote.style.cssText='font-size:9px;color:#8395ac';heatArmNote.textContent='Filtros completos: llamada, posición, SO/TR';
     heatArmDiv.appendChild(heatArmLink);heatArmDiv.appendChild(heatArmNote);panel.appendChild(heatArmDiv);
     sec.appendChild(panel);
   });
@@ -2633,11 +2642,11 @@ function renderRotaciones(){
   var data=gpAnalizarRotaciones();
   if(!data){ return; }
   var POSCOL={P4:'#22c55e',P3:'#f59e0b',P2:'#818cf8',P8:'#06b6d4'};
-  var html='<div style="font-size:11px;color:#94a3b8;margin-bottom:14px;font-family:Barlow Condensed,sans-serif;letter-spacing:.5px">Armador rival: <b style="color:#fbbf24">'+data.setter+'</b> · distribución en K1 (recepción positiva) · <span style="color:#64748b">pelotas / puntos</span></div>';
+  var html='<div style="font-size:11px;color:#94a3b8;margin-bottom:14px;font-family:Barlow Condensed,sans-serif;letter-spacing:.5px">Armador rival: <b style="color:#fbbf24">'+data.setter+'</b> · distribución en K1 (recepción positiva) · <span style="color:#94a3b8">pelotas / puntos</span></div>';
   html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">';
   data.rots.forEach(function(r){
     if(r.vacio){
-      html+='<div style="border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.01);border-radius:11px;padding:12px;opacity:.45"><div style="font-family:Bebas Neue,sans-serif;font-size:20px;color:#64748b">S'+r.pos+'</div><div style="font-size:10px;color:#475569">muestra insuficiente</div></div>';
+      html+='<div style="border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.01);border-radius:11px;padding:12px;opacity:.45"><div style="font-family:Bebas Neue,sans-serif;font-size:20px;color:#94a3b8">S'+r.pos+'</div><div style="font-size:10px;color:#8395ac">muestra insuficiente</div></div>';
       return;
     }
     var esDebil=(data.debil&&r.pos===data.debil.pos);
@@ -2657,7 +2666,7 @@ function renderRotaciones(){
       html+='<div style="flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden"><div style="width:'+x.pct+'%;height:100%;background:'+col+'"></div></div>';
       html+='<span style="font-size:10px;color:#cbd5e1;width:54px;text-align:right">'+x.n+'/'+x.pts+' ('+x.pct+'%)</span></div>';
     });
-    html+='<div style="font-size:9px;color:#64748b;margin-top:5px">'+r.n+' K1 · '+r.eff+'% ef · '+(r.concentrada?'<span style="color:#fbbf24">concentrada</span>':'<span style="color:#22c55e">repartida</span>')+'</div>';
+    html+='<div style="font-size:9px;color:#94a3b8;margin-top:5px">'+r.n+' K1 · '+r.eff+'% ef · '+(r.concentrada?'<span style="color:#fbbf24">concentrada</span>':'<span style="color:#22c55e">repartida</span>')+'</div>';
     html+='</div>';
   });
   html+='</div>';
@@ -2947,7 +2956,7 @@ function renderRecepcionRival(){
   if(!cont) return;
   var jugs=JUGADORES.filter(function(j){if(!j.recepcion) return false;var tot=0;['flotado','potencia'].forEach(function(t){if(j.recepcion[t])['desde_z1','desde_z5','desde_z6'].forEach(function(z){tot+=(j.recepcion[t][z]&&j.recepcion[t][z].total)?j.recepcion[t][z].total.tot||0:0;});});return tot>=15;});
   if(!jugs.length){
-    cont.innerHTML='<div style="color:#475569;font-family:Barlow Condensed,sans-serif;font-size:13px;padding:24px;border:1px solid rgba(255,255,255,.06);border-radius:12px;text-align:center">Sin datos de recepción rival cargados</div>';
+    cont.innerHTML='<div style="color:#8395ac;font-family:Barlow Condensed,sans-serif;font-size:13px;padding:24px;border:1px solid rgba(255,255,255,.06);border-radius:12px;text-align:center">Sin datos de recepción rival cargados</div>';
     return;
   }
 
@@ -2966,7 +2975,7 @@ function renderRecepcionRival(){
       +'<div style="font-family:Bebas Neue,sans-serif;font-size:30px;text-align:center;line-height:1;color:'+ec(e)+'">'+e+'%</div>'
       +'<div style="height:4px;border-radius:2px;background:rgba(255,255,255,.08);margin:6px 2px 7px"><div style="width:'+vol+'%;height:4px;border-radius:2px;background:'+typeColor+'"></div></div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">'
-      +'<div style="text-align:center"><div style="font-family:Bebas Neue,sans-serif;font-size:17px;color:#e2e8f0;line-height:1">'+t+'</div><div style="font-size:8px;color:#64748b;text-transform:uppercase;margin-top:2px">TOT</div></div>'
+      +'<div style="text-align:center"><div style="font-family:Bebas Neue,sans-serif;font-size:17px;color:#e2e8f0;line-height:1">'+t+'</div><div style="font-size:8px;color:#94a3b8;text-transform:uppercase;margin-top:2px">TOT</div></div>'
       +'<div style="text-align:center"><div style="font-family:Bebas Neue,sans-serif;font-size:17px;color:#22c55e;line-height:1">'+pctBuena+'%</div><div style="font-size:8px;color:#22c55e;margin-top:2px">#+</div></div>'
       +'<div style="text-align:center"><div style="font-family:Bebas Neue,sans-serif;font-size:17px;color:#ef4444;line-height:1">'+pctMala+'%</div><div style="font-size:8px;color:#ef4444;margin-top:2px">/=</div></div>'
       +'</div></div>';
@@ -3012,11 +3021,11 @@ function renderRecepcionRival(){
     html+='<div style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06)">';
     html+='<div style="width:38px;height:38px;border-radius:50%;border:2px solid '+color+';display:flex;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;font-size:15px;color:'+color+';flex-shrink:0">'+j.num+'</div>';
     html+='<div style="flex:1"><div style="font-family:Bebas Neue,sans-serif;font-size:15px;letter-spacing:1px;color:#e2e8f0">'+nm+'</div>';
-    html+='<div style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">'+(GP_POS_LABEL[j.pos]||j.pos)+'</div></div>';
+    html+='<div style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">'+(GP_POS_LABEL[j.pos]||j.pos)+'</div></div>';
     // SM / SQ pills
     html+='<div style="display:flex;gap:5px">';
-    if(sm.tot){html+='<div style="text-align:center;padding:5px 9px;border-radius:7px;background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2)"><div style="font-family:Bebas Neue,sans-serif;font-size:15px;color:'+ec(sm.eff||0)+'">'+( sm.eff||0)+'%</div><div style="font-size:7px;color:#475569;letter-spacing:1px">SM</div></div>';}
-    if(sq.tot){html+='<div style="text-align:center;padding:5px 9px;border-radius:7px;background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2)"><div style="font-family:Bebas Neue,sans-serif;font-size:15px;color:'+ec(sq.eff||0)+'">'+( sq.eff||0)+'%</div><div style="font-size:7px;color:#475569;letter-spacing:1px">SQ</div></div>';}
+    if(sm.tot){html+='<div style="text-align:center;padding:5px 9px;border-radius:7px;background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2)"><div style="font-family:Bebas Neue,sans-serif;font-size:15px;color:'+ec(sm.eff||0)+'">'+( sm.eff||0)+'%</div><div style="font-size:7px;color:#8395ac;letter-spacing:1px">SM</div></div>';}
+    if(sq.tot){html+='<div style="text-align:center;padding:5px 9px;border-radius:7px;background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2)"><div style="font-family:Bebas Neue,sans-serif;font-size:15px;color:'+ec(sq.eff||0)+'">'+( sq.eff||0)+'%</div><div style="font-size:7px;color:#8395ac;letter-spacing:1px">SQ</div></div>';}
     html+='</div></div>';
 
     // ── Body: flotado + potencia apilados ──────────────────────
@@ -3081,7 +3090,7 @@ function abrirModalArmador(rot, color, pills){
   var data=gpDistRotacionValidada(rot.pos);
   if(sub) sub.textContent='Adónde arma cuando el equipo rota en '+rot.pos+' · validado contra DataVolley';
   var body=document.getElementById('modal-arm-body');
-  if(!data||(!data.sideout&&!data.transicion)){ body.innerHTML='<div style="color:#475569;padding:20px;text-align:center">Sin datos suficientes en esta rotación</div>'; return; }
+  if(!data||(!data.sideout&&!data.transicion)){ body.innerHTML='<div style="color:#8395ac;padding:20px;text-align:center">Sin datos suficientes en esta rotación</div>'; return; }
 
   function vista(titulo, subt, dist, total, col){
     if(!dist||!dist.length) return '';
@@ -3089,7 +3098,7 @@ function abrirModalArmador(rot, color, pills){
     var h='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:15px;margin-bottom:14px">';
     h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">';
     h+='<div style="font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:'+col+'">'+titulo+'</div>';
-    h+='<div style="font-size:11px;color:#64748b">'+total+' pelotas · '+subt+'</div></div>';
+    h+='<div style="font-size:11px;color:#94a3b8">'+total+' pelotas · '+subt+'</div></div>';
     // Barras horizontales por posición, ordenadas
     dist.forEach(function(d){
       var killCol=d.kill>=50?'#22c55e':d.kill>=30?'#fbbf24':'#f97316';
@@ -3114,7 +3123,7 @@ function abrirModalArmador(rot, color, pills){
   html+=vista('SIDE-OUT','recepción #/+', data.sideout, data.soTot, '#22c55e');
   html+=vista('TRANSICIÓN','juego corrido', data.transicion, data.trTot, '#06b6d4');
   // Nota explicativa
-  html+='<div style="font-size:10px;color:#475569;line-height:1.5;font-style:italic;padding:4px 2px">El % indica cuánto arma a esa posición; el kill% es la eficacia de ataque ahí. Side-out = tras recepción buena; transición = juego corrido tras defensa.</div>';
+  html+='<div style="font-size:10px;color:#8395ac;line-height:1.5;font-style:italic;padding:4px 2px">El % indica cuánto arma a esa posición; el kill% es la eficacia de ataque ahí. Side-out = tras recepción buena; transición = juego corrido tras defensa.</div>';
   body.innerHTML=html;
 }
 
@@ -3252,7 +3261,7 @@ function abrirModalSOTR(data, tipo, color){
   hdrRow.style.cssText = 'display:grid;grid-template-columns:110px 1fr 48px 10px 64px 64px;gap:6px;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06)';
   ['ZONA','DISTRIBUCIÓN','DIST%','','ATAQUES','% PTS / PTS'].forEach(function(lbl){
     var h2=document.createElement('div');
-    h2.style.cssText='font-size:7px;color:#475569;letter-spacing:1px;text-transform:uppercase;text-align:center';
+    h2.style.cssText='font-size:7px;color:#8395ac;letter-spacing:1px;text-transform:uppercase;text-align:center';
     h2.textContent=lbl; pillsEl.appendChild(h2);
   });
 
@@ -3271,9 +3280,9 @@ function abrirModalSOTR(data, tipo, color){
     var pd=document.createElement('div');pd.style.cssText='font-family:Bebas Neue,sans-serif;font-size:16px;color:'+color+';text-align:right';pd.textContent=d.pct+'%';
     var sp=document.createElement('div');sp.style.cssText='color:rgba(255,255,255,.1);text-align:center;font-size:10px';sp.textContent='|';
     var ta=document.createElement('div');ta.style.cssText='text-align:center';
-    ta.innerHTML='<span style="font-family:Bebas Neue,sans-serif;font-size:15px;color:#e2e8f0">'+d.tot+'</span><span style="font-size:9px;color:#475569"> att</span>';
+    ta.innerHTML='<span style="font-family:Bebas Neue,sans-serif;font-size:15px;color:#e2e8f0">'+d.tot+'</span><span style="font-size:9px;color:#8395ac"> att</span>';
     var pp=document.createElement('div');pp.style.cssText='text-align:center';
-    pp.innerHTML='<span style="font-family:Bebas Neue,sans-serif;font-size:16px;color:'+ptCol+'">'+d.pct_p+'%</span><span style="font-size:9px;color:#475569;display:block;margin-top:-2px">'+d.pts+' pts</span>';
+    pp.innerHTML='<span style="font-family:Bebas Neue,sans-serif;font-size:16px;color:'+ptCol+'">'+d.pct_p+'%</span><span style="font-size:9px;color:#8395ac;display:block;margin-top:-2px">'+d.pts+' pts</span>';
     row.appendChild(lbl);row.appendChild(bw);row.appendChild(pd);row.appendChild(sp);row.appendChild(ta);row.appendChild(pp);
     pillsEl.appendChild(row);
   });
@@ -3470,14 +3479,14 @@ function abrirModalSOTR(tipo, arm, color){
     var el = document.createElement('div');
     el.style.cssText = 'flex:1;min-width:60px;padding:8px 6px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:2px';
     el.innerHTML = '<div style="font-family:Bebas Neue,sans-serif;font-size:18px;color:'+s.c+'">'+s.v+'</div>'
-      +'<div style="font-size:7px;color:#475569;letter-spacing:1px;text-transform:uppercase">'+s.l+'</div>';
+      +'<div style="font-size:7px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">'+s.l+'</div>';
     strip.appendChild(el);
   });
   cont.appendChild(strip);
 
   // Label
   var lbl = document.createElement('div');
-  lbl.style.cssText = 'font-size:8px;color:#475569;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px';
+  lbl.style.cssText = 'font-size:8px;color:#8395ac;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px';
   lbl.textContent = 'EFF POR ROTACIÓN';
   cont.appendChild(lbl);
 
@@ -3515,7 +3524,7 @@ function abrirModalSOTR(tipo, arm, color){
       var si = document.createElement('div');
       si.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:1px';
       si.innerHTML = '<div style="font-family:Bebas Neue,sans-serif;font-size:12px;color:'+s.c+'">'+s.v+'</div>'
-        +'<div style="font-size:6px;color:#475569;text-transform:uppercase;letter-spacing:.5px">'+s.l+'</div>';
+        +'<div style="font-size:6px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px">'+s.l+'</div>';
       statsRow.appendChild(si);
     });
 
@@ -3553,17 +3562,17 @@ document.addEventListener('click', function(e){
   </div>
 </div>
 
-<button onclick="window.scrollTo({top:0,behavior:'smooth'})" style="position:fixed;bottom:20px;right:20px;z-index:200;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(13,14,26,.95);backdrop-filter:blur(10px);color:#64748b;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.5)" title="Volver al inicio">↑</button>
-      <button onclick="document.getElementById('seccion-recepcion').scrollIntoView({behavior:'smooth'})" style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#64748b;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer">🛡 RECEPCIÓN RIVAL</button>
+<button onclick="window.scrollTo({top:0,behavior:'smooth'})" style="position:fixed;bottom:20px;right:20px;z-index:200;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(13,14,26,.95);backdrop-filter:blur(10px);color:#94a3b8;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.5)" title="Volver al inicio">↑</button>
+      <button onclick="document.getElementById('seccion-recepcion').scrollIntoView({behavior:'smooth'})" style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#94a3b8;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer">🛡 RECEPCIÓN RIVAL</button>
 
 <!-- MODAL ARMADOR -->
 <div id="modal-armador" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.92);backdrop-filter:blur(20px);align-items:center;justify-content:center">
   <div style="background:#0d0e1a;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px;max-width:560px;width:94%;box-shadow:0 32px 80px rgba(0,0,0,.8);max-height:92vh;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div id="modal-arm-title" style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:#f59e0b"></div>
-      <button onclick="cerrarModalArmador()" style="padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#475569;cursor:pointer;font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px">✕ CERRAR</button>
+      <button onclick="cerrarModalArmador()" style="padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#8395ac;cursor:pointer;font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px">✕ CERRAR</button>
     </div>
-    <div id="modal-arm-sub" style="font-size:12px;color:#64748b;margin-bottom:16px;font-family:Barlow Condensed,sans-serif;letter-spacing:.5px"></div>
+    <div id="modal-arm-sub" style="font-size:12px;color:#94a3b8;margin-bottom:16px;font-family:Barlow Condensed,sans-serif;letter-spacing:.5px"></div>
     <div id="modal-arm-body"></div>
   </div>
 </div>
@@ -3574,14 +3583,15 @@ document.addEventListener('click', function(e){
   <div style="background:#0d0e1a;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;max-width:480px;width:92%;box-shadow:0 32px 80px rgba(0,0,0,.8);max-height:90vh;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <div id="modal-sotr-title" style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px"></div>
-      <button onclick="document.getElementById('modal-sotr').style.display='none';document.body.style.overflow=''" style="padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#475569;cursor:pointer;font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px">✕ CERRAR</button>
+      <button onclick="document.getElementById('modal-sotr').style.display='none';document.body.style.overflow=''" style="padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#8395ac;cursor:pointer;font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px">✕ CERRAR</button>
     </div>
     <div id="modal-sotr-content"></div>
   </div>
 </div>
 
 <script src="temporadas_menu.js"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

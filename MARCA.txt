@@ -15,3 +15,10 @@ PAIS = Argentina
 RIVALES = Banco Provincia
 # Opcional: si lo dejas vacio se arma solo con el nombre
 REPO =
+
+# Las categorias del club, separadas por coma.
+# La PRIMERA es la principal: sus datos van en la raiz.
+# Si dejas una sola, el selector no aparece y todo funciona como siempre.
+#   CATEGORIAS = Primera, Sub-21, Sub-18, Sub-16
+#   CATEGORIAS = Primera, H1L, H2L
+CATEGORIAS = Primera

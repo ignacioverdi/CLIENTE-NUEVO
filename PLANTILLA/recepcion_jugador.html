@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Recepción — {{CLUB}} Voley</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
 <!-- El filtro Partido / Entrenamiento, compartido por todo el sistema.
      Guarda la eleccion y la deja viajar entre pantallas. -->
@@ -25,36 +33,37 @@ else   { w('datos_partidos.js'); w('datos_historial.js'); }
 body{background:#07080f;color:#e2e8f0;font-family:'Barlow Condensed',sans-serif;min-height:100vh;padding:0;margin:0}
 select, select option { color: #111111 !important; background-color: #ffffff !important; }
 .hdr{padding:12px 240px 12px 20px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;background:rgba(7,8,15,.9);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);flex-wrap:wrap}
-.back-btn{padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#475569;font-size:11px;font-weight:700;letter-spacing:1px;text-decoration:none;text-transform:uppercase;flex-shrink:0}
+.back-btn{padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#8395ac;font-size:11px;font-weight:700;letter-spacing:1px;text-decoration:none;text-transform:uppercase;flex-shrink:0}
 .filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
-.fbtn{padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#475569;font-size:11px;font-weight:800;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;transition:all .15s}
+.fbtn{padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#8395ac;font-size:11px;font-weight:800;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;transition:all .15s}
 .fbtn.active-partido{background:rgba(232,25,44,.12);border-color:rgba(232,25,44,.4);color:#e8192c}
 .fbtn.active-entrenamiento{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.4);color:#22c55e}
 .subfiltro-row{width:100%;display:none;gap:5px;flex-wrap:wrap;padding:6px 0 0}
 .subfiltro-select{padding:5px 12px;border-radius:7px;border:1px solid rgba(232,25,44,.4);background:rgba(232,25,44,.08);color:#e8192c;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;min-width:220px}
 .subfiltro-select option{color:#111;background:#fff}
-.sfbtn{padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);color:#64748b;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .15s;font-family:'Barlow Condensed',sans-serif}
+.sfbtn{padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);color:#94a3b8;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .15s;font-family:'Barlow Condensed',sans-serif}
 .sfbtn.on{background:rgba(232,25,44,.1);border-color:rgba(232,25,44,.35);color:#e8192c}
 .main{max-width:1280px;margin:0 auto;padding:20px 16px}
-.empty{text-align:center;padding:60px;color:#475569;font-size:13px;letter-spacing:1px}
-.info-note{font-size:10px;color:#475569;letter-spacing:1px;padding:10px 16px;background:rgba(255,255,255,.02);border-radius:6px;margin-bottom:14px;border:1px solid rgba(255,255,255,.04)}
+.empty{text-align:center;padding:60px;color:#8395ac;font-size:13px;letter-spacing:1px}
+.info-note{font-size:10px;color:#8395ac;letter-spacing:1px;padding:10px 16px;background:rgba(255,255,255,.02);border-radius:6px;margin-bottom:14px;border:1px solid rgba(255,255,255,.04)}
 </style>
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
 <link rel="stylesheet" href="movil.css">
 </head>
 <body>
-<div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
+<div class="header-right" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
 
 <div class="hdr">
   <a id="back-jug" href="jugador.html" class="back-btn">← Perfil</a>
   <div style="flex-shrink:0">
     <div id="jug-title" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#e2e8f0">RECEPCIÓN</div>
-    <div style="font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase">{{CLUB}} VOLEY</div>
+    <div style="font-size:9px;color:#8395ac;letter-spacing:2px;text-transform:uppercase">{{CLUB}} VOLEY</div>
   </div>
   <div class="filter-row">
     <select class="subfiltro-select" id="subfiltro-select" style="display:none"></select>
@@ -103,7 +112,7 @@ function renderPanelRecepcion(j, container){
   container.innerHTML = '';
   var rec = j.recepcion;
   if(!rec || (!rec.flotado && !rec.potencia)){
-    container.innerHTML='<div style="color:#475569;padding:28px;text-align:center;font-family:Barlow Condensed,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase">Sin datos de recepción</div>';
+    container.innerHTML='<div style="color:#8395ac;padding:28px;text-align:center;font-family:Barlow Condensed,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase">Sin datos de recepción</div>';
     return;
   }
   function ec(v){return v>=25?'#22c55e':v>=5?'#86efac':v>=0?'#94a3b8':v>=-15?'#f97316':'#ef4444';}
@@ -115,12 +124,12 @@ function renderPanelRecepcion(j, container){
     return '<div class="zone-card" style="background:'+bgc(e)+';border:1px solid '+bdc(e)+';border-radius:9px;padding:10px 8px">'
       +'<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-align:center;color:'+ec(e)+';margin-bottom:4px">'+label+'</div>'
       +'<div style="font-family:Bebas Neue,sans-serif;font-size:24px;font-weight:900;text-align:center;line-height:1;color:'+ec(e)+';margin-bottom:2px">'+e+'%</div>'
-      +'<div style="font-size:8px;text-align:center;color:#475569;margin-bottom:5px">efectividad</div>'
+      +'<div style="font-size:8px;text-align:center;color:#8395ac;margin-bottom:5px">efectividad</div>'
       +'<div style="height:4px;border-radius:2px;background:rgba(255,255,255,.08);margin:0 2px 6px"><div style="width:'+vol+'%;height:4px;border-radius:2px;background:'+typeColor+'"></div></div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">'
-      +'<div style="text-align:center"><div style="font-size:8px;color:#475569;text-transform:uppercase;letter-spacing:.5px">Total</div><div style="font-size:12px;font-weight:800;line-height:1.3;color:#e2e8f0">'+t+'</div></div>'
-      +'<div style="text-align:center"><div style="font-size:8px;color:#475569;text-transform:uppercase;letter-spacing:.5px"># +</div><div style="font-size:12px;font-weight:800;line-height:1.3;color:#22c55e">'+p+'%</div></div>'
-      +'<div style="text-align:center"><div style="font-size:8px;color:#475569;text-transform:uppercase;letter-spacing:.5px">/ =</div><div style="font-size:12px;font-weight:800;line-height:1.3;color:#ef4444">'+n+'%</div></div>'
+      +'<div style="text-align:center"><div style="font-size:8px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px">Total</div><div style="font-size:12px;font-weight:800;line-height:1.3;color:#e2e8f0">'+t+'</div></div>'
+      +'<div style="text-align:center"><div style="font-size:8px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px"># +</div><div style="font-size:12px;font-weight:800;line-height:1.3;color:#22c55e">'+p+'%</div></div>'
+      +'<div style="text-align:center"><div style="font-size:8px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px">/ =</div><div style="font-size:12px;font-weight:800;line-height:1.3;color:#ef4444">'+n+'%</div></div>'
       +'</div></div>';
   }
   function makeZonePanel(desdeKey, desdeLabel, td, typeColor, esTotal){
@@ -142,10 +151,10 @@ function renderPanelRecepcion(j, container){
       + zoneCard(desde.P1||{},'Pos 1',maxTot,typeColor)
       +'</div>'
       +'<div style="display:grid;grid-template-columns:repeat(4,1fr);padding:5px 10px 7px;border-top:1px solid rgba(255,255,255,.06)">'
-      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#e2e8f0;font-family:Barlow Condensed,sans-serif">'+(total.tot||0)+'</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">recep</div></div>'
-      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:'+ec(total.eff||0)+';font-family:Barlow Condensed,sans-serif">'+(total.eff||0)+'%</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">EFF</div></div>'
-      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#22c55e;font-family:Barlow Condensed,sans-serif">'+(total.pos||0)+'%</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px"># +</div></div>'
-      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#ef4444;font-family:Barlow Condensed,sans-serif">'+(total.neg||0)+'%</div><div style="font-size:7px;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">/ =</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#e2e8f0;font-family:Barlow Condensed,sans-serif">'+(total.tot||0)+'</div><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">recep</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:'+ec(total.eff||0)+';font-family:Barlow Condensed,sans-serif">'+(total.eff||0)+'%</div><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">EFF</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#22c55e;font-family:Barlow Condensed,sans-serif">'+(total.pos||0)+'%</div><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px;margin-top:1px"># +</div></div>'
+      +'<div style="text-align:center"><div style="font-size:15px;font-weight:900;color:#ef4444;font-family:Barlow Condensed,sans-serif">'+(total.neg||0)+'%</div><div style="font-size:7px;color:#8395ac;text-transform:uppercase;letter-spacing:.5px;margin-top:1px">/ =</div></div>'
       +'</div>';
     return el;
   }
@@ -192,7 +201,7 @@ function renderPanelRecepcion(j, container){
     wrapper.appendChild(row);
   });
   if(!wrapper.children.length){
-    container.innerHTML='<div style="color:#475569;padding:28px;text-align:center;font-size:11px;letter-spacing:1px;text-transform:uppercase">Sin datos de recepción</div>';
+    container.innerHTML='<div style="color:#8395ac;padding:28px;text-align:center;font-size:11px;letter-spacing:1px;text-transform:uppercase">Sin datos de recepción</div>';
     return;
   }
   container.appendChild(wrapper);
@@ -243,13 +252,13 @@ function getJugadorPartidoRec(){
     }
     return null;
   }
-  // Acumulado: PARTIDOS_JUGADORES (recepcion por zona), fallback Nafels_JUGADORES
+  // Acumulado: PARTIDOS_JUGADORES (recepcion por zona), fallback PLANTEL_{{CLUB}}
   if(typeof PARTIDOS_JUGADORES!=='undefined'){
     var j=PARTIDOS_JUGADORES.find(function(x){return x.num===currentNum;});
     if(j&&j.recepcion&&j.recepcion.flotado) return j;
   }
-  if(typeof Nafels_JUGADORES!=='undefined'){
-    var j=Nafels_JUGADORES.find(function(x){return x.num===currentNum;});
+  if(typeof PLANTEL_{{CLUB}}!=='undefined'){
+    var j=PLANTEL_{{CLUB}}.find(function(x){return x.num===currentNum;});
     if(j&&j.recepcion&&j.recepcion.flotado) return j;
   }
   return null;
@@ -310,7 +319,7 @@ function recEffByTipo(jug){
 }
 
 function renderComparativaRecepcion(j, cont, num){
-  var JUG = typeof PARTIDOS_JUGADORES!=='undefined'&&PARTIDOS_JUGADORES.length?PARTIDOS_JUGADORES:(typeof Nafels_JUGADORES!=='undefined'?Nafels_JUGADORES:[]);
+  var JUG = typeof PARTIDOS_JUGADORES!=='undefined'&&PARTIDOS_JUGADORES.length?PARTIDOS_JUGADORES:(typeof PLANTEL_{{CLUB}}!=='undefined'?PLANTEL_{{CLUB}}:[]);
   if(!JUG.length) return;
   var mio=recEffByTipo(j);
   if(!mio||!mio.total) return;
@@ -340,13 +349,13 @@ function renderComparativaRecepcion(j, cont, num){
   }).join('');
   var s1=document.createElement('div');
   s1.style.cssText='margin-top:20px;padding:16px;background:rgba(13,14,26,.8);border:1px solid rgba(255,255,255,.06);border-radius:12px';
-  s1.innerHTML='<div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#64748b;margin-bottom:14px">COMPARATIVA VS EQUIPO</div>'
+  s1.innerHTML='<div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#94a3b8;margin-bottom:14px">COMPARATIVA VS EQUIPO</div>'
     +'<table style="width:100%;border-collapse:collapse;font-family:Barlow Condensed,sans-serif">'
     +'<thead><tr>'
-    +'<th style="padding:6px 10px;font-size:9px;color:#64748b;letter-spacing:1.5px;text-transform:uppercase;text-align:left">Tipo</th>'
+    +'<th style="padding:6px 10px;font-size:9px;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;text-align:left">Tipo</th>'
     +'<th style="padding:6px 8px;font-size:9px;color:#22c55e;letter-spacing:1.5px;text-transform:uppercase;text-align:center">Vos</th>'
-    +'<th style="padding:6px 8px;font-size:9px;color:#64748b;letter-spacing:1.5px;text-transform:uppercase;text-align:center">Equipo</th>'
-    +'<th style="padding:6px 8px;font-size:9px;color:#64748b;letter-spacing:1.5px;text-transform:uppercase;text-align:center">Dif.</th>'
+    +'<th style="padding:6px 8px;font-size:9px;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;text-align:center">Equipo</th>'
+    +'<th style="padding:6px 8px;font-size:9px;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;text-align:center">Dif.</th>'
     +'</tr></thead><tbody>'+rows1+'</tbody></table>';
   cont.appendChild(s1);
 
@@ -380,7 +389,7 @@ function renderComparativaRecepcion(j, cont, num){
     s2.style.cssText='margin-top:12px;padding:14px 16px;background:rgba(13,14,26,.8);border:1px solid rgba(255,255,255,.06);border-radius:12px';
     s2.innerHTML='<div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#818cf8;margin-bottom:12px">VS '+tituloGrupo+'</div>'
       +'<table style="width:100%;border-collapse:collapse;font-family:Barlow Condensed,sans-serif">'
-      +'<thead><tr><th style="padding:6px 8px;font-size:9px;color:#64748b;letter-spacing:1.5px;text-transform:uppercase;text-align:left">Jugador</th>'
+      +'<thead><tr><th style="padding:6px 8px;font-size:9px;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;text-align:left">Jugador</th>'
       +TIPOS.map(function(t){return '<th style="padding:6px 8px;font-size:9px;color:'+t.c+';letter-spacing:1.5px;text-transform:uppercase;text-align:center">'+t.l+'</th>';}).join('')
       +'</tr></thead><tbody>'+rows2+'</tbody></table>';
     cont.appendChild(s2);
@@ -388,7 +397,7 @@ function renderComparativaRecepcion(j, cont, num){
 }
 
 function waitAndInit(tries){
-  var ok=typeof Nafels_JUGADORES!=='undefined'||typeof PARTIDOS_JUGADORES!=='undefined'||typeof window.HISTORIAL_DATA!=='undefined';
+  var ok=typeof PLANTEL_{{CLUB}}!=='undefined'||typeof PARTIDOS_JUGADORES!=='undefined'||typeof window.HISTORIAL_DATA!=='undefined';
   if(ok){var params=new URLSearchParams(window.location.search);currentNum=parseInt(params.get('num'))||0;buildSubfiltro();document.fonts.ready.then(renderPage).catch(renderPage);}
   else if(tries>0){setTimeout(function(){waitAndInit(tries-1);},200);}
   else {document.getElementById('content').innerHTML='<div class="empty">No se pudieron cargar los datos.</div>';}
@@ -403,7 +412,8 @@ waitAndInit(25);
    mas segura de que no quede ningun numero del tipo anterior. */
 try{ vbBarraTipo(); window.vbAlCambiarTipo = function(){ location.reload(); }; }catch(e){}
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

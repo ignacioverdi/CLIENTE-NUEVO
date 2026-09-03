@@ -115,7 +115,7 @@ def main():
     FUERA = {'.git', '__pycache__', 'node_modules', 'fotos', 'escudos', 'imagenes'}
     lista = []
     for raiz, dirs, archivos in os.walk(carpeta):
-        dirs[:] = [d for d in dirs if d.lower() not in FUERA and not d.lower().startswith('dvw ')]
+        dirs[:] = [d for d in dirs if d.lower() not in FUERA and not d.lower().startswith('dvw ') and d.lower()!='cat' and d.lower()!='ffmpeg']
         for a in archivos:
             if es_dato(a):
                 lista.append(os.path.relpath(os.path.join(raiz, a), carpeta).replace(os.sep, '/'))

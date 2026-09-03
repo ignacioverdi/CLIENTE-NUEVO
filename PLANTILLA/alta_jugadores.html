@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Acceso de los jugadores — {{CLUB_COMPLETO}}</title>
+<title>Acceso de los jugadores</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -84,9 +84,23 @@ textarea:focus{border-color:var(--club)}
   .resumen{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ══ EL DESPLEGABLE DE CATEGORIA ═════════════════════════════════════════
+   Las opciones de un <select> las dibuja el sistema operativo, no la
+   pagina: heredan el fondo blanco de Windows y con letra clara quedan
+   invisibles. Hay que pintarlas aparte.
+   Mismo par que usa el resto de la app. */
+#sel-cat {
+  background: rgba(255,255,255,.04);
+  color: #f1f5f9;
+}
+#sel-cat option {
+  background: #1e293b;
+  color: #f1f5f9;
+}
 </style>
 <!-- Motor de idiomas (ES / EN / DE). -->
-<script src="lang.js"></script>
+<script src="lang.js?v=20260824-1140"></script>
 </head>
 <body>
 <div class="hoja">
@@ -94,7 +108,7 @@ textarea:focus{border-color:var(--club)}
   <div class="top">
     <div class="esc" id="esc"></div>
     <div>
-      <h1>{{CLUB_COMPLETO}}</h1>
+      <h1 id="nom-club"></h1>
       <p>Acceso de los jugadores</p>
     </div>
     <a class="volver" href="index.html">Volver</a>
@@ -107,9 +121,50 @@ textarea:focus{border-color:var(--club)}
 
   <div class="caja">
     <label class="lbl" for="lista">Pegá acá tu lista</label>
-    <textarea id="lista" spellcheck="false" placeholder="mail@ejemplo.com    4     07/03/2004"></textarea>
-    <div class="ayuda">Tres datos por jugador: <b>mail</b>, <b>número de camiseta</b> y <b>fecha de nacimiento</b>.
-       Si los tenés en Excel, seleccioná las tres columnas, copiá y pegá acá directamente.</div>
+<div id="caja-cat" style="display:none;margin-bottom:14px">
+  <label style="display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Categoría</label>
+  <select id="sel-cat" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.1);font-size:14px"></select>
+  <div style="font-size:11px;color:#64748b;margin-top:6px">Los jugadores que cargues quedan en esta categoría.</div>
+</div>
+    <!-- ══ CARGA DE A UNO ══════════════════════════════════════════════════
+     Cada jugador en su fila, con todos sus datos y la foto al final.
+     Se agregan filas con el boton de abajo. -->
+<!-- ── TRAER EL PLANTEL DE UN PARTIDO ────────────────────────────────
+     El .dvw ya tiene los jugadores con su dorsal y su nombre. En vez de
+     escribirlos a mano, se leen de ahi y solo hay que poner los mails. -->
+<label id="caja-dvw" style="display:block;margin-bottom:14px;padding:14px 16px;
+       border:1px dashed rgba(230,167,67,.35);border-radius:10px;cursor:pointer;
+       background:rgba(230,167,67,.05)">
+  <div style="font-size:14px;font-weight:700;margin-bottom:4px">
+    &#8681; Traer el plantel de un partido</div>
+  <div style="font-size:12.5px;color:#93a5c0;line-height:1.5">
+    Elegí un archivo .dvw ya scouteado y se cargan los jugadores con su
+    dorsal y su nombre. Vos solo completás los mails.</div>
+  <input type="file" accept=".dvw,.DVW" style="display:none"
+         onchange="traerPlantel(this)">
+</label>
+<div id="dvw-aviso"></div>
+
+<div id="form-filas"></div>
+
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+  <button type="button" class="btn sec" onclick="masFila()">+ Agregar otro jugador</button>
+  <button type="button" class="btn" onclick="leerFormulario()">Revisar y continuar</button>
+</div>
+
+<details style="margin-top:14px">
+  <summary style="cursor:pointer;font-size:12px;color:#64748b">
+    ¿Los tenés en una lista? Pegalos de una vez
+  </summary>
+  <textarea id="lista" spellcheck="false"
+            placeholder="mail@ejemplo.com 4 07/03/2004"
+            style="margin-top:10px"></textarea>
+  <div class="ayuda">Tres datos por jugador: <b>mail</b>, <b>número de camiseta</b> y
+    <b>fecha de nacimiento</b>. Si los tenés en Excel, seleccioná las tres columnas,
+    copiá y pegá acá.</div>
+  <button type="button" class="btn sec" onclick="leer()"
+          style="margin-top:8px">Leer la lista</button>
+</details>
     <div class="ejemplo">jugador1@gmail.com    4     07/03/2004
 jugador2@gmail.com    13    16/12/2004
 jugador3@gmail.com    9     23/08/2001</div>
@@ -125,7 +180,11 @@ jugador3@gmail.com    9     23/08/2001</div>
 
 </div>
 
-<script src="firebase.js"></script>
+<script src="categorias_club.js?v=20260824-1140"></script>
+<script src="selector_categoria.js?v=20260824-1140"></script>
+<script src="plantel_desde_dvw.js"></script>
+<script src="firebase.js?v=20260824-1140"></script>
+<script src="firebase_por_categoria.js"></script>
 <script>
 /* ============================================================================
    Alta de jugadores — el DT pega su lista y se crean todas las cuentas.
@@ -194,13 +253,29 @@ function pintar(){
     var falta = !f.clave ? 'falta la fecha' : (f.num === null ? 'falta el número' : '');
     html += '<div class="fila' + (malo ? ' malo' : '') + (f.estado ? ' ' + f.estado : '') + '" id="f' + i + '">'
           + '<div class="cam">' + (f.num !== null ? f.num : '?') + '</div>'
+          /* la foto: opcional, se puede dejar vacia y cargarla despues */
+          + '<label id="foto' + i + '" title="Elegir foto" style="flex:none;width:34px;height:34px;'
+          + 'border-radius:50%;border:1px dashed rgba(255,255,255,.2);display:flex;'
+          + 'align-items:center;justify-content:center;cursor:pointer;overflow:hidden;'
+          + 'font-size:15px;color:#64748b">'
+          + (f.foto ? '<img src="' + f.foto + '" alt="" style="width:34px;height:34px;'
+                      + 'border-radius:50%;object-fit:cover">' : '+')
+          + '<input type="file" accept="image/*" style="display:none" '
+          + 'onchange="ponerFoto(' + i + ', this)"></label>'
           + '<div class="mail">' + esc(f.mail) + '</div>'
           + '<div class="clave">' + (f.clave || '—') + '</div>'
           + '<div class="est">' + (f.textoEstado || falta) + '</div></div>';
   });
   html += '</div>';
+  /* Que quede claro adonde van, antes de apretar el boton */
+  if (window.CAT_ELEGIDA) {
+    html += '<div class="aviso" style="background:rgba(230,167,67,.1);'
+          + 'border-color:rgba(230,167,67,.3)">Estos jugadores quedan en '
+          + '<b>' + esc(window.CAT_ELEGIDA) + '</b>.</div>';
+  }
   html += '<div class="barra"><button class="btn" id="btn-crear" onclick="crear()"'
-        + (listos ? '' : ' disabled') + '>Crear las ' + listos + ' cuentas</button>'
+        + (listos ? '' : ' disabled') + '>Crear las ' + listos + ' cuentas'
+        + (window.CAT_ELEGIDA ? ' en ' + esc(window.CAT_ELEGIDA) : '') + '</button>'
         + '<button class="btn sec" onclick="leer()">Volver a revisar</button></div>';
   if(listos < FILAS.length){
     html += '<div class="aviso"><b>' + (FILAS.length - listos) + ' jugadores quedan afuera</b> porque les falta '
@@ -243,6 +318,19 @@ function crearUno(f){
       fbSet('usuarios/' + res.uid, true);
       fbSet('roles/' + res.uid, 'player');
       fbSet('jugador_num/' + res.uid, String(f.num));
+      /* ── A QUE CATEGORIA PERTENECE ─────────────────────────────────────
+         El dorsal #4 de Primera y el #4 de H1L son dos personas distintas.
+         Sin esto, los planteles se mezclan.
+         Si el club tiene una sola categoria no se guarda nada y todo queda
+         como estaba. */
+      if (window.CAT_ELEGIDA) fbSet('jugador_cat/' + res.uid, window.CAT_ELEGIDA);
+      /* ── LA FOTO ───────────────────────────────────────────────────────
+         Se guarda por categoria y dorsal, achicada a 200x200 en el
+         navegador (unos 15 KB). Al empezar temporada se vuelve a cargar y
+         se pisa sola: por eso no queda la cara del jugador del año pasado
+         cuando se reasignan los numeros. */
+      if (f.foto) fbSet('jugador_foto/' + (window.CAT_ELEGIDA || 'Primera') +
+                        '/' + String(f.num).padStart(2, '0'), f.foto);
       return res;
     });
 }
@@ -276,7 +364,21 @@ function crear(){
       + '</div>'
       + '<div class="aviso"><b>Avisales cómo entrar:</b> con su mail y su fecha de nacimiento '
       + 'sin barras. Por ejemplo, si nació el 01/01/1990 su clave es <b>01011990</b>. '
-      + 'El instructivo para instalar la app está en la sección de ayuda.</div></div>';
+        + 'sin puntos ni barras.</div>'
+
+        /* ── EL MENSAJE PARA EL GRUPO ──────────────────────────────────────
+           Crear las cuentas no alcanza: hay que avisarle a cada jugador cómo
+           entrar. Antes eso quedaba a cargo del DT, que lo escribía a mano.
+           Acá queda listo para copiar y pegar en el grupo. */
+        + '<label class="lbl" style="margin-top:18px">Mandales esto al grupo</label>'
+        + '<textarea id="msg-grupo" readonly spellcheck="false" style="width:100%;'
+        + 'min-height:150px;padding:12px;border-radius:10px;background:rgba(255,255,255,.04);'
+        + 'border:1px solid rgba(255,255,255,.1);color:inherit;font-size:13.5px;'
+        + 'line-height:1.55;resize:vertical">' + textoGrupo() + '</textarea>'
+        + '<div class="barra" style="margin-top:10px">'
+        + '<button type="button" class="btn" onclick="copiarMensaje(this)">Copiar el mensaje</button>'
+        + '<button type="button" class="btn sec" onclick="abrirBienvenida()">Ver el instructivo</button>'
+        + '</div></div>';
   });
 }
 
@@ -296,6 +398,341 @@ function pintarEstado(f){
   img.onload = function(){ document.getElementById('esc').innerHTML = '<img src="escudo.png" alt="">'; };
   img.src = 'escudo.png';
 })();
+
+/* ══ LA CATEGORIA DE ESTE ALTA ═══════════════════════════════════════════
+   Si el club tiene una sola categoria, esto no aparece y nada cambia. */
+(function(){
+  var L = (window.CATEGORIAS_CLUB || []);
+  if (L.length < 2) return;
+  var caja = document.getElementById('caja-cat');
+  var sel  = document.getElementById('sel-cat');
+  if (!caja || !sel) return;
+  L.forEach(function(c){
+    var o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    sel.appendChild(o);
+  });
+  try { sel.value = (window.categoriaActual && window.categoriaActual()) || L[0]; }
+  catch(e){ sel.value = L[0]; }
+  window.CAT_ELEGIDA = sel.value;
+  sel.addEventListener('change', function(){
+    window.CAT_ELEGIDA = sel.value;
+    /* que se vea en cada fila a que categoria va */
+    document.querySelectorAll('.cat-fila').forEach(function(e){
+      e.textContent = sel.value;
+      e.style.display = 'inline-block';
+    });
+  });
+  caja.style.display = 'block';
+})();
+
+/* ══ LAS FOTOS ═══════════════════════════════════════════════════════════
+   Se achican acá, en la computadora del que carga: una foto de celular pesa
+   4 MB y no puede ir a la base tal cual. A 200x200 quedan en ~15 KB, que es
+   lo que necesita el circulito del perfil. */
+function achicar(file, listo){
+  var r = new FileReader();
+  r.onload = function(e){
+    var img = new Image();
+    img.onload = function(){
+      var L = 200, c = document.createElement('canvas');
+      c.width = L; c.height = L;
+      var g = c.getContext('2d');
+      /* recorte cuadrado desde el centro: las caras quedan centradas */
+      var lado = Math.min(img.width, img.height);
+      g.drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2,
+                  lado, lado, 0, 0, L, L);
+      listo(c.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = function(){ listo(null); };
+    img.src = e.target.result;
+  };
+  r.onerror = function(){ listo(null); };
+  r.readAsDataURL(file);
+}
+
+/* El boton de foto de cada fila */
+function ponerFoto(i, input){
+  var f = input.files && input.files[0];
+  if (!f) return;
+  achicar(f, function(dataUrl){
+    if (!dataUrl){ alert('No pude leer esa imagen.'); return; }
+    FILAS[i].foto = dataUrl;
+    var prev = document.getElementById('foto' + i);
+    if (prev) prev.innerHTML = '<img src="' + dataUrl + '" alt="" ' +
+        'style="width:34px;height:34px;border-radius:50%;object-fit:cover">';
+  });
+}
+
+/* ══ EL FORMULARIO DE A UNO ══════════════════════════════════════════════
+   Una fila por jugador, con todos sus datos y la foto al final. Es la forma
+   natural de cargar un plantel: se va llenando de arriba abajo, y cada
+   jugador se ve entero antes de pasar al siguiente. */
+var NFILAS = 0;
+
+function filaHTML(i){
+  return '<div class="fform" data-i="' + i + '" style="display:flex;gap:8px;'
+    + 'align-items:center;margin-bottom:8px;flex-wrap:wrap">'
+    + '<input type="number" min="1" max="99" placeholder="#" id="n' + i + '" '
+    +   'style="width:56px;padding:9px;border-radius:8px;background:rgba(255,255,255,.04);'
+    +   'border:1px solid rgba(255,255,255,.1);color:inherit;text-align:center;font-weight:700">'
+    + '<input type="email" placeholder="mail@ejemplo.com" id="m' + i + '" '
+    +   'style="flex:1;min-width:170px;padding:9px 11px;border-radius:8px;'
+    +   'background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:inherit">'
+    + '<input type="text" inputmode="numeric" placeholder="dd/mm/aaaa" id="d' + i + '" '
+    +   'style="width:118px;padding:9px 11px;border-radius:8px;background:rgba(255,255,255,.04);'
+    +   'border:1px solid rgba(255,255,255,.1);color:inherit">'
+    + '<label id="foto' + i + '" title="Agregar foto" style="flex:none;width:38px;height:38px;'
+    +   'border-radius:50%;border:1px dashed rgba(255,255,255,.25);display:flex;'
+    +   'align-items:center;justify-content:center;cursor:pointer;overflow:hidden;'
+    +   'font-size:17px;color:#64748b">+'
+    +   '<input type="file" accept="image/*" style="display:none" '
+    +   'onchange="fotoFila(' + i + ', this)"></label>'
+    + '<span class="cat-fila" style="flex:none;font-size:10px;font-weight:700;'
+    +   'letter-spacing:1px;text-transform:uppercase;padding:5px 9px;border-radius:6px;'
+    +   'background:rgba(230,167,67,.12);border:1px solid rgba(230,167,67,.3);'
+    +   'color:#e6a743;display:' + (window.CAT_ELEGIDA ? 'inline-block' : 'none') + '">'
+    +   (window.CAT_ELEGIDA || '') + '</span>'
+    + '<button type="button" onclick="borrarFila(' + i + ')" title="Quitar"'
+    +   ' style="flex:none;width:30px;height:30px;border-radius:8px;cursor:pointer;'
+    +   'background:transparent;border:1px solid rgba(255,255,255,.1);color:#64748b">×</button>'
+    + '</div>';
+}
+
+function masFila(){
+  var c = document.getElementById('form-filas');
+  if(!c) return;
+  c.insertAdjacentHTML('beforeend', filaHTML(NFILAS));
+  NFILAS++;
+}
+
+function borrarFila(i){
+  var f = document.querySelector('.fform[data-i="' + i + '"]');
+  if(f) f.remove();
+  if(!document.querySelectorAll('.fform').length) masFila();
+}
+
+var FOTOS = {};
+function fotoFila(i, input){
+  var f = input.files && input.files[0];
+  if(!f) return;
+  achicar(f, function(dataUrl){
+    if(!dataUrl){ alert('No pude leer esa imagen.'); return; }
+    FOTOS[i] = dataUrl;
+    var p = document.getElementById('foto' + i);
+    if(p) p.innerHTML = '<img src="' + dataUrl + '" alt="" style="width:38px;height:38px;'
+                      + 'border-radius:50%;object-fit:cover">'
+                      + '<input type="file" accept="image/*" style="display:none" '
+                      + 'onchange="fotoFila(' + i + ', this)">';
+  });
+}
+
+/* Pasa lo del formulario a la lista que ya sabe revisar y crear */
+function leerFormulario(){
+  var filas = document.querySelectorAll('.fform');
+  FILAS = [];
+  filas.forEach(function(f){
+    var i = f.getAttribute('data-i');
+    var mail = (document.getElementById('m' + i) || {}).value || '';
+    var num  = (document.getElementById('n' + i) || {}).value || '';
+    var fec  = (document.getElementById('d' + i) || {}).value || '';
+    mail = mail.trim().toLowerCase();
+    if(!mail) return;
+    FILAS.push({
+      mail: mail,
+      num:  num === '' ? null : parseInt(num, 10),
+      fecha: fec.trim(),
+      clave: claveDeFecha(fec.trim()),
+      foto: FOTOS[i] || null,
+      estado: ''
+    });
+  });
+  pintar();
+}
+
+/* Arranca con tres filas vacias, que es lo que se ve al abrir */
+(function(){
+  var c = document.getElementById('form-filas');
+  if(!c) return;
+  masFila(); masFila(); masFila();
+})();
+
+/* ══ EL NOMBRE DEL CLUB ══════════════════════════════════════════════════
+   La plantilla trae una marca que ACTUALIZAR_CLIENTE reemplaza al crear un
+   cliente. NAFELS es el club de origen, no un cliente, asi que ahi nadie la
+   reemplazaba y se leia la marca cruda al lado del escudo.
+
+   Se lee de donde ya esta —el manifest de la app, que todo club tiene— y
+   si no se puede, del nombre del sitio. Si no hay nada, no se muestra nada:
+   mejor vacio que una marca cruda. */
+(function(){
+  var el = document.getElementById('nom-club');
+  if(!el) return;
+
+  function poner(n){
+    n = (n || '').trim();
+    if(n) el.textContent = n;
+  }
+
+  /* lo que ya este a mano */
+  try {
+    if(window.CLUB_NOMBRE || window.NOMBRE_CLUB){
+      poner(window.CLUB_NOMBRE || window.NOMBRE_CLUB);
+      return;
+    }
+  } catch(e){}
+
+  /* el manifest: ahi vive el nombre con el que se instala la app */
+  try {
+    fetch('manifest.json')
+      .then(function(r){ return r.json(); })
+      .then(function(m){ poner(m.name || m.short_name); })
+      .catch(function(){});
+  } catch(e){}
+})();
+</script>
+<script src="ayuda.js">
+
+</script>
+<script>
+/* ══ EL MENSAJE PARA EL PLANTEL ══════════════════════════════════════════
+   Crear las cuentas no alcanza: hay que avisarle a cada jugador cómo entrar.
+   Acá queda el texto listo para copiar y pegar en el grupo, con el link a la
+   app y al instructivo de instalación. */
+function textoGrupo(){
+  var base = location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
+  var club = '';
+  try { club = ((document.getElementById('nom-club') || {}).textContent || '').trim(); } catch(e){}
+  var cat = '';
+  try {
+    if(window.CAT_ELEGIDA && (window.CATEGORIAS_CLUB || []).length > 1)
+      cat = ' (' + window.CAT_ELEGIDA + ')';
+  } catch(e){}
+
+  return 'Ya tenés tu acceso a la app' + (club ? ' de ' + club : '') + cat + '.\n\n'
+       + 'Entrá acá:\n' + base + '\n\n'
+       + 'Usuario: tu mail\n'
+       + 'Clave: tu fecha de nacimiento, 8 números sin puntos ni barras\n'
+       + '(si naciste el 01/01/1990, tu clave es 01011990)\n\n'
+       + 'Antes de entrar, mirá cómo instalarla en el celular:\n'
+       + base + 'BIENVENIDA.html\n\n'
+       + 'Se instala una sola vez y después funciona como cualquier app, '
+       + 'incluso sin internet.';
+}
+
+function copiarMensaje(btn){
+  var t = document.getElementById('msg-grupo');
+  if(!t) return;
+  t.select(); t.setSelectionRange(0, 99999);
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch(e){}
+  if(!ok && navigator.clipboard){
+    try { navigator.clipboard.writeText(t.value); ok = true; } catch(e){}
+  }
+  var antes = btn.textContent;
+  btn.textContent = ok ? 'Copiado' : 'Copialo a mano';
+  setTimeout(function(){ btn.textContent = antes; }, 1800);
+}
+
+function abrirBienvenida(){
+  var base = location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
+  window.open(base + 'BIENVENIDA.html', '_blank');
+}
+</script>
+<script>
+
+/* ══ TRAER EL PLANTEL DE UN PARTIDO ══════════════════════════════════════
+   Lee el .dvw, saca los jugadores del equipo del club y llena el formulario.
+   El mail y la fecha quedan vacios: son lo unico que el .dvw no tiene. */
+function traerPlantel(input){
+  var f = input.files && input.files[0];
+  if(!f) return;
+  var aviso = document.getElementById('dvw-aviso');
+  aviso.innerHTML = '<div class="aviso">Leyendo el partido…</div>';
+
+  PlantelDVW.leer(f).then(function(r){
+    var lista, deQuien;
+
+    if(r.cual === 'H'){ lista = r.local;     deQuien = r.equipos.local; }
+    else if(r.cual === 'V'){ lista = r.visitante; deQuien = r.equipos.visitante; }
+    else {
+      /* no reconocio al club: que elija el DT */
+      aviso.innerHTML =
+        '<div class="aviso">No reconocí cuál de los dos es tu club. Elegí:' +
+        '<div class="barra" style="margin-top:10px">' +
+        '<button type="button" class="btn sec" onclick="usarLado(\'H\')">' +
+        (r.equipos.local || 'Local') + ' (' + r.local.length + ')</button>' +
+        '<button type="button" class="btn sec" onclick="usarLado(\'V\')">' +
+        (r.equipos.visitante || 'Visitante') + ' (' + r.visitante.length + ')</button>' +
+        '</div></div>';
+      window.__DVW = r;
+      return;
+    }
+    volcar(lista, deQuien, aviso);
+  }).catch(function(e){
+    aviso.innerHTML = '<div class="aviso" style="border-color:rgba(242,84,75,.4)">' +
+      'No pude leer ese archivo. ¿Es un .dvw de un partido?</div>';
+  });
+  input.value = '';
+}
+
+function usarLado(lado){
+  var r = window.__DVW; if(!r) return;
+  var lista = lado === 'H' ? r.local : r.visitante;
+  var quien = lado === 'H' ? r.equipos.local : r.equipos.visitante;
+  volcar(lista, quien, document.getElementById('dvw-aviso'));
+}
+
+/* Pasa la lista del .dvw al formulario */
+function volcar(lista, deQuien, aviso){
+  if(!lista || !lista.length){
+    aviso.innerHTML = '<div class="aviso">Ese partido no trae el plantel cargado.</div>';
+    return;
+  }
+
+  /* los que ya estan escritos, para no pisarlos */
+  var yaHay = {};
+  document.querySelectorAll('.fform').forEach(function(fl){
+    var i = fl.getAttribute('data-i');
+    var n = (document.getElementById('n'+i)||{}).value;
+    var m = (document.getElementById('m'+i)||{}).value;
+    if(n && m) yaHay[n] = true;
+  });
+
+  /* se limpian las filas vacias y se agregan las del partido */
+  document.querySelectorAll('.fform').forEach(function(fl){
+    var i = fl.getAttribute('data-i');
+    var n = (document.getElementById('n'+i)||{}).value;
+    var m = (document.getElementById('m'+i)||{}).value;
+    if(!n && !m) fl.remove();
+  });
+
+  var puestos = 0, sumados = 0;
+  lista.forEach(function(j){
+    if(yaHay[String(j.num)]) return;
+    masFila();
+    var i = NFILAS - 1;
+    var cn = document.getElementById('n'+i);
+    if(cn) cn.value = j.num;
+    /* el nombre va como ayuda visual: el .dvw no trae mail */
+    var cm = document.getElementById('m'+i);
+    if(cm){
+      cm.placeholder = j.nombre + (j.puesto ? '  ·  ' + j.puesto : '');
+      cm.setAttribute('title', j.nombre);
+    }
+    if(j.puesto) puestos++;
+    sumados++;
+  });
+
+  if(!document.querySelectorAll('.fform').length) masFila();
+
+  aviso.innerHTML =
+    '<div class="aviso" style="border-color:rgba(34,197,94,.4)">' +
+    '<b>' + sumados + ' jugador(es) de ' + (deQuien || 'tu equipo') + '.</b> ' +
+    'El nombre de cada uno está en gris donde va el mail. ' +
+    'Completá el mail y la fecha de nacimiento de cada fila.</div>';
+}
+
 </script>
 </body>
 </html>

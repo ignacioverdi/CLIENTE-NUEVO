@@ -6,6 +6,14 @@
 <title>Stats Entrenamiento</title>
 <!-- El descifrador va SIEMPRE antes que los datos cifrados: si va
      despues, no los abre y la pantalla queda vacia sin dar error. -->
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
 <script src="datos_voley.js.enc" onerror="void 0" onerror="void 0"></script>
 <!-- Abre todo lo registrado arriba. Va al final: un .enc cargado
@@ -276,15 +284,16 @@ body::before{content:'';position:fixed;inset:0;
 .cancha-modal-hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:420px;margin-bottom:12px}
 .cancha-modal-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#e2e8f0}
 .cancha-modal-close{padding:6px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#94a3b8;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase}
-.cancha-modal-info{font-size:12px;color:#64748b;letter-spacing:.8px;text-align:center;max-width:360px;margin-bottom:10px}
+.cancha-modal-info{font-size:12px;color:#94a3b8;letter-spacing:.8px;text-align:center;max-width:360px;margin-bottom:10px}
 .cancha-modal-legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:12px}
-.cml-item{display:flex;align-items:center;gap:6px;font-size:10px;color:#64748b;letter-spacing:.8px;text-transform:uppercase}
+.cml-item{display:flex;align-items:center;gap:6px;font-size:10px;color:#94a3b8;letter-spacing:.8px;text-transform:uppercase}
 .cml-dot{width:20px;height:3px;border-radius:2px}
 
 
 select, select option { color: #111111 !important; background-color: #ffffff !important; }
 </style>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <script src="lang.js"></script>
 <script src="objetivos.js" onerror="void 0"></script>
 <script src="video_delay.js" onerror="void 0"></script>
@@ -453,14 +462,14 @@ function renderObjetivosJugador(cid,nombre,extra){
   var rows=[{label:'Jugador',vals:jugVals,isJug:true},{label:'Equipo',vals:eqVals,isJug:false}];
   var html='<div style="font-family:Barlow Condensed,sans-serif;padding:4px 0 8px">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">'
-    +'<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#64748b">MI PERFORMANCE VS EQUIPO</div>'
+    +'<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#94a3b8">MI PERFORMANCE VS EQUIPO</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
     +[['#22c55e','Sobre equipo'],['#86efac','Cerca'],['#fbbf24','Neutro'],['#ef4444','Bajo equipo']].map(function(x){
-      return'<div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#64748b"><div style="width:7px;height:7px;border-radius:50%;background:'+x[0]+'"></div>'+x[1]+'</div>';
+      return'<div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#94a3b8"><div style="width:7px;height:7px;border-radius:50%;background:'+x[0]+'"></div>'+x[1]+'</div>';
     }).join('')+'</div></div>'
     +'<div style="display:flex;gap:8px;width:100%;margin-bottom:4px">'
     +'<div style="width:64px;flex-shrink:0"></div>'
-    +Object.keys(metas).map(function(id){return'<div style="flex:1;min-width:60px;max-width:110px;text-align:center;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#64748b">'+metas[id].label+'</div>';}).join('')
+    +Object.keys(metas).map(function(id){return'<div style="flex:1;min-width:60px;max-width:110px;text-align:center;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8">'+metas[id].label+'</div>';}).join('')
     +'</div>';
   rows.forEach(function(row){
     html+='<div style="display:flex;align-items:center;gap:8px;width:100%;margin-bottom:8px">'
@@ -497,7 +506,7 @@ function renderObjetivosJugador(cid,nombre,extra){
 <script src="datos_historial.js" onerror="void 0"></script>
 </head>
 <body>
-<div style="padding:6px 20px;background:rgba(7,8,15,.97);border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:12px"><a href="dashboard.html" style="padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#475569;font-size:10px;font-weight:700;letter-spacing:1px;text-decoration:none;text-transform:uppercase">← Dashboard</a><div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div></div>
+<div style="padding:6px 20px;background:rgba(7,8,15,.97);border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:12px"><a href="dashboard.html" style="padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#8395ac;font-size:10px;font-weight:700;letter-spacing:1px;text-decoration:none;text-transform:uppercase">← Dashboard</a><div id="lang-wrap" style="display:flex;align-items:center;gap:4px"></div></div>
 
 <header class="hdr">
   <a href="index.html" style="font-size:9px;color:#5a5a72;letter-spacing:1.5px;text-decoration:none;text-transform:uppercase;padding:4px 10px;border:1px solid rgba(255,255,255,.06);border-radius:6px;transition:all .15s;white-space:nowrap" onmouseover="this.style.borderColor='rgba(255,255,255,.15)';this.style.color='#eeeef5'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.color='#5a5a72'">← HUB</a>
@@ -512,7 +521,7 @@ function renderObjetivosJugador(cid,nombre,extra){
     <span style="color:#3a3a4a;font-size:13px">-</span>
     <span id="hs-ap" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;color:#e8e8f0">0</span>
     <span id="hs-an" style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:#22d3ee">VIS</span>
-    <span id="hs-set" style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:#64748b;letter-spacing:1px;margin-left:2px">S1</span>
+    <span id="hs-set" style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:#94a3b8;letter-spacing:1px;margin-left:2px">S1</span>
   </div>
   <span id="pts-total" style="display:none">0</span>
 
@@ -580,7 +589,7 @@ function renderObjetivosJugador(cid,nombre,extra){
     <div style="display:flex;align-items:center;gap:14px;font-family:'Barlow Condensed',sans-serif">
       <div style="text-align:right;min-width:130px">
         <div id="mk-hn" style="font-size:17px;font-weight:800;color:#e8e8f0;letter-spacing:.5px;line-height:1">---</div>
-        <div id="mk-hs" style="font-size:10px;color:#64748b;letter-spacing:2px;margin-top:2px">0 SETS</div>
+        <div id="mk-hs" style="font-size:10px;color:#94a3b8;letter-spacing:2px;margin-top:2px">0 SETS</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <span id="mk-hp" style="font-size:38px;font-weight:900;color:#e6a743;line-height:1;min-width:52px;text-align:center">0</span>
@@ -589,7 +598,7 @@ function renderObjetivosJugador(cid,nombre,extra){
       </div>
       <div style="text-align:left;min-width:130px">
         <div id="mk-an" style="font-size:17px;font-weight:800;color:#e8e8f0;letter-spacing:.5px;line-height:1">---</div>
-        <div id="mk-as" style="font-size:10px;color:#64748b;letter-spacing:2px;margin-top:2px">0 SETS</div>
+        <div id="mk-as" style="font-size:10px;color:#94a3b8;letter-spacing:2px;margin-top:2px">0 SETS</div>
       </div>
     </div>
     <span id="mk-set" style="font-size:11px;color:#94a3b8;letter-spacing:2px;font-weight:700;font-family:'Barlow Condensed',sans-serif;padding:4px 10px;background:rgba(255,255,255,.05);border-radius:20px">SET 1</span>
@@ -605,7 +614,7 @@ function renderObjetivosJugador(cid,nombre,extra){
 <div id="bat" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(8,8,16,.97);backdrop-filter:blur(20px);overflow-y:auto;padding:2rem">
   <div style="max-width:1100px;margin:0 auto">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-      <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:26px;letter-spacing:2px;color:#818cf8;text-transform:uppercase">🔋 Baterías <span style="font-size:13px;color:#64748b">en vivo</span></h2>
+      <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:26px;letter-spacing:2px;color:#818cf8;text-transform:uppercase">🔋 Baterías <span style="font-size:13px;color:#94a3b8">en vivo</span></h2>
       <button onclick="toggleBat()" style="padding:8px 18px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#e2e8f0;font-weight:700;cursor:pointer">Cerrar</button>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
@@ -616,7 +625,7 @@ function renderObjetivosJugador(cid,nombre,extra){
       </label>
     </div>
     <div id="bat-cont" style="overflow-x:auto"></div>
-    <div style="font-size:11px;color:#475569;margin-top:10px">Las 11 baterías salen de los códigos que carga el scout en vivo. Con pocas acciones, tomar con cuidado.</div>
+    <div style="font-size:11px;color:#8395ac;margin-top:10px">Las 11 baterías salen de los códigos que carga el scout en vivo. Con pocas acciones, tomar con cuidado.</div>
   </div>
 </div>
 
@@ -1202,7 +1211,7 @@ function cargarBatJugV(){
     lista.map(function(n){ var nm=batNombreV(_batSideV,n); return '<option value="'+n+'">#'+n+(nm?' '+nm:'')+'</option>'; }).join('');
 }
 function renderBatV(){
-  if(typeof window.bateriasVivo!=='function'){ document.getElementById('bat-cont').innerHTML='<div style="color:#64748b;padding:20px">Faltan las baterías (objetivos.js).</div>'; return; }
+  if(typeof window.bateriasVivo!=='function'){ document.getElementById('bat-cont').innerHTML='<div style="color:#94a3b8;padding:20px">Faltan las baterías (objetivos.js).</div>'; return; }
   var pre=_batSideV==='home'?'*':'a';
   var res=window.bateriasVivo(batCodesV(), pre);
   var jn=document.getElementById('bat-jug').value;
@@ -1252,7 +1261,7 @@ function calcFaseKPIs(codes, side){
   side = side || '*';
   var ROL={};
   try{
-    var P=window.PLANTEL_CLUB;
+    var P=window.PLANTEL_{{CLUB}};
     var arr=(P&&P.jugadores)?P.jugadores:(P&&P.lista)?P.lista:(Array.isArray(P)?P:[]);
     arr.forEach(function(j){ var n=(j.num!=null?j.num:j.c); var pos=((j.pos||j.rol||'')+'').toUpperCase(); if(n!=null) ROL[parseInt(n,10)]=pos; });
   }catch(e){}
@@ -1699,7 +1708,7 @@ function statPill(label,value,color,title){
     border-radius:7px;border:1px solid rgba(255,255,255,.07)" title="${title}">
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;
       line-height:1;color:${color}">${value}</div>
-    <div style="font-size:9px;color:#64748b;letter-spacing:1px;text-transform:uppercase">${label}</div>
+    <div style="font-size:9px;color:#94a3b8;letter-spacing:1px;text-transform:uppercase">${label}</div>
   </div>`;
 }
 
@@ -1821,13 +1830,13 @@ function closeCanchaModal(){document.getElementById('cancha-modal').classList.re
 </div>
 
 
-<button onclick="window.scrollTo({top:0,behavior:'smooth'})" style="position:fixed;bottom:24px;right:24px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(7,8,15,.95);backdrop-filter:blur(10px);color:#64748b;font-size:18px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.5)" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#64748b'" title="Volver al inicio">↑</button>
+<button onclick="window.scrollTo({top:0,behavior:'smooth'})" style="position:fixed;bottom:24px;right:24px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(7,8,15,.95);backdrop-filter:blur(10px);color:#94a3b8;font-size:18px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.5)" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#64748b'" title="Volver al inicio">↑</button>
 
 <!-- INDIVIDUAL PLAYER DETAIL OVERLAY -->
 <div id="jug-det" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(7,8,15,.97);backdrop-filter:blur(20px);overflow-y:auto">
   <div style="max-width:700px;margin:0 auto;padding:20px 16px">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <button onclick="closeJugDetail()" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#64748b;font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase">← Volver</button>
+      <button onclick="closeJugDetail()" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#94a3b8;font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase">← Volver</button>
       <div id="jdet-name" style="font-family:Bebas Neue,sans-serif;font-size:24px;letter-spacing:2px"></div>
       <div id="jdet-pos" style="font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-left:auto"></div>
     </div>
@@ -1843,9 +1852,9 @@ function showJugDetail(nombre, num){
   if(!jug) return;
 
   // Datos del jugador (posición) desde el PLANTEL
-  // Plantel {{Club}} — lee de plantel_club.js (fuente única); respaldo abajo
-  var PLANTEL = (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores)
-    ? window.PLANTEL_CLUB.jugadores.map(function(j){ return {num:j.num, nombre:j.ap, pos:j.pos}; })
+  // Plantel {{Club}} — lee de plantel_{{club}}.js (fuente única); respaldo abajo
+  var PLANTEL = (window.PLANTEL_{{CLUB}} && window.PLANTEL_{{CLUB}}.jugadores)
+    ? window.PLANTEL_{{CLUB}}.jugadores.map(function(j){ return {num:j.num, nombre:j.ap, pos:j.pos}; })
     : [
   ];
   var jugInfo = null;
@@ -1877,7 +1886,7 @@ function showJugDetail(nombre, num){
     stats.forEach(function(s){
       html += '<div style="flex:1;min-width:80px;background:rgba(13,14,26,.8);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px;text-align:center">'
         + '<div style="font-family:Bebas Neue,sans-serif;font-size:28px;line-height:1;color:'+s.c+'">'+s.v+'</div>'
-        + '<div style="font-size:9px;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-top:2px">'+s.l+'</div>'
+        + '<div style="font-size:9px;color:#94a3b8;letter-spacing:1px;text-transform:uppercase;margin-top:2px">'+s.l+'</div>'
         + '</div>';
     });
     html += '</div>';
@@ -1895,7 +1904,7 @@ function showJugDetail(nombre, num){
     efics.forEach(function(e){
       var v = e.val !== null ? e.val + '%' : '—';
       html += '<div style="background:rgba(13,14,26,.8);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px">'
-        + '<div style="font-size:9px;color:#64748b;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">'+e.lbl+'</div>'
+        + '<div style="font-size:9px;color:#94a3b8;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">'+e.lbl+'</div>'
         + '<div style="font-family:Bebas Neue,sans-serif;font-size:32px;line-height:1;color:'+e.c+'">'+v+'</div>'
         + '</div>';
     });
@@ -1903,12 +1912,12 @@ function showJugDetail(nombre, num){
   }
 
   // Baterías en tiempo real
-  html += '<div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#64748b;margin-bottom:10px">BATERÍAS EN TIEMPO REAL</div>';
+  html += '<div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#94a3b8;margin-bottom:10px">BATERÍAS EN TIEMPO REAL</div>';
   html += '<div id="jdet-bat"></div>';
 
   // DV4 combos
   if(jug.dv4 && Object.keys(jug.dv4).length){
-    html += '<div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#64748b;margin:16px 0 10px">ATAQUES POR COMBINACIÓN</div>';
+    html += '<div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#94a3b8;margin:16px 0 10px">ATAQUES POR COMBINACIÓN</div>';
     html += '<div style="display:flex;flex-wrap:wrap;gap:8px">';
     Object.keys(jug.dv4).forEach(function(cod){
       var d = jug.dv4[cod];
@@ -1918,7 +1927,7 @@ function showJugDetail(nombre, num){
       html += '<div style="background:rgba(13,14,26,.8);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 12px;min-width:80px;text-align:center">'
         + '<div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px">'+cod+'</div>'
         + '<div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:'+effCol+'">'+eff+'%</div>'
-        + '<div style="font-size:9px;color:#475569">'+d.tot+' acc</div>'
+        + '<div style="font-size:9px;color:#8395ac">'+d.tot+' acc</div>'
         + '</div>';
     });
     html += '</div>';
@@ -1926,13 +1935,13 @@ function showJugDetail(nombre, num){
 
   // Saques detalle
   if(jug.sOrig || jug.sDest){
-    html += '<div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#64748b;margin:16px 0 8px">SAQUE</div>';
+    html += '<div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#94a3b8;margin:16px 0 8px">SAQUE</div>';
     html += '<div style="background:rgba(13,14,26,.8);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px">'
       + '<div style="display:flex;gap:20px;flex-wrap:wrap">'
-      + (jug.sT ? '<div><div style="font-size:9px;color:#64748b">Total</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:#f59e0b">'+jug.sT+'</div></div>' : '')
-      + (jug.sPunto ? '<div><div style="font-size:9px;color:#64748b">Puntos</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:#22c55e">'+jug.sPunto+'</div></div>' : '')
-      + (jug.sErr ? '<div><div style="font-size:9px;color:#64748b">Errores</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:#ef4444">'+jug.sErr+'</div></div>' : '')
-      + (jug.sPos ? '<div><div style="font-size:9px;color:#64748b">Positivos</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:#86efac">'+jug.sPos+'</div></div>' : '')
+      + (jug.sT ? '<div><div style="font-size:9px;color:#94a3b8">Total</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:#f59e0b">'+jug.sT+'</div></div>' : '')
+      + (jug.sPunto ? '<div><div style="font-size:9px;color:#94a3b8">Puntos</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:#22c55e">'+jug.sPunto+'</div></div>' : '')
+      + (jug.sErr ? '<div><div style="font-size:9px;color:#94a3b8">Errores</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:#ef4444">'+jug.sErr+'</div></div>' : '')
+      + (jug.sPos ? '<div><div style="font-size:9px;color:#94a3b8">Positivos</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:#86efac">'+jug.sPos+'</div></div>' : '')
       + '</div></div>';
   }
 
@@ -1956,7 +1965,7 @@ function closeJugDetail(){
   document.getElementById('jug-det').style.display = 'none';
   document.body.style.overflow = '';
 }</script>
-<script src="plantel_club.js" onerror="void 0"></script>
+<script src="plantel_{{club}}.js" onerror="void 0"></script>
 <script src="temporadas_menu.js"></script>
 <div id="m-plan" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);padding:0" >
   <div style="height:100%;display:flex;flex-direction:column">
@@ -1974,7 +1983,7 @@ function closeJugDetail(){
       <h2 style="font-family:Barlow Condensed,sans-serif;color:#e2e8f0;margin:0;font-size:22px">🔋 Baterías del partido</h2>
       <button onclick="cerrarBaterias()" style="background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:6px 14px;cursor:pointer;font-family:Barlow Condensed,sans-serif;font-weight:700">Cerrar</button>
     </div>
-    <div style="font-size:12px;color:#64748b;margin-bottom:12px">Calculado en vivo con lo scouteado. La marca blanca es el objetivo.</div>
+    <div style="font-size:12px;color:#94a3b8;margin-bottom:12px">Calculado en vivo con lo scouteado. La marca blanca es el objetivo.</div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
       <span id="bat-teambtns" style="display:inline-flex;gap:6px"></span>
       <div style="flex:1"></div>
@@ -2056,7 +2065,8 @@ function vdReplay(){ if(window.VideoDelay) VideoDelay.replayUltimoPunto(12); }
 function vdMaximizar(){ var w=document.getElementById('vd-videowrap'); if(!w) return; if(!document.fullscreenElement){ (w.requestFullscreen||w.webkitRequestFullscreen||w.webkitEnterFullscreen||function(){}).call(w); } else { (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document); } }
 </script>
 
+<script src="ayuda.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

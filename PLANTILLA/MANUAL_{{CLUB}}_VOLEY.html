@@ -175,7 +175,10 @@
 </style>
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="categorias_club.js"></script>
+<script src="selector_categoria.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -241,7 +244,7 @@
     <div class="rules">
       <div class="rule do"><span class="ic">✅</span><div><b>Para actualizar, usá siempre un solo botón:</b> <code>ACTUALIZAR_Y_PUBLICAR</code>. Ese genera los datos y los publica online, todo junto.</div></div>
       <div class="rule do"><span class="ic">✅</span><div><b>Los .dvw de la temporada actual van en una sola carpeta:</b> <code>DVW {{CLUB}} 2027</code>. Nada de partidos nuevos en otra carpeta.</div></div>
-      <div class="rule dont"><span class="ic">⛔</span><div><b>No corras los botones viejos de “actualizar”:</b> <code>ACTUALIZAR_FACIL</code>, <code>ACTUALIZAR_{{CLUB}}</code>, <code>ACTUALIZAR_TODO</code> ni <code>correr_nafels</code>. Esos cargan datos viejos y ensucian la temporada nueva. Guardalos en una carpeta aparte.</div></div>
+      <div class="rule dont"><span class="ic">⛔</span><div><b>No corras los botones viejos de “actualizar”:</b> <code>ACTUALIZAR_FACIL</code>, <code>ACTUALIZAR_{{CLUB}}</code>, <code>ACTUALIZAR_TODO</code> ni <code>correr_{{club}}</code>. Esos cargan datos viejos y ensucian la temporada nueva. Guardalos en una carpeta aparte.</div></div>
     </div>
   </section>
 
@@ -467,7 +470,7 @@
       <li><b>Scouteá el entreno en DataVolley</b><small>Te queda un archivo .dvw del entrenamiento.</small></li>
       <li><b>Ponelo en la carpeta <code>DVW ENTRENAMIENTOS {{CLUB}} 2026</code></b><small>Es la carpeta de los entrenamientos (ojo: distinta de la de los partidos).</small></li>
       <li><b>(Si tenés video) cargá el link primero</b><small>Mirá el paso de <a href="#videos" style="color:var(--court-deep);font-weight:600">Videos</a>: el video va a YouTube y el link se pega en “Cargar Videos”, modo Entrenamiento.</small></li>
-      <li><b>Doble clic en <code>correr_entrenamientos_nafels</code></b><small>Genera los datos del entreno. No toca nada de los partidos ni de la cápsula. Esperá el “LISTO”.</small></li>
+      <li><b>Doble clic en <code>correr_entrenamientos_{{club}}</code></b><small>Genera los datos del entreno. No toca nada de los partidos ni de la cápsula. Esperá el “LISTO”.</small></li>
       <li><b>Doble clic en <code>PUBLICAR_EN_GITHUB</code></b><small>Este botón <b>no publica solo</b>, así que este paso es obligatorio para que se vea online.</small></li>
       <li><b>Ctrl + F5 y poné el switch en <code>ENTRENAMIENTO</code></b><small>El switch aparece arriba en las páginas de análisis.</small></li>
     </ol>
@@ -497,7 +500,7 @@
     <ol class="steps">
       <li><b>Subí el video a YouTube</b><small>Cuando termina de procesarse, copiás el link del video.</small></li>
       <li><b>Abrí “Cargar Videos” (la tarjeta violeta del menú)</b><small>Ahí elegís el modo — <b>Partido</b> o <b>Entrenamiento</b> — y pegás el link.</small></li>
-      <li><b>Corré el botón que corresponda</b><small>Partidos → <code>cargar_videos</code> (o <code>ACTUALIZAR_Y_PUBLICAR</code>). Entrenamientos → <code>correr_entrenamientos_nafels</code>.</small></li>
+      <li><b>Corré el botón que corresponda</b><small>Partidos → <code>cargar_videos</code> (o <code>ACTUALIZAR_Y_PUBLICAR</code>). Entrenamientos → <code>correr_entrenamientos_{{club}}</code>.</small></li>
       <li><b>Publicá y refrescá</b><small><code>PUBLICAR_EN_GITHUB</code> + Ctrl+F5. Los clips aparecen al lado de cada jugada, igual que en los partidos.</small></li>
     </ol>
   </section>
@@ -515,7 +518,7 @@
     <div class="callout">
       <b>Cómo se ve cada partido (todo en una línea):</b> la fecha, el <b>escudo + nombre</b> de los dos equipos con <b>{{CLUB}} en verde</b>, la <b>hora</b>, el <b>lugar</b> y un <b>📍 que abre Google Maps</b> con la dirección. El borde de la izquierda es <b>verde si jugás de local</b> y <b>naranja si es de visitante</b>.
     </div>
-    <p><b>Los escudos:</b> los logos de los clubes están en una carpeta <code>escudos/</code> en el repo (<code>nafels.png</code>, <code>amriswil.png</code>, etc.), al lado de <code>calendario.html</code>. Si falta un archivo, en vez del logo se ve un cuadradito con las siglas del club (NÄF, AMR…): nunca queda roto.</p>
+    <p><b>Los escudos:</b> los logos de los clubes están en una carpeta <code>escudos/</code> en el repo (<code>{{club}}.png</code>, <code>amriswil.png</code>, etc.), al lado de <code>calendario.html</code>. Si falta un archivo, en vez del logo se ve un cuadradito con las siglas del club (NÄF, AMR…): nunca queda roto.</p>
     <p><b>A mano:</b> con <b>+ Agregar</b> sumás un partido o entrenamiento suelto; el <b>lápiz ✏️</b> edita y el <b>tacho 🗑️</b> borra. La vista <b>Planificación</b> muestra todo en grilla (semana / quincena / mes).</p>
     <div class="done">🏐 Ojo: los escudos y el <code>calendario.html</code> sí van al repo (se suben una vez con el .bat). Lo que cargás o importás dentro del calendario se guarda solo.</div>
   </section>
@@ -616,7 +619,7 @@
       <thead><tr><th>Botón</th><th>Para qué</th><th>Cuándo</th></tr></thead>
       <tbody>
         <tr><td><code>ACTUALIZAR_Y_PUBLICAR</code></td><td>Genera datos de los partidos y los publica.</td><td><span class="tag main">El principal</span></td></tr>
-        <tr><td><code>correr_entrenamientos_nafels</code></td><td>Igual, pero para los entrenamientos.</td><td><span class="tag some">Entrenos</span></td></tr>
+        <tr><td><code>correr_entrenamientos_{{club}}</code></td><td>Igual, pero para los entrenamientos.</td><td><span class="tag some">Entrenos</span></td></tr>
         <tr><td><code>convertir_entrenamiento_vivo</code></td><td>Entreno scouteado en vivo (llama al de arriba).</td><td><span class="tag some">Entrenos</span></td></tr>
         <tr><td><code>cargar_videos</code></td><td>Suma los videos al game plan.</td><td><span class="tag some">Videos</span></td></tr>
         <tr><td><code>VIGILAR_PARTIDOS</code></td><td>Vigila la carpeta y sube los .dvw nuevos solos (despierta al robot).</td><td><span class="tag some">Robot</span></td></tr>
@@ -627,7 +630,7 @@
         <tr><td><code>VER_ERROR</code></td><td>Muestra qué falló.</td><td><span class="tag emerg">Emergencia</span></td></tr>
       </tbody>
     </table>
-    <div class="callout"><b>Guardá en una carpeta aparte</b> (no los uses): <code>ACTUALIZAR_FACIL</code>, <code>ACTUALIZAR_{{CLUB}}</code>, <code>ACTUALIZAR_TODO</code>, <code>correr_nafels</code> (duplicados peligrosos) y los de instalación que ya corriste una vez: <code>CONECTAR_GITHUB</code>, <code>CONFIGURAR_IDENTIDAD</code>, <code>INSTALAR_ROBOT</code>, <code>LIMPIAR_REPO</code>, <code>FIRMAR_COPYRIGHT</code>.</div>
+    <div class="callout"><b>Guardá en una carpeta aparte</b> (no los uses): <code>ACTUALIZAR_FACIL</code>, <code>ACTUALIZAR_{{CLUB}}</code>, <code>ACTUALIZAR_TODO</code>, <code>correr_{{club}}</code> (duplicados peligrosos) y los de instalación que ya corriste una vez: <code>CONECTAR_GITHUB</code>, <code>CONFIGURAR_IDENTIDAD</code>, <code>INSTALAR_ROBOT</code>, <code>LIMPIAR_REPO</code>, <code>FIRMAR_COPYRIGHT</code>.</div>
   </section>
 
 </div>
@@ -638,5 +641,6 @@
 </footer>
 
 <script src="lang.js"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>

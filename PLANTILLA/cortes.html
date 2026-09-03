@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cortes de Video · {{CLUB}} VOLEY</title>
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
 <script src="filtro_tipo.js" onerror="void 0"></script>
   <!-- datos_video_25-26 sacado: es el video de la CAPSULA. Esta pantalla es
@@ -20,6 +28,9 @@
      ano solo: "2026" en vez de "26-27". Los de arriba cubren las ligas
      que cruzan de ano; estos, las que no. Los que no existen los
      descarta el onerror, asi que no molesta pedir de mas. -->
+<!-- liga_data trae los partidos procesados: asi se listan aunque
+     todavia no tengan el video cargado. -->
+<script src="liga_data.js.enc" onerror="void 0"></script>
 <script src="datos_video_2025.js.enc?v=3" onerror="void 0"></script>
 <script src="datos_video_2026.js.enc?v=3" onerror="void 0"></script>
 <script src="datos_video_2027.js.enc?v=3" onerror="void 0"></script>
@@ -36,6 +47,7 @@
 <script src="mapa_videos_ent.js.enc?v=3" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <style>
   :root{--bg:#0b1017;--bg2:#0f172a;--card:#111a27;--card2:#16212f;--line:#1f2c3d;--txt:#e2e8f0;--muted:#7689a1;--muted2:#475569;--naf:#22c55e;--naf-dim:rgba(34,197,94,.12);--atk:#F97316;--srv:#22C55E;--rec:#818CF8;--set:#F59E0B;--blk:#ef4444;--def:#06b6d4;--free:#94a3b8;--ev-pos:#22c55e;--ev-plus:#84cc16;--ev-excl:#eab308;--ev-neg:#f97316;--ev-slash:#f59e0b;--ev-err:#ef4444;}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -290,6 +302,136 @@
     return (localStorage.getItem('cortes_modo')==='ent') ? 'ent' : 'partido';
   })();
   var VD=(MODO==='ent'?window.VIDEO_DATA_ENT:window.VIDEO_DATA)||{combos:{},matches:{}}, COMBOS=VD.combos||{};
+
+  /* ══ Los partidos sin video tambien se listan ═════════════════════════════
+     Esta pantalla se alimentaba SOLO del archivo de video, que se arma con
+     los partidos que alguien cargo a mano. Con un video de un partido, el
+     desplegable ofrecia unicamente esos dos equipos: entrabas por una
+     jugadora de tu club y te aparecian los rivales de otro partido.
+
+     Los partidos procesados estan en liga_data.js. Se agregan los que
+     falten, con sus acciones. Sin video no hay clip para reproducir —eso se
+     avisa en pantalla— pero al menos se ve QUE hay y de quien. */
+  try{
+    if(MODO!=='ent' && window.LIGA_DATA && LIGA_DATA.teams){
+      VD.matches = VD.matches || {};
+      /* Los partidos que YA vienen del video se anotan por FECHA. Sin esto,
+         uno con codigo propio —"50101" o "P2026-08-07-20260807AMIS"— no
+         coincide con la clave que se arma aca y el mismo partido entra dos
+         veces: uno con sus acciones y video, otro vacio. */
+      var _yaHay = {};
+      Object.keys(VD.matches).forEach(function(_k){
+        var _v = VD.matches[_k] || {};
+        if(_v.date) _yaHay[_v.date] = 1;
+      });
+      var _T = LIGA_DATA.teams;
+      var _pend = [];
+      Object.keys(_T).forEach(function(slug){
+        var _t = _T[slug] || {};
+        (_t.matches || []).forEach(function(m){
+          /* Un partido esta cargado en los DOS equipos que lo jugaron. Si la
+             clave lleva el nombre del equipo, el mismo partido entra dos
+             veces y la lista lo muestra repetido. Se arma con la fecha y los
+             dos nombres ORDENADOS, que da lo mismo desde cualquier lado. */
+          var _par = [(_t.name||slug), (m.rival||'')].sort().join('-')
+                       .toLowerCase().replace(/[^a-z0-9]+/g,'-');
+          var _c = m.code || ('P' + (m.date||'') + '-' + _par);
+          if(!_c || VD.matches[_c]) return;
+          if(m.date && _yaHay[m.date]) return;   /* ese dia ya esta */
+          /* 'teams' es el campo que lee el desplegable: {slug: nombre}.
+             Sin el, el partido se agrega pero el equipo no aparece en la
+             lista y no hay forma de elegirlo. */
+          var _riv = m.rival || '';
+          /* El identificador del rival tiene que ser EL MISMO que usa su
+             propio equipo en liga_data, o el desplegable lo lista dos veces:
+             una como equipo y otra como rival. Se busca entre los equipos ya
+             conocidos antes de inventar uno. */
+          var _rs = '';
+          var _rn = _riv.toLowerCase().replace(/[^a-z0-9]/g,'');
+          for(var _o in _T){
+            var _on = String((_T[_o]||{}).name || _o).toLowerCase().replace(/[^a-z0-9]/g,'');
+            if(_on === _rn || _o === _rn){ _rs = _o; break; }
+          }
+          if(!_rs) _rs = _rn;
+          var _tm = {};
+          _tm[slug] = _t.name || slug;
+          if(_rs) _tm[_rs] = _riv;
+          VD.matches[_c] = {date:m.date||'', home:_t.name||slug,
+                            away:_riv, teams:_tm, acciones:[], actions:[]};
+          _pend.push([_c, m.i]);
+        });
+      });
+
+      /* ══ Las acciones de cada partido ══════════════════════════════════
+         Sin esto los partidos aparecian en la lista pero con "0 clips": se
+         veia el partido y no habia nada que mirar. Las acciones estan en
+         liga_data, una lista por jugadora y por fundamento.
+
+         El campo 't' es el segundo del video. Sin video queda en 0 y el clip
+         no se puede reproducir —eso ya lo avisa la pantalla— pero la accion
+         se lista igual, con su valoracion y su zona. */
+      /* ══ Las acciones de cada partido ══════════════════════════════════
+         Sin esto los partidos aparecian en la lista con "0 clips": se veia
+         el partido y no habia nada que mirar ni que filtrar.
+
+         Cada fundamento guarda sus datos en un orden distinto —lo define el
+         motor al escribir liga_data—, asi que se lee posicion por posicion:
+
+           ataque   [rival, partido, set, 1, fase, combo, EV, ORIGEN, DESTINO, ...]
+           saque    [rival, partido, set, 1, tipo, EV, ORIGEN, DESTINO]
+           recep.   [rival, partido, set, 1, tipo, EV, ORIGEN, DESTINO]
+           defensa  [rival, partido, set, 1, EV, ORIGEN, DESTINO]
+
+         El campo 't' es el segundo del video: sin video queda en 0 y el clip
+         no se puede reproducir, pero la accion se lista igual con su zona y
+         su valoracion, que es lo que usan los filtros y el cuadrante. */
+      var _EV = ['#','/','+','!','=','-'];
+      var _F = {
+        atk: {campo:'a', sk:'Ataque',    skill:'A', ev:6, oz:7, dz:8},
+        srv: {campo:'s', sk:'Saque',     skill:'S', ev:5, oz:6, dz:7},
+        rec: {campo:'r', sk:'Recepción', skill:'R', ev:5, oz:6, dz:7},
+        dig: {campo:'d', sk:'Defensa',   skill:'D', ev:4, oz:5, dz:6}
+      };
+      Object.keys(_T).forEach(function(slug){
+        var _t = _T[slug] || {}, _ms = _t.matches || [];
+        Object.keys(_F).forEach(function(f){
+          var _cfg = _F[f];
+          Object.keys(_t[f] || {}).forEach(function(num){
+            var _j = _t[f][num] || {};
+            (_j[_cfg.campo] || []).forEach(function(a){
+              var _m = _ms[a[1]] || {};
+              var _par = [(_t.name||slug), (_m.rival||'')].sort().join('-')
+                           .toLowerCase().replace(/[^a-z0-9]+/g,'-');
+              var _cod = _m.code || ('P' + (_m.date||'') + '-' + _par);
+              var _dest = VD.matches[_cod];
+              if(!_dest) return;
+              /* ══ No tocar los partidos que YA tienen video ══════════════
+                 Las acciones del video traen el segundo exacto de cada
+                 jugada; estas, no —salen de liga_data, que no guarda
+                 tiempos—. Mezclarlas rompia la reproduccion: el clip no
+                 sabia a que minuto saltar.
+
+                 Solo se completan los partidos que no tienen ninguna. */
+              if(_dest.actions && _dest.actions.length) return;
+              _dest.actions = _dest.actions || [];
+              _dest.actions.push({
+                /* El numero va como TEXTO con dos digitos —"08", no 8—,
+                   igual que en el archivo de video. Si se mezclan los dos
+                   formatos, la misma jugadora aparece dos veces en la lista
+                   y los filtros no la encuentran. */
+                tm: slug, sk: _cfg.sk, skill: _cfg.skill,
+                num: ('0' + String(num)).slice(-2),
+                name: _j.name || ('#' + num),
+                ev: _EV[a[_cfg.ev]] || '!',
+                oz: a[_cfg.oz] || 0, dz: a[_cfg.dz] || 0,
+                set: a[2] || 1, t: 0
+              });
+            });
+          });
+        });
+      });
+    }
+  }catch(e){}
   var MAP=Object.assign({}, VD.links||{}); (function(){var _mv=(MODO==='ent'?window.MAPA_VIDEOS_ENT:window.MAPA_VIDEOS)||{};for(var _k in _mv){if(_mv[_k])MAP[_k]=_mv[_k];}})();
   // --------- temporada (oct→abr): 25-26 = oct2025→abr2026 ---------
   function seasonOf(d){if(!d)return '';var p=(''+d).split('-');var y=parseInt(p[0],10),mo=parseInt(p[1],10);if(isNaN(y)||isNaN(mo))return '';var s=(mo>=8)?y:y-1;return String(s%100).padStart(2,'0')+'-'+String((s+1)%100).padStart(2,'0');}
@@ -762,5 +904,6 @@
 })();
 </script>
 <script src="lang.js" onerror="void 0"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>

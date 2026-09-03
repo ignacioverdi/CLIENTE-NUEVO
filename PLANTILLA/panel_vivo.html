@@ -521,6 +521,8 @@ input.f:focus,select.f:focus{border-color:var(--b2)}
 <!-- Motor de idiomas (ES / EN / DE). En espanol no hace nada: el observador
      sale de inmediato. En ingles o aleman traduce 200 ms despues de que la
      pantalla se queda quieta, asi que no molesta mientras se scoutea. -->
+<script src="categorias_club.js"></script>
+<script src="selector_categoria.js"></script>
 <script src="lang.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
@@ -653,6 +655,11 @@ input.f:focus,select.f:focus{border-color:var(--b2)}
       <button class="hbtn" onclick="abrirVerificacion()" title="Verificar todos los códigos (Ctrl+V)">Verificar</button>
       <button class="hbtn" onclick="reabrirPunto()" title="Trae el último punto de vuelta a la lista para corregirlo (Ctrl+A)">Reabrir punto</button>
       <button class="hbtn" onclick="undoRally()" title="Deshace el punto (Ctrl+Shift+Z)">Deshacer punto</button>
+      <!-- Traducir los codigos de otro scout. Va aca porque es el lugar donde
+           el scout trabaja: si recibe un partido con codigos distintos, lo
+           resuelve sin salir de su pantalla. -->
+      <button class="hbtn" onclick="window.open('asociar_codigos.html','_blank')" title="Traducir los códigos de un partido scouteado por otra persona">Asociar códigos</button>
+      <button class="hbtn" onclick="window.open('unir_video.html','_blank')" title="Unir los archivos de un partido que la cámara cortó en varios">Unir videos</button>
       <span id="codes-n" class="cnt" title="Cuántas acciones lleva el partido"></span><button class="hbtn" onclick="undoLast()" title="Borra el último código (Ctrl+Z)">Deshacer código</button></h3>
     <div class="codes" id="codes" data-notr></div>
   </div>
@@ -841,7 +848,7 @@ input.f:focus,select.f:focus{border-color:var(--b2)}
 <div class="modal" id="m-equipo"><div class="sheet" style="max-width:720px">
   <h2>Ficha del equipo</h2>
   <div class="fgrid" style="grid-template-columns:2fr 90px 110px">
-    <div><label class="f">Nombre</label><input class="f" id="eq-nm" placeholder="Volley Amriswil"></div>
+    <div><label class="f">Nombre</label><input class="f" id="eq-nm" placeholder="Nombre del equipo"></div>
     <div><label class="f">Sigla</label><input class="f mono" id="eq-sg" maxlength="3" placeholder="BIO"></div>
     <div><label class="f">Id Data Volley</label><input class="f mono" id="eq-id" placeholder="4370"></div>
   </div>
@@ -1175,13 +1182,14 @@ input.f:focus,select.f:focus{border-color:var(--b2)}
 <div class="toast" id="toast"></div>
 
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <script src="objetivos.js" onerror="void 0"></script>
 <script src="video_delay.js" onerror="void 0"></script>
 <!-- El plantel maestro del club. El panel lo usa como RESPALDO para resolver
      el nombre de un jugador cuando el plantel del partido no lo tiene.
      Antes no se cargaba, asi que ese respaldo nunca tenia de donde leer.
      Con onerror, si el archivo no esta la pagina sigue igual que hoy. -->
-<script src="plantel_club.js" onerror="void 0"></script>
+<script src="plantel_{{club}}.js" onerror="void 0"></script>
 <script>
 /* ============================================================
    CÓDIGO DATA VOLLEY — definiciones del manual
@@ -2558,7 +2566,7 @@ function plNorm(t){
 /* == El plantel del club ===================================================
    El panel consultaba una variable con el nombre del club del que salio este
    archivo. En {{CLUB}} esa variable no existe —el plantel maestro vive en
-   PLANTEL_CLUB— asi que las seis consultas devolvian siempre vacio: el
+   PLANTEL_{{CLUB}}— asi que las seis consultas devolvian siempre vacio: el
    respaldo para resolver el nombre de un jugador nunca llegaba a funcionar y
    quedaba el numero pelado.
 
@@ -2571,7 +2579,7 @@ function plNorm(t){
    esto solo completa lo que ese no tenga. */
 function plantelClub(){
   var P = null;
-  var CANDIDATAS = ['PLANTEL_CLUB','PLANTEL_CLUB','PLANTEL_CLUB','PLANTEL','PLANTEL_DATA'];
+  var CANDIDATAS = ['PLANTEL_{{CLUB}}','PLANTEL_{{CLUB}}','PLANTEL_{{CLUB}}','PLANTEL','PLANTEL_DATA'];
   for(var i=0;i<CANDIDATAS.length && !P;i++){
     try{ if(typeof window!=='undefined' && window[CANDIDATAS[i]]) P = window[CANDIDATAS[i]]; }catch(e){}
   }
@@ -7272,5 +7280,6 @@ function _filaTecla(e){
 }
 document.addEventListener('keydown', _filaTecla, true);
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>

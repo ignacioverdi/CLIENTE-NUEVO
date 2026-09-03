@@ -46,6 +46,7 @@
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -84,7 +85,15 @@
 
   <div id="list"></div>
 
-  <script src="datos_seguros.js"></script>
+  <!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Esta pantalla necesita la lista de partidos completa apenas abre.
+   Con los datos abriendose en segundo plano, se dibujaba vacia. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
+<script src="datos_seguros.js"></script>
   <script src="datos_video_25-26.js.enc?v=3" onerror="void 0"></script>
   <!-- Los datos del club se publican CIFRADOS: el archivo real se llama
        datos_video_ent_25-26.js.enc. Estas lineas pedian el .js pelado, que
@@ -118,9 +127,70 @@
     var MAP = MODO==='ent' ? (window.MAPA_VIDEOS_ENT||{}) : (window.MAPA_VIDEOS || {});
     var OUTFILE = MODO==='ent' ? 'mapa_videos_ent.js' : 'mapa_videos.js';
     var OUTGLOB = MODO==='ent' ? 'MAPA_VIDEOS_ENT' : 'MAPA_VIDEOS';
-    var LSK = 'nafels_video_map_draft_'+MODO;
+    var LSK = '{{club}}_video_map_draft_'+MODO;
     var draft = {};
     try{ draft = JSON.parse(localStorage.getItem(LSK)||'{}'); }catch(e){}
+
+    /* ══ Los links guardados con la clave vieja ═══════════════════════════
+       Lo que se escribe queda guardado en el navegador para no perderlo al
+       cerrar la pantalla. Pero si se guardo con un codigo que ya no se usa
+       —paso al corregir como se identifican los partidos— el link sigue ahi
+       bajo un nombre que nadie busca, y al generar el archivo sale con la
+       clave equivocada.
+
+       Se traducen por FECHA: la clave vieja lleva la fecha adentro, asi que
+       se busca el partido de ese dia y se pasa el link a su codigo actual. */
+    try{
+      var _mig = {}, _huerf = [];
+      Object.keys(draft).forEach(function(_k){
+        if(!draft[_k]) return;
+        var _fm = String(_k).match(/(20\d\d-\d\d-\d\d)/);
+        if(_fm) _huerf.push([_k, _fm[1]]);
+      });
+      if(_huerf.length){
+        var _PPm = window.PP_DATA || {};
+
+/* ── LOS DATOS PUEDEN LLEGAR DESPUES ────────────────────────────────────
+   La linea de arriba corre UNA vez al cargar. Si el archivo cifrado
+   todavia no termino de descifrarse, la pantalla quedaba vacia para
+   siempre, aunque los datos llegaran un instante despues.
+
+   Este vigia mira la variable cada 200 ms. Apenas aparece, la actualiza,
+   redibuja la pantalla y se apaga. A los 8 segundos se rinde solo. */
+(function esperarDatos(){
+  var _i = 0, _t = setInterval(function(){
+    if(++_i > 40){ clearInterval(_t); return; }
+    if(window.PP_DATA && window.PP_DATA !== _PPm){
+      _PPm = window.PP_DATA;
+      clearInterval(_t);
+      try{ if(typeof render==='function') render();
+           else if(typeof pintar==='function') pintar();
+           else if(typeof dibujar==='function') dibujar();
+           else if(typeof cargar==='function') cargar();
+           else if(typeof init==='function') init(); }catch(e){}
+    }
+  }, 200);
+})();
+        _huerf.forEach(function(par){
+          var _vieja = par[0], _fecha = par[1], _nueva = '';
+          for(var _eq3 in _PPm){
+            var _inf3 = (_PPm[_eq3] || {}).info || {};
+            for(var _cod3 in _inf3){
+              if((_inf3[_cod3] || {}).date === _fecha){ _nueva = _cod3; break; }
+            }
+            if(_nueva) break;
+          }
+          if(_nueva && _nueva !== _vieja && !draft[_nueva]){
+            _mig[_nueva] = draft[_vieja];
+            delete draft[_vieja];
+          }
+        });
+        if(Object.keys(_mig).length){
+          Object.keys(_mig).forEach(function(_n){ draft[_n] = _mig[_n]; });
+          try{ localStorage.setItem(LSK, JSON.stringify(draft)); }catch(e){}
+        }
+      }
+    }catch(e){}
     /* ══ Los partidos a los que se les puede poner video ══════════════════
        Salian SOLO de VIDEO_DATA, que se genera A PARTIR de los videos ya
        cargados. Un club nuevo entraba a esta pantalla y no veia ningun
@@ -130,14 +200,66 @@
        Ahora, si esa lista viene vacia, se arma con los partidos que ya
        procesaron los .dvw —que estan en liga_data.js—. Asi el primer video
        se puede asociar desde el dia uno. */
-    if(!Object.keys(VD).length && MODO !== 'ent'){
+    /* Se completan los partidos que FALTEN, no solo cuando la lista esta
+       vacia. Con un partido con video y dos sin el, la condicion anterior
+       —"si no hay ninguno"— no se cumplia y esos dos nunca aparecian: no
+       habia forma de cargarles el video. */
+    if(MODO !== 'ent'){
       try{
         var _t = (window.LIGA_DATA && LIGA_DATA.teams) || {};
+        /* Los partidos que YA vienen del video se anotan primero, por fecha
+           y equipos. Sin esto, uno con codigo real —"50101"— no coincidia con
+           la clave que se arma por fecha y el mismo partido aparecia dos
+           veces: uno con sus acciones y otro vacio. */
+        var _visto = {};
+        Object.keys(VD).forEach(function(_k){
+          var _v = VD[_k] || {};
+          var _n1 = _v.homeName || _v.home || '';
+          var _n2 = _v.awayName || _v.away || '';
+          if(_v.date && (_n1 || _n2)){
+            _visto[_v.date + '|' + [_n1, _n2].sort().join(' vs ')] = 1;
+          }
+        });
         Object.keys(_t).forEach(function(slug){
+          var _eq = _t[slug].name || slug;
           (_t[slug].matches || []).forEach(function(m){
-            var _c = m.code || ('P' + (m.date || '') + '-' + slug);
+            /* Un partido aparece en los DOS equipos que lo jugaron. Se
+               identifica por fecha + los dos nombres ordenados, asi no se
+               listan dos filas del mismo partido —una por equipo—. */
+            var _riv = m.rival || '';
+            var _par = [_eq, _riv].sort().join(' vs ');
+            var _clave = (m.date || '') + '|' + _par;
+            if(_visto[_clave]) return;
+            _visto[_clave] = 1;
+
+            /* ══ El codigo TIENE que ser el del sistema ═══════════════════
+               El resto de la app identifica cada partido con un codigo que
+               depende del nombre del archivo .dvw: "P2026-08-07-20260807AMIS".
+               Si aca se inventa otro —por fecha y equipos— el link queda
+               guardado bajo una clave que nadie busca: el video se carga
+               pero ninguna pantalla lo encuentra.
+
+               plan_partido_data.js ya tiene esos codigos con su fecha, asi
+               que se toma de ahi. */
+            var _c = m.code || '';
+            if(!_c){
+              try{
+                var _PP = window.PP_DATA || {};
+                for(var _eq2 in _PP){
+                  var _inf = (_PP[_eq2] || {}).info || {};
+                  for(var _cod in _inf){
+                    if((_inf[_cod] || {}).date === m.date){ _c = _cod; break; }
+                  }
+                  if(_c) break;
+                }
+              }catch(e){}
+            }
+            if(!_c) _c = 'P' + (m.date || '') + '-' +
+                     _par.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             if(!_c || VD[_c]) return;
-            VD[_c] = {date: m.date || '', rival: m.rival || '', acciones: []};
+            /* los nombres de campo son los que lee la fila: homeName,
+               awayName y actions */
+            VD[_c] = {date: m.date || '', homeName: _eq, awayName: _riv, actions: []};
           });
         });
       }catch(e){}
@@ -261,7 +383,8 @@
   })();
   </script>
 <script src="lang.js" onerror="void 0"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

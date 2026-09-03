@@ -2,12 +2,12 @@
 
 // ── CHAT IA VOLLEY {{CLUB}} — Self-contained widget ──────────────────
 var CSS = [
-  '#vb-chat-btn{position:fixed;bottom:24px;right:24px;width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;z-index:9000;background:transparent;padding:0;filter:drop-shadow(0 5px 14px rgba(0,0,0,.5));transition:transform .2s,filter .2s}',
+  '#vb-chat-btn{position:fixed;bottom:22px;right:24px;width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;z-index:9000;background:transparent;padding:0;filter:drop-shadow(0 5px 14px rgba(0,0,0,.5));transition:transform .2s,filter .2s}',
     '#vb-chat-btn img{width:100%;height:100%;display:block;object-fit:contain;pointer-events:none}',
   '#vb-chat-btn:hover{transform:scale(1.1) rotate(-8deg);filter:drop-shadow(0 6px 28px rgba(37,99,235,.8))}',
-  '#vb-chat-dot{position:fixed;bottom:74px;right:22px;width:14px;height:14px;background:#E8192C;border-radius:50%;border:2px solid #07080F;z-index:9001;display:none;animation:vbPulse 1.5s infinite}',
+  '#vb-chat-dot{position:fixed;bottom:60px;right:21px;width:12px;height:12px;background:#E8192C;border-radius:50%;border:2px solid #07080F;z-index:9001;display:none;animation:vbPulse 1.5s infinite}',
   '@keyframes vbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}',
-  '#vb-chat-panel{position:fixed;bottom:96px;right:24px;width:min(390px,calc(100vw - 32px));height:min(560px,calc(100vh - 110px));background:#0D0E1A;border:1px solid rgba(255,255,255,.14);border-radius:20px;z-index:9000;display:none;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.75);overflow:hidden;font-family:"Barlow Condensed","Segoe UI",sans-serif}',
+  '#vb-chat-panel{position:fixed;bottom:78px;right:24px;width:min(390px,calc(100vw - 32px));height:min(560px,calc(100vh - 110px));background:#0D0E1A;border:1px solid rgba(255,255,255,.14);border-radius:20px;z-index:9000;display:none;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.75);overflow:hidden;font-family:"Barlow Condensed","Segoe UI",sans-serif}',
   '#vb-chat-panel.vb-open{display:flex;animation:vbSlideUp .22s ease}',
   '@keyframes vbSlideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}',
   '.vb-hdr{display:flex;align-items:center;gap:10px;padding:13px 16px;background:rgba(37,99,235,.08);border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}',

@@ -22,29 +22,32 @@
   .pb-wrap{max-width:880px;margin:0 auto;padding:0 18px}
   .pb-head{padding:26px 0 18px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:26px}
   .pb-title{font-family:'Oswald',sans-serif;font-size:30px;letter-spacing:2px;margin:0}
-  .pb-sub{font-size:11px;color:#64748b;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+  .pb-sub{font-size:11px;color:#94a3b8;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
   .pb-sec{margin-bottom:26px}
   .pb-sec h2{font-family:'Oswald',sans-serif;font-size:19px;letter-spacing:1.5px;
              margin:0 0 4px;color:var(--club,#e8192c)}
-  .pb-ayuda{font-size:13px;color:#64748b;margin:0 0 8px;line-height:1.5}
+  .pb-ayuda{font-size:13px;color:#94a3b8;margin:0 0 8px;line-height:1.5}
   .pb-campo{min-height:76px;background:#0f1020;border:1px solid rgba(255,255,255,.08);
             border-radius:11px;padding:13px 15px;font-size:15px;line-height:1.6;outline:none}
   .pb-campo:focus{border-color:rgba(255,255,255,.22)}
-  .pb-campo:empty:before{content:attr(data-ph);color:#475569}
+  .pb-campo:empty:before{content:attr(data-ph);color:#8395ac}
   .pb-guardado{position:fixed;right:16px;bottom:16px;background:#22c55e;color:#04120a;
                font-size:13px;padding:8px 14px;border-radius:9px;opacity:0;
                transition:opacity .25s;pointer-events:none;z-index:9999}
   .pb-guardado.on{opacity:1}
-  .pb-solo{font-size:12px;color:#64748b;margin-top:6px}
+  .pb-solo{font-size:12px;color:#94a3b8;margin-top:6px}
 </style>
+<script src="categorias_club.js"></script>
+<script src="selector_categoria.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <script src="lang.js" onerror="void 0"></script>
 <link rel="stylesheet" href="movil.css">
 </head>
 <body>
 <div class="pb-wrap">
   <div class="pb-head">
-    <a href="index.html" style="color:#64748b;text-decoration:none;font-size:12px;letter-spacing:1.5px">← INICIO</a>
+    <a href="index.html" style="color:#94a3b8;text-decoration:none;font-size:12px;letter-spacing:1.5px">← INICIO</a>
     <h1 class="pb-title">TEAM PLAYBOOK</h1>
     <div class="pb-sub">{{CLUB}} · {{LIGA}}</div>
     <div class="pb-solo" id="pb-aviso"></div>
@@ -159,5 +162,6 @@
 })();
 </script>
 <script src="volver_inicio.js" onerror="void 0"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>

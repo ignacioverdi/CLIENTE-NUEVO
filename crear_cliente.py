@@ -168,6 +168,16 @@ NOMBRE   = marca.get('NOMBRE', '').strip()
 COMPLETO = marca.get('NOMBRE_COMPLETO', NOMBRE).strip()
 COLOR    = marca.get('COLOR', '#e8192c').strip()
 PIN      = marca.get('PIN', '1234').strip()
+
+# ── LAS CATEGORIAS DEL CLUB ───────────────────────────────────────────────
+# Se escriben en MARCA.txt separadas por coma:
+#     CATEGORIAS = Primera, Sub-21, Sub-18
+# Si no se pone nada, el club arranca con una sola y el selector ni aparece.
+# La PRIMERA es la principal: sus datos van en la raiz, como siempre.
+CATEGORIAS = [c.strip() for c in
+              (marca.get('CATEGORIAS', '') or '').split(',') if c.strip()]
+if not CATEGORIAS:
+    CATEGORIAS = ['Primera']
 if not NOMBRE:
     salir('En MARCA.txt falta NOMBRE (el nombre corto del club).')
 ESCUDO = os.path.join(AQUI, 'escudo_cliente.png')
@@ -376,6 +386,98 @@ for raiz, _, archivos in os.walk(DESTINO):
 
 print('     listo (%d archivos con la marca del club)' % tocados)
 
+# ── Las carpetas donde el club deja sus partidos ──────────────────────────
+# HACER_TODO busca estas carpetas por nombre. Si no existen las saltea con
+# aviso, asi que no rompe nada, pero el cliente abre el kit y no sabe donde
+# poner el primer .dvw.
+#
+# Se crean vacias, con un archivo LEEME adentro que explica que va ahi. El
+# ano sale de la temporada configurada: si el club arranca en 2027, la
+# carpeta dice 2027.
+try:
+    # El ano de la temporada que arranca. Si el club se da de alta a fin de
+    # ano, la temporada que viene es la del ano siguiente.
+    import datetime as _dt
+    _hoy = _dt.date.today()
+    _anio = str(_hoy.year + (1 if _hoy.month >= 9 else 0))
+
+    _CU = REEMPLAZOS.get('{{CLUB}}', NOMBRE).upper()
+
+    _carpetas = [
+        ('DVW %s %s' % (_CU, _anio),
+         'Los partidos scouteados de esta temporada.\n\n'
+         'Arrastra aca los archivos .dvw y despues corre HACER_TODO.\n'
+         'Tambien podes subirlos desde la app, en "Subir un partido".\n'),
+        ('DVW ENTRENAMIENTOS %s %s' % (_CU, _anio),
+         'Los entrenamientos scouteados de esta temporada.\n\n'
+         'Mismo formato que los partidos: archivos .dvw.\n'
+         'Si esta vacia, HACER_TODO la saltea y no pasa nada.\n'),
+    ]
+
+    for _n, _txt in _carpetas:
+        _d = os.path.join(DESTINO, _n)
+        if not os.path.isdir(_d):
+            os.makedirs(_d, exist_ok=True)
+            with open(os.path.join(_d, 'LEEME.txt'), 'w', encoding='utf-8') as _f:
+                _f.write(_txt)
+    print('     carpetas de partidos y entrenamientos: listas (%s)' % _anio)
+
+except Exception as _e:
+    print('     [aviso] no pude crear las carpetas de partidos (%s)' % _e)
+
+# ── Dejar las categorias declaradas ───────────────────────────────────────
+# La plantilla trae solo ['Primera']. Si el club tiene formativas, se
+# escriben aca y el selector aparece solo en toda la app.
+try:
+    _cj = os.path.join(DESTINO, 'categorias_club.js')
+    if os.path.exists(_cj):
+        _t = open(_cj, encoding='utf-8', errors='replace').read()
+        _linea = ("window.CATEGORIAS_CLUB = [" +
+                  ', '.join("'" + c.replace("'", "") + "'" for c in CATEGORIAS) +
+                  "];")
+        import re as _re
+        _t2 = _re.sub(r"^window\.CATEGORIAS_CLUB\s*=\s*\[[^\]]*\];",
+                      _linea, _t, count=1, flags=_re.M)
+        if _t2 != _t:
+            open(_cj, 'w', encoding='utf-8').write(_t2)
+            if len(CATEGORIAS) > 1:
+                print('     categorias: %s' % ' + '.join(CATEGORIAS))
+            else:
+                print('     categorias: una sola (el selector no se muestra)')
+except Exception as _e:
+    print('     [aviso] no pude escribir las categorias (%s)' % _e)
+
+# ── LOS PARTIDOS QUE YA TENGA EL CLUB ─────────────────────────────────────
+# Si el club ya scouteo partidos de esta temporada, se copian a su carpeta
+# ahora. Asi el DT abre la app por primera vez y ve SUS numeros, en vez de
+# una pantalla vacia. Es la diferencia entre "mira lo que puede hacer" y
+# "mira tus datos".
+#
+# Se buscan en una carpeta PARTIDOS_DEL_CLUB junto al kit. Si no existe, no
+# pasa nada: el alta sigue igual y los partidos se cargan despues.
+try:
+    _orig = os.path.join(AQUI, 'PARTIDOS_DEL_CLUB')
+    if os.path.isdir(_orig):
+        _dvw = [a for a in sorted(os.listdir(_orig)) if a.lower().endswith('.dvw')]
+        if _dvw:
+            _dest = os.path.join(DESTINO, 'DVW %s %s' % (_CU, _anio))
+            if not os.path.isdir(_dest):
+                os.makedirs(_dest, exist_ok=True)
+            _copiados = 0
+            for _a in _dvw:
+                try:
+                    shutil.copy2(os.path.join(_orig, _a), os.path.join(_dest, _a))
+                    _copiados += 1
+                except Exception:
+                    pass
+            print('     partidos del club: %d copiado(s)' % _copiados)
+            print('     (corré HACER_TODO en la carpeta del club para procesarlos)')
+        else:
+            print('     PARTIDOS_DEL_CLUB está vacía: la app arranca sin datos')
+except Exception as _e:
+    print('     [aviso] no pude copiar los partidos (%s)' % _e)
+
+
 # escudo
 esc = os.path.join(AQUI, 'escudo_cliente.png')
 if os.path.exists(esc):
@@ -549,10 +651,32 @@ if ENT_MAIL and ENT_CLAVE and FB_URL and FB_KEY:
 
             ruid = r2.get('localId')
             if ruid:
+                # ── El robot tiene que quedar en 'usuarios' ──────────────
+                # Si no queda, Firebase le niega TODO con un 401 y la corrida
+                # termina diciendo "No hay partidos esperando": verde, pero
+                # sin procesar nada. Por eso se verifica y se avisa en vez de
+                # dar por hecho que se guardo.
+                _ok_robot = True
                 for ruta, valor in [('roles/' + ruid, 'coach'), ('usuarios/' + ruid, True)]:
-                    api('%s/clubes/%s/%s.json?auth=%s' % (base, CLUB_ID, ruta, token),
-                        '', valor, metodo='PUT', tipo='vercel')
-                print('     robot creado y habilitado')
+                    _rr = api('%s/clubes/%s/%s.json?auth=%s' % (base, CLUB_ID, ruta, token),
+                              '', valor, metodo='PUT', tipo='vercel')
+                    if isinstance(_rr, dict) and '_error' in _rr:
+                        _ok_robot = False
+
+                # se relee para confirmar que quedo de verdad
+                if _ok_robot:
+                    _chk = api('%s/clubes/%s/usuarios/%s.json?auth=%s'
+                               % (base, CLUB_ID, ruid, token), '', tipo='vercel')
+                    _ok_robot = (_chk is True)
+
+                if _ok_robot:
+                    print('     robot creado y habilitado')
+                else:
+                    print('     [ATENCION] el robot se creo pero NO quedo habilitado.')
+                    print('     Sin eso no puede procesar los partidos que suba el club.')
+                    print('     Carga a mano en Firebase, Realtime Database:')
+                    print('        clubes/%s/usuarios/%s  =  true' % (CLUB_ID, ruid))
+                    print('        clubes/%s/roles/%s     =  coach' % (CLUB_ID, ruid))
 
                 # ── los secretos, para que el robot pueda entrar ──────────
                 #    GitHub los guarda cifrados: hay que sellarlos con la
@@ -564,6 +688,12 @@ if ENT_MAIL and ENT_CLAVE and FB_URL and FB_KEY:
                     'ROBOT_MAIL':  ROBOT_MAIL,
                     'ROBOT_CLAVE': ROBOT_CLAVE,
                     'FB_REFERER':  sitio.rstrip('/'),
+                    # CLUB_ID le dice al robot en que rama de la base buscar
+                    # los partidos. Sin el, la ruta queda vacia y pide leer
+                    # desde la raiz —que esta cerrada—: Firebase responde 401
+                    # y la corrida termina diciendo "No hay partidos
+                    # esperando". Verde, pero sin procesar nada.
+                    'CLUB_ID':     slug(NOMBRE),
                 }
                 if guardar_secretos(GH_USER, REPO, GH_TOKEN, secretos):
                     print('     listo: el robot ya puede procesar solo')

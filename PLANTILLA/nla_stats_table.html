@@ -74,7 +74,7 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
 .pos-MIDDLE{background:rgba(129,140,248,.15);color:#a5b4fc}
 .pos-SETTER{background:rgba(245,158,11,.15);color:#fcd34d}
 .eff-val{font-family:'Bebas Neue',sans-serif;font-size:14px}
-.pos-eff{color:#22c55e}.neg-eff{color:#ef4444}.neu-eff{color:#64748b}
+.pos-eff{color:#22c55e}.neg-eff{color:#ef4444}.neu-eff{color:#94a3b8}
 .no-data{text-align:center;padding:48px;color:var(--muted);font-size:13px;letter-spacing:1px}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:rgba(255,255,255,.02)}
@@ -88,16 +88,16 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
 #teams-table th:nth-child(2),#teams-table td:nth-child(2){text-align:left}
 #teams-table td.active-col,#teams-table th.active-col{background:rgba(59,130,246,.12)}
 #teams-table th.active-col{color:#93c5fd}
-#teams-table tbody tr.is-nafels{background:rgba(34,197,94,.09)}
-#teams-table tbody tr.is-nafels:hover{background:rgba(34,197,94,.14)}
-#teams-table tbody tr.is-nafels td{border-top:1px solid rgba(34,197,94,.25);border-bottom:1px solid rgba(34,197,94,.25)}
+#teams-table tbody tr.es-mi-club{background:rgba(34,197,94,.09)}
+#teams-table tbody tr.es-mi-club:hover{background:rgba(34,197,94,.14)}
+#teams-table tbody tr.es-mi-club td{border-top:1px solid rgba(34,197,94,.25);border-bottom:1px solid rgba(34,197,94,.25)}
 .t-name{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.5px;text-decoration:none}
-.t-rank{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#475569}
+.t-rank{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#8395ac}
 .t-rank.r1{color:#fcd34d}
 .tval{font-family:'Bebas Neue',sans-serif;font-size:21px;line-height:1}
-.ttot{font-size:10px;color:#64748b;margin-left:4px}
-.rank-legend{margin-top:12px;font-size:11px;color:#64748b;letter-spacing:.3px}
-.rank-legend .lg-tot{color:#475569}
+.ttot{font-size:10px;color:#94a3b8;margin-left:4px}
+.rank-legend{margin-top:12px;font-size:11px;color:#94a3b8;letter-spacing:.3px}
+.rank-legend .lg-tot{color:#8395ac}
 /* PLAYERS RANKING (sección 8) */
 .sub-pills{margin-top:-6px;margin-bottom:18px}
 .sub-pills .skill-pill{padding:5px 12px;font-size:11px;border-radius:7px}
@@ -106,15 +106,18 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
 #players-table th:nth-child(2),#players-table td:nth-child(2){text-align:left}
 #players-table td.active-col,#players-table th.active-col{background:rgba(99,102,241,.12)}
 #players-table th.active-col{color:#a5b4fc}
-#players-table tbody tr.is-nafels{background:rgba(34,197,94,.09)}
-#players-table tbody tr.is-nafels:hover{background:rgba(34,197,94,.14)}
-#players-table tbody tr.is-nafels td{border-top:1px solid rgba(34,197,94,.22);border-bottom:1px solid rgba(34,197,94,.22)}
+#players-table tbody tr.es-mi-club{background:rgba(34,197,94,.09)}
+#players-table tbody tr.es-mi-club:hover{background:rgba(34,197,94,.14)}
+#players-table tbody tr.es-mi-club td{border-top:1px solid rgba(34,197,94,.22);border-bottom:1px solid rgba(34,197,94,.22)}
 #players-table tbody tr:hover{background:rgba(255,255,255,.025)}
 </style>
 <!-- Puerta de entrada. Esta es la PLANTILLA: la tabla de liga se regenera
      desde aca en cada HACER_TODO, asi que el candado tiene que estar aqui
      o se pierde en la proxima corrida. -->
+<script src="categorias_club.js"></script>
+<script src="selector_categoria.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -185,7 +188,7 @@ tbody td.col-group-blk{border-left:1px solid rgba(250,204,21,.08)}
       <tbody id="teams-tbody"></tbody>
     </table>
   </div>
-  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado. <span id="updated-label" style="color:#475569"></span></div>
+  <div class="rank-legend">Cada celda: <b>EFF%</b> <span class="lg-tot">(total de acciones)</span> · color = ranking en ese fundamento (<span style="color:#22c55e">verde</span> mejor → <span style="color:#ef4444">rojo</span> peor) · <span style="color:#22c55e;font-weight:700">{{Club}}</span> resaltado. <span id="updated-label" style="color:#8395ac"></span></div>
 </div>
 <div class="panel" id="panel-jugadores">
   <div class="section-title">RANKING JUGADORES NLA — ELEGÍ UN FUNDAMENTO</div>
@@ -264,16 +267,16 @@ function effC(v,rec){
 function effCls(v){return v==null?'neu-eff':v>0?'pos-eff':v<0?'neg-eff':'neu-eff';}
 
 function fmtEff(v,rec){
-  if(v==null)return '<span style="color:#334155">—</span>';
+  if(v==null)return '<span style="color:#7c8ba1">—</span>';
   var s=(v>=0?'+':'')+v.toFixed(1)+'%';
   return '<span class="eff-val" style="color:'+effC(v,rec)+'">'+s+'</span>';
 }
 function fmtPct(v){
-  if(v==null)return '<span style="color:#334155">—</span>';
+  if(v==null)return '<span style="color:#7c8ba1">—</span>';
   return '<span style="color:#94a3b8">'+v.toFixed(1)+'%</span>';
 }
 function fmtN(v){
-  if(!v)return '<span style="color:#334155">0</span>';
+  if(!v)return '<span style="color:#7c8ba1">0</span>';
   return '<span style="color:#cbd5e1;font-weight:600">'+v+'</span>';
 }
 
@@ -340,7 +343,7 @@ function renderTeams(){
   tbody.innerHTML=rows.map(function(t,i){
     var c=TEAM_COLORS[t.team]||'#3b82f6';
     var slug=t.team.toLowerCase().replace(/ /g,'_');
-    var isNaf=t.team==='Nafels';
+    var esMiClub=t.team==='Nafels';
     var cells=METRICS.map(function(m){
       var v=t[m.eff], tot=t[m.tot]||0;
       var col=v==null?'#475569':rankColor(fracByMetric[m.key][t.team]);
@@ -349,7 +352,7 @@ function renderTeams(){
         +'<span class="tval" style="color:'+col+'">'+val+'</span>'
         +'<span class="ttot">('+tot+')</span></td>';
     }).join('');
-    return '<tr class="'+(isNaf?'is-nafels':'')+'">'
+    return '<tr class="'+(esMiClub?'es-mi-club':'')+'">'
       +'<td><span class="t-rank'+(i===0?' r1':'')+'">'+(i+1)+'</span></td>'
       +'<td><span class="t-name" style="color:'+c+'">'+t.team.toUpperCase()+'</span><a class="gp-btn" href="game_plan.html?rival='+slug+'" title="Abrir game plan de '+t.team+'">📋 Plan</a></td>'
       +cells+'</tr>';
@@ -441,12 +444,12 @@ function renderPlayers(){
     var col=rankColor(frac);
     var ev=p[m.eff];
     var evs=((ev>0&&!m.rec)?'+':'')+ev.toFixed(1)+'%';
-    var isNaf=p.team==='{{CLUB}}';
+    var esMiClub=p.team==='{{CLUB}}';
     var rank=i+1;
     var sec=s.cols.map(function(c){return '<td>'+fmtPct(p[c.k])+'</td>';}).join('');
-    return '<tr class="'+(isNaf?'is-nafels':'')+'">'
+    return '<tr class="'+(esMiClub?'es-mi-club':'')+'">'
       +'<td><span class="t-rank'+(i===0?' r1':'')+'">'+rank+'</span></td>'
-      +'<td><span style="font-weight:700;color:#64748b">#'+p.num+'</span> <span style="color:#e2e8f0">'+p.name+'</span></td>'
+      +'<td><span style="font-weight:700;color:#94a3b8">#'+p.num+'</span> <span style="color:#e2e8f0">'+p.name+'</span></td>'
       +'<td><a href="game_plan.html?rival='+pslug+'" title="Abrir game plan de '+p.team+'" style="text-decoration:none;display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;background:'+tc+'22;color:'+tc+'">'+p.team+'</a><a class="gp-btn" href="game_plan.html?rival='+pslug+'" title="Abrir game plan de '+p.team+'">📋</a></td>'
       +'<td><span class="pos-badge pos-'+p.pos_label+'">'+p.pos_label+'</span></td>'
       +'<td class="active-col"><span class="tval" style="color:'+col+'">'+evs+'</span></td>'
@@ -476,6 +479,7 @@ function loadStats(){
 }
 loadStats();
 </script><script src="lang.js" onerror="void 0"></script>
+<script src="ayuda.js"></script>
 </body></html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

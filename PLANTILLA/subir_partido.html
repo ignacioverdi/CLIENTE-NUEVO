@@ -50,6 +50,8 @@ input[type=file]{display:none}
 </style>
 <!-- Motor de idiomas (ES / EN / DE). Traduce por data-t y ademas por texto,
      asi que alcanza con cargarlo. -->
+<!-- Las categorias del club: si tiene una sola, el selector no aparece. -->
+<script src="categorias_club.js" onerror="void 0"></script>
 <script src="lang.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
@@ -68,6 +70,23 @@ input[type=file]{display:none}
   <div class="tipo">
     <label><input type="radio" name="tipo" value="partido" checked> Partido</label>
     <label><input type="radio" name="tipo" value="entrenamiento"> Entrenamiento</label>
+  </div>
+
+  <!-- ══ La categoria ══════════════════════════════════════════════════════
+       Un club puede tener Primera, Sub-18, Sub-16... Cada una es un equipo
+       distinto y sus numeros no se mezclan: el ataque de una Sub-16 con el de
+       Primera no dice nada.
+
+       Se elige aca, al subir. El sistema guarda el partido donde corresponde
+       y genera los datos de esa categoria: el club no ve ninguna carpeta.
+
+       El selector aparece SOLO si el club tiene mas de una categoria
+       habilitada, asi un club de una sola no ve nada nuevo. -->
+  <div class="tipo" id="catwrap" style="display:none">
+    <label style="font-size:12px;color:#94a3b8;letter-spacing:1px">CATEGORÍA</label>
+    <select id="catsel" style="background:var(--card2,#12132a);color:var(--txt,#e2e8f0);
+      border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:6px 10px;
+      font-family:inherit;font-size:14px;font-weight:600;cursor:pointer"></select>
   </div>
 
   <div class="zona" id="zona" onclick="document.getElementById('sel').click()">
@@ -92,8 +111,12 @@ input[type=file]{display:none}
 
 </div>
 
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
 <script src="datos_seguros.js" onerror="void 0"></script>
 <script src="firebase.js"></script>
+<script src="firebase_por_categoria.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════════
    El archivo se deja esperando en la base. Un robot en la nube lo levanta,
@@ -143,7 +166,7 @@ function subir(archivo){
   var elegido = document.querySelector('input[name=tipo]:checked');
   var tipo = elegido ? elegido.value : 'partido';
   MIOS[id] = { nombre: archivo.name, peso: archivo.size, estado: 'pendiente',
-               subido: Date.now(), tipo: tipo };
+               subido: Date.now(), tipo: tipo, categoria: catActual() };
   pintar();
 
   var fr = new FileReader();
@@ -154,7 +177,7 @@ function subir(archivo){
     try{
       fbSet('pendientes/' + id, { nombre: archivo.name, datos: b64, peso: archivo.size,
                                   subido: Date.now(), autor: quien, estado: 'pendiente',
-                                  tipo: tipo });
+                                  tipo: tipo, categoria: catActual() });
       vigilar(id);
     }catch(e){
       MIOS[id].estado = 'error';
@@ -239,6 +262,33 @@ document.getElementById('sel').addEventListener('change', function(ev){
 
 pintar();
 try{ traerEstado(); }catch(e){}
+
+/* ══ Las categorias del club ═══════════════════════════════════════════════
+   Salen de config_club.json, donde el club declara las que tiene. Si no hay
+   ninguna declarada —el caso normal, un club con un solo equipo— el selector
+   ni aparece y todo sigue como antes. */
+function catActual(){
+  var s = document.getElementById('catsel');
+  return (s && s.value) ? s.value : 'Primera';
+}
+(function(){
+  try{
+    var cats = (window.CONFIG_CLUB && window.CONFIG_CLUB.categorias) || null;
+    if(!cats){
+      /* tambien se aceptan escritas en el propio archivo del club */
+      cats = window.CATEGORIAS_CLUB || null;
+    }
+    if(!cats || cats.length < 2) return;      /* una sola: no se muestra */
+    var sel = document.getElementById('catsel');
+    var wrap = document.getElementById('catwrap');
+    if(!sel || !wrap) return;
+    sel.innerHTML = cats.map(function(c){
+      return '<option value="'+c+'">'+c+'</option>';
+    }).join('');
+    wrap.style.display = '';
+  }catch(e){}
+})();
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>

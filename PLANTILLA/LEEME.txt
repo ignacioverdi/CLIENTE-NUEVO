@@ -1,0 +1,49 @@
+═══════════════════════════════════════════════════════════════════════════════
+   PONER LA PLANTILLA AL DÍA
+   Para que los clientes nuevos nazcan con todo lo del 2 y 3 de septiembre
+═══════════════════════════════════════════════════════════════════════════════
+
+   Copiá todo a  CLIENTE VOLEY STATS\PLANTILLA\  y corré en este orden:
+
+
+   1)  PASAR_DESCIFRADO.py
+       El descifrado por pedazos: los archivos grandes ya no cuelgan
+       el teléfono.
+
+   2)  ARREGLAR_VIDEOS_VACIO.py
+       Deja preparado datos_seguros.js para que las pantallas de
+       escritorio puedan pedir sus datos completos.
+
+   3)  PONER_LA_PLANTILLA_AL_DIA.py
+       Los seis arreglos de una:
+
+         · las pantallas de análisis esperan sus datos
+         · tres armadoras en los motores
+         · la pantalla de armado las lee
+         · dorsales "6" y "06" se juntan
+         · el plantel del club con la marca {{club}}
+
+   4)  NOMBRES_CORTOS.py
+       "CLUB SOCIAL, DEPORTIVO Y CULTURAL ARGENTINO DE CASTELAR"
+       pasa a decir "Castelar".
+
+   5)  REVISAR_ANTES_DE_PUBLICAR.py
+       Tiene que decir TODO EN ORDEN.
+
+   6)  LIMPIAR_REPO.bat
+       Borra los programas ya aplicados y sus respaldos.
+
+
+── LA PLANTILLA NO SE PUBLICA ────────────────────────────────────────────────
+
+   Se usa al dar de alta el próximo cliente. Los cambios viajan solos.
+
+
+── LO MISMO SIRVE PARA NÄFELS ────────────────────────────────────────────────
+
+   NÄFELS quedó atrasado respecto de GELP: le faltan las pantallas de
+   análisis, las tres armadoras y los nombres cortos.
+
+   Los mismos programas, en el mismo orden. Ahí sí, publicar al final.
+
+═══════════════════════════════════════════════════════════════════════════════

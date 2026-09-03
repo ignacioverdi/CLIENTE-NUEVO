@@ -1,5 +1,5 @@
 # ====================================================================
-#  VoleyIQ - VIGILAR PARTIDOS (cero clic)
+#  Volley-Stats - VIGILAR PARTIDOS (cero clic)
 #  Mira la carpeta donde DataVolley guarda los .dvw y, apenas aparece
 #  uno nuevo, lo copia al repo y lo sube solo. La nube hace el resto.
 #  Ya esta configurado para tu PC. Solo deja esta ventana abierta
@@ -23,7 +23,7 @@ if (!(Test-Path $CarpetaDataVolley)) {
   exit
 }
 
-Write-Host "VoleyIQ - vigilando partidos nuevos..." -ForegroundColor Green
+Write-Host "Volley-Stats - vigilando partidos nuevos..." -ForegroundColor Green
 Write-Host "Carpeta vigilada: $CarpetaDataVolley"
 Write-Host "Deja esta ventana abierta. (Ctrl+C para salir)"
 Write-Host ""

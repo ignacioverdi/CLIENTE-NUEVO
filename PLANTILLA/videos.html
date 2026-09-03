@@ -7,6 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <!-- El descifrador va SIEMPRE antes que los datos cifrados: si va
      despues, no los abre y la pantalla queda vacia sin dar error. -->
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
 <script src="datos_videos.js.enc" onerror="void 0"></script>
   <script src="datos_equipo.js.enc" onerror="void 0"></script>
@@ -122,6 +125,7 @@ body{background:var(--bg);font-family:'Barlow Condensed',sans-serif;color:var(--
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -479,7 +483,8 @@ function escHtml(s){ return String(s||'').replace(/'/g,"&#39;"); }
   else document.addEventListener('DOMContentLoaded',paint);
 })();
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

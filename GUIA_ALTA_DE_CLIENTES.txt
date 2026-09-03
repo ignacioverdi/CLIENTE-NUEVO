@@ -1,0 +1,295 @@
+═══════════════════════════════════════════════════════════════════════════════
+   ALTA DE UN CLIENTE NUEVO  ·  GUIA INTERNA
+   Volley-Stats · Ignacio Verdi
+═══════════════════════════════════════════════════════════════════════════════
+
+   Esto es para vos, no para el cliente. Al cliente se le entrega el
+   LEEME_PRIMERO.txt que queda dentro de su carpeta.
+
+   Todo pasa dentro de:
+
+       C:\Users\User\Desktop\CLIENTE VOLEY STATS\
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   ANTES DE EMPEZAR:  LO QUE TENES QUE PEDIRLE AL CLUB
+═══════════════════════════════════════════════════════════════════════════════
+
+   Sin esto no arranques, porque despues hay que rehacer cosas.
+
+     1. EL ESCUDO en PNG, con fondo transparente si se puede.
+        Cuanto mas grande mejor: de ahi salen los iconos de la app.
+
+     2. EL NOMBRE como quieren que aparezca.
+        El corto (GELP) y el completo (Club Gimnasia y Esgrima La Plata).
+
+     3. QUE CATEGORIAS van a usar.
+        Primera sola, o tambien formativas. Esto define el selector.
+
+     4. UN MAIL Y UNA CLAVE para el entrenador.
+        Es la primera cuenta, la que va a tener acceso a todo.
+
+     5. SU LIGA, SU PAIS y LOS RIVALES de la temporada.
+
+     6. LOS PARTIDOS que ya tengan scouteados de esta temporada, si tienen.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   PASO 1  ·  PREPARAR LOS DOS ARCHIVOS
+═══════════════════════════════════════════════════════════════════════════════
+
+   ── MARCA.txt ────────────────────────────────────────────────────────────
+
+       NOMBRE = GIMNASIA
+       NOMBRE_COMPLETO = CLUB GIMNASIA Y ESGRIMA
+       PIN = 1887
+       COLOR = AUTO
+       ENTRENADOR_MAIL = coach@gimnasia.com
+       ENTRENADOR_CLAVE = gimnasia2026
+       LIGA = Liga Femenina
+       PAIS = Argentina
+       RIVALES = Banco Provincia, River, Velez
+       CATEGORIAS = Primera, Sub-21, Sub-18
+       REPO =
+
+     >> COLOR = AUTO  saca el color del escudo. Si el club tiene uno propio,
+        ponelo asi:  COLOR = #0d3b8f
+
+     >> CATEGORIAS  define el selector de la app. Si dejas una sola, el
+        selector no aparece y todo funciona como siempre.
+        La PRIMERA es la principal: sus datos van en la raiz.
+
+     >> REPO vacio  se arma solo:  gimnasia-voley
+
+   ── escudo_cliente.png ───────────────────────────────────────────────────
+
+       Guardalo con ESE nombre exacto, en la misma carpeta.
+
+   ── PARTIDOS_DEL_CLUB\  (opcional) ───────────────────────────────────────
+
+       Si el club YA tiene partidos scouteados de esta temporada, poné los
+       .dvw en esa carpeta. El alta los copia solos a la carpeta del club.
+
+       Es un buzon temporal: sirve porque cuando das el alta, la carpeta
+       definitiva del club todavia no existe. Despues del alta la vaciás.
+
+       Si esta vacia no pasa nada: la app arranca sin datos y los partidos
+       se cargan cuando lleguen.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   PASO 2  ·  DAR EL ALTA
+═══════════════════════════════════════════════════════════════════════════════
+
+       DOBLE CLIC en  crear_cliente.py
+
+   Te muestra los datos y pide confirmacion. Deci que si y esperá.
+
+   ── QUE HACE SOLO, sin que toques nada ───────────────────────────────────
+
+       · copia la plantilla y le pone la marca del club
+       · aplica el escudo y genera todos los iconos
+       · deja las categorias declaradas
+       · crea las carpetas de partidos y entrenamientos
+       · crea el repositorio en GitHub y sube la app
+       · conecta Vercel y la publica
+       · genera la llave de cifrado de los datos
+       · crea la cuenta del entrenador
+       · crea el robot que procesa los partidos que suba el club
+       · carga los secretos del repositorio
+
+   ── AL TERMINAR te da ────────────────────────────────────────────────────
+
+       Repo:       https://github.com/<usuario>/<repo>
+       Web:        https://<repo>.vercel.app
+       Entra con:  el mail y la clave del entrenador
+
+   >> Anotá esos tres datos. Son los que le vas a pasar al club.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   PASO 3  ·  VERIFICAR ANTES DE ENTREGAR
+═══════════════════════════════════════════════════════════════════════════════
+
+   No se lo mandes al club sin hacer esto.
+
+   ── PRIMERO, EL VERIFICADOR ──────────────────────────────────────────────
+
+       Abri una consola y corré:
+
+           python VERIFICAR_CLIENTE.py https://<lo-que-te-dio-el-alta>
+
+       Revisa solo: las pantallas, la ayuda en los tres idiomas, el escudo,
+       los iconos, el funcionamiento sin internet, y que no hayan quedado
+       marcas ni restos de otro club.
+
+       Tiene que terminar con  TODO EN ORDEN.
+       Si marca algo, arreglalo antes de seguir.
+
+   ── DESPUES, MIRALO CON TUS OJOS ─────────────────────────────────────────
+
+     1. Abri la web EN INCOGNITO y entrá con la cuenta del entrenador.
+
+     2. Fijate que aparezca:
+          · el escudo del club arriba
+          · el signo de pregunta abajo a la derecha
+          · el selector de categorias, si declaraste mas de una
+
+     3. Tocá el "?" y cambiá el idioma con ES / EN / DE.
+
+     4. Entrá al dashboard. Va a decir que no hay partidos: es correcto.
+
+     5. Si declaraste formativas, cambiá de categoria y fijate que diga
+        "Todavia no hay partidos en Sub-21". Eso confirma que estan separadas.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   PASO 4  ·  CARGAR LO QUE YA TENGAN
+═══════════════════════════════════════════════════════════════════════════════
+
+   ── Si el club ya scouteó partidos de esta temporada ─────────────────────
+
+       1. copiá los .dvw a la carpeta que corresponda:
+
+              CLUBES\<club>\DVW <CLUB> 2026                 (Primera)
+              CLUBES\<club>\DVW <CLUB> SUB21 2026           (formativas)
+
+       2. DOBLE CLIC en  HACER_TODO.bat
+
+       3. publicar
+
+     >> Si los partidos los scouteó otra persona con sus propios codigos,
+        pasalos antes por la pantalla ASOCIAR CODIGOS de la app.
+
+   ── El fixture ───────────────────────────────────────────────────────────
+
+       Se carga desde el CALENDARIO de la app, a mano o con el boton de
+       importar. Despues tocá "Usar este fixture" para que el proximo rival
+       se vea en toda la app.
+
+   ── El plantel ───────────────────────────────────────────────────────────
+
+       Desde ALTA DE JUGADORES en la app.
+
+       >> Si ya cargaste un partido, tocá "Traer el plantel de un partido"
+          y elegí el .dvw: se cargan los jugadores con su dorsal y su
+          nombre. Vos solo completás los mails y las fechas.
+
+       Si no, se carga a mano: una fila por jugador con numero, mail y
+       fecha de nacimiento. La foto es opcional.
+
+     >> Si el club tiene varias categorias, elegi arriba a cual van ANTES
+        de cargarlos.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   PASO 5  ·  ENTREGAR
+═══════════════════════════════════════════════════════════════════════════════
+
+   ── AL ENTRENADOR ────────────────────────────────────────────────────────
+
+       · el link de la web
+       · su mail y su clave
+       · el LEEME_PRIMERO.txt que quedo en su carpeta
+
+   ── A LOS JUGADORES, cuando el DT los cargue ─────────────────────────────
+
+       No hay que escribir nada: al terminar de crear las cuentas, el alta
+       muestra el mensaje listo para copiar y pegar en el grupo, con el link,
+       la clave y el instructivo de instalacion.
+
+   Y decile tres cosas:
+
+       1. Que la abra en el celular y la agregue a la pantalla de inicio.
+          Ahi queda como app, con su escudo, y funciona sin internet.
+
+       2. Que el signo de pregunta explica cada pantalla.
+
+       3. Que despues de cada partido solo tiene que subir el .dvw desde
+          la app. El resto se hace solo.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   DESPUES:  CUANDO ACTUALIZAS UN CLIENTE QUE YA EXISTE
+═══════════════════════════════════════════════════════════════════════════════
+
+   Cada vez que mejoramos algo, para pasarselo a un cliente:
+
+       1. copiá los archivos nuevos a  PLANTILLA\
+
+       2. VERIFICA que llegaron. Este paso ahorra vueltas:
+
+              findstr /c:"ayuda.js" "...\PLANTILLA\dashboard.html"
+
+          Si no devuelve nada, los archivos no llegaron. No sigas.
+
+       3. DOBLE CLIC en  ACTUALIZAR_CLIENTE.py  y elegi el club
+
+       4. si llegaron motores nuevos (update_db, gen_plan_partido):
+              DOBLE CLIC en  HACER_TODO.bat
+
+       5. publicar
+
+   >> ACTUALIZAR_CLIENTE respeta los datos del club: solo pisa los programas
+      y las pantallas. Los partidos, el plantel y la llave quedan intactos.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   SI ALGO SALE MAL
+═══════════════════════════════════════════════════════════════════════════════
+
+   ── "no pude crear el proyecto en Vercel" ────────────────────────────────
+      La app YA quedo en GitHub. Entrá a vercel.com > Add New > Project y
+      elegi el repositorio. Todo lo demas ya esta hecho.
+
+   ── "el robot se creo pero NO quedo habilitado" ──────────────────────────
+      Entrá a Firebase > Realtime Database y cargá a mano las dos lineas que
+      te muestra en pantalla. Sin eso el club no puede subir partidos desde
+      la app.
+
+   ── "No pude cargar los secretos" ────────────────────────────────────────
+      Entrá al repositorio del cliente > Settings > Secrets and variables >
+      Actions, y cargá los que te lista.
+
+   ── La web no muestra los cambios ────────────────────────────────────────
+      Espera 2 minutos y abrí EN INCOGNITO. La app guarda copias por su
+      cuenta y una ventana normal puede mostrarte la version vieja.
+
+   ── Algo se rompio despues de actualizar ─────────────────────────────────
+      ACTUALIZAR_CLIENTE deja un respaldo antes de pisar nada. Esta en la
+      carpeta del club, con la fecha en el nombre.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   LAS HERRAMIENTAS, POR SI HACEN FALTA
+═══════════════════════════════════════════════════════════════════════════════
+
+   Todas viven en la carpeta del club y se corren con doble clic. Todas
+   muestran que van a hacer y piden permiso antes de tocar nada.
+
+       HACER_TODO.bat            procesa los partidos y publica
+       AUDITAR.py                compara los numeros contra los .dvw
+       LIMPIAR.py                borra las copias de trabajo
+       LIMPIEZA_A_FONDO.py       saca lo que ya no sirve de la carpeta
+       PONER_AYUDA.py            pone el "?" en las pantallas
+       CONECTAR_SELECTOR.py      conecta el selector de categorias
+       SOLTAR_TEMPORADAS.py      deja las temporadas archivadas independientes
+       ARREGLAR_ENCABEZADOS.py   arregla los titulos que se encimaban
+       ARCHIVAR_TEMPORADA.bat    cierra la temporada y empieza la siguiente
+
+   >> PONER_AYUDA y CONECTAR_SELECTOR ya no hacen falta en un alta nueva:
+      la plantilla los trae puestos. Estan por si alguna vez una pantalla
+      queda suelta.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+   EL RESUMEN, EN CINCO LINEAS
+═══════════════════════════════════════════════════════════════════════════════
+
+       1. MARCA.txt + escudo_cliente.png  (+ partidos, si tiene)
+       2. crear_cliente.py
+       3. VERIFICAR_CLIENTE.py  →  TODO EN ORDEN
+       4. cargar el plantel desde el .dvw
+       5. entregar link + clave + LEEME_PRIMERO
+
+═══════════════════════════════════════════════════════════════════════════════

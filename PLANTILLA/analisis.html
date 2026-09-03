@@ -14,7 +14,15 @@ else   { w('datos_partidos.js'); w('datos_historial.js'); }
 })();</script>
 <!-- El lector va PRIMERO: los cifrados que se carguen antes no tienen
      quien los abra y el navegador los descarta. -->
-  <script src="datos_seguros.js"></script>
+  <!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
+<script src="datos_seguros.js"></script>
 <script src="filtro_tipo.js" onerror="void 0"></script>
   <script src="datos_baterias.js.enc" onerror="void 0"></script>
   <script src="objetivos_config.js" onerror="void 0"></script>
@@ -100,9 +108,9 @@ body{background:var(--bg);font-family:'Barlow Condensed',sans-serif;color:var(--
 .cancha-modal-hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:420px;margin-bottom:12px}
 .cancha-modal-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#e2e8f0}
 .cancha-modal-close{padding:6px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#94a3b8;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase}
-.cancha-modal-info{font-size:12px;color:#64748b;letter-spacing:.8px;text-align:center;max-width:360px;margin-bottom:10px}
+.cancha-modal-info{font-size:12px;color:#94a3b8;letter-spacing:.8px;text-align:center;max-width:360px;margin-bottom:10px}
 .cancha-modal-legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:12px}
-.cml-item{display:flex;align-items:center;gap:6px;font-size:10px;color:#64748b;letter-spacing:.8px;text-transform:uppercase}
+.cml-item{display:flex;align-items:center;gap:6px;font-size:10px;color:#94a3b8;letter-spacing:.8px;text-transform:uppercase}
 .cml-dot{width:20px;height:3px;border-radius:2px}
 /* Botones DV4 clickeables */
 .dv4-cod-btn{
@@ -213,6 +221,7 @@ window.OBJETIVOS_CONFIG={metas:{
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -247,11 +256,11 @@ function setsDelRival(res){ return (res && parseInt(res.rival,10)) || 0; }
 </script>
 </head>
 <body>
-<div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
+<div class="header-right" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
 
 
 <div class="header">
-  <a href="dashboard.html" class="back-btn" style="text-decoration:none;padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#475569;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-right:8px">← Dashboard</a>
+  <a href="dashboard.html" class="back-btn" style="text-decoration:none;padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#8395ac;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-right:8px">← Dashboard</a>
 <div style="display:flex;align-items:center;gap:14px;">
     <a href="index.html" class="back-btn">← Inicio</a>
     <button onclick="showHeatmapMenu()" style="background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);color:#F97316;padding:6px 14px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;cursor:pointer;letter-spacing:1px">🔥 HEAT MAPS</button>
@@ -1166,7 +1175,7 @@ function canchaDrawAttack(ctx,cod,destinos,pct){
 function statPill(label,value,color,title){
   return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px;flex:1;padding:7px 6px;background:rgba(255,255,255,.04);border-radius:7px;border:1px solid rgba(255,255,255,.07)" title="'+title+'">'+
     '<div style="font-family:Barlow Condensed,sans-serif;font-size:19px;font-weight:900;line-height:1;color:'+color+'">'+value+'</div>'+
-    '<div style="font-size:9px;color:#64748b;letter-spacing:1px;text-transform:uppercase">'+label+'</div>'+
+    '<div style="font-size:9px;color:#94a3b8;letter-spacing:1px;text-transform:uppercase">'+label+'</div>'+
   '</div>';
 }
 
@@ -1346,7 +1355,7 @@ function getPosJugadores(){
   // Returns {PUNTA:[...], CENTRAL:[...], OPUESTO:[...], ARMADOR:[...], LIBERO:[...]}
   var jugs = getJugadores(PARTIDO_IDX);
   var byPos = {};
-  var jugs = typeof Nafels_JUGADORES !== 'undefined' ? Nafels_JUGADORES : [];
+  var jugs = typeof PLANTEL_{{CLUB}} !== 'undefined' ? PLANTEL_{{CLUB}} : [];
   jugs.forEach(function(j){
     var info = jugs.find(function(c){ return c.num === j.c; });
     var pos = info ? info.pos : 'OTRO';
@@ -1363,7 +1372,7 @@ function mkThead(cols){
 }
 
 function mkRow(jug, cols, highlight){
-  var jugs = typeof Nafels_JUGADORES !== 'undefined' ? Nafels_JUGADORES : [];
+  var jugs = typeof PLANTEL_{{CLUB}} !== 'undefined' ? PLANTEL_{{CLUB}} : [];
   var info = jugs.find(function(c){ return c.num === jug.c; });
   var nm = info ? info.nombre.replace(/^\d+\s*/,'') : jug.n;
   var POS_COLOR = {ARMADOR:'#F59E0B',OPUESTO:'#F97316',PUNTA:'#22C55E',CENTRAL:'#F97316',LIBERO:'#06B6D4'};
@@ -1464,7 +1473,7 @@ function tablaComparativa(jugs){
 
 // ── RANKINGS ──────────────────────────────────────────────────────────
 function tablaRanking(jugs){
-  var jugs = typeof Nafels_JUGADORES !== 'undefined' ? Nafels_JUGADORES : [];
+  var jugs = typeof PLANTEL_{{CLUB}} !== 'undefined' ? PLANTEL_{{CLUB}} : [];
   var POS_COLOR = {ARMADOR:'#F59E0B',OPUESTO:'#F97316',PUNTA:'#22C55E',CENTRAL:'#F97316',LIBERO:'#06B6D4'};
 
   function rankSection(title, icon, color, jugsFilt, valFn, label, subFn, subLabel){
@@ -1483,7 +1492,7 @@ function tablaRanking(jugs){
       var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
       var barW = Math.max(5, Math.min(100, Math.abs(val)/Math.abs(valFn(sorted[0]))*100));
       h += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
-      h += '<div style="width:24px;text-align:center;font-size:14px">'+(medal||'<span style="font-size:11px;color:#475569">'+(i+1)+'</span>')+'</div>';
+      h += '<div style="width:24px;text-align:center;font-size:14px">'+(medal||'<span style="font-size:11px;color:#8395ac">'+(i+1)+'</span>')+'</div>';
       h += '<div style="flex:1">';
       h += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">';
       h += '<span style="font-size:12px;font-weight:700;color:#e2e8f0"><span style="color:'+posCol+';margin-right:4px">#'+j.c+'</span>'+nm+'</span>';
@@ -1492,7 +1501,7 @@ function tablaRanking(jugs){
       h += '<div style="height:4px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden">';
       h += '<div style="height:100%;width:'+barW+'%;background:'+color+';border-radius:2px;transition:width .3s"></div>';
       h += '</div>';
-      if(sub!==null) h += '<div style="font-size:9px;color:#475569;margin-top:2px">'+subLabel+': '+sub+'</div>';
+      if(sub!==null) h += '<div style="font-size:9px;color:#8395ac;margin-top:2px">'+subLabel+': '+sub+'</div>';
       h += '</div></div>';
     });
     h += '</div>';
@@ -1551,7 +1560,7 @@ function tablaRanking(jugs){
 .hm-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px;border-radius:14px;text-decoration:none;color:#fff;transition:all .18s;border:1px solid}
 .hm-card:hover{transform:translateY(-2px);filter:brightness(1.15)}
 .hm-icon{font-size:28px}.hm-lbl{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px}
-.hm-sub{font-size:9px;color:#64748b;text-align:center}
+.hm-sub{font-size:9px;color:#94a3b8;text-align:center}
 </style>
 <div id="hm-overlay" onclick="if(event.target===this)closeHeatmapMenu()">
   <div class="hm-box">
@@ -1563,7 +1572,7 @@ function tablaRanking(jugs){
       <a class="hm-card" href="hm_armador.html?equipo={{club}}"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
       <a class="hm-card" href="hm_defensa.html" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🧤</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Por rival</span></a><a class="hm-card" href="hm_bloqueo.html" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🧱</span><span class="hm-lbl" style="color:#818CF8">BLOQUEO</span><span class="hm-sub">EFF · Zona del ataque · Combos</span></a>
     </div>
-    <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">{{LIGA}} 2026/27 · temporada en curso</div>
+    <div style="margin-top:14px;font-size:10px;color:#8395ac;text-align:center">{{LIGA}} 2026/27 · temporada en curso</div>
   </div>
 </div>
 <script>
@@ -1571,7 +1580,7 @@ function showHeatmapMenu(){ document.getElementById('hm-overlay').classList.add(
 function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.remove('open'); }
 </script>
 
-<script src="chat_club.js"></script>
+<script src="chat_{{club}}.js"></script>
 <script src="lang.js"></script>
 <script src="temporadas_menu.js"></script>
 
@@ -1652,7 +1661,7 @@ function cell(v){ return (v===null||v===undefined)?'—':(v+'%'); }
 function colorEff(v){ if(v===null||v===undefined) return '#475569'; return v>=40?'#22c55e':v>=20?'#86efac':v>=0?'#e2e8f0':'#ef4444'; }
 
 function diff(a,b){
-    if(a===null||a===undefined||b===null||b===undefined) return '<span style="color:#475569">—</span>';
+    if(a===null||a===undefined||b===null||b===undefined) return '<span style="color:#8395ac">—</span>';
     var d=a-b, col=d>=5?'#22c55e':d>=0?'#86efac':d>=-8?'#fbbf24':'#ef4444';
     return '<span style="color:'+col+';font-weight:800">'+(d>0?'+':'')+d+'</span>';
   }
@@ -1712,10 +1721,10 @@ function renderObjetivosJugador(cid, jugVals, eqVals){
   var rows=[{label:'Equipo',vals:eqVals,isJug:false}];
   var html='<div style="font-family:Barlow Condensed,sans-serif;padding:4px 0 8px">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">'
-    +'<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#64748b">MI PERFORMANCE VS OBJETIVO</div>'
+    +'<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#94a3b8">MI PERFORMANCE VS OBJETIVO</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
     +[['#22c55e','Objetivo'],['#86efac','Cerca'],['#fbbf24','Neutro'],['#ef4444','Lejos']].map(function(x){
-      return'<div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#64748b"><div style="width:7px;height:7px;border-radius:50%;background:'+x[0]+'"></div>'+x[1]+'</div>';
+      return'<div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#94a3b8"><div style="width:7px;height:7px;border-radius:50%;background:'+x[0]+'"></div>'+x[1]+'</div>';
     }).join('')+'</div></div>'
     +'<div style="display:flex;gap:8px;width:100%;margin-bottom:4px">'
     +'<div style="width:64px;flex-shrink:0"></div>'
@@ -1768,7 +1777,7 @@ function objBuildSubfiltro(){
   if(!META){ row.style.display='none'; return; }
   row.innerHTML=''; row.style.display='flex'; row.style.alignItems='center';
   var lbl=document.createElement('span');
-  lbl.style.cssText='font-size:9px;color:#475569;letter-spacing:2px;text-transform:uppercase;margin-right:6px';
+  lbl.style.cssText='font-size:9px;color:#8395ac;letter-spacing:2px;text-transform:uppercase;margin-right:6px';
   lbl.textContent='VER:';
   row.appendChild(lbl);
   var sel=document.createElement('select');
@@ -1907,7 +1916,7 @@ function _subFiltros(cual){
          'padding:5px 12px;border-radius:7px;cursor:pointer;' +
          'font-family:Bebas Neue,sans-serif;font-size:12px;letter-spacing:1.5px;' +
          (on ? ('background:' + d.c + '22;border:1px solid ' + d.c + '66;color:' + d.c)
-             : 'background:transparent;border:1px solid rgba(255,255,255,.08);color:#64748b') +
+             : 'background:transparent;border:1px solid rgba(255,255,255,.08);color:#94a3b8') +
          '">' + d.o[i][1] + '</button>';
   }
   return h + '</div>';
@@ -1935,6 +1944,7 @@ try{
   }
 }catch(e){}
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

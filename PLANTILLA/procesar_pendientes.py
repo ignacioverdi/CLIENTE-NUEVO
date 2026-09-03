@@ -91,7 +91,40 @@ def borrar(ruta, tok):
     return llamar('%s/%s%s.json?auth=%s' % (FB_URL, RAIZ, ruta, tok), None, 'DELETE')
 
 
-def carpeta_para(tipo, club=''):
+def _categorias_conocidas():
+    """Las categorias que el club tiene cargadas, leidas de sus carpetas.
+
+    Se deducen en vez de fijarlas: cada club usa sus nombres —Sub-21, Cadetes,
+    Menores— y una lista escrita a mano siempre se queda corta.
+    """
+    import glob as _g
+    import re as _re
+    fuera = set()
+    for d in _g.glob(os.path.join(AQUI, 'DVW*')):
+        if not os.path.isdir(d):
+            continue
+        n = os.path.basename(d).upper()
+        n = _re.sub(r'^DVW\s+', '', n)
+        n = _re.sub(r'\s*ENTRENAMIENTOS?\s*', '', n)
+        n = _re.sub(r'\s*\d{4}\s*$', '', n).strip()
+        for parte in n.split():
+            if _re.match(r'^(SUB|CAT|U)\d{1,2}$', parte) or parte in ('CADETES', 'MENORES', 'INFANTILES'):
+                fuera.add(parte)
+    return fuera
+
+
+def _norm_cat(cat):
+    """El nombre corto de la categoria, en mayusculas y sin adornos.
+
+    "Sub-18", "sub 18" y "SUB18" son la misma. Sin normalizar, cada forma de
+    escribirla crearia su propia carpeta y los datos quedarian partidos.
+    """
+    import re as _re
+    c = _re.sub(r'[^A-Za-z0-9]', '', (cat or '')).upper()
+    return c or 'PRIMERA'
+
+
+def carpeta_para(tipo, club='', categoria=''):
     """Un partido y un entrenamiento van a carpetas distintas y se procesan
        distinto. Si se mezclan, los números salen mal: por eso el entrenador
        elige qué está subiendo y acá lo respetamos.
@@ -105,6 +138,27 @@ def carpeta_para(tipo, club=''):
     grupo = [d for d in todas if es_ent(d)] if tipo == 'entrenamiento' \
             else [d for d in todas if not es_ent(d)]
 
+    # ══ La categoria ═══════════════════════════════════════════════════════
+    # Un club puede tener Primera, Sub-18, Sub-16... Cada una es un equipo
+    # distinto: mezclar sus partidos daria estadisticas sin sentido —el
+    # porcentaje de ataque de una Sub-16 con el de Primera—.
+    #
+    # Se separan por carpeta, igual que los entrenamientos: "DVW SUB18 2026".
+    # Primera no lleva marca, para no cambiarle nada a los clubes que ya
+    # estan andando con una sola categoria.
+    _cat = _norm_cat(categoria)
+    if _cat and _cat != 'PRIMERA':
+        _con = [d for d in grupo if _cat in os.path.basename(d).upper()]
+        if _con:
+            grupo = _con
+        else:
+            grupo = []          # todavia no existe: se crea abajo
+    else:
+        # Primera: se descartan las carpetas de otras categorias
+        _otras = _categorias_conocidas()
+        grupo = [d for d in grupo
+                 if not any(c in os.path.basename(d).upper() for c in _otras)]
+
     if grupo:
         # dentro del grupo, la del año más alto
         return sorted(grupo, key=lambda d: (re.findall(r'(\d{4})', d) or ['0'])[-1])[-1]
@@ -115,8 +169,10 @@ def carpeta_para(tipo, club=''):
     t = time.localtime()
     anio = t.tm_year + 1 if t.tm_mon >= 10 else t.tm_year
     marca = (club or _club_de_la_app() or '').upper().strip()
-    nombre = ('DVW ENTRENAMIENTOS %s %d' if tipo == 'entrenamiento' else 'DVW %s %d')
-    nombre = (nombre % (marca, anio)).replace('  ', ' ').strip()
+    _sufijo = ('' if _cat == 'PRIMERA' else ' ' + _cat)
+    nombre = ('DVW ENTRENAMIENTOS %s%s %d' if tipo == 'entrenamiento'
+              else 'DVW %s%s %d')
+    nombre = (nombre % (marca, _sufijo, anio)).replace('  ', ' ').strip()
     ruta = os.path.join(AQUI, nombre)
     try:
         os.makedirs(ruta, exist_ok=True)
@@ -196,7 +252,10 @@ def main():
         if not nombre.lower().endswith('.dvw'):
             nombre += '.dvw'
         tipo = (p.get('tipo') or 'partido').lower()
-        destino = carpeta_para(tipo, CLUB_ID)
+        # La categoria la elige el entrenador al subir el partido. Si no vino
+        # —una app vieja, o un club con una sola categoria— es Primera.
+        cat = (p.get('categoria') or p.get('cat') or '').strip()
+        destino = carpeta_para(tipo, CLUB_ID, cat)
         if not destino:
             escribir('pendientes/%s/estado' % k, 'error', tok)
             escribir('pendientes/%s/detalle' % k, 'no encuentro la carpeta', tok)

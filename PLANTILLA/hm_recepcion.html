@@ -56,6 +56,14 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 .fsel:last-child{margin-bottom:0}
 .fsel option{background:#0D0E1A}
 </style>
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
 <script src="filtro_tipo.js" onerror="void 0"></script>
   <script src="liga_data.js.enc"></script>
@@ -64,13 +72,14 @@ html,body{background:var(--bg);color:var(--text);font-family:"Barlow Condensed",
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
 <link rel="stylesheet" href="movil.css">
 </head>
 <body>
-<div class="header-right" style="position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
+<div class="header-right" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto"><div id="lang-wrap" style="display:flex;gap:4px"></div></div>
 
 <div class="hdr"><div><div class="hdr-t">{{CLUB}} — ANALISIS DE RECEPCION 2026</div><div class="hdr-s">26 partidos NLA · EFF = (1x# + 0.5x+ - 0.5x/ - 1x=) / total</div></div>
 </div>
@@ -455,6 +464,7 @@ document.addEventListener('DOMContentLoaded', _initModoBtns);
 </script>
 <script src="lang.js"></script>
 <script src="temporadas_menu.js"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

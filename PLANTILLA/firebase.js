@@ -14,7 +14,10 @@
 var FB_URL  = '{{FIREBASE_URL}}';
 var FB_KEY  = '{{FIREBASE_KEY}}';   // clave pública del proyecto
 var FB_DOM  = '{{club}}.app';       // dominio interno de las cuentas de jugadores
-var FB_CLUB = 'NÄFELS';
+/* El nombre que se muestra en la pantalla de entrada. Estaba fijo en
+   'NÄFELS' y todos los clientes lo heredaban: GELP mostraba NÄFELS en su
+   propio login. Ahora sale de la marca del club. */
+var FB_CLUB = '{{CLUB}}';
 
 function fbKey(path){
   return 'fb_' + path.replace(/[^a-zA-Z0-9]/g, '_');
@@ -88,6 +91,20 @@ function _fbGuardarSes(s){
 }
 /* Si la cuenta es de jugador, el rol queda atado a la cuenta y no a lo que
    haya quedado guardado en el navegador. El staff conserva su rol del inicio. */
+/* ── A QUE CATEGORIA PERTENECE EL JUGADOR ─────────────────────────────────
+   El jugador ve SOLO su categoria. Cual es sale de jugador_cat, que se
+   guarda cuando se le da el alta. Se pregunta al entrar y queda anotada,
+   asi cada pantalla no tiene que volver a consultarla.
+
+   Si no la tiene anotada —planteles cargados antes de que existieran las
+   categorias— no se toca nada y ve la primera, como siempre. */
+/* Desactivada: era LO UNICO que un jugador hacia y un entrenador no,
+   y ahi estaban casi todos los problemas. Ahora los dos corren el
+   mismo codigo. */
+function _fbCategoriaJugador(){ return; }
+
+
+
 function _fbSincronizarRol(){
   try{
     if(!FB_SES || !FB_SES.email) return;
@@ -241,13 +258,17 @@ function _fbRegistrarAcceso(){
   }).catch(function(){});
 }
 
+var _fbCtrlHecho = 0;
 function _fbControlSesion(){
   if(!FB_SES || !FB_SES.uid) return Promise.resolve();
+  if(_fbCtrlHecho && (Date.now() - _fbCtrlHecho) < 60000) return Promise.resolve();
+  _fbCtrlHecho = Date.now();
   return _fbSufijo().then(function(q){
     return fetch(fbURL('sesiones', q)).then(function(r){ return r.json(); });
   }).then(function(d){
     if(!d || d.error) return _fbRegistrarDisp();
-    var emitido = FB_SES.emitido || 0;
+    /* sin fecha, se trata como recien creada: en la duda se deja entrar */
+        var emitido = FB_SES.emitido || Date.now();
     var disp    = _fbDispId();
     var corte   = parseInt(d.corte, 10) || 0;
     if(d.corte_uid && d.corte_uid[FB_SES.uid])
@@ -263,7 +284,18 @@ function _fbControlSesion(){
   }).catch(function(){});   /* sin internet no echamos a nadie */
 }
 
+var _fbRolEnCurso = null, _fbRolHecho = 0;
 function _fbCargarRol(){
+  /* el rol no cambia mientras se usa la app: alcanza una vez por minuto */
+  if(_fbRolEnCurso) return _fbRolEnCurso;
+  if(_fbRolHecho && (Date.now() - _fbRolHecho) < 60000) return Promise.resolve();
+  _fbRolEnCurso = _fbCargarRolReal();
+  var _s = function(){ _fbRolEnCurso = null; _fbRolHecho = Date.now(); };
+  _fbRolEnCurso.then(_s, _s);
+  return _fbRolEnCurso;
+}
+
+function _fbCargarRolReal(){
   if(!FB_SES || !FB_SES.uid) return Promise.resolve();
   return _fbSufijo().then(function(q){
     /* Rol (coach/at/pf/player) y numero de camiseta, los dos atados al UID.
@@ -297,27 +329,51 @@ function fbLogout(){
 }
 
 /* ── token: pide uno nuevo cuando está por vencer ───────────────────────── */
+var _fbEnCurso = null;
 function _fbRefrescar(){
   if(!FB_SES || !FB_SES.refreshToken) return Promise.reject(new Error('sin sesion'));
-  return fetch('https://securetoken.googleapis.com/v1/token?key=' + FB_KEY, {
+  if(_fbEnCurso) return _fbEnCurso;
+  var p = fetch('https://securetoken.googleapis.com/v1/token?key=' + FB_KEY, {
       method:'POST',
       headers:{'Content-Type':'application/x-www-form-urlencoded'},
       body:'grant_type=refresh_token&refresh_token=' + encodeURIComponent(FB_SES.refreshToken)
     })
     .then(function(r){ return r.json(); })
     .then(function(d){
-      if(!d || !d.id_token) throw new Error('sesion vencida');
-      _fbGuardarSes({emitido:(FB_SES && FB_SES.emitido) || 0,   /* se conserva: NO se renueva al refrescar */ idToken:d.id_token, refreshToken:d.refresh_token,
+      if(!d || !d.id_token){
+        /* un token que Google rechaza no se arregla reintentando */
+        try{ _fbGuardarSes(null); }catch(e){}
+        throw new Error('sesion vencida');
+      }
+      _fbGuardarSes({idToken: d.id_token,
+                     refreshToken: d.refresh_token || FB_SES.refreshToken,
+                     emitido:(FB_SES && FB_SES.emitido) || 0,   /* se conserva: NO se renueva al refrescar */ idToken:d.id_token, refreshToken:d.refresh_token,
                      vence:Date.now() + (parseInt(d.expires_in,10)||3600)*1000 - 60000,
                      email:FB_SES.email, uid:d.user_id || FB_SES.uid});
       return FB_SES.idToken;
-    });
+    })
+    .then(function(t){ _fbEnCurso = null; return t; },
+          function(e){ _fbEnCurso = null; throw e; });
+
+  _fbEnCurso = p;
+  return p;
 }
 function _fbToken(){
   if(!FB_SES) return Promise.resolve('');
   if(FB_SES.idToken && Date.now() < (FB_SES.vence||0)) return Promise.resolve(FB_SES.idToken);
   return _fbRefrescar().catch(function(){ return ''; });
 }
+/* Freno general: si algo se dispara en bucle, se corta antes de que el
+   telefono se quede sin recursos. El uso normal no llega ni cerca. */
+var _fbCuenta = 0, _fbCortado = false;
+function _fbCorta(){
+  if(_fbCortado) return true;
+  if(++_fbCuenta > 1200){ _fbCortado = true;
+    try{ console.warn('Volley-Stats: demasiados pedidos, se corto.'); }catch(e){}
+    return true; }
+  return false;
+}
+
 function _fbSufijo(){
   return _fbToken().then(function(t){ return t ? ('?auth=' + encodeURIComponent(t)) : ''; });
 }
@@ -418,7 +474,7 @@ function _fbHayLlaveGuardada(){
 function _fbArrancar(){
   if(_fbListo) return _fbListo;
   FB_SES = _fbLeerSes();
-  _fbSincronizarRol();
+  _fbSincronizarRol(); _fbCategoriaJugador();
   _fbListo = new Promise(function(resolve){
     function pedir(){
       if(document.readyState === 'loading')
@@ -459,6 +515,7 @@ _fbArrancar();
 
 /* ── API de siempre, ahora firmada (y con los permisos por rol intactos) ── */
 function fbSet(path, value){
+  if(_fbCorta()) return Promise.resolve();
   if(vbEdicionBloqueada(path)){ try{ console.warn('[permisos] escritura bloqueada para jugador:', path); }catch(e){} return; }
   try{ localStorage.setItem(fbKey(path), JSON.stringify(value)); }catch(e){}
   _fbArrancar().then(_fbSufijo).then(function(q){
@@ -471,6 +528,7 @@ function fbSet(path, value){
 }
 
 function fbGet(path, callback){
+  if(_fbCorta()) return undefined;
   function local(){
     try{
       var v = localStorage.getItem(fbKey(path));
@@ -492,6 +550,7 @@ function fbGet(path, callback){
 }
 
 function fbPush(path, value){
+  if(_fbCorta()) return Promise.resolve();
   if(vbEdicionBloqueada(path)){ try{ console.warn('[permisos] escritura bloqueada para jugador:', path); }catch(e){} return; }
   try{
     var arr = JSON.parse(localStorage.getItem(fbKey(path)) || '[]');

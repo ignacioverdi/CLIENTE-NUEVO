@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>EQUIPO — Axpo Volley {{Club}}</title>
+<title>EQUIPO — {{CLUB}} VOLEY</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="lang.js" onerror="void 0"></script>
 <script src="utils.js" onerror="void 0"></script>
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
   <script src="datos_equipo.js.enc" onerror="window.EQUIPO_DATA=null"></script>
   <script>abrirDatos();</script>
@@ -68,6 +71,7 @@ body{background:var(--bg);background-image:radial-gradient(ellipse at 20% 20%,rg
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -110,6 +114,28 @@ var EQUIPO_DEMO = {
 };
 
 var DATA = window.EQUIPO_DATA || EQUIPO_DEMO;
+
+/* ── LOS DATOS PUEDEN LLEGAR DESPUES ────────────────────────────────────
+   La linea de arriba corre UNA vez al cargar. Si el archivo cifrado
+   todavia no termino de descifrarse, la pantalla quedaba vacia para
+   siempre, aunque los datos llegaran un instante despues.
+
+   Este vigia mira la variable cada 200 ms. Apenas aparece, la actualiza,
+   redibuja la pantalla y se apaga. A los 8 segundos se rinde solo. */
+(function esperarDatos(){
+  var _i = 0, _t = setInterval(function(){
+    if(++_i > 40){ clearInterval(_t); return; }
+    if(window.EQUIPO_DATA && window.EQUIPO_DATA !== DATA){
+      DATA = window.EQUIPO_DATA;
+      clearInterval(_t);
+      try{ if(typeof render==='function') render();
+           else if(typeof pintar==='function') pintar();
+           else if(typeof dibujar==='function') dibujar();
+           else if(typeof cargar==='function') cargar();
+           else if(typeof init==='function') init(); }catch(e){}
+    }
+  }, 200);
+})();
 
 var POS_COLOR = {
   'ARMADOR':'#f59e0b','CENTRAL':'#f97316',
@@ -182,7 +208,7 @@ function render(){
   // Staff
   var staffGrid = document.getElementById('staff-grid');
   staffGrid.innerHTML = '';
-  (DATA.staff||[]).forEach(function(s){
+  (window.STAFF_CLUB || DATA.staff || []).forEach(function(s){
     var card = document.createElement('div');
     card.className = 'staff-card';
     card.innerHTML =
@@ -265,7 +291,7 @@ cargarCorrecciones(function(){
 .hm-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px;border-radius:14px;text-decoration:none;color:#fff;transition:all .18s;border:1px solid}
 .hm-card:hover{transform:translateY(-2px);filter:brightness(1.15)}
 .hm-icon{font-size:28px}.hm-lbl{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px}
-.hm-sub{font-size:9px;color:#64748b;text-align:center}
+.hm-sub{font-size:9px;color:#94a3b8;text-align:center}
 </style>
 <div id="hm-overlay" onclick="if(event.target===this)closeHeatmapMenu()">
   <div class="hm-box">
@@ -277,7 +303,7 @@ cargarCorrecciones(function(){
       <a class="hm-card" href="hm_armador.html?equipo={{club}}"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
       <a class="hm-card" href="hm_defensa.html" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🧤</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Por rival</span></a><a class="hm-card" href="hm_bloqueo.html" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🧱</span><span class="hm-lbl" style="color:#818CF8">BLOQUEO</span><span class="hm-sub">EFF · Zona del ataque · Combos</span></a>
     </div>
-    <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">{{LIGA}} 2026/27 · temporada en curso</div>
+    <div style="margin-top:14px;font-size:10px;color:#8395ac;text-align:center">{{LIGA}} 2026/27 · temporada en curso</div>
   </div>
 </div>
 <script>
@@ -285,9 +311,108 @@ function showHeatmapMenu(){ document.getElementById('hm-overlay').classList.add(
 function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.remove('open'); }
 </script>
 
-<script src="chat_club.js"></script>
+<script src="chat_{{club}}.js"></script>
 <script src="temporadas_menu.js"></script>
+<script src="ayuda.js"></script>
+
+<script>
+/* ══ EL CUERPO TECNICO ═══════════════════════════════════════════════════
+   Antes estaba escrito en el codigo: para cambiar un nombre habia que
+   editar el archivo y publicar. Ahora se carga y se edita desde la app,
+   como el plantel.
+
+   Se guarda en cuerpo_tecnico, que es un dato de EQUIPO: cada categoria
+   tiene el suyo. La Sub-18 puede tener otro entrenador que la Primera.
+
+   Editar es solo para el cuerpo tecnico. Un jugador lo ve y nada mas. */
+(function(){
+  var ROLES = ['Entrenador','Asistente','Preparador físico','Analista',
+               'Médico', 'Kinesiólogo', 'Manager', 'Otro'];
+  var ICONO = {'Entrenador':'📋','Asistente':'📝','Preparador físico':'💪',
+               'Analista':'📊','Médico':'🩺','Kinesiólogo':'🤕','Manager':'📎','Otro':'👤'};
+
+  function esStaff(){
+    try { return !window.VB_esEditor || VB_esEditor(); } catch(e){ return true; }
+  }
+
+  function pintar(){
+    if (typeof render === 'function') { try { render(); } catch(e){} }
+    var g = document.getElementById('staff-grid');
+    if (!g) return;
+    g.innerHTML = '';
+    (window.STAFF_CLUB || []).forEach(function(s, i){
+      var c = document.createElement('div');
+      c.className = 'staff-card';
+      c.innerHTML =
+        '<div class="staff-avatar">' + (s.icon || ICONO[s.rol] || '👤') + '</div>' +
+        '<div class="staff-nombre">' + (s.nombre || '') + '</div>' +
+        '<div class="staff-rol">' + (s.rol || '') + '</div>' +
+        (esStaff() ? '<button type="button" data-i="' + i + '" class="quitar-staff" ' +
+          'style="margin-top:8px;background:none;border:1px solid rgba(255,255,255,.14);' +
+          'color:#93a5c0;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer">' +
+          'Quitar</button>' : '');
+      g.appendChild(c);
+    });
+
+    if (esStaff()) {
+      var add = document.createElement('div');
+      add.className = 'staff-card';
+      add.style.cssText = 'border-style:dashed;cursor:pointer;opacity:.75';
+      add.innerHTML = '<div class="staff-avatar">＋</div>' +
+        '<div class="staff-nombre">Agregar</div>' +
+        '<div class="staff-rol">cuerpo técnico</div>';
+      add.onclick = agregar;
+      g.appendChild(add);
+    }
+
+    Array.prototype.forEach.call(g.querySelectorAll('.quitar-staff'), function(b){
+      b.onclick = function(){
+        var i = parseInt(b.getAttribute('data-i'), 10);
+        var quien = (window.STAFF_CLUB[i] || {}).nombre || '';
+        if (!confirm('¿Quitar a ' + quien + ' del cuerpo técnico?')) return;
+        window.STAFF_CLUB.splice(i, 1);
+        guardar();
+      };
+    });
+  }
+
+  function agregar(){
+    var nombre = prompt('Nombre y apellido:');
+    if (!nombre || !nombre.trim()) return;
+    var rol = prompt('Rol:\n\n' + ROLES.join('  ·  '), 'Entrenador');
+    if (!rol || !rol.trim()) return;
+    rol = rol.trim();
+    window.STAFF_CLUB = window.STAFF_CLUB || [];
+    window.STAFF_CLUB.push({ nombre: nombre.trim().toUpperCase(), rol: rol,
+                             icon: ICONO[rol] || '👤' });
+    guardar();
+  }
+
+  function guardar(){
+    try { fbSet('cuerpo_tecnico', window.STAFF_CLUB || []); } catch(e){}
+    pintar();
+  }
+
+  function cargar(){
+    if (!window.fbGet) { setTimeout(cargar, 300); return; }
+    fbGet('cuerpo_tecnico', function(d){
+      if (Array.isArray(d) && d.length) window.STAFF_CLUB = d;
+      else {
+        /* la primera vez toma los que estaban escritos en la pagina, para
+           que el club no arranque con la seccion vacia */
+        try { window.STAFF_CLUB = (DATA && DATA.staff) ? DATA.staff.slice() : []; }
+        catch(e){ window.STAFF_CLUB = []; }
+      }
+      pintar();
+    });
+  }
+
+  if (document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(cargar, 400); });
+  else setTimeout(cargar, 400);
+})();
+</script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

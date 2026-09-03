@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>WELLNESS — Axpo Volley {{Club}}</title>
+<title>WELLNESS — {{CLUB}} VOLEY</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--bg:#0a0f1a;--surface:#111827;--card:#0f1020;--card2:#151b2e;--border:rgba(255,255,255,.08);--b2:rgba(255,255,255,.13);
@@ -72,7 +76,7 @@
 <div class="wrap">
   <div class="header">
     <a href="index.html" class="back-btn">← Hub</a>
-    <div><div class="subtitle">Axpo Volley {{Club}}</div><h1>WELLNESS</h1></div>
+    <div><div class="subtitle">{{CLUB}} VOLEY</div><h1>WELLNESS</h1></div>
     <div class="badge">Estado físico diario</div>
   </div>
   <div class="topline"></div>
@@ -123,7 +127,15 @@
       <div class="card-ti">👥 Estado del equipo</div>
       <div class="card-sub">Quién llega bien y quién necesita atención</div>
       <div class="row2" style="margin-bottom:16px;max-width:420px">
-        <div><label class="fld">Día</label><input type="date" id="eqFecha"></div>
+        <div><label class="fld">Hasta el día</label><input type="date" id="eqFecha"></div>
+          <div><label class="fld">Período</label>
+            <select id="eqPeriodo">
+              <option value="1">Solo ese día</option>
+              <option value="7">Última semana</option>
+              <option value="15">Última quincena</option>
+              <option value="30">Último mes</option>
+            </select>
+          </div>
         <div><label class="fld">Sesión</label><select id="eqSes">
           <option value="">Todas</option><option>Pelota</option><option>Pesas</option><option>Partido</option></select></div>
       </div>
@@ -211,13 +223,23 @@ function feedback(p){
 function todayISO(){ var d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
 function roster(){
   /* El plantel sale de datos_equipo.js, que arma HACER_TODO con los .dvw.
-     Antes se pedia plantel_club.js, un archivo que NO EXISTE en la plantilla:
+     Antes se pedia plantel_{{club}}.js, un archivo que NO EXISTE en la plantilla:
      la pantalla quedaba sin jugadoras en todos los clubes nuevos. */
   var e = (window.EQUIPO_DATA && window.EQUIPO_DATA.jugadores) || null;
   if(e && e.length) return e;
-  return (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores) || [];
+  return (window.PLANTEL_{{CLUB}} && window.PLANTEL_{{CLUB}}.jugadores) || [];
 }
-function pname(j){ return (j.ap||'') + (j.nombre?' '+j.nombre.charAt(0)+'.':''); }
+function pname(j){
+  /* El plantel viejo traia el apellido en 'ap' y el nombre aparte, y esta
+     funcion armaba "Perez J.". datos_equipo.js —el que arma HACER_TODO con
+     los .dvw— guarda el nombre completo en 'nombre': con la version anterior
+     el desplegable mostraba solo "#1 R." y nadie sabia quien era.
+
+     Se contemplan los dos formatos: si viene 'ap' se arma como antes, y si
+     no, se usa el nombre completo tal cual. */
+  if(j.ap) return j.ap + (j.nombre ? ' ' + j.nombre.charAt(0) + '.' : '');
+  return j.nombre || j.name || ('#' + j.num);
+}
 
 /* ---- construir sliders ---- */
 function buildQuestions(){
@@ -298,7 +320,7 @@ function renderHist(){
       +l7.map(function(r){ var c=colFor(r.pct); return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end">'
         +'<div style="font-size:9px;color:'+c+';font-weight:700">'+r.pct+'</div>'
         +'<div style="width:100%;max-width:34px;height:'+Math.max(8,Math.round(r.pct*0.45))+'px;background:'+c+';border-radius:4px"></div>'
-        +'<div style="font-size:9px;color:#64748b">'+r.date.slice(5)+'</div></div>'; }).join('')
+        +'<div style="font-size:9px;color:#94a3b8">'+r.date.slice(5)+'</div></div>'; }).join('')
       +'</div></div>';
   }
   h+='<table><thead><tr><th>Fecha</th><th>Sesión</th><th>RPE</th><th>Wellness</th><th style="min-width:64px">Nivel</th></tr></thead><tbody>';
@@ -321,9 +343,22 @@ function renderTeam(){
   // promedio personal (todos los días) para calcular tendencia
   var byNum={}; all.forEach(function(e){ (byNum[e.num]=byNum[e.num]||[]).push(e); });
   // registros del día (uno por jugador: si hay varias sesiones, promedio o la filtrada)
+  /* El periodo elegido: promedia todas las encuestas de cada jugador
+     en ese rango, en vez de mostrar un solo dia. */
+  var dias = parseInt(document.getElementById('eqPeriodo').value, 10) || 1;
+  var hasta = new Date(date + 'T12:00:00');
+  var desde = new Date(hasta);
+  desde.setDate(desde.getDate() - (dias - 1));
+  function enRango(f){
+    var d = new Date(f + 'T12:00:00');
+    return d >= desde && d <= hasta;
+  }
+
   var dayRows=[];
   roster().forEach(function(j){
-    var es=all.filter(function(e){ return e.num===j.num && e.date===date && (!ses||e.sesion===ses); });
+    var es=all.filter(function(e){
+      return e.num===j.num && enRango(e.date) && (!ses||e.sesion===ses);
+    });
     if(!es.length) return;
     var pct=Math.round(avg(es.map(function(e){return e.pct;})));
     var rpe=Math.round(avg(es.map(function(e){return e.rpe;})));
@@ -341,7 +376,9 @@ function renderTeam(){
   avgEl.innerHTML='<div><div class="muted" style="font-size:10px;letter-spacing:1px;text-transform:uppercase">Promedio del equipo</div>'
     +'<div class="n" style="color:'+colFor(tavg)+'">'+tavg+'%</div></div>'
     +'<div class="muted" style="font-size:13px">'+dayRows.length+' respondieron'+(alerta?' · <span style="color:var(--red);font-weight:700">'+alerta+' en alerta</span>':'')+'</div>';
-  var h='<table><thead><tr><th>Jugador</th><th>Pos</th><th>RPE</th><th>vs prom</th><th>Wellness</th><th></th></tr></thead><tbody>';
+  var h='<table><thead><tr><th>Jugador</th><th>Pos</th>'
+    + (dias>1 ? '<th>Cargó</th>' : '')
+    + '<th>RPE</th><th>vs prom</th><th>Wellness</th><th></th></tr></thead><tbody>';
   dayRows.forEach(function(r){
     var c=colFor(r.pct), diff=r.pct-r.prom;
     var tr = diff<=-8?'<span class="trend" style="color:var(--red)">▼ '+diff+'</span>'
@@ -349,6 +386,11 @@ function renderTeam(){
            : '<span class="trend muted">≈</span>';
     h+='<tr><td><span class="dot" style="background:'+c+'"></span><b>'+r.j.ap+'</b></td>'
       +'<td class="muted">'+(POSAB[r.j.pos]||r.j.pos)+'</td>'
+      + (dias>1
+          ? '<td class="muted" style="white-space:nowrap"><b style="color:'
+            + (r.cuantas>=dias*0.6?'var(--green)':r.cuantas>=dias*0.3?'var(--orange)':'var(--red)')
+            + '">' + r.cuantas + '</b><span style="opacity:.5"> de ' + dias + '</span></td>'
+          : '')
       +'<td style="color:var(--orange);font-weight:700">'+r.rpe+'</td>'
       +'<td>'+tr+'</td>'
       +'<td class="pctcell" style="color:'+c+'">'+r.pct+'%</td>'
@@ -415,6 +457,7 @@ function jugadorConectado(){
   sel.onchange=function(){ renderHist(); maybeLoadExisting(); };
   document.getElementById('selFecha').onchange=maybeLoadExisting;
   document.getElementById('eqFecha').onchange=renderTeam;
+  document.getElementById('eqPeriodo').onchange=renderTeam;
   document.getElementById('eqSes').onchange=renderTeam;
   WStore.init(function(){                     // local primero; cuando llega la nube, vuelve a entrar y re-dibuja
     renderHist(); maybeLoadExisting();
@@ -423,7 +466,8 @@ function jugadorConectado(){
 })();
 </script>
 <script src="lang.js" onerror="void 0"></script>
-<script src="onesignal_push.js" defer></script>
+<script src="app_offline.js"></script>
+<script src="ayuda.js"></script>
 </body></html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

@@ -34,6 +34,7 @@
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -54,7 +55,10 @@
   <select id="sel"></select>
   <div id="out"><div class="empty">Elegí un rival para comparar.</div></div>
 
-  <script src="datos_seguros.js"></script>
+  <!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script src="datos_seguros.js"></script>
   <script src="scouting_rival.js.enc"></script>
   <script>abrirDatos();</script>
   <script>
@@ -119,7 +123,8 @@
   </script>
 <style>@media print{#lang-wrap{display:none!important}}</style>
 <script src="lang.js" onerror="void 0"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

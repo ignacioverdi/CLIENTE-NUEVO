@@ -24,6 +24,48 @@ ESTRUCTURA DE ARCHIVOS:
 import os, re, json, argparse, shutil
 from collections import defaultdict, Counter
 
+
+# ── NOMBRES CORTOS DE LOS CLUBES ──────────────────────────────────────────
+# Los .dvw traen el nombre completo del club. En pantalla no entra y se lee
+# mal, asi que se guarda el nombre corto: el que usa todo el mundo.
+NOMBRE_CORTO = {
+    'club social, deportivo y cultural argentino de castelar': 'Castelar',
+    'club atletico san lorenzo de almagro':                    'San Lorenzo',
+    'club atletico boca juniors':                              'Boca',
+    'club atletico river plate':                               'River',
+    'club atletico velez sarsfield':                           'Velez',
+    'club ferro carril oeste':                                 'Ferro',
+    'club gimnasia y esgrima la plata':                        'GELP',
+    'club estudiantes de la plata':                            'Estudiantes',
+    'club banco provincia':                                    'Banco Provincia',
+    'universidad nacional de la matanza':                      'UNLaM',
+    'universidad nacional de tres de febrero':                 'Untref',
+    'instituto educativo san gregorio "el iluminador"':        'San Gregorio',
+    'instituto educativo san gregorio el iluminador':          'San Gregorio',
+}
+
+
+def _sin_tildes(t):
+    import unicodedata
+    return ''.join(c for c in unicodedata.normalize('NFD', t)
+                   if unicodedata.category(c) != 'Mn')
+
+
+def nombre_corto(nombre):
+    """El nombre corto del club, o el original si no esta en la tabla."""
+    if not nombre:
+        return nombre
+    clave = _sin_tildes(nombre.strip().lower())
+    for k, v in NOMBRE_CORTO.items():
+        if _sin_tildes(k) == clave:
+            return v
+    # No esta en la tabla: al menos se saca el "Club " del principio
+    limpio = re.sub(r'^(club|instituto educativo|universidad nacional de la|'
+                    r'universidad nacional de|universidad nacional)\s+',
+                    '', nombre.strip(), flags=re.I)
+    return limpio.strip() or nombre
+
+
 # ── NORMALIZACIÓN DE COMBOS AL CANÓNICO MUNDIAL ──────────────────────
 # Equivalencias argentino → canónico (mismo ataque, distinto idioma de scout)
 COMBO_EQUIV = {
@@ -633,7 +675,7 @@ def build_liga_data(teams_data, combos, output_dir='.', setters=None, rallies=No
             if rec0 >= 20: roster[nser]='OUTSIDE'
             elif rec0 <= 8: roster[nser]=('OUTSIDE' if punta>opp else 'OPPOSITE')
             else: roster[nser]=('OUTSIDE' if punta>=opp else 'OPPOSITE')
-        LIGA['teams'][team.lower().replace(' ','_')]={'name':team,'rivals':rivals,'atk':atk_p,'srv':srv_p,'rec':rec_p,'setters':setters_list,'setter':setters_list[0] if setters_list else None,'roster':roster,'matches':matches}
+        LIGA['teams'][team.lower().replace(' ','_')]={'name':nombre_corto(team),'rivals':rivals,'atk':atk_p,'srv':srv_p,'rec':rec_p,'setters':setters_list,'setter':setters_list[0] if setters_list else None,'roster':roster,'matches':matches}
     with open(os.path.join(output_dir,'liga_data.js'),'w',encoding='utf-8') as f:
         f.write('window.LIGA_DATA = '+json.dumps(LIGA,ensure_ascii=False)+';\n')
     return len(LIGA['teams'])

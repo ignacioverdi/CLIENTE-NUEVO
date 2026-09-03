@@ -94,6 +94,68 @@
 
 
 -------------------------------------------------------------------------------
+   EL PRIMER DIA:  DALE ACCESO AL PLANTEL
+-------------------------------------------------------------------------------
+
+   Entrá a la app y tocá   ALTA DE JUGADORES
+
+   Cargá una fila por jugador: número de camiseta, mail y fecha de
+   nacimiento. El circulito del final es la foto, y es opcional.
+
+   Cada jugador entra con su mail y su fecha de nacimiento como clave, en
+   formato ddmmaaaa. La puede cambiar después.
+
+   >> Cada uno ve SOLO lo suyo: sus números, sus videos, su plan. El
+      cuerpo técnico ve todo.
+
+
+-------------------------------------------------------------------------------
+   DECILE AL PLANTEL QUE LA INSTALE
+-------------------------------------------------------------------------------
+
+   No hay que bajar nada de ninguna tienda. Se abre el link en el celular:
+
+      ANDROID   menú del navegador  >  "Agregar a la pantalla principal"
+      iPHONE    botón de compartir  >  "Agregar a inicio"
+
+   Queda como cualquier app, con el escudo del club.
+
+   >> Y funciona SIN INTERNET. La primera vez que se abre, se guarda en el
+      celular. Después, en el gimnasio sin wifi, abre igual: los números,
+      el plan del rival y los horarios están ahí.
+
+
+-------------------------------------------------------------------------------
+   EL WELLNESS:  TREINTA SEGUNDOS POR DIA
+-------------------------------------------------------------------------------
+
+   Cada jugador carga cómo llega al entrenamiento: sueño, ánimo, cansancio.
+   Se hace desde el celular y lleva medio minuto.
+
+   Vos ves la carga real del plantel, día a día, cruzada con lo que pasa
+   en la cancha.
+
+   >> Conviene cargarlo ANTES de entrenar, no después: sirve para decidir
+      la sesión, no para evaluarla.
+
+
+-------------------------------------------------------------------------------
+   SI EL CLUB TIENE VARIAS CATEGORIAS
+-------------------------------------------------------------------------------
+
+   Arriba a la izquierda aparece un selector: Primera, Sub-21, Sub-18...
+
+   Cada categoría tiene lo suyo por separado: sus partidos, su plantel, su
+   calendario, sus rutinas de gimnasio y su wellness. No se mezclan.
+
+   >> Ese selector lo ve solo el cuerpo técnico. Un jugador entra y ve
+      directamente su categoría, sin poder cambiar a otra.
+
+   >> Si una categoría todavía no tiene partidos, la app te lo dice. No
+      está rota: está esperando el primero.
+
+
+-------------------------------------------------------------------------------
    SI ALGO NO SALE
 -------------------------------------------------------------------------------
 
@@ -105,6 +167,14 @@
 
    *  Si un partido queda mucho tiempo en "En la fila", avisanos: puede ser
       que el archivo tenga algo raro y lo miramos nosotros.
+
+   *  ¿No sabés qué hace una pantalla?  Tocá el signo de pregunta que está
+      abajo a la derecha. Te explica esa pantalla en dos minutos, en el
+      idioma que estés usando.
+
+   *  Si cambiaste el escudo y en el celular sigue el viejo: sacá la app de
+      la pantalla de inicio y volvé a agregarla. El ícono lo guarda el
+      teléfono, no la app.
 
 
 -------------------------------------------------------------------------------

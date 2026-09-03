@@ -7,8 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
 <!-- Datos (cada uno se carga si existe; si no, el onerror lo deja en null) -->
+<script src="categorias_club.js"></script>
+<script src="selector_categoria.js"></script>
 <script src="game_plans.js" onerror="void 0"></script>
 <script src="objetivos_config.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
 <script src="filtro_tipo.js" onerror="void 0"></script>
   <!-- Los cortes se guardan en un archivo por temporada. Se piden todas:
@@ -21,6 +28,7 @@
   <script src="datos_partidos.js.enc" onerror="void 0"></script>
 <script src="datos_entrenamientos.js.enc" onerror="void 0"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <script src="lang.js" onerror="void 0"></script>
 <script src="datos_historial.js" onerror="window.HISTORIAL_DATA=null"></script>
 <script src="datos_gameplan.js.enc" onerror="window.GAMEPLAN_DATA=null"></script>
@@ -837,6 +845,50 @@ try{
       objSetTipo(_nom, document.getElementById('obj-tbtn-'+_nom));
   }
 }catch(e){}
+
+/* ══ LA FOTO CARGADA DESDE EL ALTA ═══════════════════════════════════════
+   Las fotos siempre vivieron en la carpeta "fotos/", llamadas por dorsal.
+   Desde el alta de jugadores ahora se pueden cargar desde la app, y quedan
+   guardadas por categoria y dorsal.
+
+   Esto NO reemplaza nada: si no hay foto cargada, todo sigue igual que
+   antes. Solo se agrega una foto cuando existe. */
+(function(){
+  function cat(){
+    try { return (window.categoriaActual && window.categoriaActual()) ||
+                 ((window.CATEGORIAS_CLUB || [])[0]) || 'Primera'; }
+    catch(e){ return 'Primera'; }
+  }
+  window.fotoDelAlta = function(num, listo){
+    if (num === null || num === undefined || !window.fbGet) { listo(null); return; }
+    var nn = String(num).padStart(2, '0');
+    try {
+      Promise.resolve(fbGet('jugador_foto/' + cat() + '/' + nn))
+        .then(function(v){ listo(typeof v === 'string' && v.indexOf('data:image') === 0 ? v : null); })
+        .catch(function(){ listo(null); });
+    } catch(e){ listo(null); }
+  };
+})();
 </script>
+<script>
+/* Si hay una foto cargada desde el alta, se pone. Si no, queda lo de siempre. */
+(function(){
+  function poner(){
+    if (!window.fotoDelAlta || typeof numJug === 'undefined') return;
+    fotoDelAlta(numJug, function(src){
+      if (!src) return;
+      var cajas = document.querySelectorAll('.avatar, .foto, #avatar, #foto');
+      for (var i = 0; i < cajas.length; i++) {
+        cajas[i].innerHTML = '<img src="' + src + '" alt="" style="width:100%;height:100%;' +
+                             'border-radius:50%;object-fit:cover">';
+        return;
+      }
+    });
+  }
+  if (document.readyState === 'complete') setTimeout(poner, 400);
+  else window.addEventListener('load', function(){ setTimeout(poner, 400); });
+})();
+</script>
+<script src="ayuda.js"></script>
 </body>
 </html>

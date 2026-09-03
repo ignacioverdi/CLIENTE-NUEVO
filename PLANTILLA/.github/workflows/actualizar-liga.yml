@@ -36,7 +36,7 @@ jobs:
 
       - name: Publicar si cambió
         run: |
-          git config user.name  "VoleyIQ Bot"
+          git config user.name  "Volley-Stats Bot"
           git config user.email "actions@users.noreply.github.com"
           if [ -n "$(git status --porcelain nla_stats.json)" ]; then
             git add nla_stats.json

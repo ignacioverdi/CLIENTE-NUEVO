@@ -1,0 +1,11 @@
+Si el club que estas dando de alta YA tiene partidos scouteados de esta
+temporada, ponelos aca antes de correr crear_cliente.py
+
+Son archivos .dvw. El alta los copia solos a la carpeta del club, y despues
+solo hay que correr HACER_TODO para que se procesen.
+
+Asi el DT abre la app por primera vez y ve SUS numeros, en vez de una
+pantalla vacia.
+
+Si esta carpeta esta vacia no pasa nada: el alta sigue igual y los partidos
+se cargan cuando lleguen.

@@ -41,7 +41,21 @@ if exist "LLAVE.txt" (
 
 REM ================= PARTIDOS =================
 echo  ===================== PARTIDOS =====================
+REM ===================================================================
+REM   LA CARPETA DE PARTIDOS
+REM
+REM   Al procesar una categoria (Sub-18, Sub-16) sus partidos estan en
+REM   su propia carpeta: "DVW GELP SUB18 2026". Sin esto se buscaban en
+REM   la de Primera, que en esa subcarpeta ni existe, y la categoria
+REM   quedaba sin un solo dato.
+REM
+REM   VB_CATEGORIA lo pone CATEGORIAS.py. Si no esta, es Primera y todo
+REM   sigue como siempre.
+REM ===================================================================
 set "DVW_DIR=DVW {{CLUB}} 2026"
+if defined VB_CATEGORIA (
+    for /d %%D in ("DVW *!VB_CATEGORIA!*") do set "DVW_DIR=%%~nxD"
+)
 set "ANIO=2026"
 if exist "DVW {{CLUB}} 2027\*.dvw" set "DVW_DIR=DVW {{CLUB}} 2027"
 if exist "DVW {{CLUB}} 2027\*.dvw" set "ANIO=2027"
@@ -203,6 +217,16 @@ python gen_informe.py --dvw_dir "!DVW_DIR!" --temporada "!TEMPORADA_ACTUAL!" --o
 if errorlevel 1 echo      [aviso] Problema armando el informe. Sigo igual.
 echo.
 
+REM ===================================================================
+REM   LAS DEMAS CATEGORIAS
+REM   Si el club tiene una sola, esto no hace nada.
+REM ===================================================================
+REM Los codigos que usa el club, para poder traducir los archivos que
+REM lleguen de otros scouts.
+if exist "gen_mis_codigos.py" python gen_mis_codigos.py
+
+if exist "CATEGORIAS.py" if not defined VB_CATEGORIA python CATEGORIAS.py
+
 echo  ================= BATERIAS =================
 echo.
 REM   Las dos carpetas en UNA sola corrida. El generador etiqueta cada
@@ -230,6 +254,39 @@ if exist "datos_video_*.js"      (echo      OK  datos_video [por temporada])  el
 echo  ==================================================
 echo.
 
+
+REM ================= TEMPORADAS ARCHIVADAS =================
+REM Una temporada archivada esta cerrada: sus pantallas NO tienen que
+REM depender de los archivos de la carpeta principal, que es la temporada
+REM en curso. Cuando esos archivos se actualizan, la temporada vieja se
+REM rompe: muestra el plantel equivocado y no puede abrir sus videos.
+REM Paso con NAFELS: 38 pantallas de la 2025-26 cargaban firebase.js y
+REM datos_seguros.js de la raiz. Esto lo revisa en cada corrida.
+if exist "temporadas" (
+  if exist "SOLTAR_TEMPORADAS.py" (
+    python SOLTAR_TEMPORADAS.py --si
+  )
+)
+
+REM ===================================================================
+REM   CONTROL DE CALIDAD, ANTES DE PUBLICAR
+REM
+REM   Se corre aca porque es el unico momento en que los datos estan
+REM   legibles: apenas se publica quedan cifrados y ya no se pueden
+REM   revisar. Antes habia que acordarse de decir "N", correr dos
+REM   programas a mano y recien despues publicar.
+REM
+REM   AUDITAR    cuenta las acciones del .dvw y las compara con lo que
+REM              quedo en la app: si un saque bueno se leyo como punto,
+REM              lo dice. Es el error que no se ve en pantalla.
+REM   VERIFICAR  revisa que cada pantalla encuentre los datos que pide.
+REM ===================================================================
+echo.
+echo  ================= CONTROL DE CALIDAD =================
+if exist "AUDITAR.py" python AUDITAR.py --sin-pausa
+if exist "VERIFICAR_DATOS.py" python VERIFICAR_DATOS.py --sin-pausa
+echo.
+
 REM ================= CERRAR LOS DATOS =================
 if exist "LLAVE.txt" (
     echo  Protegiendo los datos antes de publicar...
@@ -247,6 +304,13 @@ if exist "LLAVE.txt" (
 )
 
 REM ================= PUBLICAR =================
+REM Una categoria (Sub-18, Sub-16) no publica: sus datos viven adentro de la
+REM carpeta del club y se suben con el, en una sola publicacion. Preguntar
+REM aca confundia (dos veces la misma pregunta) y publicar desde la carpeta
+REM de la categoria no habria funcionado: ahi no esta el repositorio.
+if defined VB_CATEGORIA goto FIN_CATEGORIA
+
+
 set "RESP="
 set /p "RESP=Queres PUBLICAR a GitHub ahora? (S/N): "
 if /i "!RESP!"=="S" goto PUBLICAR
@@ -292,5 +356,6 @@ echo.
 pause
 goto FIN
 
+:FIN_CATEGORIA
 :FIN
 endlocal

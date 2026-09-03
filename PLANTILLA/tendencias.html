@@ -33,7 +33,10 @@
 </style>
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
+<script src="categorias_club.js"></script>
+<script src="selector_categoria.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -81,6 +84,28 @@ function setsDelRival(res){ return (res && parseInt(res.rival,10)) || 0; }
   <script>
   (function(){
     var H=window.HISTORIAL_DATA||{};
+
+/* ── LOS DATOS PUEDEN LLEGAR DESPUES ────────────────────────────────────
+   La linea de arriba corre UNA vez al cargar. Si el archivo cifrado
+   todavia no termino de descifrarse, la pantalla quedaba vacia para
+   siempre, aunque los datos llegaran un instante despues.
+
+   Este vigia mira la variable cada 200 ms. Apenas aparece, la actualiza,
+   redibuja la pantalla y se apaga. A los 8 segundos se rinde solo. */
+(function esperarDatos(){
+  var _i = 0, _t = setInterval(function(){
+    if(++_i > 40){ clearInterval(_t); return; }
+    if(window.HISTORIAL_DATA && window.HISTORIAL_DATA !== H){
+      H = window.HISTORIAL_DATA;
+      clearInterval(_t);
+      try{ if(typeof render==='function') render();
+           else if(typeof pintar==='function') pintar();
+           else if(typeof dibujar==='function') dibujar();
+           else if(typeof cargar==='function') cargar();
+           else if(typeof init==='function') init(); }catch(e){}
+    }
+  }, 200);
+})();
     var M=(H.entrenamientos||[]).filter(function(m){return m && m.jugadores && m.resultado;});
     function pd(s){var p=(s||'').split('/');return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):new Date(0);}
     M.sort(function(a,b){return pd(a.fecha)-pd(b.fecha);});
@@ -167,7 +192,8 @@ function setsDelRival(res){ return (res && parseInt(res.rival,10)) || 0; }
   </script>
 <style>@media print{#lang-wrap{display:none!important}}</style>
 <script src="lang.js" onerror="void 0"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

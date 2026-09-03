@@ -17,7 +17,10 @@ Uso:
 """
 import os,re,sys,json,glob,unicodedata
 
-DATA_VERSION = 6
+# 7: se guarda la zona del bloqueo. Los archivos hechos con la version
+#    anterior no la tienen, y sin ella el mapa de bloqueo pone todas las
+#    acciones en el medio de la red. Al subir el numero se regeneran solos.
+DATA_VERSION = 7
 
 def fix_enc(x):
     # Los DVW pueden venir en UTF-8 leido como latin-1 (mojibake "NÃ¤fels"). Lo corrige.
@@ -149,7 +152,19 @@ def parse_dvw(path, ent=False):
     if mcode: code=mcode.group(1)
     elif ent and date: code='ENT'+date.replace('-','')
     elif ent: code='ENT_'+re.sub(r'[^A-Za-z0-9]','',base)[:12]
-    else: return None   # partido sin codigo oficial -> se ignora
+    else:
+        # ══ Partido sin codigo oficial ═══════════════════════════════════
+        # Antes se descartaba. Pero un amistoso, o un .dvw exportado sin
+        # numerar, no trae ese codigo de 5 digitos: esos partidos quedaban
+        # SIN cortes de video para siempre, por mas que se cargara el link.
+        #
+        # Se arma el mismo identificador que usa el resto del sistema —tipo,
+        # fecha y nombre del archivo— asi el video que se cargue en esa
+        # pantalla lo encuentra.
+        _t = unicodedata.normalize('NFKD', os.path.splitext(base)[0])
+        _t = _t.encode('ascii','ignore').decode()
+        _t = re.sub(r'[^A-Za-z0-9]+','', _t).upper()[:12] or 'SIN'
+        code = 'P' + (date or 'sinfecha') + '-' + _t
 
     scout=txt.split('[3SCOUT]')[-1]
     scout_lines=scout.strip().splitlines()
@@ -201,6 +216,17 @@ def parse_dvw(path, ent=False):
                 _traj=_tp[_ti] if len(_tp)>_ti else ''
                 if _traj and len(_traj)>0 and _traj[0].isdigit(): a['oz']=int(_traj[0])
                 if _traj and len(_traj)>1 and _traj[1].isdigit(): a['dz']=int(_traj[1])
+            elif sk=='B':
+                # ══ La zona del bloqueo ═══════════════════════════════════
+                # No se guardaba. Sin ella, el mapa de bloqueo ponia TODAS las
+                # acciones en el medio de la red: una sola columna, como si
+                # nadie bloqueara por los costados.
+                #
+                # El bloqueo la trae al final del codigo, despues de las
+                # tildes:  *04BT#~~~~2  es zona 2  ·  *12BH#~~~~4  es zona 4
+                _cola = code0[6:].replace('~', '')
+                if _cola and _cola[-1].isdigit():
+                    a['oz'] = int(_cola[-1])
             if sk=='A':
                 cb=code0[6:8]
                 if cb and cb[0] in 'XVPC' and '~' not in cb: a['x']=cb
@@ -340,7 +366,31 @@ if __name__=='__main__':
                 m['season']=season
                 existentes[code]=m; agregados+=1
         # hornear SOLO los links de los partidos de esta temporada
-        links={k:all_links[k] for k in existentes if k in all_links}
+        # ══ Emparejar los links con su partido ═══════════════════════════
+        # El link se guarda con la clave que uso la pantalla de Cargar Videos,
+        # y el partido con el codigo que arma este script. Cuando no coinciden
+        # —pasa con los partidos sin codigo oficial— el link se descartaba y
+        # el video no aparecia en ninguna pantalla, aunque estuviera cargado.
+        #
+        # Aca se emparejan tambien por FECHA, que es el dato que los dos lados
+        # tienen y no cambia. Asi el video llega a su partido sin importar con
+        # que nombre se guardo.
+        links = {k: all_links[k] for k in existentes if k in all_links}
+        _sin = [k for k in existentes if k not in links]
+        if _sin and all_links:
+            import re as _re2
+            for _k in _sin:
+                _f = (existentes[_k] or {}).get('date', '')
+                if not _f:
+                    continue
+                _fp = _f.replace('-', '')
+                for _lk, _lv in all_links.items():
+                    if not _lv:
+                        continue
+                    _s = str(_lk)
+                    if _f in _s or _fp in _s:
+                        links[_k] = _lv
+                        break
         D={'v':DATA_VERSION,'season':season,'combos':COMBOS,'matches':existentes,'links':links}
         body=('/* '+prefix+' '+season+' — generado automaticamente, no editar a mano */\n'
               '(function(){\n'

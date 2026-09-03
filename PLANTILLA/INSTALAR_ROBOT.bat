@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-title VoleyIQ - Instalar robot de estadisticas
+title Volley-Stats - Instalar robot de estadisticas
 echo ============================================
 echo    Instalando el robot de estadisticas...
 echo ============================================

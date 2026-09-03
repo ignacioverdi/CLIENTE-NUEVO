@@ -1,117 +1,141 @@
-// ============================================================================
-//  sw.js — EL PANEL, DISPONIBLE SIN INTERNET
-// ----------------------------------------------------------------------------
-//  Un partido se scoutea donde se juega, y en muchos clubes ahí no hay señal.
-//  DataVolley no la necesita; esto tampoco debería.
-//
-//  ── EL PROBLEMA QUE HAY QUE RESOLVER ───────────────────────────────────────
-//  Guardar las páginas para que abran sin conexión tiene un costo conocido:
-//  publicás una corrección y el que ya la tenía guardada sigue viendo la
-//  versión vieja. Por eso antes acá se decidió NO guardar nada.
-//
-//  ── CÓMO SE RESUELVE ───────────────────────────────────────────────────────
-//  Con dos criterios distintos según para qué sirve cada cosa:
-//
-//    EL PANEL EN VIVO  ·  se guarda y se sirve al instante desde ahí.
-//      En paralelo, y sin que se note, se busca la versión nueva y se guarda
-//      para la próxima vez. Así abre siempre —haya señal o no— y nunca se
-//      queda más de una sesión atrás.
-//
-//    TODO LO DEMÁS  ·  la red primero, como hasta ahora.
-//      Los datos, las estadísticas y los videos cambian todo el tiempo y no
-//      tiene sentido verlos viejos. Si no hay señal, se sirve lo último que
-//      se haya visto.
-//
-//  ── LO QUE NO CAMBIA ───────────────────────────────────────────────────────
-//  Lo que se scoutea sin conexión se guarda en el navegador, igual que ahora.
-//  Cuando vuelve la señal se sube desde la app como siempre.
-// ============================================================================
+/* ═══════════════════════════════════════════════════════════════════════════
+   Service Worker — PWA del club
 
-// ── LA VERSION ──────────────────────────────────────────────────────────────
-// Estaba fija en "v1" y nunca cambiaba, asi que el navegador no se enteraba de
-// que habia algo nuevo: un arreglo publicado podia tardar dias en llegar, o no
-// llegar nunca hasta que alguien borrara los datos a mano.
-//
-// PUBLICAR_EN_GITHUB.bat reemplaza {{FECHA_PUBLICACION}} por el momento de
-// cada publicacion. Al cambiar ese texto cambia el archivo, el navegador lo
-// detecta como distinto, tira la caja vieja y se queda con la nueva.
-var VERSION = '{{club}}-{{FECHA_PUBLICACION}}';
-var CAJA    = 'panel-' + VERSION;
+   QUE HACE
+   Permite instalar la app y que siga funcionando cuando no hay internet.
 
-// Lo que hace falta para scoutear. El panel no depende de ningún archivo de
-// afuera: todo su código va adentro, así que con esto alcanza.
-var DEL_PANEL = [
-  './panel_vivo.html',
-  './panel_voley.html',
-  './manifest.json'
+   ── POR QUE HACE FALTA ───────────────────────────────────────────────────
+   Un gimnasio de club casi nunca tiene wifi. Si el entrenador abre la app en
+   el banco y no carga, no la usa nunca mas. Que funcione sin senal es la
+   diferencia entre que se use y que no.
+
+   ── LA REGLA: LA RED PRIMERO ─────────────────────────────────────────────
+   Siempre se pide a la red. Si contesta, eso es lo que se muestra Y se
+   guarda una copia. Si no contesta, se usa la copia guardada.
+
+   Asi nunca se ve una version vieja teniendo internet —que era la razon por
+   la que el service worker anterior no guardaba nada— y ademas se puede
+   trabajar sin senal.
+
+   ── QUE SE GUARDA Y QUE NO ───────────────────────────────────────────────
+   Se guardan las pantallas, los programas, los estilos, los escudos y los
+   datos del club: todo lo que hace falta para abrir y leer.
+
+   NO se guarda:
+     · los videos, que pesan cientos de megas y no entran
+     · lo que va a Firebase, que ya tiene su propio guardado
+     · lo que se manda al servidor (solo se guardan las lecturas)
+
+   ── LA VERSION ───────────────────────────────────────────────────────────
+   Al subir el numero de VERSION se borra lo guardado y se empieza de cero.
+   Conviene subirlo cuando se cambia algo que el navegador podria tener
+   pegado, como los escudos o los estilos.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+var VERSION = 'v5';
+var CAJA    = 'club-' + VERSION;
+
+/* Lo minimo para que la app abra sin senal la primera vez. Si alguno falla
+   —todavia no existe en este club— no se cancela el resto. */
+var BASE = [
+  './',
+  'index.html',
+  'manifest.json',
+  'escudo.png',
+  'icon-192.png',
+  'icon-180.png',
+  'movil.css',
+  'lang.js',
+  'firebase.js',
+  'categorias_club.js',
+  'selector_categoria.js',
+  'ayuda.js',
+  'datos_seguros.js',
+  'volver_inicio.js'
 ];
 
+/* Lo que NUNCA se guarda */
+function noGuardar(url) {
+  return /\.(mp4|webm|mov|m4v|avi|mkv)(\?|$)/i.test(url)   /* videos */
+      || /youtube\.com|youtu\.be|vimeo\.com/i.test(url)
+      /* Firebase se excluye: tiene su propio guardado y sus respuestas
+         cambian todo el tiempo. Las fuentes NO: se guardan, para que sin
+         senal la app no se vea con las letras del sistema. */
+      || /firebasedatabase|firebaseio\.com/i.test(url)
+      || (/googleapis|gstatic/i.test(url) && !/fonts\.(googleapis|gstatic)/i.test(url))
+      || /\/api\//i.test(url);
+}
+
+/* ── Instalar: guardar lo basico ──────────────────────────────────────── */
 self.addEventListener('install', function (e) {
-  // skipWaiting hace que la version nueva tome el control sin esperar a que
-  // se cierren todas las pestañas. Sin esto, el usuario sigue con la vieja
-  // hasta que cierra el navegador por completo.
   self.skipWaiting();
   e.waitUntil(
     caches.open(CAJA).then(function (c) {
-      // addAll falla entero si uno solo no está; se guardan de a uno para que
-      // la falta de una página no deje al panel sin guardar.
-      return Promise.all(DEL_PANEL.map(function (u) {
-        return c.add(u).catch(function () { });
+      /* uno por uno: si falta alguno, los demas igual se guardan */
+      return Promise.all(BASE.map(function (u) {
+        return c.add(new Request(u, { cache: 'reload' })).catch(function () {});
       }));
     })
   );
 });
 
+/* ── Activar: limpiar las versiones viejas ────────────────────────────── */
 self.addEventListener('activate', function (e) {
   e.waitUntil(
-    caches.keys().then(function (nombres) {
-      // se tiran las cajas de versiones anteriores
-      return Promise.all(nombres.map(function (n) {
-        return (n.indexOf('panel-') === 0 && n !== CAJA) ? caches.delete(n) : null;
+    caches.keys().then(function (ks) {
+      return Promise.all(ks.map(function (k) {
+        /* se borran las cajas viejas de este service worker y tambien las
+           que dejaron versiones anteriores de la app, que quedaban ocupando
+           lugar sin que nadie las usara */
+        if (k !== CAJA) return caches.delete(k);
       }));
     }).then(function () { return self.clients.claim(); })
   );
 });
 
-function esDelPanel(url) {
-  return /panel_vivo\.html|panel_voley\.html/.test(url);
-}
-
+/* ── Cada pedido: la red primero, la copia como respaldo ──────────────── */
 self.addEventListener('fetch', function (e) {
   var req = e.request;
+
+  /* solo lecturas: lo que se manda al servidor no se toca */
   if (req.method !== 'GET') return;
 
-  // ── el panel: primero lo guardado, y se actualiza por atrás ──────────────
-  if (esDelPanel(req.url)) {
-    e.respondWith(
-      caches.open(CAJA).then(function (c) {
-        return c.match(req).then(function (guardado) {
-          var buscar = fetch(req).then(function (res) {
-            if (res && res.ok) c.put(req, res.clone());
-            return res;
-          }).catch(function () { return guardado; });
-          // si hay algo guardado se muestra ya; si no, se espera a la red
-          return guardado || buscar;
-        });
-      })
-    );
-    return;
-  }
+  var url = req.url;
+  if (url.indexOf('http') !== 0) return;
+  if (noGuardar(url)) return;
 
-  // ── el resto: la red primero, y lo guardado como red de emergencia ───────
-  if (req.mode === 'navigate') {
-    e.respondWith(
-      fetch(req).then(function (res) {
-        if (res && res.ok) {
-          var copia = res.clone();
-          caches.open(CAJA).then(function (c) { c.put(req, copia); });
-        }
-        return res;
-      }).catch(function () {
-        return caches.match(req);
-      })
-    );
-  }
+  /* de otro dominio: se deja pasar, salvo las fuentes */
+  var mismoSitio = url.indexOf(self.location.origin) === 0;
+  var esFuente = /fonts\.(googleapis|gstatic)\.com/i.test(url);
+  if (!mismoSitio && !esFuente) return;
+
+  e.respondWith(
+    fetch(req).then(function (res) {
+      /* llego bien: se muestra y se guarda una copia para la proxima */
+      if (res && (res.ok || res.type === 'opaque')) {
+        var copia = res.clone();
+        caches.open(CAJA).then(function (c) {
+          var limpio = req.url.split('?')[0];
+          c.put(new Request(limpio), copia).catch(function () {});
+        });
+      }
+      return res;
+    }).catch(function () {
+      /* sin senal: se usa la copia */
+      return caches.match(req, { ignoreSearch: true }).then(function (guardado) {
+        if (guardado) return guardado;
+        /* si es una pantalla que nunca se abrio, al menos se muestra el
+           inicio en vez de la pagina de error del navegador */
+        if (req.mode === 'navigate') return caches.match('index.html');
+        return new Response('', { status: 504, statusText: 'sin conexion' });
+      });
+    })
+  );
 });
 
-/* © 2025-2026 Ignacio Verdi · Software propietario - Todos los derechos reservados */
+/* Permite forzar la actualizacion desde la pagina, sin reinstalar */
+self.addEventListener('message', function (e) {
+  if (e.data === 'actualizar') self.skipWaiting();
+});
+
+/* © 2025-2026 Volley-Stats · Ignacio Verdi · Software propietario */

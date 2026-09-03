@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asociar códigos · {{CLUB}}</title>
+<!--
+===============================================================================
+  asociar_codigos.html — TRADUCIR LOS CODIGOS DE OTRO SCOUT
+-------------------------------------------------------------------------------
+  Cada scout arma su propia tabla de combinaciones de ataque y de llamadas del
+  armador. Uno escribe "W4" para la tendida por 4, otro "X5", otro "V5". Son la
+  misma jugada con nombres distintos.
+
+  Al mezclar archivos de scouts distintos —pasa cuando un club recibe partidos
+  de otro pais, o cambia de scout a mitad de temporada— las estadisticas por
+  combinacion quedan partidas: la misma jugada aparece como varias, cada una
+  con un puñado de acciones.
+
+  ── COMO FUNCIONA ───────────────────────────────────────────────────────────
+  Dos columnas: a la izquierda los codigos del archivo, a la derecha los del
+  club. Los identicos se asocian solos. El resto lo elige el entrenador,
+  tocando uno de cada lado.
+
+  NO se adivina nada mas que eso. Asociar por zona o por descripcion parecida
+  daria resultados que el entrenador no eligio, y en estadistica una jugada
+  mal agrupada es peor que una sin agrupar.
+
+  La asociacion se guarda por scout: la proxima vez que llegue un archivo del
+  mismo, se aplica sola.
+===============================================================================
+-->
+<style>
+  :root{
+    --bg:#0a0c18; --card:#12142a; --card2:#171a33; --border:rgba(255,255,255,.10);
+    --txt:#e2e8f0; --muted:#94a3b8; --muted2:#8395ac;
+    --ok:#22c55e; --warn:#fbbf24; --sel:#3b82f6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+       font-family:'Barlow Condensed',system-ui,sans-serif;font-size:15px}
+  .wrap{max-width:1100px;margin:0 auto;padding:18px 16px 60px}
+  h1{font-size:24px;font-weight:800;letter-spacing:1px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+
+  .zona{border:2px dashed rgba(255,255,255,.18);border-radius:14px;
+        padding:28px 18px;text-align:center;cursor:pointer;
+        background:var(--card);transition:border-color .15s}
+  .zona:hover{border-color:var(--sel)}
+  .zona .ic{font-size:30px;margin-bottom:6px}
+  .zona b{display:block;font-size:17px;margin-bottom:4px}
+  .zona span{color:var(--muted);font-size:13px}
+
+  .cols{display:grid;grid-template-columns:1fr 44px 1fr;gap:10px;margin-top:18px}
+  .col{background:var(--card);border:1px solid var(--border);border-radius:12px;
+       overflow:hidden;display:flex;flex-direction:column;min-height:340px}
+  .col h2{margin:0;padding:9px 12px;font-size:12px;letter-spacing:1.5px;
+          text-transform:uppercase;color:var(--muted);
+          background:var(--card2);border-bottom:1px solid var(--border)}
+  .lista{overflow-y:auto;max-height:52vh;flex:1}
+  .fila{padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.05);
+        cursor:pointer;display:flex;gap:9px;align-items:baseline}
+  .fila:hover{background:rgba(255,255,255,.04)}
+  .fila.sel{background:rgba(59,130,246,.18);box-shadow:inset 3px 0 0 var(--sel)}
+  .fila.hecha{opacity:.5}
+  .cod{font-weight:800;font-size:14px;min-width:34px;letter-spacing:.5px}
+  .desc{color:var(--muted);font-size:12.5px;flex:1;overflow:hidden;
+        text-overflow:ellipsis;white-space:nowrap}
+  .dest{color:var(--ok);font-size:12px;font-weight:700}
+
+  .medio{display:flex;flex-direction:column;align-items:center;
+         justify-content:center;gap:8px}
+  .medio button{width:38px;height:38px;border-radius:9px;border:1px solid var(--border);
+    background:var(--card2);color:var(--txt);font-size:17px;cursor:pointer}
+  .medio button:hover{background:var(--sel);border-color:var(--sel)}
+  .medio button:disabled{opacity:.3;cursor:default}
+
+  .barra{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:16px}
+  .btn{padding:9px 16px;border-radius:9px;border:1px solid var(--border);
+       background:var(--card2);color:var(--txt);font-family:inherit;
+       font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.5px}
+  .btn:hover{background:rgba(255,255,255,.07)}
+  .btn.ppal{background:var(--ok);border-color:var(--ok);color:#04210f}
+  .btn:disabled{opacity:.4;cursor:default}
+  .cuenta{margin-left:auto;color:var(--muted);font-size:13px}
+
+  .aviso{margin-top:14px;padding:11px 14px;border-radius:10px;font-size:13.5px;
+         background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);
+         color:#fcd34d}
+  .listo{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.25);color:#86efac}
+  .oculto{display:none}
+  .tabs{display:flex;gap:6px;margin-top:16px}
+  .tab{padding:7px 15px;border-radius:9px 9px 0 0;border:1px solid var(--border);
+       border-bottom:none;background:var(--card2);color:var(--muted);
+       font-size:13px;font-weight:700;cursor:pointer}
+  .tab.on{background:var(--card);color:var(--txt)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a href="index.html" class="btn" style="display:inline-block;text-decoration:none;
+     margin-bottom:14px;font-size:13px">&larr; VOLVER</a>
+
+  <h1>ASOCIAR CÓDIGOS</h1>
+  <div class="sub">Cuando el partido lo scouteó otra persona, sus códigos de
+    ataque y de armador pueden ser distintos de los tuyos. Acá se asocian.</div>
+
+  <div class="zona" id="zona" onclick="document.getElementById('sel').click()">
+    <div class="ic">📋</div>
+    <b>Arrastrá acá el .dvw del otro scout</b>
+    <span>También podés hacer clic para buscarlo</span>
+  </div>
+  <input type="file" id="sel" accept=".dvw" class="oculto">
+
+  <div id="panel" class="oculto">
+    <div class="tabs">
+      <div class="tab on" id="tab-atk" onclick="verSeccion('atk')">Combinaciones de ataque</div>
+      <div class="tab" id="tab-set" onclick="verSeccion('set')">Llamadas del armador</div>
+    </div>
+
+    <div class="cols">
+      <div class="col">
+        <h2 id="tit-izq">Del archivo</h2>
+        <div class="lista" id="izq"></div>
+      </div>
+      <div class="medio">
+        <button id="bAsoc" onclick="asociar()" title="Asociar" disabled>→</button>
+        <button id="bQuit" onclick="quitar()" title="Quitar la asociación" disabled>✕</button>
+      </div>
+      <div class="col">
+        <h2 style="display:flex;align-items:center;gap:8px">
+          <span id="tit-der">Los tuyos</span>
+          <select id="selTabla" onchange="cambiarTabla()"
+            style="margin-left:auto;background:var(--card);color:var(--txt);
+            border:1px solid var(--border);border-radius:6px;padding:3px 7px;
+            font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">
+            <option value="_mios">Los míos</option>
+          </select>
+          <button onclick="document.getElementById('selDestino').click()"
+            title="Usar la tabla de otro archivo .dvw"
+            style="background:var(--card);color:var(--txt);border:1px solid var(--border);
+            border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;
+            cursor:pointer;font-family:inherit">+ otra</button>
+        </h2>
+        <input type="file" id="selDestino" accept=".dvw" class="oculto">
+        <div class="lista" id="der"></div>
+      </div>
+    </div>
+
+    <div class="barra">
+      <button class="btn" onclick="guardarAsoc()">Guardar asociación</button>
+      <button class="btn" onclick="document.getElementById('selAsoc').click()">Cargar una guardada</button>
+      <input type="file" id="selAsoc" accept=".json" class="oculto">
+      <button class="btn ppal" id="bGen" onclick="generar()">Generar el archivo traducido</button>
+      <span class="cuenta" id="cuenta"></span>
+    </div>
+
+    <div class="aviso" id="aviso"></div>
+  </div>
+
+</div>
+
+<script src="categorias_club.js"></script>
+<script src="selector_categoria.js"></script>
+<script>
+/* ══ El archivo cargado ═══════════════════════════════════════════════════ */
+var TXT = '';          /* el .dvw entero */
+var NOMBRE = '';
+var SCOUT = 'otro';
+var SEC = 'atk';       /* que tabla se esta viendo */
+
+var TABLAS = { atk:{suyas:{}, mias:{}}, set:{suyas:{}, mias:{}} };
+var ASOC   = { atk:{}, set:{} };     /* codigo del archivo -> codigo mio */
+var SELI = null, SELD = null;
+
+var CLAVES = { atk:'3ATTACKCOMBINATION', set:'3SETTERCALL' };
+
+/* ══ Leer las tablas de un .dvw ═══════════════════════════════════════════
+   Cada archivo trae sus tablas adentro: el codigo, la zona, el lado, el tipo
+   y una descripcion en el idioma del scout. */
+function tablaDe(txt, seccion){
+  var re = new RegExp('\\[' + seccion + '\\]([\\s\\S]*?)(?=\\n\\[3|$)');
+  var m = txt.match(re);
+  var d = {};
+  if(!m) return d;
+  m[1].trim().split('\n').forEach(function(l){
+    var c = l.split(';');
+    if(c[0] && c[0].trim()) d[c[0].trim()] = c;
+  });
+  return d;
+}
+
+function descripcion(fila){
+  /* ── DONDE ESTA EL NOMBRE ────────────────────────────────────────────
+     Las dos tablas del .dvw no guardan el nombre en la misma columna:
+
+       ataque    V5 -> [ V5 , 4 , R , H , "Hut" , ... ]     columna 4
+       llamada   K1 -> [ K1 ,   , "Quick ahead" , , ... ]   columna 2
+
+     En las llamadas la columna 4 tiene el COLOR de la jugada, un numero
+     como 16711680. Por eso se leia "16711680" en vez de "Quick ahead".
+
+     Se toma la primera columna con texto de verdad: un nombre nunca es
+     un numero suelto, asi que los colores quedan descartados solos.
+     Sirve para las dos tablas sin tener que saber cual es cual. */
+  for(var i of [4, 2, 3]){
+    var v = fila[i];
+    if(!v) continue;
+    v = v.trim();
+    if(!v) continue;
+    if(/^[0-9]+$/.test(v)) continue;      // es un color, no un nombre
+    return v;
+  }
+  return '';
+}
+
+function detalle(fila){
+  /* La zona y el lado ayudan a reconocer la jugada cuando la descripcion
+     esta en otro idioma. Solo los ataques las tienen: en las llamadas la
+     columna 1 viene vacia y la 2 es el nombre, asi que no se muestra nada
+     en vez de inventar una zona que no existe. */
+  var z = fila[1] && fila[1].trim();
+  if(!z || !/^[0-9]$/.test(z)) return '';
+  var lado = (fila[2] || '').trim();
+  if(/^[0-9]+$/.test(lado)) lado = '';
+  return ('z' + z + ' ' + lado).trim();
+}
+
+/* ══ Cargar el archivo ════════════════════════════════════════════════════ */
+function cargar(file){
+  var fr = new FileReader();
+  fr.onload = function(){
+    TXT = fr.result.replace(/\r\n/g, '\n');
+    NOMBRE = file.name;
+
+    /* el nombre del scout, para recordar la asociacion */
+    var m = TXT.match(/\[3MATCH\][^\n]*\n(?:[^;]*;){5}([^;\n]*)/);
+    SCOUT = (m && m[1] ? m[1] : 'otro').replace(/[^A-Za-z0-9]/g,'').slice(0,20) || 'otro';
+
+    var destino = (TABLA_ACTUAL === '_mios')
+                    ? (window.MIS_CODIGOS || {})
+                    : (TABLAS_GUARDADAS[TABLA_ACTUAL] || {});
+    for(var k in CLAVES){
+      TABLAS[k].suyas = tablaDe(TXT, CLAVES[k]);
+      TABLAS[k].mias  = destino[k] || {};
+    }
+
+    /* Los identicos se asocian solos: es lo unico que se da por hecho.
+       El resto lo elige el entrenador. */
+    var auto = 0;
+    for(var k in CLAVES){
+      ASOC[k] = {};
+      for(var c in TABLAS[k].suyas){
+        if(TABLAS[k].mias[c]){ ASOC[k][c] = c; auto++; }
+      }
+    }
+
+    /* ══ Las tres opciones, como DataVolley ═══════════════════════════════
+       Al detectar que las tablas son distintas, el programa pregunta que
+       hacer. No siempre se quiere convertir: a veces conviene analizar el
+       archivo con SUS propias tablas, sin mezclarlo con lo del club. */
+    var distintas = 0;
+    for(var k in CLAVES){
+      for(var c in TABLAS[k].suyas){ if(!TABLAS[k].mias[c]) distintas++; }
+    }
+    if(distintas){
+      mostrarOpciones(distintas, auto);
+      return;
+    }
+
+    document.getElementById('panel').classList.remove('oculto');
+    document.getElementById('zona').innerHTML =
+      '<div class="ic">📋</div><b>' + NOMBRE + '</b>' +
+      '<span>scout: ' + SCOUT + ' · tocá para cambiar el archivo</span>';
+    pintar();
+    aviso(auto + ' código(s) idénticos se asociaron solos. El resto elegilo vos.',
+          false);
+  };
+  fr.readAsText(file, 'ISO-8859-1');
+}
+
+/* ══ Pintar las dos columnas ══════════════════════════════════════════════ */
+function pintar(){
+  var t = TABLAS[SEC], a = ASOC[SEC];
+  var izq = document.getElementById('izq');
+  var der = document.getElementById('der');
+
+  var claves = Object.keys(t.suyas).sort();
+  izq.innerHTML = claves.map(function(c){
+    var f = t.suyas[c];
+    var hecho = a[c];
+    return '<div class="fila' + (hecho ? ' hecha' : '') + (SELI===c ? ' sel':'') +
+      '" onclick="tocarIzq(\'' + c + '\')">' +
+      '<span class="cod">' + c + '</span>' +
+      '<span class="desc">' + descripcion(f) + '</span>' +
+      (hecho ? '<span class="dest">→ ' + hecho + '</span>' : '') +
+      '</div>';
+  }).join('') || '<div class="fila"><span class="desc">el archivo no trae esta tabla</span></div>';
+
+  var mias = Object.keys(t.mias).sort();
+  der.innerHTML = mias.map(function(c){
+    var f = t.mias[c];
+    return '<div class="fila' + (SELD===c ? ' sel':'') +
+      '" onclick="tocarDer(\'' + c + '\')">' +
+      '<span class="cod">' + c + '</span>' +
+      '<span class="desc">' + descripcion(f) + '</span>' +
+      '<span class="desc" style="flex:0;color:var(--muted2)">' + detalle(f) + '</span>' +
+      '</div>';
+  }).join('') || '<div class="fila"><span class="desc">no encuentro tus códigos</span></div>';
+
+  var falta = claves.filter(function(c){ return !a[c]; }).length;
+  document.getElementById('cuenta').textContent =
+    (claves.length - falta) + ' de ' + claves.length + ' asociados';
+  document.getElementById('bAsoc').disabled = !(SELI && SELD);
+  document.getElementById('bQuit').disabled = !(SELI && a[SELI]);
+}
+
+function tocarIzq(c){ SELI = (SELI===c ? null : c); pintar(); }
+function tocarDer(c){ SELD = (SELD===c ? null : c); pintar(); }
+
+/* ══ Asociar ══════════════════════════════════════════════════════════════
+   Como en DataVolley: si el codigo del archivo YA tenia una asociacion, la
+   nueva se AGREGA en vez de reemplazarla. Queda "PX, P5".
+
+   Por que importa: dos codigos del archivo pueden ser la misma jugada que uno
+   solo de los tuyos —o al reves, uno suyo puede corresponder a dos tuyos—.
+   Reemplazar en vez de agregar obligaria a elegir uno y perder el otro. */
+function asociar(){
+  if(!SELI || !SELD) return;
+  var ya = ASOC[SEC][SELI];
+  if(ya){
+    var lista = ya.split(',').map(function(x){ return x.trim(); });
+    if(lista.indexOf(SELD) < 0) lista.push(SELD);
+    ASOC[SEC][SELI] = lista.join(', ');
+  } else {
+    ASOC[SEC][SELI] = SELD;
+  }
+  SELI = null; SELD = null;
+  pintar();
+}
+
+function quitar(){
+  if(!SELI) return;
+  delete ASOC[SEC][SELI];
+  pintar();
+}
+
+function verSeccion(s){
+  SEC = s; SELI = null; SELD = null;
+  document.getElementById('tab-atk').classList.toggle('on', s==='atk');
+  document.getElementById('tab-set').classList.toggle('on', s==='set');
+  pintar();
+}
+
+function aviso(txt, ok){
+  var e = document.getElementById('aviso');
+  e.textContent = txt;
+  e.className = 'aviso' + (ok ? ' listo' : '');
+}
+
+/* ══ Guardar y cargar la asociación ═══════════════════════════════════════
+   La proxima vez que llegue un archivo del mismo scout, se carga esto y no
+   hay que asociar de nuevo. */
+function guardarAsoc(){
+  var d = JSON.stringify({scout:SCOUT, asoc:ASOC}, null, 2);
+  bajar('asociacion_' + SCOUT + '.json', d, 'application/json');
+  aviso('Guardado. La próxima vez que llegue un archivo de ' + SCOUT +
+        ', cargá este archivo y la asociación se aplica sola.', true);
+}
+
+document.getElementById('selAsoc').addEventListener('change', function(e){
+  var f = e.target.files[0];
+  if(!f) return;
+  var fr = new FileReader();
+  fr.onload = function(){
+    try{
+      var d = JSON.parse(fr.result);
+      var n = 0;
+      for(var k in CLAVES){
+        var traidas = (d.asoc && d.asoc[k]) || {};
+        for(var c in traidas){
+          if(TABLAS[k].suyas[c] && TABLAS[k].mias[traidas[c]]){
+            ASOC[k][c] = traidas[c]; n++;
+          }
+        }
+      }
+      pintar();
+      aviso('Cargada: ' + n + ' asociación(es) aplicadas.', true);
+    }catch(err){
+      aviso('No pude leer ese archivo de asociación.', false);
+    }
+  };
+  fr.readAsText(f);
+});
+
+/* ══ Generar el archivo traducido ═════════════════════════════════════════ */
+function generar(){
+  if(!TXT){ aviso('Primero cargá un .dvw.', false); return; }
+
+  var falta = 0;
+  for(var k in CLAVES){
+    for(var c in TABLAS[k].suyas){ if(!ASOC[k][c]) falta++; }
+  }
+  if(falta && !confirm('Quedan ' + falta + ' código(s) sin asociar.\n\n' +
+      'Esos van a quedar como están: sus acciones no se van a juntar con las ' +
+      'tuyas.\n\n¿Genero igual?')) return;
+
+  var nuevo = TXT;
+
+  /* las tablas del archivo se reemplazan por las del club */
+  for(var k in CLAVES){
+    var mias = TABLAS[k].mias;
+    if(!Object.keys(mias).length) continue;
+    var filas = Object.keys(mias).map(function(c){ return mias[c].join(';'); }).join('\n');
+    var re = new RegExp('(\\[' + CLAVES[k] + '\\])([\\s\\S]*?)(?=\\n\\[3|$)');
+    nuevo = nuevo.replace(re, function(_m, cab){ return cab + '\n' + filas + '\n'; });
+  }
+
+  /* y los códigos de cada acción */
+  var p = nuevo.split('[3SCOUT]');
+  if(p.length > 1){
+    var cuerpo = p[p.length-1];
+    for(var k in CLAVES){
+      var a = ASOC[k];
+      /* de los mas largos a los mas cortos, para no partir un codigo por la
+         mitad al reemplazar */
+      Object.keys(a).sort(function(x,y){ return y.length - x.length; })
+        .forEach(function(viejo){
+          /* Una asociacion puede tener varios codigos: "PX, P5". Al traducir
+             se usa el PRIMERO —hay que escribir uno solo en el archivo— y los
+             demas quedan anotados como equivalentes.
+
+             Poder asociar varios sirve para el caso inverso: dos codigos
+             distintos del archivo que apuntan al mismo tuyo. Eso si se
+             resuelve, porque cada uno se traduce por separado. */
+          var destino = String(a[viejo]).split(',')[0].trim();
+          if(!destino || destino === viejo) return;
+          var re = new RegExp('(^[*a]\\d\\d[AE][^;~]{0,3})' + viejo, 'gm');
+          cuerpo = cuerpo.replace(re, '$1' + destino);
+        });
+    }
+    nuevo = p.slice(0,-1).join('[3SCOUT]') + '[3SCOUT]' + cuerpo;
+  }
+
+  var base = NOMBRE.replace(/\.dvw$/i, '');
+  bajar(base + '_traducido.dvw', nuevo.replace(/\n/g, '\r\n'), 'text/plain');
+  aviso('Listo: ' + base + '_traducido.dvw. El original quedó intacto. ' +
+        'Subilo como cualquier otro partido.', true);
+}
+
+function bajar(nombre, contenido, tipo){
+  var b = new Blob([contenido], {type: tipo + ';charset=ISO-8859-1'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = nombre;
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+}
+
+
+/* ══ Que hacer con un archivo de tablas distintas ══════════════════════════
+   Las tres opciones son las de DataVolley:
+
+     CONVERTIR  traducir sus codigos a los del club, para que las acciones se
+                sumen a las propias y sirvan para el analisis anual.
+     CONSERVAR  dejar sus tablas: sirve para mirar ESE partido sin mezclarlo,
+                cuando lo que interesa no depende del sistema de codigos.
+     IGNORAR    abrirlo con las tablas del club sin traducir nada; se usa
+                cuando se prefiere revisar codigo por codigo despues. */
+function mostrarOpciones(distintas, auto){
+  var z = document.getElementById('zona');
+  z.innerHTML =
+    '<div class="ic">⚠️</div>' +
+    '<b>Este archivo usa códigos distintos de los tuyos</b>' +
+    '<span>' + distintas + ' código(s) no coinciden · ' + auto + ' son idénticos</span>' +
+    '<div style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap">' +
+      '<button class="btn ppal" onclick="event.stopPropagation();elegir(\'convertir\')">Convertir</button>' +
+      '<button class="btn" onclick="event.stopPropagation();elegir(\'conservar\')">Conservar las suyas</button>' +
+      '<button class="btn" onclick="event.stopPropagation();elegir(\'ignorar\')">Ignorar</button>' +
+    '</div>' +
+    '<div style="margin-top:12px;font-size:12px;color:var(--muted);max-width:520px;margin-left:auto;margin-right:auto;text-align:left;line-height:1.6">' +
+      '<b style="color:var(--txt)">Convertir</b>: traduce sus códigos a los tuyos. Las acciones se suman a las de tu club.<br>' +
+      '<b style="color:var(--txt)">Conservar</b>: deja sus tablas. Para mirar ese partido solo, sin mezclarlo.<br>' +
+      '<b style="color:var(--txt)">Ignorar</b>: lo abre con tus tablas sin traducir nada.' +
+    '</div>';
+}
+
+function elegir(modo){
+  var z = document.getElementById('zona');
+  if(modo === 'convertir'){
+    z.innerHTML = '<div class="ic">📋</div><b>' + NOMBRE + '</b>' +
+      '<span>scout: ' + SCOUT + ' · tocá para cambiar el archivo</span>';
+    document.getElementById('panel').classList.remove('oculto');
+    pintar();
+    aviso('Los códigos idénticos ya están asociados. Los demás, elegilos vos: ' +
+          'tocá uno de cada columna y apretá →', false);
+    return;
+  }
+  if(modo === 'ignorar'){
+    /* sus tablas se descartan y el archivo queda con las del club */
+    for(var k in CLAVES){ ASOC[k] = {}; }
+    generarConTablas(true);
+    return;
+  }
+  /* conservar: el archivo sale tal cual, con sus tablas */
+  bajar(NOMBRE.replace(/\.dvw$/i,'') + '_sin_convertir.dvw',
+        TXT.replace(/\n/g, '\r\n'), 'text/plain');
+  aviso('Listo: el archivo sale con SUS tablas, sin traducir. Sus combinaciones ' +
+        'no se van a mezclar con las tuyas.', true);
+}
+
+function generarConTablas(soloTablas){
+  var nuevo = TXT;
+  for(var k in CLAVES){
+    var mias = TABLAS[k].mias;
+    if(!Object.keys(mias).length) continue;
+    var filas = Object.keys(mias).map(function(c){ return mias[c].join(';'); }).join('\n');
+    var re = new RegExp('(\\[' + CLAVES[k] + '\\])([\\s\\S]*?)(?=\\n\\[3|$)');
+    nuevo = nuevo.replace(re, function(_m, cab){ return cab + '\n' + filas + '\n'; });
+  }
+  bajar(NOMBRE.replace(/\.dvw$/i,'') + '_traducido.dvw',
+        nuevo.replace(/\n/g, '\r\n'), 'text/plain');
+  aviso('Listo: el archivo quedó con tus tablas. Los códigos de las acciones ' +
+        'no se tocaron.', true);
+}
+
+
+/* ══ De quien son los códigos de la columna derecha ════════════════════════
+   Por defecto son los del club, sacados de su último partido. Pero la
+   herramienta sirve en las dos direcciones:
+
+     · llega un partido de otro scout  ->  se traduce a los códigos del club
+     · el club manda un partido afuera ->  se traduce a los del destinatario
+
+   Un scout argentino que mande su partido a Europa necesita traducir al revés.
+   Por eso la columna derecha se puede cambiar: se toma de cualquier .dvw y
+   queda guardada para la próxima. */
+var TABLAS_GUARDADAS = {};      /* nombre -> {atk:{}, set:{}} */
+var TABLA_ACTUAL = '_mios';
+
+function cargarGuardadas(){
+  try{
+    var g = localStorage.getItem('vb_tablas_codigos');
+    if(g) TABLAS_GUARDADAS = JSON.parse(g);
+  }catch(e){ TABLAS_GUARDADAS = {}; }
+  pintarSelector();
+}
+
+function pintarSelector(){
+  var sel = document.getElementById('selTabla');
+  if(!sel) return;
+  var o = '<option value="_mios">Los míos</option>';
+  Object.keys(TABLAS_GUARDADAS).sort().forEach(function(n){
+    o += '<option value="' + n + '"' + (TABLA_ACTUAL===n ? ' selected' : '') +
+         '>' + n + '</option>';
+  });
+  sel.innerHTML = o;
+  sel.value = TABLA_ACTUAL;
+}
+
+function cambiarTabla(){
+  var sel = document.getElementById('selTabla');
+  TABLA_ACTUAL = sel.value;
+  var t = (TABLA_ACTUAL === '_mios')
+            ? (window.MIS_CODIGOS || {})
+            : (TABLAS_GUARDADAS[TABLA_ACTUAL] || {});
+  for(var k in CLAVES){ TABLAS[k].mias = t[k] || {}; }
+
+  /* las asociaciones anteriores apuntaban a la tabla vieja: se limpian las
+     que ya no existen, para no dejar una traduccion a un codigo inventado */
+  for(var k in CLAVES){
+    for(var c in ASOC[k]){
+      var destinos = String(ASOC[k][c]).split(',').map(function(x){ return x.trim(); });
+      var validos = destinos.filter(function(d){ return TABLAS[k].mias[d]; });
+      if(validos.length) ASOC[k][c] = validos.join(', ');
+      else delete ASOC[k][c];
+    }
+    /* y se reasocian los idénticos de la tabla nueva */
+    for(var c2 in TABLAS[k].suyas){
+      if(!ASOC[k][c2] && TABLAS[k].mias[c2]) ASOC[k][c2] = c2;
+    }
+  }
+
+  document.getElementById('tit-der').textContent =
+    (TABLA_ACTUAL === '_mios') ? 'Los tuyos' : TABLA_ACTUAL;
+  SELI = null; SELD = null;
+  pintar();
+  aviso('Ahora traducís a los códigos de: ' +
+        (TABLA_ACTUAL==='_mios' ? 'tu club' : TABLA_ACTUAL), false);
+}
+
+/* Tomar la tabla de otro .dvw y guardarla con nombre */
+document.getElementById('selDestino').addEventListener('change', function(e){
+  var f = e.target.files[0];
+  if(!f) return;
+  var fr = new FileReader();
+  fr.onload = function(){
+    var t = fr.result.replace(/\r\n/g, '\n');
+    var nueva = {};
+    var n = 0;
+    for(var k in CLAVES){
+      nueva[k] = tablaDe(t, CLAVES[k]);
+      n += Object.keys(nueva[k]).length;
+    }
+    if(!n){ aviso('Ese archivo no trae tablas de códigos.', false); return; }
+
+    var nom = prompt('¿Con qué nombre guardo esta tabla?\n\n' +
+                     'Por ejemplo: "Europa", "Copa", "Liga italiana"',
+                     f.name.replace(/\.dvw$/i,'').slice(0,20));
+    if(!nom) return;
+    TABLAS_GUARDADAS[nom] = nueva;
+    try{
+      localStorage.setItem('vb_tablas_codigos', JSON.stringify(TABLAS_GUARDADAS));
+    }catch(err){}
+    TABLA_ACTUAL = nom;
+    pintarSelector();
+    cambiarTabla();
+    aviso('Guardada la tabla "' + nom + '": ' + n + ' códigos. ' +
+          'Queda disponible para la próxima vez.', true);
+  };
+  fr.readAsText(f, 'ISO-8859-1');
+});
+
+cargarGuardadas();
+
+/* ══ Arrastrar y soltar ═══════════════════════════════════════════════════ */
+var z = document.getElementById('zona');
+['dragenter','dragover'].forEach(function(ev){
+  z.addEventListener(ev, function(e){ e.preventDefault(); z.style.borderColor = 'var(--sel)'; });
+});
+['dragleave','drop'].forEach(function(ev){
+  z.addEventListener(ev, function(e){ e.preventDefault(); z.style.borderColor = ''; });
+});
+z.addEventListener('drop', function(e){
+  var f = e.dataTransfer.files[0];
+  if(f && /\.dvw$/i.test(f.name)) cargar(f);
+  else aviso('Eso no es un archivo .dvw.', false);
+});
+document.getElementById('sel').addEventListener('change', function(e){
+  if(e.target.files[0]) cargar(e.target.files[0]);
+});
+</script>
+
+<!-- La puerta de entrada: esta pantalla es del cuerpo tecnico, asi que pide
+     sesion como el resto de la app. -->
+<script src="firebase.js?v=20260824-1444"></script>
+<script src="firebase_por_categoria.js"></script>
+<script src="lang.js?v=20260824-1444" onerror="void 0"></script>
+
+<!-- Los códigos del club, para la columna de la derecha. Los genera
+     HACER_TODO a partir del último partido propio. -->
+<script src="mis_codigos.js?v=20260824-1444" onerror="void 0"></script>
+
+<!-- © 2025-2026 Ignacio Verdi · NAFELS VOLEY · Software propietario -->
+<script src="ayuda.js?v=20260824-1444"></script>
+</body>
+</html>

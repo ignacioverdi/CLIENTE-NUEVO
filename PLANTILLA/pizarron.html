@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PIZARRÓN — Axpo Volley {{Club}}</title>
+<title>PIZARRÓN — {{CLUB}} VOLEY</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="utils.js" onerror="void 0"></script>
-<script src="plantel_club.js" onerror="void 0"></script>
+<script src="plantel_{{club}}.js" onerror="void 0"></script>
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
   <script src="datos_equipo.js.enc" onerror="void 0"></script>
 <script src="datos_prep_fisica.js.enc" onerror="void 0"></script>
@@ -20,6 +23,7 @@
 <script src="datos_ejercicios.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -204,6 +208,28 @@ body.fullscreen{background:#000;}
 
 <script>
 var PREP_DATA_LOCAL = window.PREP_DATA || null;
+
+/* ── LOS DATOS PUEDEN LLEGAR DESPUES ────────────────────────────────────
+   La linea de arriba corre UNA vez al cargar. Si el archivo cifrado
+   todavia no termino de descifrarse, la pantalla quedaba vacia para
+   siempre, aunque los datos llegaran un instante despues.
+
+   Este vigia mira la variable cada 200 ms. Apenas aparece, la actualiza,
+   redibuja la pantalla y se apaga. A los 8 segundos se rinde solo. */
+(function esperarDatos(){
+  var _i = 0, _t = setInterval(function(){
+    if(++_i > 40){ clearInterval(_t); return; }
+    if(window.PREP_DATA && window.PREP_DATA !== PREP_DATA_LOCAL){
+      PREP_DATA_LOCAL = window.PREP_DATA;
+      clearInterval(_t);
+      try{ if(typeof render==='function') render();
+           else if(typeof pintar==='function') pintar();
+           else if(typeof dibujar==='function') dibujar();
+           else if(typeof cargar==='function') cargar();
+           else if(typeof init==='function') init(); }catch(e){}
+    }
+  }, 200);
+})();
 var EQUIPO_DATA_LOCAL = window.EQUIPO_DATA || null;
 
 // ── Rutinas del equipo desde Firebase (las que arma el PF en el builder) ──
@@ -305,7 +331,7 @@ function ejNombre(id, fallback){
 }
 
 function armarPrep(mes){
-  var roster = (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores) || [];
+  var roster = (window.PLANTEL_{{CLUB}} && window.PLANTEL_{{CLUB}}.jugadores) || [];
   var jugs = roster.map(function(j){
     var r = RUTINAS_RAW[j.num] && RUTINAS_RAW[j.num][mes];
     return { num:j.num, nombre:(j.ap||j.nombre||('#'+j.num)), pos:j.pos||'', semanas:(r&&r.semanas)?r.semanas:[] };
@@ -401,7 +427,7 @@ function cargarEquipo(){
   } else {
     // sin Firebase: intentar localStorage (rutinas guardadas en este dispositivo)
     RUTINAS_RAW = {};
-    var roster=(window.PLANTEL_CLUB&&window.PLANTEL_CLUB.jugadores)||[];
+    var roster=(window.PLANTEL_{{CLUB}}&&window.PLANTEL_{{CLUB}}.jugadores)||[];
     try{
       roster.forEach(function(j){ var pre='prep_rutina_'+j.num+'_';
         for(var i=0;i<localStorage.length;i++){ var key=localStorage.key(i);
@@ -428,6 +454,7 @@ function getDias(){
           if(!dias[s.label].bloques[b.nombre].ejercicios[e.id]){
             dias[s.label].bloques[b.nombre].ejercicios[e.id] = {
               id:e.id, nombre:e.nombre, series:e.series,
+            id2:e.id2, nombre2:e.nombre2, reps2:e.reps2, video2:e.video2,
               reps:e.reps, descanso:e.descanso, carga:e.carga, video:e.video
             };
           }
@@ -484,7 +511,7 @@ function renderPizarron(){
         if(!bloques[b.nombre]) bloques[b.nombre]={nombre:b.nombre,icon:b.icon,color:b.color,ejercicios:{}};
         (b.ejercicios||[]).forEach(function(e){
           if(!bloques[b.nombre].ejercicios[e.id])
-            bloques[b.nombre].ejercicios[e.id]={id:e.id,nombre:e.nombre,series:e.series,reps:e.reps,descanso:e.descanso,carga:e.carga,video:e.video};
+            bloques[b.nombre].ejercicios[e.id]={id:e.id,nombre:e.nombre,series:e.series,reps:e.reps,descanso:e.descanso,carga:e.carga,video:e.video,id2:e.id2,nombre2:e.nombre2,reps2:e.reps2,video2:e.video2};
         });
       });
     });
@@ -525,10 +552,15 @@ function renderPizarron(){
       ejTit.className = 'ejercicio-titulo';
       ejTit.innerHTML =
         '<div class="ej-num">' + (ei+1) + '</div>' +
-        '<div class="ej-nombre">' + ejNombre(ej.id, ej.nombre) + '</div>' +
+        '<div class="ej-nombre">' + ejNombre(ej.id, ej.nombre)
+        + (ej.nombre2 ? ' <span style="opacity:.75">+</span> ' + ejNombre(ej.id2, ej.nombre2)
+             + ' <span class="ej-badge" style="background:rgba(129,140,248,.18);'
+             + 'color:#a5b4fc;font-size:9px;vertical-align:middle">SUPERSERIE</span>'
+           : '')
+        + '</div>' +
         '<div class="ej-badges">' +
           '<span class="ej-badge badge-s">' + ej.series + ' SERIES</span>' +
-          '<span class="ej-badge badge-r">' + ej.reps + ' REPS</span>' +
+          '<span class="ej-badge badge-r">' + ej.reps + (ej.reps2 ? ' + ' + ej.reps2 : '') + ' REPS</span>' +
           (ej.descanso ? '<span class="ej-badge badge-d">⏱ ' + ej.descanso + '</span>' : '') +
           (ej.carga ? '<span class="ej-badge badge-c">🏋 ' + ej.carga + '</span>' : '') +
         '</div>' +
@@ -538,9 +570,20 @@ function renderPizarron(){
       // Tabla de jugadores
       var tabla = document.createElement('table');
       tabla.className = 'tabla-jugadores';
-      var thead = '<thead><tr><th>#</th><th>Jugador</th><th>Posición</th>';
-      for(var s=1; s<=ej.series; s++) thead += '<th class="center">SERIE '+s+'</th>';
-      thead += '</tr></thead>';
+      /* Si el ejercicio es combinado, cada serie lleva DOS columnas. */
+    var esSuper = !!(ej.nombre2 && ej.id2);
+    var thead = '<thead><tr><th>#</th><th>Jugador</th><th>Posición</th>';
+    for(var s=1; s<=ej.series; s++){
+      if(esSuper){
+        thead += '<th class="center" style="font-size:9px;color:#2dd4bf">S'+s+' · '+
+                 (ej.nombre||'').slice(0,12)+'</th>';
+        thead += '<th class="center" style="font-size:9px;color:#a5b4fc">S'+s+' · '+
+                 (ej.nombre2||'').slice(0,12)+'</th>';
+      } else {
+        thead += '<th class="center">SERIE '+s+'</th>';
+      }
+    }
+    thead += '</tr></thead>';
       tabla.innerHTML = thead;
 
       var tbody = document.createElement('tbody');
@@ -576,33 +619,29 @@ function renderPizarron(){
         tr.appendChild(tdNom);
         tr.appendChild(tdPos);
 
-        // Series editables
-        for(var serie=1; serie<=ej.series; serie++){
+        /* Una celda por movimiento, con la misma clave que usa la app del
+           jugador: lo que carga cada uno se ve aca y al reves. */
+        function celdaPeso(numJug, idEj, serie){
           var td = document.createElement('td');
           td.className = 'peso-cell';
-          var storKey = sk(j.num, ej.id, serie);
+          var storKey = sk(numJug, idEj, serie);
           var saved = localStorage.getItem(storKey) || '';
-
           var inp = document.createElement('input');
           inp.type = 'number';
           inp.className = 'peso-inp' + (saved ? ' filled' : '');
-          inp.placeholder = '—';
+          inp.placeholder = '\u2014';
           inp.value = saved;
           inp.min = 0; inp.max = 500; inp.step = 0.5;
-
-          // Cargar desde Firebase
           if(typeof fbGet !== 'undefined'){
             (function(k, input){
               fbGet('pesos/'+k, function(val){
                 if(val !== null && val !== ''){
-                  input.value = val;
-                  input.classList.add('filled');
+                  input.value = val; input.classList.add('filled');
                   localStorage.setItem(k, val);
                 }
               });
             })(storKey, inp);
           }
-
           inp.addEventListener('input', (function(k, input){
             return function(){
               var v = this.value;
@@ -612,9 +651,13 @@ function renderPizarron(){
               updateLastUpdate();
             };
           })(storKey, inp));
-
           td.appendChild(inp);
-          tr.appendChild(td);
+          return td;
+        }
+
+        for(var serie=1; serie<=ej.series; serie++){
+          tr.appendChild(celdaPeso(j.num, ej.id, serie));
+          if(esSuper) tr.appendChild(celdaPeso(j.num, ej.id2, serie));
         }
 
         tbody.appendChild(tr);
@@ -675,7 +718,8 @@ window.addEventListener('load', function(){
 </script>
 <script src="lang.js"></script>
 <script src="temporadas_menu.js"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

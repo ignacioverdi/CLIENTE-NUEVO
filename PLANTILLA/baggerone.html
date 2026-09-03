@@ -3,14 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>BAGGERONE — Axpo Volley {{Club}}</title>
+<title>BAGGERONE — {{CLUB}} VOLEY</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="lang.js" onerror="void 0"></script>
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
   <script src="datos_equipo.js.enc" onerror="window.EQUIPO_DATA=null"></script>
   <!-- El plantel maestro del club. Es la fuente unica: cuando entra un jugador
        nuevo se agrega ahi y aparece en todas las pantallas. -->
-  <script src="plantel_club.js" onerror="void 0"></script>
+  <script src="plantel_{{club}}.js" onerror="void 0"></script>
   <script>abrirDatos();</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -157,6 +165,7 @@ select, select option {
 }
 </style>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -307,7 +316,7 @@ select, select option {
 <script>
 // ── JUGADORES ─────────────────────────────────────────────────
 var JUGADORES_DEFAULT = [
-  /* Vacia a proposito. El plantel sale de plantel_club.js y de
+  /* Vacia a proposito. El plantel sale de plantel_{{club}}.js y de
      datos_equipo.js. Antes aca estaban los jugadores del club que
      escribio el sistema, y cualquier cliente nuevo los veia. */
 ];
@@ -317,14 +326,14 @@ var JUGADORES_DEFAULT = [
    aparte y se fue quedando atras: BRUDERER (#2) estaba en el plantel maestro
    pero no ahi, asi que no aparecia para armar los equipos.
 
-   Ahora manda el plantel maestro (plantel_club.js), que es donde se agrega
+   Ahora manda el plantel maestro (plantel_{{club}}.js), que es donde se agrega
    un jugador nuevo, y datos_equipo.js aporta las fotos y completa lo que
    falte. Si ninguno de los dos carga, queda la lista de respaldo de arriba. */
 function getJugadores(){
   var porNum = {};
 
   try{
-    var P = window.PLANTEL_CLUB;
+    var P = window.PLANTEL_{{CLUB}};
     var lista = P && (P.jugadores || (P.length ? P : null));
     if(lista) lista.forEach(function(j){
       var n = parseInt(j.num, 10);
@@ -801,7 +810,8 @@ if(window.EQUIPO_DATA){
 }
 </script>
 <script src="temporadas_menu.js"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

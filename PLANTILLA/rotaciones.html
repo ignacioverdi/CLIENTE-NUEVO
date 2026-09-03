@@ -76,6 +76,15 @@ select,.btn{background:var(--card);color:var(--txt);border:1px solid var(--borde
 .ed-campo span{font-size:10px;color:var(--mut);letter-spacing:1px}
 </style>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
 <script src="datos_equipo.js.enc" onerror="void 0"></script>
 <script src="liga_data.js.enc" onerror="void 0"></script>
@@ -521,5 +530,6 @@ window.addEventListener('vb-lang', pintar);
 document.addEventListener('DOMContentLoaded', arrancar);
 if(document.readyState !== 'loading') arrancar();
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>

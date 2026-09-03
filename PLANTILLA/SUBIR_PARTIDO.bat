@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-title VoleyIQ - Subir partido
+title Volley-Stats - Subir partido
 echo ============================================
-echo    VoleyIQ - Subir partido nuevo
+echo    Volley-Stats - Subir partido nuevo
 echo ============================================
 echo.
 echo (Antes de correr esto, copia el .dvw del partido

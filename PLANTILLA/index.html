@@ -246,10 +246,14 @@ select, select option {
   background-color: #ffffff !important;
 }
 </style>
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <script src="lang.js"></script>
-<script src="plantel_club.js"></script>
+<script src="plantel_{{club}}.js"></script>
 
 <style>
 @media(max-width:768px){
@@ -590,7 +594,48 @@ select, select option {
           <div class="card-desc">Pegá el link de YouTube de cada partido de la temporada y generá el archivo. Sin que participe nadie más.</div>
         </div>
         <div class="card-arrow">→</div>
-      </a><a href="sesiones.html" class="card" style="--card-color:#e6a743">
+      </a><!-- Traducir los codigos de otro scout: cada uno arma su propia tabla
+           de combinaciones, y sin traducir, la misma jugada queda partida en
+           varias. -->
+      <a href="asociar_codigos.html" class="card" style="--card-color:#e6a743">
+        <div class="card-glow"></div>
+        <div class="card-top">
+          <div class="card-icon" style="background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.2)">🔤</div>
+          <div class="card-badge" style="background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.2)">Nuevo</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title" style="color:#38bdf8">Asociar Códigos</div>
+          <div class="card-desc">Cuando el partido lo scouteó otra persona, sus códigos pueden ser distintos. Acá los traducís a los tuyos.</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a><!-- Unir los archivos de un partido: muchas camaras cortan cada 20
+           o 30 minutos, y para que los cortes de video funcionen hace falta
+           UN solo archivo. -->
+      <a href="unir_video.html" class="card" style="--card-color:#e6a743">
+        <div class="card-glow"></div>
+        <div class="card-top">
+          <div class="card-icon" style="background:rgba(244,114,182,.1);border-color:rgba(244,114,182,.2)">🎞️</div>
+          <div class="card-badge" style="background:rgba(244,114,182,.1);color:#f472b6;border:1px solid rgba(244,114,182,.2)">Nuevo</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title" style="color:#f472b6">Unir Videos</div>
+          <div class="card-desc">¿La cámara cortó el partido en varios archivos? Acá se unen en uno solo para poder subirlo.</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a><!-- Alta de jugadores: la cuenta, el dorsal, la categoria y la foto,
+     todo en un paso. Va al lado de Sesiones porque las dos son de accesos. -->
+<a href="alta_jugadores.html" class="card" style="--card-color:#e6a743">
+  <div class="card-glow"></div>
+  <div class="card-top">
+    <div class="card-icon" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.2)">🧑‍🤝‍🧑</div>
+    <div class="card-badge" style="background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.2)">Nuevo</div>
+  </div>
+  <div class="card-body">
+    <div class="card-title" style="color:#22c55e">Alta de Jugadores</div>
+    <div class="card-desc">Dales acceso a la app: mail, dorsal, categoría y foto, todo de una vez.</div>
+  </div>
+  <div class="card-arrow">→</div>
+</a><a href="sesiones.html" class="card" style="--card-color:#e6a743">
         <div class="card-glow"></div>
         <div class="card-top">
           <div class="card-icon" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2)">🔐</div>
@@ -623,14 +668,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">19</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">OCT</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">OCT</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J1</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J1</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> LAUSANNE</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -638,14 +683,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">25</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">OCT</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">OCT</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J2</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J2</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> ST. GALLEN</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -653,14 +698,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">01</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J3</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J3</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> COLOMBIER</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -668,14 +713,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">05</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J4</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J4</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> JONA</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -683,14 +728,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">08</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J5</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J5</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -698,14 +743,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">15</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J6</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J6</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> SCHONENWERD</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -713,14 +758,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">22</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J7</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J7</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> CHENOIS</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -728,14 +773,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">29</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">NOV</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J8</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J8</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> JONA</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -743,14 +788,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">07</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">DIC</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">DIC</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J9</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J9</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> LAUSANNE</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -758,14 +803,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">13</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">DIC</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">DIC</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J10</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J10</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> ST. GALLEN</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -773,14 +818,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">20</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">DIC</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">DIC</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J11</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J11</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> COLOMBIER</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -788,14 +833,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">03</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">ENE</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">ENE</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J12</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J12</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -803,14 +848,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">11</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">ENE</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">ENE</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J13</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J13</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> SURSEE</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -818,14 +863,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">17</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">ENE</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">ENE</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J14</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J14</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> SCHONENWERD</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -833,14 +878,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">31</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">ENE</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">ENE</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J15</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J15</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> CHENOIS</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -848,14 +893,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">08</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">FEB</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">FEB</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J16</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J16</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> JONA</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -863,14 +908,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">14</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">FEB</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">FEB</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J17</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J17</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> COLOMBIER</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -878,14 +923,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">21</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">FEB</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">FEB</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J18</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J18</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> COLOMBIER</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -893,14 +938,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">25</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">FEB</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">FEB</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J19</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J19</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> COLOMBIER</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -908,14 +953,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">07</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">MAR</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">MAR</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J20</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J20</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> CHENOIS</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -923,14 +968,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">14</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">MAR</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">MAR</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J21</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J21</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> CHENOIS</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -938,14 +983,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">17</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">MAR</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">MAR</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J22</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J22</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> CHENOIS</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -953,14 +998,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">28</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">MAR</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">MAR</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J23</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J23</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -968,14 +1013,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">04</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">ABR</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">ABR</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J24</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J24</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -983,14 +1028,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#818CF8;line-height:1;">09</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">ABR</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">ABR</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J25</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J25</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -998,14 +1043,14 @@ select, select option {
         <div style="display:flex;align-items:stretch;">
           <div style="background:rgba(129,140,248,.06);border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;gap:2px;">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#e8192c;line-height:1;">12</div>
-            <div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;">ABR</div>
+            <div style="font-size:9px;color:#8395ac;letter-spacing:1.5px;text-transform:uppercase;">ABR</div>
           </div>
           <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#475569;">J26</span>
-              <span style="font-size:9px;color:#475569;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#8395ac;">J26</span>
+              <span style="font-size:9px;color:#8395ac;letter-spacing:1px;text-transform:uppercase">JUGADO</span>
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#475569;font-size:12px'>vs</span> AMRISWIL</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;line-height:1.2;">{{CLUB}} <span style='color:#8395ac;font-size:12px'>vs</span> —</div>
           </div>
         </div>
       </div>
@@ -1212,7 +1257,7 @@ function updateResultados(){
     var div = document.createElement('div');
     div.className = 'auto-result';
     div.style.cssText = "font-family:'Bebas Neue',sans-serif;font-size:16px;color:"+color+";letter-spacing:2px;";
-    div.innerHTML = casla+' — '+riv+' <span style="font-size:9px;color:#64748b;letter-spacing:1px;">'+tipo+'</span>';
+    div.innerHTML = casla+' — '+riv+' <span style="font-size:9px;color:#94a3b8;letter-spacing:1px;">'+tipo+'</span>';
     // Insert after the {{CLUB}} vs RIVAL line
     var rivalDiv = card.querySelector('[style*="font-size:17px"]');
     if(rivalDiv && rivalDiv.nextSibling){
@@ -1275,7 +1320,7 @@ function highlightNextMatch(){
 .hm-card:hover{transform:translateY(-2px);filter:brightness(1.15)}
 .hm-icon{font-size:28px}
 .hm-lbl{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px}
-.hm-sub{font-size:9px;color:#64748b;text-align:center}
+.hm-sub{font-size:9px;color:#94a3b8;text-align:center}
 </style>
 <div id="hm-overlay" onclick="if(event.target===this)closeHeatmapMenu()">
   <div class="hm-box">
@@ -1287,7 +1332,7 @@ function highlightNextMatch(){
       <a class="hm-card" href="hm_armador.html?equipo={{club}}"   style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)"><span class="hm-icon">🎱</span><span class="hm-lbl" style="color:#F59E0B">ARMADO</span><span class="hm-sub">Llamadas · Pos · EFF</span></a>
       <a class="hm-card" href="hm_defensa.html" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)"><span class="hm-icon">🧤</span><span class="hm-lbl" style="color:#EF4444">DEFENSA</span><span class="hm-sub">EFF · Zonas · Por rival</span></a><a class="hm-card" href="hm_bloqueo.html" style="background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.3)"><span class="hm-icon">🧱</span><span class="hm-lbl" style="color:#818CF8">BLOQUEO</span><span class="hm-sub">EFF · Zona del ataque · Combos</span></a>
     </div>
-    <div style="margin-top:14px;font-size:10px;color:#475569;text-align:center">{{LIGA}} 2026/27 · temporada en curso</div>
+    <div style="margin-top:14px;font-size:10px;color:#8395ac;text-align:center">{{LIGA}} 2026/27 · temporada en curso</div>
   </div>
 </div>
 <script>
@@ -1295,9 +1340,41 @@ function showHeatmapMenu(){ document.getElementById('hm-overlay').classList.add(
 function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.remove('open'); }
 </script>
 
-<script src="chat_club.js"></script>
+<script src="chat_{{club}}.js"></script>
 
 <script src="proximo_rival.js" onerror="window.FIXTURE_DATA=null"></script>
+<script>
+/* ══ EL FIXTURE DEL CALENDARIO MANDA ═════════════════════════════════════
+   proximo_rival.js lo genera el Excel. Pero el calendario de la app es lo
+   que el cuerpo tecnico mantiene al dia, y ahi esta el fixture de verdad.
+
+   Si en el calendario apretaron "Usar este fixture", eso pisa lo del Excel.
+   Si no, todo sigue como siempre: no cambia nada para quien no lo use. */
+(function(){
+  function tomar(fx){
+    if(fx && fx.proximo && fx.proximo.rival){
+      window.FIXTURE_DATA = fx;
+    }
+  }
+  /* lo guardado en este dispositivo, que es instantaneo */
+  try {
+    var g = localStorage.getItem('vb_fixture');
+    if(g) tomar(JSON.parse(g));
+  } catch(e){}
+  /* y lo del club, que puede haberlo puesto otro del cuerpo tecnico */
+  try {
+    if(window.fbGet) fbGet('fixture', function(fx){
+      if(!fx || !fx.proximo) return;
+      var antes = window.FIXTURE_DATA && window.FIXTURE_DATA.proximo;
+      tomar(fx);
+      /* si llego despues de pintar, se vuelve a pintar */
+      if(!antes || antes.fecha !== fx.proximo.fecha){
+        try { if(window.pintarProximo) window.pintarProximo(); } catch(e){}
+      }
+    });
+  } catch(e){}
+})();
+</script>
 <script>
 (function(){
   try{
@@ -1328,7 +1405,6 @@ function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.rem
      usando OneSignalSDKWorker.js en la raíz. Por eso ya NO registramos sw.js por separado
      (evita el conflicto de dos workers en el mismo scope "/"). -->
 <!-- Notificaciones push (OneSignal) -->
-<script src="onesignal_push.js" defer></script>
 <!-- ════════ VISTA POR ROL ════════
      El jugador ve SOLO lo suyo + Cortes de video (visor completo). Game Plan es solo del DT.
      El entrenador/staff (y quien no inició sesión) ve TODO igual que siempre. -->
@@ -1396,7 +1472,9 @@ function closeHeatmapMenu(){ document.getElementById('hm-overlay').classList.rem
   }catch(e){}
 })();
 </script>
+<script src="ayuda.js"></script>
+<script src="app_offline.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

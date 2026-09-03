@@ -17,7 +17,7 @@
   body::before{content:'';position:fixed;inset:0;background:radial-gradient(1200px 600px at 80% -10%,rgba(232,25,44,.06),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(129,140,248,.05),transparent 60%);pointer-events:none;z-index:0}
   .wrap{position:relative;z-index:1}
 
-  .header-right{position:fixed;top:10px;right:10px;z-index:99998;display:flex;align-items:center;gap:6px}
+  .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
   #lang-wrap{display:flex;gap:4px}
 
   .hdr{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
@@ -134,6 +134,7 @@
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -153,6 +154,9 @@
 </div>
 </div>
 
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
 <script src="datos_seguros.js"></script>
   <script src="scouting_rival.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
@@ -374,8 +378,8 @@ function renderAtkTab(m){
     else {combos=p.combos;eff=p.eff;n=p.tot;}
     var juego=(combos||[]).map(function(c){
       var dz=(c.dest||[]).map(function(d){return 'Z'+d.z+' '+d.pct+'%';}).join(' · ');
-      return '<span style="white-space:nowrap"><b style="color:var(--ataque);font-size:16px">'+c.k+'</b> <span style="color:var(--mut2);font-size:13px">'+c.pct+'%</span> <span style="color:#475569">→</span> <span style="color:var(--bloqueo,#06B6D4);font-size:13px">'+(dz||'—')+'</span></span>';
-    }).join('<span style="color:#334155;margin:0 9px">|</span>')||'<span style="color:#475569">—</span>';
+      return '<span style="white-space:nowrap"><b style="color:var(--ataque);font-size:16px">'+c.k+'</b> <span style="color:var(--mut2);font-size:13px">'+c.pct+'%</span> <span style="color:#8395ac">→</span> <span style="color:var(--bloqueo,#06B6D4);font-size:13px">'+(dz||'—')+'</span></span>';
+    }).join('<span style="color:#7c8ba1;margin:0 9px">|</span>')||'<span style="color:#8395ac">—</span>';
     var low=n<25;
     h+='<tr><td style="font-size:15px;font-weight:700">'+(i===0?'<span class="star">★</span> ':'')+p.name+'</td>'
       +'<td style="text-align:left"><span class="posbadge '+posClass(p.pos)+'">'+p.pos+'</span></td>'
@@ -721,7 +725,8 @@ buildTeams();
 </script>
 <script src="lang.js" onerror="void 0"></script>
 <script src="temporadas_menu.js" onerror="void 0"></script>
+<script src="ayuda.js"></script>
 </body>
 </html>
 
-<!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->
+<!-- © 2025-2026 Volley-Stats · Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>CALENDARIO — Axpo Volley {{Club}}</title>
+<title>CALENDARIO — {{CLUB}} VOLEY</title>
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="categorias_club.js"></script>
 <script src="datos_seguros.js"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <style>
   :root{--bg:#0a0f1a;--surface:#111827;--card:#0f1020;--card2:#151b2e;--border:rgba(255,255,255,.08);--b2:rgba(255,255,255,.13);
     --text:#e2e8f0;--muted:#64748b;--mut2:#94a3b8;--green:#22c55e;--amber:#f59e0b;--orange:#f97316;--red:#ef4444;--acc:#2dd4bf;--accd:#14b8a6}
@@ -153,6 +155,9 @@
   }
 </style>
 <link rel="stylesheet" href="movil.css">
+<!-- El calendario ya no necesita redirigir: lo hace selector_categoria.js
+     para todos los datos de equipo, en un solo lugar. -->
+
 </head>
 <body>
 <div class="wrap" id="wrap">
@@ -160,7 +165,7 @@
     <a href="index.html" class="back-btn">← Hub</a>
     <div>
       <h1>📅 CALENDARIO</h1>
-      <div class="subtitle">Axpo Volley {{Club}}</div>
+      <div class="subtitle">{{CLUB}} VOLEY</div>
     </div>
   </div>
 
@@ -188,14 +193,22 @@
             style="background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.4);color:#4ade80">
       <span id="cal-sub-txt">🔄 Suscribirme al calendario</span>
     </button>
-    <button class="add-btn" id="add-btn" onclick="openForm()" data-solo-editor>+ Agregar</button>
+    <!-- Del calendario al resto de la app: el proximo rival y el archivado
+     de la temporada que termino. Solo los ve el cuerpo tecnico. -->
+<button class="add-btn" onclick="usarFixture()" data-solo-editor
+        style="background:rgba(230,167,67,.14);border-color:rgba(230,167,67,.4);color:#e6a743"
+        title="Toma el proximo partido de este calendario y lo muestra en toda la app">
+  ⭐ Usar este fixture</button>
+<button class="add-btn" onclick="archivarTemporada()" data-solo-editor
+        style="background:rgba(148,163,184,.12);border-color:rgba(148,163,184,.3);color:#94a3b8"
+        title="Guarda los partidos ya jugados y deja el calendario con lo que viene">
+  📦 Archivar la temporada</button>
+<button class="add-btn" id="add-btn" onclick="openForm()" data-solo-editor>+ Agregar</button>
     <!-- El boton se esconde solo si no hay fixture cargado: ofrecer importar
          14 partidos que no existen confunde y hace pensar que algo fallo. -->
     <button class="import-btn" id="import-btn" onclick="importFixture()" data-solo-editor style="display:none">⬇️ Importar fixture</button>
-    <button class="import-btn" id="import-gym-btn" onclick="importGym()" data-solo-editor style="display:none">🏋️ Gimnasio (Lun/Mié/Vie · sep–abr)</button>
     <button class="import-btn" id="import-xmas-btn" onclick="importHolidays()" data-solo-editor style="display:none">🎄 Christmas Holidays (20–25 dic)</button>
     <button class="import-btn" id="import-volley-btn" onclick="importVolley()" data-solo-editor style="display:none">🏐 Vóley (01/09 – 30/04, sin vacaciones)</button>
-    <button class="import-btn" id="import-filzbach-btn" onclick="importFilzbach()" data-solo-editor style="display:none">📍 Filzbach (19 · sep–abr)</button>
     <div id="form-wrap"></div>
     <div id="list"></div>
   </div>
@@ -344,7 +357,7 @@
   // sistema: 14 partidos contra equipos suizos, con sus canchas y sus mapas.
   // Cualquier cliente los veia como si fueran suyos. Cada club carga los
   // propios desde la pantalla del calendario.
-  var FIXTURE=[];
+  var FIXTURE_PRIMERA=[];
   /* si el club cargo un fixture propio, recien ahi aparece el boton */
   try{
     if(FIXTURE.length){
@@ -352,7 +365,42 @@
       if(_b) _b.style.display='';
     }
   }catch(e){}
-  function importFixture(){ if(window.VB_esEditor&&!VB_esEditor())return;
+  /* Los botones "Gimnasio" y "Filzbach" eran de Nafels: traian direcciones de
+   Suiza y 19 fechas fijas. Se sacaron de la plantilla. Los entrenamientos se
+   cargan con "+ Agregar" o con el importador de cada club. */
+function importFixture(){ if(window.VB_esEditor&&!VB_esEditor())return;
+  /* ── EL FIXTURE DE ESTA CATEGORIA ──────────────────────────────────
+     Cada categoria tiene su archivo: fixture_h1l.js, fixture_h2l.js.
+     La primera categoria usa el que viene escrito en esta pagina.
+
+     Antes se cargaba el archivo SOLO si no habia ningun fixture, y como
+     el de Primera estaba escrito aca adentro, nunca se llegaba a buscar
+     el de H1L ni el de H2L: se importaban siempre los 14 de Primera. */
+  var _cat = '';
+  try { _cat = (window.categoriaActual && categoriaActual()) || ''; } catch(e){}
+  var _L = (window.CATEGORIAS_CLUB || []);
+  var _esPrimera = (!_cat || !_L.length || _cat === _L[0]);
+
+  if (_esPrimera) {
+    window.FIXTURE = window.FIXTURE_PRIMERA || window.FIXTURE || [];
+  } else {
+    var _slug = _cat.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (window.__FIX_CARGADO !== _slug) {
+      var sc = document.createElement('script');
+      sc.src = 'fixture_' + _slug + '.js?v=' + Date.now();
+      sc.onload = function(){
+        window.__FIX_CARGADO = _slug;
+        importFixture();
+      };
+      sc.onerror = function(){
+        alert('No encontré el fixture de ' + _cat + '.\n\n' +
+              'Tiene que estar el archivo  fixture_' + _slug + '.js  en la ' +
+              'carpeta del club, publicado.');
+      };
+      document.head.appendChild(sc);
+      return;
+    }
+  }
     if(!FIXTURE.length){
       alert('Todavia no hay un fixture cargado para importar.\n\n'
           + 'Agrega los partidos con el boton + y quedan guardados para todo el equipo.');
@@ -371,27 +419,7 @@
     render();
     alert(added+' partido(s) agregado(s)'+(added<FIXTURE.length?'. '+(FIXTURE.length-added)+' ya estaban cargados.':'.'));
   }
-  // ── Importar sesiones de gimnasio: Lun/Mié/Vie de sep–dic 2026, 10:00–11:45, Welcome Fitness ──
-  function importGym(){ if(window.VB_esEditor&&!VB_esEditor())return;
-    if(!confirm('¿Agregar las sesiones de gimnasio (Lun/Mié/Vie de sep 2026 – abr 2027, 10:00–11:45) al calendario?')) return;
-    var arr=(data.entrenamientos||[]).slice(), added=0;
-    var lugar='Welcome Fitness';
-    var mapa='https://maps.app.goo.gl/AmbXHh34SnPQbBja8?g_st=iw';
-    var _d=new Date(2026,8,1), _fin=new Date(2027,3,30);   // 1 sep 2026 -> 30 abr 2027
-    while(_d<=_fin){
-      var wd=_d.getDay();                      // 1=lunes 3=miércoles 5=viernes
-      if(wd===1||wd===3||wd===5){
-        var fecha=_d.getFullYear()+'-'+pad2(_d.getMonth()+1)+'-'+pad2(_d.getDate());
-        var dup=arr.some(function(x){ return x.fecha===fecha && (x.tipo||'')==='LIFTING SESSION'; });
-        if(!dup){ arr.push({ id:Date.now()+Math.floor(Math.random()*1000000), fecha:fecha, hora:'10:00', horaFin:'11:45', tipo:'LIFTING SESSION', lugar:lugar, mapa:mapa }); added++; }
-      }
-      _d.setDate(_d.getDate()+1);
-    }
-    data.entrenamientos=arr;
-    fbSet('calendario/entrenamientos', arr);
-    setTab('entrenamientos'); render();
-    alert(added+' sesión(es) de gimnasio agregada(s).');
-  }
+  
   function importHolidays(){ if(window.VB_esEditor&&!VB_esEditor())return;
     if(!confirm('¿Agregar CHRISTMAS HOLIDAYS (20/12 al 25/12 2026) al calendario?')) return;
     var arr=(data.entrenamientos||[]).slice();
@@ -401,35 +429,13 @@
     data.entrenamientos=arr; fbSet('calendario/entrenamientos', arr); setTab('entrenamientos'); render();
     alert('CHRISTMAS HOLIDAYS agregado (20/12 – 25/12).');
   }
-  // ── Importar entrenamientos de FILZBACH (19 sesiones · sep 2026 – abr 2027). Reemplaza lo que haya en esas fechas. ──
-  function importFilzbach(){ if(window.VB_esEditor&&!VB_esEditor())return;
-    if(!confirm('¿Cargar los 19 entrenamientos de FILZBACH (sep 2026 – abr 2027)? Reemplaza los entrenamientos que ya haya en esas fechas; los demás días quedan igual.')) return;
-    var lugar='FILZBACH', mapa='https://maps.app.goo.gl/k5vqApj5PkWGKDG2A?g_st=iw';
-    var SES=[
-      ['2026-09-22','19:30','21:30'],['2026-09-23','17:30','20:30'],['2026-09-24','18:00','20:00'],
-      ['2026-10-09','16:30','18:30'],['2026-11-04','17:30','20:30'],['2026-11-05','18:00','20:00'],
-      ['2026-11-06','16:30','18:30'],['2026-11-11','17:30','20:30'],['2026-12-04','16:30','18:30'],
-      ['2026-12-23','17:30','20:30'],['2026-12-26','10:30','12:30'],['2026-12-28','17:00','19:00'],
-      ['2026-12-29','17:00','19:00'],['2026-12-30','17:00','19:00'],['2027-01-01','17:00','19:00'],
-      ['2027-01-02','17:00','19:00'],['2027-02-17','17:30','20:30'],['2027-03-18','18:00','20:00'],
-      ['2027-04-09','16:30','18:30']
-    ];
-    var fechas={}; SES.forEach(function(s){ fechas[s[0]]=1; });
-    var prev=(data.entrenamientos||[]);
-    var arr=prev.filter(function(e){ return !fechas[e.fecha]; });   // saca lo existente en esas fechas
-    var reemplazados=prev.length-arr.length;
-    var _id=Date.now()*1000, _c=0;
-    SES.forEach(function(s){ arr.push({ id:_id+(_c++), fecha:s[0], hora:s[1], horaFin:s[2], tipo:'VOLLEYBALL SESSION', lugar:lugar, mapa:mapa }); });
-    arr.sort(function(a,b){ return String(a.fecha||'').localeCompare(String(b.fecha||'')); });
-    data.entrenamientos=arr;
-    fbSet('calendario/entrenamientos', arr);
-    setTab('entrenamientos'); render();
-    alert(SES.length+' entrenamientos de FILZBACH cargados'+(reemplazados?' ('+reemplazados+' reemplazado(s) en esas fechas).':'.'));
-  }
+  
   function importVolley(){ if(window.VB_esEditor&&!VB_esEditor())return;
     if(!confirm('¿Agregar la seguidilla de entrenamientos de vóley (01/09/26 – 30/04/27, sin vacaciones)?')) return;
     var arr=(data.entrenamientos||[]).slice(), added=0;
-    var lugar='Lintharena, {{Club}}', mapa='https://maps.app.goo.gl/MtXaacJWfLWZ1QKM8?g_st=iw';
+    /* El gimnasio del club. Queda vacio a proposito: el mapa de un club
+       no sirve para otro, y se completa al editar cada entrenamiento. */
+    var lugar='', mapa='';
     var SEM={ 1:[['VOLLEYBALL SESSION','17:30','19:00']],
       2:[['VOLLEYBALL SESSION','10:00','11:30'],['VOLLEYBALL SESSION','18:30','20:30']],
       3:[['VOLLEYBALL SESSION','17:00','19:00']],
@@ -637,7 +643,7 @@
     h+='<div class="frow"><label class="fld">Fecha</label><input type="date" id="f-fecha" value="'+esc(entry?entry.fecha:'')+'"></div>';
     h+='<div class="frow"><label class="fld">Hora</label><input type="time" id="f-hora" value="'+esc(entry?entry.hora:'')+'"></div>';
     if(isP){
-      h+='<div class="frow"><label class="fld">Rival</label><input type="text" id="f-rival" placeholder="Ej: Jona" value="'+esc(entry?entry.rival:'')+'"></div>';
+      h+='<div class="frow"><label class="fld">Rival</label><input type="text" id="f-rival" placeholder="Nombre del rival" value="'+esc(entry?entry.rival:'')+'"></div>';
       h+='<div class="frow"><label class="fld">Escudo del rival</label><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
          '<div id="f-esc-prev">'+(FORM_ESCUDO?'<img src="'+FORM_ESCUDO+'" style="width:44px;height:44px;object-fit:contain;border-radius:8px;background:#fff;padding:2px">':'<span style="opacity:.5;font-size:12px">— sin escudo —</span>')+'</div>'+
          '<label class="btn save" style="cursor:pointer;margin:0">Subir foto<input type="file" accept="image/*" onchange="escudoUpload(this)" style="display:none"></label>'+
@@ -733,7 +739,7 @@ function _icsDe(e){
   var mm     = hora.split(':')[1] || '00';
   var hFin   = ('0' + Math.min(hh + 2, 23)).slice(-2) + ':' + mm;   /* dos horas de partido */
   var fin    = _icsFecha(e.fecha, hFin);
-  var uid    = 'nafels-' + (e.id || String(e.fecha + rival).replace(/\W/g, '')) + '@volley-nafels';
+  var uid    = '{{club}}-' + (e.id || String(e.fecha + rival).replace(/\W/g, '')) + '@{{CLUB_SLUG}}';
   return [
     'BEGIN:VEVENT',
     'UID:' + uid,
@@ -769,7 +775,7 @@ window.alCalendario = function(id){
   var e = null;
   for(var i = 0; i < arr.length; i++){ if(String(arr[i].id) === String(id)) e = arr[i]; }
   if(!e) return;
-  _icsBajar(_icsArchivo([_icsDe(e)]), 'nafels-' + (e.fecha || 'partido') + '.ics');
+  _icsBajar(_icsArchivo([_icsDe(e)]), '{{club}}-' + (e.fecha || 'partido') + '.ics');
 };
 /* Un entrenamiento no es igual a un partido: puede durar varios dias (las
    vacaciones de Navidad son un solo registro del 20 al 25) y tiene hora de fin
@@ -779,7 +785,7 @@ function _icsDeEntreno(e){
   var titulo = e.tipo || 'Entrenamiento';
   var _vb = (typeof venueBits === 'function') ? venueBits(e) : {name:''};
   var lugar = (_vb && _vb.name) || e.lugar || '';
-  var uid = 'nafels-ent-' + (e.id || String(e.fecha + titulo).replace(/\W/g,'')) + '@volley-nafels';
+  var uid = '{{club}}-ent-' + (e.id || String(e.fecha + titulo).replace(/\W/g,'')) + '@{{CLUB_SLUG}}';
   var cab = ['BEGIN:VEVENT','UID:' + uid,
              'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z'];
   var cuerpo;
@@ -834,18 +840,154 @@ window.todoAlCalendario = function(){
   var en = ((typeof data !== 'undefined' && data.entrenamientos) ? data.entrenamientos : []).filter(function(e){ return e.fecha; });
   if(!pa.length && !en.length){ alert('Todavía no hay nada cargado en el calendario.'); return; }
   var evs = pa.map(_icsDe).concat(en.map(_icsDeEntreno));
-  _icsBajar(_icsArchivo(evs), 'nafels-calendario.ics');
+  _icsBajar(_icsArchivo(evs), '{{club}}-calendario.ics');
 };
 
 window.temporadaAlCalendario = function(){
   var arr = (typeof data !== 'undefined' && data.partidos) ? data.partidos : [];
   arr = arr.filter(function(e){ return e.fecha; });
   if(!arr.length){ alert('No hay partidos cargados todavía.'); return; }
-  _icsBajar(_icsArchivo(arr.map(_icsDe)), 'nafels-temporada.ics');
+  _icsBajar(_icsArchivo(arr.map(_icsDe)), '{{club}}-temporada.ics');
 };
 
 </script>
 <script src="lang.js" onerror="void 0"></script>
+<script>
+/* ══ DEL CALENDARIO AL RESTO DE LA APP ═══════════════════════════════════
+   El calendario ya tiene el fixture cargado. Estas dos funciones lo usan:
+
+   usarFixture()        el proximo partido pasa a verse en toda la app
+   archivarTemporada()  los partidos jugados se guardan aparte y el
+                        calendario queda con lo que viene
+
+   Las dos piden confirmacion antes de tocar nada, y ninguna borra: lo
+   archivado queda guardado y se puede volver a ver. */
+(function(){
+  function slug(t){
+    return (t || '').toString().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  }
+  function hoy(){
+    var d = new Date();
+    return d.getFullYear() + '-' +
+           String(d.getMonth() + 1).padStart(2, '0') + '-' +
+           String(d.getDate()).padStart(2, '0');
+  }
+  function cond(p){
+    return (p.condicion || '').toLowerCase().indexOf('vis') >= 0
+           ? 'visitante' : 'local';
+  }
+
+  /* ── El proximo rival, para toda la app ───────────────────────────── */
+  window.usarFixture = function(){
+    var h = hoy();
+    var futuros = ((window.data && data.partidos) || [])
+      .filter(function(p){ return p.fecha && p.fecha >= h && p.rival; })
+      .sort(function(a, b){ return a.fecha < b.fecha ? -1 : 1; });
+
+    if(!futuros.length){
+      alert('No hay partidos futuros cargados en el calendario.\n\n' +
+            'Agregá el fixture de la temporada y volvé a intentar.');
+      return;
+    }
+    var p = futuros[0];
+    if(!confirm('El proximo partido pasa a ser:\n\n' +
+                '   ' + p.fecha + '   vs ' + p.rival + '   (' + cond(p) + ')\n\n' +
+                'Se va a ver en el inicio y en el plan de partido.\n' +
+                'Hay ' + futuros.length + ' partido(s) por delante.\n\n' +
+                'Continuo?')) return;
+
+    var fx = {
+      proximo: { fecha: p.fecha, rival: p.rival, slug: slug(p.rival), cond: cond(p) },
+      fixture: futuros.map(function(x){
+        return { fecha: x.fecha, rival: x.rival, slug: slug(x.rival), cond: cond(x) };
+      })
+    };
+    fbSet('fixture', fx);
+    try { localStorage.setItem('vb_fixture', JSON.stringify(fx)); } catch(e){}
+    alert('Listo.\n\nProximo rival: ' + p.rival + ' (' + p.fecha + ')\n' +
+          futuros.length + ' partido(s) en el fixture.\n\n' +
+          'Si no lo ves enseguida, apreta Ctrl+Shift+R.');
+  };
+
+  /* ── Archivar lo que ya se jugo ───────────────────────────────────── */
+  window.archivarTemporada = function(){
+    var h = hoy();
+    var todos = (window.data && data.partidos) || [];
+    var viejos = todos.filter(function(p){ return p.fecha && p.fecha < h; });
+    var quedan = todos.filter(function(p){ return !p.fecha || p.fecha >= h; });
+
+    if(!viejos.length){
+      alert('No hay partidos pasados para archivar.\n' +
+            'El calendario ya tiene solo lo que viene.');
+      return;
+    }
+    if(!confirm('Se archivan ' + viejos.length + ' partido(s) ya jugado(s).\n' +
+                'Quedan ' + quedan.length + ' por delante.\n\n' +
+                'NO se borran: se guardan aparte y se pueden volver a ver.\n\n' +
+                'Continuo?')) return;
+
+    var anio = (viejos[0].fecha || '').slice(0, 4) || 'anterior';
+    fbGet('calendario/archivo_' + anio, function(previo){
+      var todo = (Array.isArray(previo) ? previo : []).concat(viejos);
+      fbSet('calendario/archivo_' + anio, todo);
+      data.partidos = quedan;
+      fbSet('calendario/partidos', quedan);
+      if(window.render) render();
+      alert('Listo.\n\n' + viejos.length + ' partido(s) archivado(s) en ' + anio +
+            '.\nEl calendario quedo con ' + quedan.length + ' por jugar.');
+    });
+  };
+})();
+</script>
+<script>
+/* ══ EL BOTON DICE CUANTOS PARTIDOS TIENE ESTA CATEGORIA ═════════════════
+   El texto decia "(14 partidos)" escrito fijo. Con varias categorias eso
+   confundia: en H1L, que tiene 20, el boton seguia diciendo 14 y parecia
+   que iba a importar los de Primera.
+
+   Ahora el numero lo pone la propia categoria, leyendo su archivo. */
+(function(){
+  function poner(){
+    var b = document.getElementById('import-btn');
+    if(!b) return;
+    var cat = '';
+    try { cat = (window.categoriaActual && categoriaActual()) || ''; } catch(e){}
+    var L = (window.CATEGORIAS_CLUB || []);
+    var primera = (!cat || !L.length || cat === L[0]);
+
+    function texto(n, etiqueta){
+      b.textContent = '⬇️ Importar fixture ' + (etiqueta ? etiqueta + ' ' : '') +
+                      (n ? '(' + n + ' partidos)' : '');
+    }
+
+    if(primera){
+      var f = window.FIXTURE_PRIMERA || window.FIXTURE || [];
+      texto(f.length, '2026/27');
+      return;
+    }
+
+    var slug = cat.toLowerCase().replace(/[^a-z0-9]/g, '');
+    b.textContent = '⬇️ Importar fixture de ' + cat;
+    var sc = document.createElement('script');
+    sc.src = 'fixture_' + slug + '.js?v=' + Date.now();
+    sc.onload = function(){
+      window.__FIX_CARGADO = slug;
+      var f = window.FIXTURE || [];
+      b.textContent = '⬇️ Importar fixture de ' + cat +
+                      (f.length ? ' (' + f.length + ' partidos)' : '');
+    };
+    sc.onerror = function(){
+      b.textContent = '⬇️ Importar fixture de ' + cat + ' (no encontrado)';
+    };
+    document.head.appendChild(sc);
+  }
+  if(document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(poner, 300); });
+  else setTimeout(poner, 300);
+})();
+</script><script src="ayuda.js"></script>
 </body></html>
 
 <!-- © 2025-2026 Ignacio Verdi · {{CLUB}} VOLEY · Software propietario - Todos los derechos reservados -->

@@ -6,6 +6,14 @@
 <title>Ranking — {{CLUB}} Voley</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
   <!-- datos_club.js sacado: es del club de origen. -->
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
   <script src="datos_partidos.js.enc" onerror="void 0"></script>
   <script src="datos_baterias.js.enc" onerror="void 0"></script>
@@ -49,6 +57,7 @@ html,body{background:var(--bg);color:var(--txt);font-family:'Barlow Condensed',s
 <!-- Puerta de entrada. Sin usuario y clave no se ve nada: firebase.js tapa
      la pagina con la pantalla de ingreso hasta que la sesion es valida. -->
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <!-- Adapta el encabezado al celular. Solo actua en pantallas chicas y solo
      toca el encabezado y las barras: en la computadora no hace nada.
      Va ULTIMO para poder corregir los estilos propios de cada pagina. -->
@@ -193,7 +202,7 @@ function batGet(nombre, partido){
 
 function _plantelNormalizado(){
   try{
-    var P = (window.PLANTEL_CLUB && window.PLANTEL_CLUB.jugadores) || [];
+    var P = (window.PLANTEL_{{CLUB}} && window.PLANTEL_{{CLUB}}.jugadores) || [];
     if(P.length) return P.map(function(j){
       return {num:j.num, nombre:(j.ap || j.nombre || ''), pos:j.pos, foto:j.foto};
     });
@@ -252,7 +261,7 @@ function makeRow(j, i, sk, maxV){
   var row=document.createElement('div');
   row.className='row'+(isCur?' me':'');
   var med=document.createElement('div'); med.className='medal';
-  med.innerHTML=medal||'<span style="font-size:10px;color:#475569">'+(i+1)+'</span>';
+  med.innerHTML=medal||'<span style="font-size:10px;color:#8395ac">'+(i+1)+'</span>';
   var info=document.createElement('div'); info.className='info';
   info.innerHTML='<div class="top"><span class="nm" style="color:'+(isCur?'#e8192c':j.col)+'">'+j.nm+(isCur?' ←':'')+'</span><span class="val" style="color:'+valC+'">'+v+'%</span></div>'
     +'<div class="bar-bg"><div class="bar" style="width:'+barW+'%;background:'+sk.c+'"></div></div>'
@@ -293,5 +302,6 @@ function render(){
   });
 }
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>

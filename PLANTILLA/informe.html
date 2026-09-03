@@ -113,9 +113,18 @@ tr.tot td{border-top:2px solid var(--b2);font-weight:800;background:var(--card2)
   <div class="vacio">Buscando el partido…</div>
 </div>
 
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js" onerror="void 0"></script>
 <script src="objetivos.js" onerror="void 0"></script>
 <script src="firebase.js" onerror="void 0"></script>
+<script src="firebase_por_categoria.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════════
    INFORME DE PARTIDO
@@ -412,7 +421,7 @@ function plantel(lado, num){
     if(P && P[num] && P[num].nombre) return P[num].nombre;
   }catch(e){}
   try{
-    var L = window.PLANTEL || window.PLANTEL_DATA || window.PLANTEL_CLUB || null;
+    var L = window.PLANTEL || window.PLANTEL_DATA || window.PLANTEL_{{CLUB}} || null;
     if(L && L.length){
       for(var i=0;i<L.length;i++)
         if(Number(L[i].num)===Number(num)) return L[i].nombre || L[i].apellido || ('#'+num);
@@ -488,5 +497,6 @@ function arrancar(){
 if(typeof _fbListo !== 'undefined' && _fbListo && _fbListo.then) _fbListo.then(arrancar).catch(arrancar);
 else window.addEventListener('load', arrancar);
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>

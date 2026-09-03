@@ -64,6 +64,10 @@ header.masthead .sub{color:var(--mut);font-size:13.5px}
 .armcourt .cell .cn-p{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;line-height:1;opacity:.95;white-space:nowrap}
 .armcourt .cell.has{cursor:pointer}
 .armnote{font-size:12px;color:var(--faint);margin-top:12px}
+/* El subtitulo de cada grupo de posicion: mas chico que el del fundamento,
+   para que se lea la jerarquia de un vistazo. */
+.rolehead.sub{font-size:11px;letter-spacing:2px;opacity:.62;margin:14px 0 6px}
+.rolehead.sub:empty{display:none}
 .rolehead{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;color:var(--red);margin:22px 0 10px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:10px}
 .rolehead span{font-family:'Barlow Condensed';font-size:12px;font-weight:500;color:var(--faint);text-transform:none;letter-spacing:0}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -78,7 +82,12 @@ header.masthead .sub{color:var(--mut);font-size:13.5px}
 .vtodo:hover{background:rgba(37,99,235,.28);color:#fff}
 .pmeta{margin-left:auto;color:var(--faint);font-size:11px;text-align:right;line-height:1.3}
 .filters{display:flex;gap:4px;flex-wrap:nowrap;margin:12px 0 10px;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+/* Con el filtro de golpe son seis en la misma fila: se achican un poco para
+   que entren todos sin cortar. El texto se recorta con puntos suspensivos en
+   vez de desbordar. */
 .fgroup{display:flex;flex-direction:column;gap:3px;flex:1 1 0;min-width:0}
+.filters select,.filters input{min-width:0;text-overflow:ellipsis}
+.filters label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fgroup label{font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:9px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fgroup select,.fgroup input{width:100%;min-width:0;box-sizing:border-box;font-size:11.5px;padding:5px 4px}
 select{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:500;color:var(--txt);background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:5px 24px 5px 8px;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%238791a3' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 7px center}
@@ -164,6 +173,17 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
 @media(max-width:680px){.grid3,.grid2{grid-template-columns:1fr}header.masthead h1{font-size:36px}}
 @media print{body{background:#fff;color:#111}.player{background:#fff;border-color:#ccc}.filters,.vmodal{display:none!important}.cell.vid::after{display:none}}
 .mdd{width:100%}
+/* El desplegable de recepcion del armador vive entre los otros controles de
+   esa barra: se le da el mismo aspecto para que no desentone, y se fuerza el
+   color del texto —sin esto quedaba blanco sobre blanco y no se leia—. */
+.armrecdd{width:auto;min-width:62px}
+.armrecdd>.msum{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;
+  padding:4px 7px;border-radius:7px;border:1px solid var(--border);
+  background:var(--card2);color:var(--txt)}
+.armrecdd .mpop{background:var(--card2);border-color:var(--border)}
+.armrecdd .mopt{color:var(--txt)}
+.armrecdd .mall button{background:var(--card);color:var(--txt);border:1px solid var(--border);
+  border-radius:6px;font-size:11px;padding:3px 8px;cursor:pointer}
 .msum{list-style:none;cursor:pointer;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:5px 6px;font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box}
 .msum::-webkit-details-marker{display:none}
 .mpop{position:absolute;z-index:40;margin-top:3px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px;display:flex;flex-direction:column;gap:4px;min-width:130px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
@@ -240,7 +260,13 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
   <div class="armctrl">
     <div class="grp" id="armsetsel"></div>
     <div class="grp"><label>Fase</label><select id="armfase" class="armsel" onchange="setArmPhase(this.value)"><option value="SO">Side-out</option><option value="TR">Transición</option><option value="all">Todo</option></select></div>
-    <div class="grp" id="armrecgrp"><label>Recepción</label><select id="armrecsel" class="armsel" onchange="setArmRec(this.value)"><option value="all">Toda</option><option value="pos">#+</option><option value="neg">!−</option></select></div>
+    <div class="grp" id="armrecgrp"><label>Recepción</label><!-- Separado por valoracion: agrupar "#+" y "!−" escondia la diferencia
+         entre una recepcion perfecta y una buena, que para el armador son dos
+         situaciones distintas —con una puede jugar todo, con la otra no—. -->
+<!-- El mismo control que ya usan los filtros de Resultado en ataque, saque y
+         defensa: casillas dentro de un desplegable, con "Todos" y "Ninguno".
+         Antes era un select multiple, que necesita Ctrl+click y no se ve bien. -->
+    <details class="mdd armrecdd" id="armrecsel"><summary class="msum">Toda</summary><div class="mpop"><div class="mall"><button type="button" onclick="armRecTodos(1)">Todos</button><button type="button" onclick="armRecTodos(0)">Ninguno</button></div><label class="mopt"><input type="checkbox" value="#" checked onchange="armRecLeer()">#</label><label class="mopt"><input type="checkbox" value="+" checked onchange="armRecLeer()">+</label><label class="mopt"><input type="checkbox" value="!" checked onchange="armRecLeer()">!</label><label class="mopt"><input type="checkbox" value="-" checked onchange="armRecLeer()">−</label></div></details></div>
     <div class="grp" id="armreczgrp"><label>Recep. desde</label><select id="armreczsel" class="armsel" onchange="setArmRecZone(this.value)"><option value="all">Todas</option><option value="r1">Z1</option><option value="r6">Z6</option><option value="r5">Z5</option></select></div>
     <div class="grp"><label>Recibe</label><select id="armrecnum" class="armsel" onchange="setArmRecNum(this.value)"></select></div>
     <div class="grp"><label>Llamada</label><select id="armcall" class="armsel" onchange="setArmCall(this.value)"></select></div>
@@ -255,12 +281,28 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
 <div class="rolehead">Opuestos <span>ataque · espejo invertido pos. 2 · línea = z5/z7/z4</span></div>
 <div class="grid2" id="row-opuesto"></div>
 </div><div class="tabgroup" id="tab-saque"><div class="rolehead">Saque <span>dónde y cómo saca · azul · fuerza = fuerte/medio/fácil</span></div>
+<!-- Separado por posicion, igual que el ataque: un armador y una punta no
+     sacan igual, y verlos mezclados esconde el patron de cada grupo. -->
+<div class="rolehead sub">Puntas</div><div class="grid3" id="row-saque-punta"></div>
+<div class="rolehead sub">Centrales</div><div class="grid3" id="row-saque-central"></div>
+<div class="rolehead sub">Opuestos y armadores</div><div class="grid3" id="row-saque-opuesto"></div>
 <div class="grid3" id="row-saque"></div>
 </div><div class="tabgroup" id="tab-recepcion"><div class="rolehead">Recepción <span>cómo recibe según el saque rival · naranja · zona donde recibe</span></div>
+<div class="rolehead sub">Puntas</div><div class="grid3" id="row-reception-punta"></div>
+<div class="rolehead sub">Centrales</div><div class="grid3" id="row-reception-central"></div>
+<div class="rolehead sub">Opuestos y armadores</div><div class="grid3" id="row-reception-opuesto"></div>
+<div class="rolehead sub">Líberos</div><div class="grid3" id="row-reception-libero"></div>
 <div class="grid3" id="row-reception"></div>
 </div><div class="tabgroup" id="tab-defensa"><div class="rolehead">Defensa <span>dónde y cómo defiende · verde · zona donde levanta la pelota</span></div>
+<div class="rolehead sub">Puntas</div><div class="grid3" id="row-defense-punta"></div>
+<div class="rolehead sub">Centrales</div><div class="grid3" id="row-defense-central"></div>
+<div class="rolehead sub">Opuestos y armadores</div><div class="grid3" id="row-defense-opuesto"></div>
+<div class="rolehead sub">Líberos</div><div class="grid3" id="row-defense-libero"></div>
 <div class="grid3" id="row-defense"></div>
 </div><div class="tabgroup" id="tab-bloqueo"><div class="rolehead">Bloqueo <span>dónde bloquea según la zona de origen del ataque rival · celeste</span></div>
+<div class="rolehead sub">Puntas</div><div class="grid3" id="row-bloqueo-punta"></div>
+<div class="rolehead sub">Centrales</div><div class="grid3" id="row-bloqueo-central"></div>
+<div class="rolehead sub">Opuestos y armadores</div><div class="grid3" id="row-bloqueo-opuesto"></div>
 <div class="grid3" id="row-bloqueo"></div>
 </div><footer>Ataque (rojo): dirección según recepción. Saque (azul): tipo, zona de origen, momento (puntos del set) y fuerza sobre la recepción; / = vendido (2ª mejor). Recepción (naranja): según tipo/zona del saque rival; zona real de caída de la pelota (todas las zonas). Video por timestamp (reproduce en partidos publicados en la app). Muestras chicas = tomar con cuidado.</footer>
 </div>
@@ -292,6 +334,14 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
   </div>
 </div>
 
+<!-- Las categorias del club: si tiene una sola, esto no hace nada. -->
+<script src="categorias_club.js" onerror="void 0"></script>
+<script src="selector_categoria.js" onerror="void 0"></script>
+<script>
+/* Pantalla de escritorio: necesita sus datos completos al abrir.
+   Las de las jugadoras no llevan esta marca. */
+window.__DESCIFRAR_SINCRONO = true;
+</script>
 <script src="datos_seguros.js"></script>
 <script src="filtro_tipo.js" onerror="void 0"></script>
   <script src="liga_data.js.enc" onerror="window.LIGA_DATA={teams:{},combos:[],calls:[]}"></script>
@@ -300,6 +350,7 @@ footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-
      entrenamiento con video cargado igual no abria el cuadrante. -->
 <script src="mapa_videos_ent.js.enc" onerror="window.MAPA_VIDEOS_ENT=window.MAPA_VIDEOS_ENT||{}"></script>
 <script src="firebase.js"></script>
+<script src="firebase_por_categoria.js"></script>
 <script src="plan_partido_data.js.enc" onerror="void 0"></script>
 <script src="datos_bloqueo.js.enc" onerror="void 0"></script>
   <script>abrirDatos();</script>
@@ -382,6 +433,12 @@ function computeMatchMeta(){
 const RECS=[["all","Todas"],["g","# / +"],["b","! / -"]];
 const FASE=[["all","Todas"],["SO","Side Out"],["TR","Transici\u00f3n"]];
 const RESS=[["all","Todas"],["#","Punto (#)"],["+","Buena (+)"],["!","Media (!)"],["-","Mala (−)"],["/","Bloqueado"],["=","Error"]];
+/* El tipo de golpe, que el .dvw guarda en el codigo del ataque:
+     H  potente   ·  T  finta   ·  P  colocado
+   Ya se mostraba en las baldosas Hard/Soft/Tip, pero no se podia filtrar:
+   ver solo las fintas de una rematadora dice mucho de como resuelve fuera
+   de sistema. */
+const TIPO_ATQ=[["all","Todos"],["H","Potente"],["P","Colocado"],["T","Finta"]];
 const OWN=[["all","Todas"],["1","Sí"],["0","No"]];
 const RECZ=[["all","Todas"],["1","z1"],["6","z6"],["5","z5"]];
 const CB_P=[["all","Todos"],["X5","X5"],["V5","V5"],["X6","X6"],["V6","V6"],["XP","XP"]];
@@ -397,13 +454,13 @@ const DAZ=[["all","Todas"],["4","z4"],["3","z3"],["2","z2"],["6","z6"],["1","z1"
 const BLS=[["all","Todas"],["#","Kill (#)"],["+","Bueno (+)"],["!","Toque (!)"],["-","Malo (\u2212)"],["=","Error (=)"]];
 const ROLECFG={
  punta:{court:4,evIdx:5,subIdx:6,tIdx:7,vIdx:8,tagIdx:0,stats:'atk',pal:'red',
-   filters:[{lab:'Combo',idx:0,opts:CB_P},{lab:'Fase',idx:1,opts:FASE},{lab:'Recepción',idx:1,opts:RECS},{lab:'Recibe',idx:9,opts:OWN},{lab:'Resultado',idx:5,opts:RESS}],
+   filters:[{lab:'Combo',idx:0,opts:CB_P},{lab:'Fase',idx:1,opts:FASE},{lab:'Recepción',idx:1,opts:RECS},{lab:'Recibe',idx:9,opts:OWN},{lab:'Resultado',idx:5,opts:RESS},{lab:'Golpe',idx:6,opts:TIPO_ATQ}],
    dir:{L:["1","9","2"],C:["6","8","3"],D:["5","7","4"]},tiles:['Efic','Kill','Bloq','Línea','Centro','Diag','Hard','Soft','Tip'],hl:[0,3]},
  central:{court:4,evIdx:5,subIdx:6,tIdx:7,vIdx:8,tagIdx:0,stats:'atk',pal:'red',
-   filters:[{lab:'Combo',idx:0,opts:CB_C},{lab:'Fase',idx:1,opts:FASE},{lab:'Recepción',idx:1,opts:RECS},{lab:'Recep. desde',idx:3,opts:RECZ},{lab:'Resultado',idx:5,opts:RESS}],
+   filters:[{lab:'Combo',idx:0,opts:CB_C},{lab:'Fase',idx:1,opts:FASE},{lab:'Recepción',idx:1,opts:RECS},{lab:'Recep. desde',idx:3,opts:RECZ},{lab:'Resultado',idx:5,opts:RESS},{lab:'Golpe',idx:6,opts:TIPO_ATQ}],
    dir:{L:["2","9","1"],C:["3","8","6"],D:["4","7","5"]},tiles:['Efic','Kill','Bloq','Izq','Recto','Der','Hard','Soft','Tip'],hl:[0,3]},
  opuesto:{court:4,evIdx:5,subIdx:6,tIdx:7,vIdx:8,tagIdx:0,stats:'atk',pal:'red',
-   filters:[{lab:'Combo',idx:0,opts:CB_O},{lab:'Fase',idx:1,opts:FASE},{lab:'Recepción',idx:1,opts:RECS},{lab:'Recep. desde',idx:3,opts:RECZ},{lab:'Resultado',idx:5,opts:RESS}],
+   filters:[{lab:'Combo',idx:0,opts:CB_O},{lab:'Fase',idx:1,opts:FASE},{lab:'Recepción',idx:1,opts:RECS},{lab:'Recep. desde',idx:3,opts:RECZ},{lab:'Resultado',idx:5,opts:RESS},{lab:'Golpe',idx:6,opts:TIPO_ATQ}],
    dir:{L:["5","7","4"],C:["6","8","3"],D:["1","9","2"]},tiles:['Efic','Kill','Bloq','Línea','Centro','Diag','Hard','Soft','Tip'],hl:[0,3]},
  saque:{court:2,evIdx:3,tIdx:5,vIdx:6,tagIdx:0,stats:'srv',pal:'blue',
    filters:[{lab:'Tipo',idx:0,opts:STY},{lab:'Desde',idx:1,opts:SDZ},{lab:'Momento',idx:4,opts:SMO,range:true},{lab:'Resultado',idx:3,opts:SRS}],
@@ -431,6 +488,28 @@ function bkt(m){return m<=8?'b1':(m<=16?'b2':'b3');}
 function passes(a,cfg,vals){for(var i=0;i<cfg.filters.length;i++){var fl=cfg.filters[i],v=vals[i];if(v==='all')continue;if(Array.isArray(v)){if(v.indexOf(String(a[fl.idx]))<0)return false;continue;}if(fl.range){if(bkt(a[fl.idx])!==v)return false;}else if(String(a[fl.idx])!==v)return false;}return true;}
 /* ===== ARMADOR (distribución — lógica exacta del Game Plan) ===== */
 var GPL=window.LIGA_DATA||{teams:{},combos:[],calls:[]};
+
+/* ── LOS DATOS PUEDEN LLEGAR DESPUES ────────────────────────────────────
+   La linea de arriba corre UNA vez al cargar. Si el archivo cifrado
+   todavia no termino de descifrarse, la pantalla quedaba vacia para
+   siempre, aunque los datos llegaran un instante despues.
+
+   Este vigia mira la variable cada 200 ms. Apenas aparece, la actualiza,
+   redibuja la pantalla y se apaga. A los 8 segundos se rinde solo. */
+(function esperarDatos(){
+  var _i = 0, _t = setInterval(function(){
+    if(++_i > 40){ clearInterval(_t); return; }
+    if(window.LIGA_DATA && window.LIGA_DATA !== GPL){
+      GPL = window.LIGA_DATA;
+      clearInterval(_t);
+      try{ if(typeof render==='function') render();
+           else if(typeof pintar==='function') pintar();
+           else if(typeof dibujar==='function') dibujar();
+           else if(typeof cargar==='function') cargar();
+           else if(typeof init==='function') init(); }catch(e){}
+    }
+  }, 200);
+})();
 var GP_COMBOS=GPL.combos||[];
 var GP_FRONT_POS=[4,3,2];
 var RESARM=["#","/","+","!","=","-"];
@@ -471,7 +550,17 @@ function armRallies(setter,pos){var dates=armDates(),mt=(armTeam.matches||[]);
     if(armCall!=="all"&&r[5]!==armCall)return false;
     if(armPhase==="SO"&&r[4]!==0)return false;
     if(armPhase==="TR"&&r[4]!==1)return false;
-    if(armPhase==="SO"&&armRec!=="all"){var rq=r[7];if(armRec==="pos"&&!(rq===0||rq===2))return false;if(armRec==="neg"&&!(rq===3||rq===5))return false;}
+    /* La valoracion viene como indice; el orden es el que usa el motor al
+       guardar: 0 # · 1 / · 2 + · 3 ! · 4 = · 5 −
+       Se aceptan tambien los valores agrupados de antes por si quedo alguno
+       guardado en un enlace viejo. */
+    if(armPhase==="SO"&&armRec!=="all"){
+      var rq=r[7], REC_IDX={"#":0,"/":1,"+":2,"!":3,"=":4,"-":5};
+      if(armRec==="pos"){ if(!(rq===0||rq===2)) return false; }
+      else if(armRec==="neg"){ if(!(rq===3||rq===5)) return false; }
+      else { var _ss=String(armRec).split(',').filter(Boolean);
+             if(_ss.length && _ss.map(function(x){return REC_IDX[x];}).indexOf(rq)<0) return false; }
+    }
     if(armRecZone){var _b=ARM_RECBANDS[armRecZone];if(!_b||_b.indexOf(r[15])<0)return false;}
     if(armRecNum!=null&&r[16]!==armRecNum)return false;
     var mm=mt[r[12]];if(mm&&mm.date&&!dates[mm.date])return false;
@@ -480,7 +569,22 @@ function armRallies(setter,pos){var dates=armDates(),mt=(armTeam.matches||[]);
 function renderArmador(){
   var sec=document.getElementById("armsec");
   var slug=(typeof VIVO!=='undefined'&&VIVO)?TEAM:ARM_SLUG[TEAM];
-  armTeam=(slug&&GPL.teams&&GPL.teams[slug])?GPL.teams[slug]:null;
+  /* ══ Buscar el equipo sin depender de los separadores ═════════════════
+     liga_data guarda "banco_provincia" y esta pantalla usa "bancoprovincia":
+     comparando la clave tal cual, el rival nunca encontraba sus armadores y
+     la pestaña quedaba vacia. Se comparan sin guiones ni espacios. */
+  armTeam = null;
+  if(slug && GPL.teams){
+    if(GPL.teams[slug]) armTeam = GPL.teams[slug];
+    else {
+      var _b = String(slug).toLowerCase().replace(/[^a-z0-9]/g,'');
+      for(var _k in GPL.teams){
+        if(String(_k).toLowerCase().replace(/[^a-z0-9]/g,'') === _b){
+          armTeam = GPL.teams[_k]; break;
+        }
+      }
+    }
+  }
   if(!armTeam||!(armTeam.setters&&armTeam.setters.length)){sec.classList.add("hidden");return;}
   sec.classList.remove("hidden");
   /* ══ La fase inicial ═══════════════════════════════════════════════════
@@ -550,6 +654,24 @@ function renderArmador(){
 function setArmSetter(i){armSetIdx=i;renderArmador();}
 function setArmPhase(f){armPhase=f;renderArmador();}
 function setArmRec(r){armRec=r;renderArmador();}
+/* Varias valoraciones a la vez, con el mismo control que el resto de la app:
+   para ver "# y +" juntas, que es la pregunta habitual —cuanto distribuye el
+   armador cuando la recepcion le llega bien—. */
+function armRecLeer(){
+  var d=document.getElementById('armrecsel'); if(!d) return;
+  var bx=[].slice.call(d.querySelectorAll('input'));
+  var ch=bx.filter(function(c){return c.checked;}).map(function(c){return c.value;});
+  var todas=(ch.length===0||ch.length===bx.length);
+  var sm=d.querySelector('summary');
+  if(sm) sm.textContent = todas ? 'Toda' : ch.join(' ');
+  armRec = todas ? 'all' : ch.join(',');
+  renderArmador();
+}
+function armRecTodos(v){
+  var d=document.getElementById('armrecsel'); if(!d) return;
+  [].slice.call(d.querySelectorAll('input')).forEach(function(c){ c.checked=!!v; });
+  armRecLeer();
+}
 function setArmRecZone(z){armRecZone=(z==="all")?null:z;renderArmador();}
 function setArmRecNum(v){armRecNum=v?parseInt(v,10):null;renderArmador();}
 function setArmCall(v){armCall=(v==="all")?"all":parseInt(v,10);renderArmador();}
@@ -594,10 +716,67 @@ function ppVid(code){
   try{ _ent = ((INFO[code]&&INFO[code].tipo)==='entrenamiento'); }catch(e){}
   var M1 = (_ent ? window.MAPA_VIDEOS_ENT : window.MAPA_VIDEOS) || {};
   var M2 = (_ent ? window.MAPA_VIDEOS : window.MAPA_VIDEOS_ENT) || {};
-  var M = M1; var u=M[code]||M2[code]||"";if(!u)return "";u=String(u);var m=u.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);return m?m[1]:(u.length===11?u:"");}
+  var M = M1; var u=M[code]||M2[code]||"";
+  /* ══ Buscar tambien por fecha ══════════════════════════════════════════
+     El video se guarda con el codigo del partido. Pero un .dvw sin codigo
+     oficial —pasa con los amistosos y con los que se exportan sin numerar—
+     hace que el sistema le invente uno con la fecha: "P2026-08-07-...". El
+     mapa de videos, en cambio, guarda el codigo real: "50101".
+
+     Como no coinciden, el doble-click en una zona no abria nada aunque el
+     video estuviera cargado. Se busca por la FECHA, que es la misma en los
+     dos lados: primero entre los partidos que la pantalla ya conoce, y si no
+     aparece, en las propias claves del mapa. */
+  if(!u){
+    try{
+      var _f = (INFO[code] || {}).date || '';
+      if(!_f){ var _fm = String(code).match(/(20\d\d-\d\d-\d\d)/); if(_fm) _f = _fm[1]; }
+      if(_f){
+        var _fsin = _f.replace(/-/g, '');
+        /* un partido del mismo dia que SI tenga video */
+        for(var _k in INFO){
+          if((INFO[_k] || {}).date === _f && (M1[_k] || M2[_k])){
+            u = M1[_k] || M2[_k]; break;
+          }
+        }
+        /* o una clave del mapa que lleve esa fecha adentro */
+        if(!u){
+          var _bus = function(MM){
+            for(var _c in MM){
+              var _s = String(_c);
+              if(_s.indexOf(_f) >= 0 || _s.indexOf(_fsin) >= 0) return MM[_c];
+            }
+            return '';
+          };
+          u = _bus(M1) || _bus(M2);
+        }
+        /* No se adivina mas alla de eso: darle a un partido el video de otro
+           dia es peor que no mostrar ninguno. */
+      }
+    }catch(e){}
+  }
+  if(!u)return "";u=String(u);var m=u.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);return m?m[1]:(u.length===11?u:"");}
 function readKey(pid){return "ppread:"+(typeof TEAM!=="undefined"?TEAM:"")+":"+pid;}
 function readVal(p){try{var v=localStorage.getItem(readKey(p.id));if(v!==null)return v;}catch(e){}return p.read||"";}
 function saveRead(el){try{localStorage.setItem(readKey(el.getAttribute("data-pid")),el.innerHTML);}catch(e){}}
+function _sufijoPos(p){
+  /* A que grupo pertenece esta jugadora. Solo aplica a los fundamentos que
+     se separan por posicion; para el ataque —que ya tiene su fila por rol—
+     y para los que no la tienen, devuelve vacio. */
+  if(['saque','reception','defense','bloqueo'].indexOf(p.role) < 0) return '';
+  /* Se saca el acento antes de comparar: el puesto llega como "Líbero" y
+     con acento no coincidia con nada, asi que las liberas quedaban fuera de
+     todos los grupos y no se mostraban. */
+  var pos = String(p.pos || '').toUpperCase()
+              .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if(pos.indexOf('LIBER') === 0) return '-libero';
+  if(pos.indexOf('PUNT') === 0 || pos === 'OH') return '-punta';
+  if(pos.indexOf('CENT') === 0 || pos === 'MB') return '-central';
+  if(pos.indexOf('OPUE') === 0 || pos.indexOf('ARMA') === 0
+     || pos === 'OPP' || pos === 'S') return '-opuesto';
+  return '';
+}
+
 function buildSection(p){var cfg=ROLECFG[p.role]; if(!cfg) return '';
   var fh=cfg.filters.map(function(fl,i){return filtCtrl(p.id+'-f'+i,fl,'',filterOpts(p,fl));}).join('');
   if(cfg.stats==='atk'||cfg.stats==='srv'||cfg.stats==='dig'){fh+='<div class="fgroup"><label title="Mín. pelotas">Mín.</label><input type="number" min="0" value="0" id="'+p.id+'-min" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;font-family:inherit;font-weight:700"></div>';}
@@ -691,13 +870,39 @@ function makeTeamPlayer(role){
   return {id:role.charAt(0)+'-equipo', num:'\u03a3', name:'EQUIPO', pos:'Acumulado', role:role, total:rows.length, read:'', data:rows, isTeam:true};
 }
 function buildTeam(){
-  ['punta','central','opuesto','saque','reception','defense','bloqueo'].forEach(function(r){var el=document.getElementById('row-'+r);if(el)el.innerHTML='';});
+  /* ══ Vaciar TODAS las filas antes de dibujar ══════════════════════════
+     Se limpiaban solo las siete filas originales. Al separar saque,
+     recepcion, defensa y bloqueo por posicion aparecieron filas nuevas
+     —row-saque-punta, row-defense-libero...— que nunca se vaciaban: al
+     cambiar de equipo quedaban las tarjetas del anterior mezcladas con las
+     del nuevo, o directamente no se veia nada.
+
+     Se buscan por su id, asi cualquier fila que se agregue mañana tambien
+     se limpia sin tocar esta linea. */
+  document.querySelectorAll('[id^="row-"]').forEach(function(el){ el.innerHTML=''; });
   PLAYERS=TEAMS[TEAM].players;INFO=TEAMS[TEAM].info;computeMatchMeta();
   var _bk=(window.PP_BLOCK&&window.PP_BLOCK[TEAM])||[];_bk.forEach(function(bp){if(!bp.id)bp.id='blk'+bp.num;});PLAYERS=PLAYERS.concat(_bk);
   TEAMCARDS=[]; ['punta','central','opuesto','saque','reception','defense','bloqueo'].forEach(function(role){var tp=makeTeamPlayer(role); if(tp) TEAMCARDS.push(tp);});
   TEAMCARDS.forEach(function(p){var el=document.getElementById('row-'+p.role);if(el)el.insertAdjacentHTML('afterbegin',buildSection(p));});
-  PLAYERS.forEach(function(p){var el=document.getElementById('row-'+p.role);if(el)el.insertAdjacentHTML('beforeend',buildSection(p));});
+  /* ══ Cada tarjeta, en la fila de su posicion ══════════════════════════
+     El ataque ya venia separado en puntas, centrales y opuestos. Saque,
+     recepcion, defensa y bloqueo mostraban a todo el plantel en una sola
+     lista: un armador y una punta mezclados, cuando no sacan ni defienden
+     igual. Asi el patron de cada grupo se pierde.
+
+     El puesto sale del plantel; el que no lo tenga va a la fila general. */
+  PLAYERS.forEach(function(p){
+    var el = document.getElementById('row-' + p.role + _sufijoPos(p));
+    if(!el) el = document.getElementById('row-' + p.role);
+    if(el) el.insertAdjacentHTML('beforeend', buildSection(p));
+  });
   TEAMCARDS.concat(PLAYERS).forEach(function(p){ROLECFG[p.role].filters.forEach(function(fl,i){var fe=document.getElementById(p.id+'-f'+i);if(fe)fe.addEventListener('change',function(){if(ROLECFG[p.role].stats==='dig'&&fl.lab==='Ataque desde'){defRefreshTipo(p);}render(p);});});var me=document.getElementById(p.id+'-min');if(me)me.addEventListener('input',function(){render(p);});render(p);});
+
+  /* ══ El selector de jugadora, con las del equipo elegido ═══════════════
+     Se armaba UNA sola vez al abrir la pantalla y nunca se actualizaba. Al
+     cambiar de equipo seguian apareciendo las jugadoras del club propio:
+     elegias "Estudiantes" y el desplegable ofrecia las de GELP. */
+  try{ buildFocusSel(); }catch(e){}
   buildRivalPanel();buildMatchPanel();updateCounts();
   document.getElementById('teamname').textContent=TEAMS[TEAM].name;
   var tt=document.getElementById('tabteam'); if(tt) tt.textContent=TEAMS[TEAM].name;
@@ -868,7 +1073,7 @@ document.addEventListener("fullscreenchange",function(){
 });
 document.addEventListener("keydown",function(e){if(document.getElementById("vmodal").style.display!=="flex")return;if(e.key==="f"||e.key==="F"){e.preventDefault();toggleFullV();return;}if(e.key==="Escape"){if(enPantallaCompleta())return;closeV();}if(e.key==="ArrowRight")nextClip();if(e.key==="ArrowLeft")prevClip();if(e.key===" "||e.code==="Space"){e.preventDefault();togglePlay();}});
 </script>
-<script src="chat_club.js" onerror="void 0"></script>
+<script src="chat_{{club}}.js" onerror="void 0"></script>
 <script src="lang.js" onerror="void 0"></script>
 <script>
 (function(){
@@ -887,5 +1092,6 @@ document.addEventListener("keydown",function(e){if(document.getElementById("vmod
    viejo —sin el campo tipo— la barra queda oculta y no molesta. */
 try{ ppPintarTipo(); }catch(e){}
 </script>
+<script src="ayuda.js"></script>
 </body>
 </html>
